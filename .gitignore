@@ -19,3 +19,4 @@ repomix-output.*
 *.key
 *.p12
 *.crt
+.DS_Store
