@@ -48,7 +48,7 @@ Planned user types:
 - Monthly Monitoring is an app section for month-level monitoring. It is display-focused and must not expose Notion formula, rollup, or relation-maintenance fields for editing.
 - Transaction is an app workflow backed by the existing Incomes data source and Transaction views.
 - Expense Scheduler is an app workflow backed by the existing Expenses data source and Expense Scheduler views.
-- Real application code should be created only when the user explicitly asks to implement.
+- Real application code should be created or expanded only when the user explicitly asks to implement that scope.
 
 ## Primary Workflows
 
@@ -229,7 +229,7 @@ Section labels in the app may be clearer than raw Notion field names. The backen
 - The docs distinguish writable fields from computed/read-only fields.
 - Sync is defined as push changes to Notion, then pull latest Notion data, then refresh UI.
 - Security constraints state that Notion secrets must not live in frontend code.
-- No source code is created during this planning task.
+- Source code is created only after an explicit implementation request.
 - Authentication direction is email sign-in and Google sign-in.
 - Account delete behavior is inactive marking through the `Inactive` field.
 - Normal income forms exclude transaction-only fields and auxiliary income categories.

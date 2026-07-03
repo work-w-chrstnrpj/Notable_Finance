@@ -2,7 +2,7 @@
 
 ## Current Status
 
-No application code exists yet, so runnable test commands are not available. This document defines the expected verification strategy once implementation begins.
+Frontend application code now exists under `application/`, and the first runnable frontend checks are available. Backend, integration, contract, e2e, and destructive manual testing are still pending until service contracts and a duplicated Notion space are available.
 
 ## Test Strategy
 
@@ -81,15 +81,21 @@ Minimum manual scenarios:
 
 ## Commands
 
-Recommended after project scaffolding:
+Current frontend commands from `application/`:
 
 ```text
 lint: npm run lint
 typecheck: npm run typecheck
+build: npm run build
 unit tests: npm run test
+e2e placeholder: npm run test:e2e
+```
+
+Recommended after backend and integration scaffolding:
+
+```text
 integration tests: npm run test:integration
 e2e tests: npm run test:e2e
-build: npm run build
 ```
 
 Recommended tools:
@@ -111,6 +117,6 @@ Get-ChildItem -Recurse wiki -Filter *-draft.md
 
 ## Known Gaps
 
-- Frameworks are selected, but no test runner has been configured yet.
+- Frontend rule tests exist, but component, integration, contract, and Playwright coverage are still pending.
 - A duplicated Notion space is planned for destructive testing, but its access details are not documented yet.
 - No CI workflow defined yet.

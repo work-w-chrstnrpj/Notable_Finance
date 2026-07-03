@@ -67,15 +67,15 @@ Error response:
 | Accounts | `/accounts` | Accounts | Create, read, update; delete marks `Inactive` |
 | Income Categories | `/income-categories` | Income Categories | Create, read, update, delete |
 | Incomes | `/incomes` | Incomes | Create, read, update, soft delete by title/amount mutation |
-| Transactions | `/transactions` | Incomes Transaction views | Create, read, update, delete |
+| Transactions | `/transactions` | Incomes Transaction views | Create, read, update, soft delete by income title/amount mutation |
 | Expense Categories | `/expense-categories` | Expense Categories | Create, read, update, delete |
 | Expenses | `/expenses` | Expenses | Create, read, update, soft delete by title/amount mutation |
-| Expense Scheduler | `/expense-scheduler` | Expenses Scheduler views | Create, read, update, delete |
+| Expense Scheduler | `/expense-scheduler` | Expenses Scheduler views | Create, read, update, soft delete by expense title/amount mutation |
 | Monthly Monitoring | `/monthly-monitoring` | Monthly Monitoring | Read only |
-| Transfer | `/transfers` | Incomes Transaction views | Create, read, update, delete with fixed `Transfer` category |
-| Credit Card Payment | `/credit-card-payments` | Incomes Transaction views | Create, read, update, delete with fixed `Credit Card Payment` category |
-| Alkansya | `/alkansya` | Incomes Transaction views unless remapped during implementation | Create, read, update, delete |
-| Receivables | `/receivables` | Incomes Transaction views | Create, read, update, delete |
+| Transfer | `/transfers` | Incomes Transaction views | Create, read, update, soft delete with fixed `Transfer` category |
+| Credit Card Payment | `/credit-card-payments` | Incomes Transaction views | Create, read, update, soft delete with fixed `Credit Card Payment` category |
+| Alkansya | `/alkansya` | Incomes Transaction views unless remapped during implementation | Create, read, update, soft delete by income title/amount mutation |
+| Receivables | `/receivables` | Incomes Transaction views | Create, read, update, soft delete by income title/amount mutation |
 
 ## Standard Resource Endpoints
 
@@ -141,6 +141,10 @@ Request:
     "incomeCategories",
     "incomes",
     "transactions",
+    "transfers",
+    "creditCardPayments",
+    "alkansya",
+    "receivables",
     "expenseCategories",
     "expenses",
     "expenseScheduler",
@@ -244,6 +248,16 @@ POST /api/v1/receivables
 ```
 
 Transfer requests must set the Notion category to `Transfer` server-side and reject attempts to override it. Credit Card Payment requests must set the Notion category to `Credit Card Payment` server-side and reject attempts to override it.
+
+Writable workflow resources should also support the standard detail, update, and delete patterns when they are in app scope:
+
+```http
+GET /api/v1/{workflow}/{id}
+PATCH /api/v1/{workflow}/{id}
+DELETE /api/v1/{workflow}/{id}
+```
+
+Workflow delete operations follow the Incomes-backed transaction delete policy unless implementation discovery remaps the workflow to another backing data source.
 
 ## Security Contract
 

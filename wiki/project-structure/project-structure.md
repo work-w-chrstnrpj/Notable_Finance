@@ -2,13 +2,13 @@
 
 ## Current State
 
-This repository currently contains project planning, AI structure, and placeholder runtime folders. Application source code has not been created yet.
+This repository contains project planning, AI structure, and the first frontend implementation foundation. The `application/` folder now contains a Next.js app scaffold and mock Notion-backed UI surfaces. Backend, shared contracts, and cross-cutting tests are still planned unless source files are added in those folders.
 
 ## Repository Tree
 
 ```text
 notion-finance/
-  application/          Future finance UI application.
+  application/          Next.js finance UI application foundation.
   service/              Future backend API and Notion integration service.
   shared/               Future shared contracts, types, schemas, constants, and mappers.
   tests/                Future automated and manual test assets.
@@ -28,7 +28,7 @@ notion-finance/
 
 ### `application/`
 
-Owns the user-facing finance experience:
+Owns the user-facing finance experience. Current foundation files include Next.js routing, a finance workspace shell, typed mock DTO data, frontend field-visibility rules, a backend API client boundary, CSS, and rule tests.
 
 - Dashboard and summary views.
 - Accounts, income categories, incomes, transactions, expense categories, expenses, and expense scheduler screens.
@@ -133,6 +133,6 @@ Before adding implementation code:
 4. Add tests or manual verification expectations.
 5. Keep the edit small and reviewable.
 
-## Current Planning Constraint
+## Current Implementation Constraint
 
-Do not add source code yet. The current phase is documentation and planning only.
+Application source code has started because implementation was explicitly requested. Continue to keep frontend work behind the backend API boundary, avoid Notion secrets in the browser, and avoid creating backend or database code unless requested.

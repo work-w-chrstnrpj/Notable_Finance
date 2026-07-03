@@ -2,7 +2,28 @@
 
 ## Current Status
 
-No application tooling has been selected yet. These commands are documentation/planning helpers only.
+Frontend tooling has started under `application/`. Backend, integration, and end-to-end tooling remain pending.
+
+## Frontend Commands
+
+Run these from `application/`:
+
+```powershell
+npm install
+npm run dev
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+- `npm install`: installs the Next.js frontend dependencies.
+- `npm run dev`: starts the local Next.js development server.
+- `npm run lint`: runs ESLint against the frontend source.
+- `npm run typecheck`: runs TypeScript without emitting files.
+- `npm run test`: runs Vitest rule tests.
+- `npm run build`: builds the Next.js application.
+- `npm run test:e2e`: placeholder until Playwright coverage is added.
 
 ## Documentation Checks
 
@@ -26,18 +47,12 @@ Get-ChildItem -Recurse wiki -File
 
 ## Recommended Future Commands
 
-Add these after project scaffolding:
+Add or expand these as backend and integration scaffolding land:
 
-- `npm install`: install dependencies.
-- `npm run dev`: start local development services.
 - `npm run dev:frontend`: start the Next.js frontend.
 - `npm run dev:backend`: start the NestJS backend.
-- `npm run lint`: run ESLint.
-- `npm run typecheck`: run TypeScript checks.
-- `npm run test`: run unit tests.
 - `npm run test:integration`: run backend/API integration tests.
 - `npm run test:e2e`: run Playwright end-to-end tests.
-- `npm run build`: build deployable artifacts.
 - `npm run db:migrate`: apply PostgreSQL metadata-store migrations after approval.
 - `npm run schema:verify`: call backend Notion schema verification after the integration key is configured.
 

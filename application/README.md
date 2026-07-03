@@ -1,20 +1,31 @@
 # Application
 
-This folder is reserved for the future Notion Finance user interface.
+This folder now contains the first Next.js frontend foundation for Notion Finance.
 
-Planned responsibilities:
+Current responsibilities:
 
-- Finance dashboard, list, detail, and form screens.
-- Accounts, income categories, incomes, transactions, expense categories, expenses, and expense scheduler views.
-- Writable-field-only create/edit forms.
-- Read-only display of Notion computed fields.
-- Sync status, pending changes, failed operations, and schema health UI.
-- Direct-save forms and explicit queued Sync button flows.
-- Calls to the backend service API only.
+- App-first finance workspace shell using Next.js App Router.
+- Dashboard, Accounts, Income, Expense, Monthly Monitoring, Transfer, Credit Card Payment, Alkansya, Receivables, Sync Center, and Settings routes.
+- Mock Notion-backed DTO data used only until backend endpoints are available.
+- Writable-field-focused create/edit form foundations.
+- Read-only display treatment for computed Notion fields.
+- Sync status, pending operation, failed operation, schema health, and refresh-from-snapshot UX foundations.
+- Typed backend API client boundary for `/api/v1` calls.
 
 Rules:
 
 - Do not call Notion directly from the frontend.
 - Do not store Notion tokens or server secrets here.
 - Preserve live Notion select labels exactly in app labels unless a later display-label mapping is approved.
-- Do not add framework-specific files until the implementation scaffolding task begins.
+- Replace mock data through the backend API boundary as service contracts become available.
+
+Commands:
+
+```powershell
+npm install
+npm run dev
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```

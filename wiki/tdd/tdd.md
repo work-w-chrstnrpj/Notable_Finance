@@ -15,13 +15,13 @@ Build a finance UI application where Notion remains the source of truth. The app
 
 Users can create, edit, delete, view, and sync supported records through the app. Monthly Monitoring is shown as a read-focused monitoring section. The app hides computation-heavy Notion fields from normal user forms and refreshes its UI from Notion after sync.
 
-## Current Planning Status
+## Current Implementation Status
 
-This repository is in documentation and planning mode. No application source code should be created yet.
+Frontend implementation has started after an explicit implementation request. The `application/` folder contains the first Next.js workspace foundation. Backend implementation has not started yet.
 
 The official stack is Next.js for the frontend and NestJS for the backend.
 
-Create real Next.js and NestJS application code only when the user explicitly asks to implement.
+Create or expand real Next.js and NestJS application code only when the user explicitly asks to implement that scope.
 
 ## Source Of Truth
 
@@ -230,7 +230,7 @@ Recommended test tooling after scaffolding:
 
 ## Out Of Scope
 
-- Implementing app code during this planning task.
+- Treating the current mock frontend data as canonical finance data.
 - Bank integrations and payment execution.
 - Editing Notion formulas, rollups, or database schema through normal UI.
 - Treating an app database as the finance source of truth.

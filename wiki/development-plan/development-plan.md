@@ -47,14 +47,16 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-03, no application code has been created. Most implementation rows are intentionally `Not Started` because the project is still in planning/documentation mode.
+As of 2026-07-03, frontend implementation has started because implementation was explicitly requested. The Next.js frontend foundation now exists under `application/`, with app routing, a workspace shell, typed mock DTOs, frontend field-visibility rules, a backend API client boundary, and initial rule tests. Backend, integration, and testing workstreams remain unstarted.
 
 | Workstream | Total Rows | Not Started | Blocked | Needs Decision |
 | --- | ---: | ---: | ---: | ---: |
-| Frontend | 17 | 17 | 0 | 0 |
+| Frontend | 17 | 0 | 0 | 0 |
 | Backend | 21 | 21 | 0 | 0 |
 | Integration | 19 | 19 | 0 | 0 |
 | Testing | 17 | 17 | 0 | 0 |
+
+Frontend status detail: 3 `Implemented`, 14 `In Progress`.
 
 ## Resolved Decisions
 
@@ -77,10 +79,11 @@ As of 2026-07-03, no application code has been created. Most implementation rows
 
 ## Remaining Planning Work
 
+- Wire the frontend mock DTO surfaces to backend `/api/v1` contracts as those endpoints are implemented.
 - Choose exact compact list-view fields versus detail-view fields after the first UI wireframe pass.
 - Confirm final Alkansya backing view during implementation discovery.
 - Document access details for the duplicated Notion space when it is available.
-- Confirm exact commands after scaffolding.
+- Expand Playwright and manual QA coverage after backend contracts are available.
 
 Use the workbook as a gate tracker. A row should move to `Implemented` only when its acceptance criteria are verified and evidence is listed. Do not start implementation rows while required upstream decisions or access are blocked.
 
