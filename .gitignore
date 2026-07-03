@@ -1,0 +1,21 @@
+# AI generated context and snapshots
+graphify-out/
+.graphify/
+.ai/generated/graphify/
+.ai/generated/**/tmp/
+.ai/generated/**/cache/
+.understand-anything/intermediate/
+.understand-anything/diff-overlay.json
+repomix-output.*
+
+# Assistant local state
+.aider.chat.history.md
+.aider.llm.history
+
+# Secrets and local environment
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.crt
