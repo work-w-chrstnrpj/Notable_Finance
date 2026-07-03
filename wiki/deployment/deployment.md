@@ -8,6 +8,7 @@ Planned deployment targets:
 
 - Frontend: Vercel.
 - Backend: Render.
+- PostgreSQL metadata store: Neon Free, while usage remains within free-tier limits.
 - Local testing: dev and prod-style environment configurations must be switchable for local verification.
 
 ## Deployment Requirements
@@ -48,7 +49,15 @@ GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 ```
 
-Configure PostgreSQL app metadata storage server-side from the start. Redis is optional and should be configured only for cache, rate limits, short-lived session helpers, or queue coordination. If auth, cache, or webhooks are added, configure their secrets server-side as well.
+Configure PostgreSQL app metadata storage server-side from the start using Neon Free while usage remains within free-tier limits. Redis is optional and should be configured only for cache, rate limits, short-lived session helpers, or queue coordination. If auth, cache, or webhooks are added, configure their secrets server-side as well.
+
+## Free-Tier Storage Plan
+
+- Use Neon Free for the PostgreSQL app metadata store.
+- Keep Notion as the finance source of truth; do not duplicate the full Notion workspace into PostgreSQL as canonical data.
+- Keep metadata compact by storing sync state, pending mutations, conflicts, audit events, sessions if needed, and limited cache snapshots only.
+- Add retention rules for sync logs, audit events, and snapshots before production use so the app can stay within free-tier storage.
+- Start without Redis unless implementation needs temporary cache, rate limits, short-lived session helpers, or queue coordination.
 
 ## Smoke Checks
 

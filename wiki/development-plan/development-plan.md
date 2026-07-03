@@ -62,7 +62,7 @@ As of 2026-07-03, no application code has been created. Most implementation rows
 - Account delete marks the account inactive through `Inactive`; account records are not physically deleted.
 - Destructive testing will use a duplicated Notion space provided by the project owner.
 - Real Next.js and NestJS code should be created only when the user explicitly says to implement.
-- PostgreSQL is the primary durable metadata store.
+- PostgreSQL is the primary durable metadata store, using Neon Free as the planned provider while the app remains within free-tier limits.
 - Redis is optional for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it.
 - Sync starts by pulling from Notion, then writes updates, then pulls fresh Notion data again.
 - Schema verification should be available through a button after the Notion integration key is configured.

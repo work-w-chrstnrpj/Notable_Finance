@@ -2,7 +2,7 @@
 
 ## Data Storage Overview
 
-Notion is the canonical store for finance records. The app metadata store is planned from the start for sync logs, pending mutations, conflicts, audit events, sessions if needed, and cached snapshots. PostgreSQL is the recommended durable app metadata store. Redis may be added later for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it. Those stores are supporting state only.
+Notion is the canonical store for finance records. The app metadata store is planned from the start for sync logs, pending mutations, conflicts, audit events, sessions if needed, and cached snapshots. PostgreSQL is the durable app metadata store, with Neon Free as the planned provider while the app remains within free-tier limits. Redis may be added later for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it. Those stores are supporting state only.
 
 ## Canonical Notion Data Sources
 
@@ -209,7 +209,7 @@ Monthly Monitoring is in app scope as a read-focused monitoring section. It shou
 
 ## Supporting App Data
 
-PostgreSQL is the recommended primary app metadata store. Expected non-canonical tables/collections include:
+PostgreSQL is the primary app metadata store. Use Neon Free as the planned hosted PostgreSQL provider while usage remains within free-tier limits. Expected non-canonical tables/collections include:
 
 - Users or sessions.
 - Notion connection settings with encrypted token storage.

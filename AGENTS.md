@@ -29,9 +29,9 @@ Implementation has not started. The selected application stack is Next.js for th
 
 - Application/runtime: Next.js.
 - Service/API layer: NestJS backend service for Notion integration.
-- Data store: Notion is the canonical finance data store. PostgreSQL is the primary durable app metadata store for sync logs, sessions if needed, conflicts, pending mutations, audit events, and snapshots. Redis is optional for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it.
+- Data store: Notion is the canonical finance data store. PostgreSQL is the primary durable app metadata store for sync logs, sessions if needed, conflicts, pending mutations, audit events, and snapshots. Use Neon Free as the planned PostgreSQL provider while the app remains within free-tier limits. Redis is optional for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it.
 - Testing: Recommended tooling is ESLint, TypeScript, Vitest, React Testing Library, Jest or Vitest for NestJS depending on scaffold defaults, Supertest, Playwright, and manual verification against a duplicated Notion space.
-- Deployment: Planned targets are Vercel for the frontend and Render for the backend. Must use server-side secret management and never expose Notion secrets in frontend code.
+- Deployment: Planned targets are Vercel for the frontend, Render for the backend, and Neon Free for PostgreSQL app metadata storage. Must use server-side secret management and never expose Notion secrets in frontend code.
 
 ## Repository Map
 

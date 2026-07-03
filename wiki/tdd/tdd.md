@@ -25,7 +25,7 @@ Create real Next.js and NestJS application code only when the user explicitly as
 
 ## Source Of Truth
 
-Notion is the canonical finance data store. The app will include metadata storage from the start for sync logs, pending operations, conflicts, audit events, sessions if needed, and cached snapshots. PostgreSQL is the recommended durable metadata store. Redis may be added as a supporting cache, rate-limit store, short-lived session helper, or queue coordination layer if implementation needs it. Supporting stores must not become the canonical financial database unless a later architecture decision explicitly changes that rule.
+Notion is the canonical finance data store. The app will include metadata storage from the start for sync logs, pending operations, conflicts, audit events, sessions if needed, and cached snapshots. PostgreSQL is the durable metadata store, with Neon Free as the planned provider while the app remains within free-tier limits. Redis may be added as a supporting cache, rate-limit store, short-lived session helper, or queue coordination layer if implementation needs it. Supporting stores must not become the canonical financial database unless a later architecture decision explicitly changes that rule.
 
 ## System Boundary
 

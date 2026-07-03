@@ -251,6 +251,7 @@ Section labels in the app may be clearer than raw Notion field names. The backen
 - Account delete marks the account inactive through `Inactive`.
 - Destructive testing will use a duplicated Notion space provided by the project owner.
 - Real Next.js and NestJS code should be created only after the user explicitly says to implement.
+- PostgreSQL app metadata storage should use Neon Free while the app remains within free-tier limits.
 - Sync starts by pulling from Notion, then writes updates, then pulls fresh Notion data again.
 - Schema verification should be available through a button after the Notion integration key is configured.
 - The app sections are Dashboard, Accounts, Income, Expense, Monthly Monitoring, Transfer, Credit Card Payment, Alkansya, and Receivables.
