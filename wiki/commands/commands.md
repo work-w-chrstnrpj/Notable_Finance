@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Frontend tooling has started under `application/`. Backend, integration, and end-to-end tooling remain pending.
+Frontend tooling has started under `application/`. Backend tooling has started under `service/`. Integration and end-to-end tooling remain pending.
 
 ## Frontend Commands
 
@@ -24,6 +24,22 @@ npm run build
 - `npm run test`: runs Vitest rule tests.
 - `npm run build`: builds the Next.js application.
 - `npm run test:e2e`: placeholder until Playwright coverage is added.
+
+## Backend Commands
+
+Run these from the repository root:
+
+```powershell
+npm --prefix service install
+npm --prefix service run typecheck
+npm --prefix service run test
+npm --prefix service run build
+```
+
+- `npm --prefix service install`: installs backend dependencies.
+- `npm --prefix service run typecheck`: runs TypeScript without emitting files.
+- `npm --prefix service run test`: runs Vitest backend tests against the development Notion-shaped repository.
+- `npm --prefix service run build`: builds the NestJS service with TypeScript.
 
 ## Documentation Checks
 
@@ -65,5 +81,5 @@ Recommended tooling:
 - Vitest for shared/frontend-friendly unit tests.
 - React Testing Library for frontend component tests.
 - Jest or Vitest for NestJS unit tests, depending on scaffold defaults.
-- Supertest for backend HTTP integration tests.
+- Direct controller/service contract tests for the current backend scaffold; Supertest or equivalent HTTP integration tests can be added when socket-based test execution is available.
 - Playwright for end-to-end tests.

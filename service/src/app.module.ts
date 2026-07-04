@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { ConfigModule as AppConfigModule } from './config/config.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +15,7 @@ import { ExpenseCategoriesModule } from './expense-categories/expense-categories
 import { ExpensesModule } from './expenses/expenses.module';
 import { ExpenseSchedulerModule } from './expense-scheduler/expense-scheduler.module';
 import { MonthlyMonitoringModule } from './monthly-monitoring/monthly-monitoring.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { SyncModule } from './sync/sync.module';
 import { ConflictModule } from './conflict/conflict.module';
 import { SchemaDriftModule } from './schema-drift/schema-drift.module';
@@ -28,7 +28,6 @@ import configuration from './config/configuration';
       isGlobal: true,
       load: [configuration],
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AppConfigModule,
     AuthModule,
     NotionModule,
@@ -43,6 +42,7 @@ import configuration from './config/configuration';
     ExpensesModule,
     ExpenseSchedulerModule,
     MonthlyMonitoringModule,
+    DashboardModule,
     SyncModule,
     ConflictModule,
     SchemaDriftModule,

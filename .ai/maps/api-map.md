@@ -18,13 +18,14 @@ Use this map for planned backend API contract work.
 - `/api/v1/expenses`
 - `/api/v1/expense-scheduler`
 - `/api/v1/dashboard/summary`
+- `/api/v1/monthly-monitoring`
 - `/api/v1/sync/status`
 - `/api/v1/sync/pull`
 - `/api/v1/sync/commit`
 - `/api/v1/system/schema-status`
 - `/api/v1/health`
 
-Monthly Monitoring has no app endpoint.
+Monthly Monitoring is a read-only app endpoint with app-calculated month-scoped values.
 
 ## Contract Rules
 

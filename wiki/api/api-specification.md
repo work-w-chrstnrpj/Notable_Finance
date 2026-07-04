@@ -4,7 +4,13 @@
 
 The API provides a protected backend layer between the finance UI and Notion. The frontend must never call Notion directly. The backend owns validation, Notion property mapping, sync orchestration, schema drift checks, conflict handling, and protection of the Notion token.
 
-The planned runtime stack is Next.js plus NestJS. This file defines the planned callable contract.
+The runtime stack is Next.js plus NestJS. This file defines the callable contract and should stay aligned with the implementation in `application/` and `service/`.
+
+## Current Implementation Status
+
+The first NestJS service foundation now exists under `service/`. It implements the `/api/v1` route surface, field mapping, mutation validation, read-only reference endpoints, app-calculated Dashboard and Monthly Monitoring responses, sync status/pull/commit behavior, schema-status reporting, and backend tests over an in-memory Notion-shaped development repository.
+
+The live Notion adapter, live schema verification, PostgreSQL metadata persistence, production auth, and external HTTP integration tests remain pending implementation or blocked on credentials and schema access.
 
 ## Base Path
 

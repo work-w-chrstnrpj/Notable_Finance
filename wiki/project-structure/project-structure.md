@@ -2,14 +2,14 @@
 
 ## Current State
 
-This repository contains project planning, AI structure, and the first frontend implementation foundation. The `application/` folder now contains a Next.js app scaffold and mock Notion-backed UI surfaces. Backend, shared contracts, and cross-cutting tests are still planned unless source files are added in those folders.
+This repository contains project planning, AI structure, the first frontend implementation foundation, and the first backend implementation foundation. The `application/` folder contains a Next.js app scaffold and mock Notion-backed UI surfaces. The `service/` folder contains a NestJS backend scaffold with route modules, validation, mapping, sync orchestration, schema status, and tests. Shared contracts and cross-cutting tests remain planned unless source files are added in those folders.
 
 ## Repository Tree
 
 ```text
 notion-finance/
   application/          Next.js finance UI application foundation.
-  service/              Future backend API and Notion integration service.
+  service/              NestJS backend API and Notion integration service foundation.
   shared/               Future shared contracts, types, schemas, constants, and mappers.
   tests/                Future automated and manual test assets.
   tickets/              Planning and task artifacts.
@@ -42,12 +42,12 @@ Account and category maintenance remains a Notion-only function; the app should 
 
 ### `service/`
 
-Owns backend behavior:
+Owns backend behavior. Current foundation files include NestJS modules/controllers for the planned `/api/v1` surface, server-side config loading, a Notion adapter boundary backed by an in-memory development repository, field mapping, mutation validation, sync orchestration, schema-status reporting, auth shell endpoints, and backend tests.
 
 - Authentication and authorization, if implemented.
 - HTTP API endpoints.
 - Input validation.
-- Notion API client and adapter.
+- Notion API client and adapter. The current implementation uses a development repository behind the adapter boundary until live Notion credentials and schema verification are available.
 - Notion schema/property mapping.
 - Sync orchestration.
 - Conflict detection.
@@ -137,4 +137,4 @@ Before adding implementation code:
 
 ## Current Implementation Constraint
 
-Application source code has started because implementation was explicitly requested. Continue to keep frontend work behind the backend API boundary, avoid Notion secrets in the browser, and avoid creating backend or database code unless requested.
+Application and backend source code have started because implementation was explicitly requested. Continue to keep frontend work behind the backend API boundary, avoid Notion secrets in the browser, and add live Notion or database behavior only when the needed credentials, schema access, and implementation scope are confirmed.

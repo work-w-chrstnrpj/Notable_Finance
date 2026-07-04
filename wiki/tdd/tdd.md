@@ -17,11 +17,11 @@ Users can create, edit, delete, view, and sync supported transactional records t
 
 ## Current Implementation Status
 
-Frontend implementation has started after an explicit implementation request. The `application/` folder contains the first Next.js workspace foundation. Backend implementation has not started yet.
+Frontend and backend implementation have started after explicit implementation requests. The `application/` folder contains the first Next.js workspace foundation. The `service/` folder contains the first NestJS backend foundation with route modules, field mapping, mutation validation, a Notion adapter boundary, sync orchestration over a development repository, schema-status reporting, and backend tests.
 
 The official stack is Next.js for the frontend and NestJS for the backend.
 
-Create or expand real Next.js and NestJS application code only when the user explicitly asks to implement that scope.
+Create or expand real Next.js and NestJS application code only when the user explicitly asks to implement that scope. Backend live Notion writes and PostgreSQL persistence still require integration credentials, live schema confirmation, and implementation hardening.
 
 ## Source Of Truth
 

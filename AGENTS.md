@@ -25,10 +25,10 @@ The main app sections are Dashboard, Accounts, Income, Expense, Monthly Monitori
 
 ## Detected Tech Stack
 
-Implementation has not started. The selected application stack is Next.js for the frontend and NestJS for the backend.
+Frontend and backend implementation have started. The selected application stack is Next.js for the frontend and NestJS for the backend.
 
-- Application/runtime: Next.js.
-- Service/API layer: NestJS backend service for Notion integration.
+- Application/runtime: Next.js frontend foundation under `application/`.
+- Service/API layer: NestJS backend service foundation under `service/` for Notion integration, validation, sync, and schema checks.
 - Data store: Notion is the canonical finance data store. PostgreSQL is the primary durable app metadata store for sync logs, sessions if needed, conflicts, pending mutations, audit events, and snapshots. Use Neon Free as the planned PostgreSQL provider while the app remains within free-tier limits. Redis is optional for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it.
 - Testing: Recommended tooling is ESLint, TypeScript, Vitest, React Testing Library, Jest or Vitest for NestJS depending on scaffold defaults, Supertest, Playwright, and manual verification against a duplicated Notion space.
 - Deployment: Planned targets are Vercel for the frontend, Render for the backend, and Neon Free for PostgreSQL app metadata storage. Must use server-side secret management and never expose Notion secrets in frontend code.
@@ -37,8 +37,8 @@ Implementation has not started. The selected application stack is Next.js for th
 
 Update this map whenever the project structure changes.
 
-- `application/`: future user-facing finance UI.
-- `service/`: future backend API, Notion adapter, validation, sync, auth, and integration logic.
+- `application/`: user-facing finance UI foundation.
+- `service/`: backend API, Notion adapter boundary, validation, sync, auth shell, and integration logic foundation.
 - `shared/`: future shared contracts, DTOs, schemas, constants, and formatting helpers.
 - `tests/`: cross-cutting manual and automated tests.
 - `tickets/`: planning or task artifacts.
@@ -74,9 +74,9 @@ Update this map whenever the project structure changes.
 - Normal Income forms must not expose transaction-only fields such as `Transacted Account` or `CC Payment Covered`.
 - Normal Income category choices must exclude auxiliary income categories currently used for workflows such as `IOU`, `Transfer`, `Old Income Logger`, `Credit Card Payment`, and `Debt Payment`.
 - Normal Accounts views must show active accounts only by default, with gallery/card and table views.
-- Account creation forms must adapt fields based on `Account Type`; credit-card fields are shown only for `Credit Account` and `BYPL` style accounts.
+- Accounts are read-only app resources by default and remain maintained in Notion; account creation/editing may be revisited only if the product spec changes.
 - Expense forms must adapt fields based on selected account and category; credit-card fields appear only for `Credit Account` or `BYPL`, and Pasabuy fields appear only for Pasabuy workflows.
-- Delete behavior is resource-specific: incomes and expenses are soft-deleted by rewriting the title to include `[Deleted: Amount]` and clearing the amount; income categories and expense categories are deleted; accounts are marked inactive by setting `Inactive` and are not physically deleted.
+- Delete behavior is resource-specific: incomes and expenses are soft-deleted by rewriting the title to include `[Deleted: Amount]` and clearing the amount; accounts, income categories, and expense categories are read-only app resources and have no normal app delete endpoint.
 
 ## Documentation Rules
 
@@ -148,11 +148,14 @@ Reusable skills live in `.agents/skills/`. Tool-specific skill copies are genera
 
 ## Verification Commands
 
-Application verification commands are not available yet because implementation has not started.
+Application verification commands are now available for the implemented foundations.
 
-- Lint command: TBD after project scaffolding.
-- Typecheck command: TBD after project scaffolding.
-- Test command: TBD after project scaffolding.
-- Build command: TBD after project scaffolding.
+- Frontend lint command: `npm --prefix application run lint`.
+- Frontend typecheck command: `npm --prefix application run typecheck`.
+- Frontend test command: `npm --prefix application run test`.
+- Frontend build command: `npm --prefix application run build`.
+- Backend typecheck command: `npm --prefix service run typecheck`.
+- Backend test command: `npm --prefix service run test`.
+- Backend build command: `npm --prefix service run build`.
 - E2E command: TBD after project scaffolding.
 - Documentation-only verification: inspect updated Markdown, run draft cleanup search, and confirm no source code was created.
