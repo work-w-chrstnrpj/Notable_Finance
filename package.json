@@ -1,0 +1,33 @@
+{
+  "name": "notable-finance",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Root commands for the Notable Finance frontend application and backend service.",
+  "scripts": {
+    "bootstrap": "npm run deps:frontend && npm run deps:backend",
+    "deps:frontend": "npm --prefix application install",
+    "deps:backend": "npm --prefix service install",
+    "dev": "npm run dev:all",
+    "dev:all": "npm run dev:backend & npm run dev:frontend",
+    "dev:frontend": "npm --prefix application run dev",
+    "dev:frontent": "npm run dev:frontend",
+    "dev:backend": "npm --prefix service run dev",
+    "dev:service": "npm run dev:backend",
+    "build": "npm run build:all",
+    "build:all": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix application run build",
+    "build:backend": "npm --prefix service run build",
+    "start:frontend": "npm --prefix application run start",
+    "start:backend": "npm --prefix service run start:prod",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "npm --prefix application run lint",
+    "lint:backend": "npm --prefix service run lint",
+    "typecheck": "npm run typecheck:frontend && npm run typecheck:backend",
+    "typecheck:frontend": "npm --prefix application run typecheck",
+    "typecheck:backend": "npm --prefix service run typecheck",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "npm --prefix application run test",
+    "test:backend": "npm --prefix service run test",
+    "verify": "npm run lint && npm run typecheck && npm run test"
+  }
+}

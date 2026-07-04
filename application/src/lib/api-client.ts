@@ -13,6 +13,19 @@ export type ApiResult<TData> =
       };
     };
 
+export type PullResource =
+  | "accounts"
+  | "incomeCategories"
+  | "incomes"
+  | "transactions"
+  | "transfers"
+  | "creditCardPayments"
+  | "alkansya"
+  | "receivables"
+  | "expenseCategories"
+  | "expenses"
+  | "expenseScheduler";
+
 export const backendApiBasePath =
   process.env.NEXT_PUBLIC_BACKEND_API_BASE_PATH ?? "/api/v1";
 
@@ -53,26 +66,14 @@ export const financeApi = {
   schemaStatus() {
     return requestBackend("/system/schema-status");
   },
-  pullLatest(month: string) {
+  pullLatest(options: {
+    month?: string;
+    resources: PullResource[];
+    viewMode?: string;
+  }) {
     return requestBackend("/sync/pull", {
       method: "POST",
-      body: JSON.stringify({
-        month,
-        resources: [
-          "accounts",
-          "incomeCategories",
-          "incomes",
-          "transactions",
-          "transfers",
-          "creditCardPayments",
-          "alkansya",
-          "receivables",
-          "expenseCategories",
-          "expenses",
-          "expenseScheduler",
-          "monthlyMonitoring",
-        ],
-      }),
+      body: JSON.stringify(options),
     });
   },
 };

@@ -71,6 +71,11 @@ a {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100vh;
+  transition: grid-template-columns 180ms ease;
+}
+
+.workspace--sidebar-collapsed {
+  grid-template-columns: 64px minmax(0, 1fr);
 }
 
 .sidebar {
@@ -78,11 +83,25 @@ a {
   top: 0;
   display: flex;
   flex-direction: column;
+  width: 220px;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid var(--line);
   background: #f7f6f4;
   padding: 0;
+  transition: width 180ms ease, box-shadow 180ms ease;
+  z-index: 20;
+}
+
+.workspace--sidebar-collapsed .sidebar {
+  width: 64px;
+}
+
+.workspace--sidebar-collapsed .sidebar:hover,
+.workspace--sidebar-collapsed .sidebar:focus-within {
+  width: 220px;
+  box-shadow: 14px 0 32px rgba(28, 25, 23, 0.09);
 }
 
 .brand {
@@ -94,7 +113,13 @@ a {
   padding: 14px 16px;
 }
 
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .brand {
+  justify-content: center;
+  padding: 14px 8px;
+}
+
 .brand__mark {
+  flex: 0 0 auto;
   display: grid;
   width: 24px;
   height: 24px;
@@ -129,6 +154,30 @@ a {
 .brand__name {
   font-size: 14px;
   font-weight: 650;
+  white-space: nowrap;
+}
+
+.sidebar-toggle {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  padding: 0;
+}
+
+.sidebar-toggle:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-toggle {
+  display: none;
 }
 
 .brand__meta,
@@ -189,6 +238,41 @@ a {
   font-size: 14px;
   font-weight: 500;
   transition: background-color 160ms ease, color 160ms ease;
+}
+
+.nav__item svg {
+  flex: 0 0 auto;
+}
+
+.nav__item span {
+  white-space: nowrap;
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .brand__name,
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__title,
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__item span,
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile > div:not(.sidebar-profile__avatar),
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile button {
+  display: none;
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav {
+  gap: 8px;
+  padding: 10px 8px;
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__group {
+  gap: 8px;
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__item {
+  justify-content: center;
+  padding: 8px;
+}
+
+.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile {
+  justify-content: center;
+  padding: 10px 8px;
 }
 
 .nav__item:hover {
@@ -266,7 +350,7 @@ a {
   min-height: 56px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 18px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -395,6 +479,14 @@ a {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .metric-card {
@@ -757,7 +849,6 @@ a {
 .filter-select {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   color: var(--ink-muted);
   font-size: 12px;
   font-weight: 600;
@@ -777,7 +868,7 @@ input {
 .select-label select,
 .filter-select select {
   width: auto;
-  min-width: 132px;
+  min-width: 150px;
 }
 
 .pill,
@@ -984,6 +1075,43 @@ tfoot td {
   color: var(--ink);
 }
 
+.money-value {
+  font-family: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.money-value--green {
+  color: var(--green);
+}
+
+.money-value--rose {
+  color: var(--rose);
+}
+
+.money-value--ink {
+  color: var(--ink);
+}
+
+.form-section-divider {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.form-section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-strong);
+}
+
 .button-row--end {
   justify-content: flex-end;
 }
@@ -1074,6 +1202,22 @@ tfoot td {
   width: 9px;
   height: 9px;
   border-radius: 999px;
+}
+
+.expense-status-dot {
+  display: inline-flex;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+}
+
+.expense-status-dot--paid {
+  background: var(--green);
+}
+
+.expense-status-dot--unpaid {
+  background: var(--rose);
 }
 
 .budget-list,

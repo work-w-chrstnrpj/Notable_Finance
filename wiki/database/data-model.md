@@ -23,6 +23,7 @@ Notion is the canonical store for finance records. The app metadata store is pla
 | --- | --- |
 | `write` | App may create/update this Notion field. |
 | `readOnly` | App may display this field but must not update it. |
+| `config` | Notion-maintained reference/config field used for labels, filters, selectors, or budget mapping. App may read it but normal app flows must not update it. |
 | `computed` | Notion formula, rollup, reverse relation, or derived value. Display only. |
 | `hidden` | Internal or advanced field hidden from normal UI. |
 | `none` | No user-facing create/edit exposure for this entity in MVP. |
@@ -31,19 +32,19 @@ Notion is the canonical store for finance records. The app metadata store is pla
 
 | Notion Field | Type | Access | Notes |
 | --- | --- | --- | --- |
-| `Account Name` | title | write | Primary account name. |
-| `Account Type` | select | write | Cash, Credit Account, Debit, Savings Account, e-Wallet, Digital Bank, BYPL, Auxiliary. |
-| `Account Information` | text | write | Optional details. |
-| `Starting Balance` | number | write | Initial balance. |
-| `Credit Limit` | number | write | Mainly for credit accounts. |
-| `Credit Points` | number | write | Reward/point tracking if used. |
-| `Annual Fee` | number | write | Card/account annual fee. |
-| `Billing Day` | number | write | Day of month. |
-| `Due Day` | number | write | Day of month. |
-| `Inactive` | checkbox | write | Hide inactive accounts from normal selects. |
-| `Income Label` | text | write | Label helper if still used. |
-| `Expense Label` | text | write | Label helper if still used. |
-| `Balance Label` | text | write | Label helper if still used. |
+| `Account Name` | title | config | Primary account name. Maintained in Notion only. |
+| `Account Type` | select | config | Cash, Credit Account, Debit, Savings Account, e-Wallet, Digital Bank, BYPL, Auxiliary. Maintained in Notion only. |
+| `Account Information` | text | config | Optional details. Maintained in Notion only. |
+| `Starting Balance` | number | config | Initial balance. Maintained in Notion only. |
+| `Credit Limit` | number | config | Mainly for credit accounts. Maintained in Notion only. |
+| `Credit Points` | number | config | Reward/point tracking if used. Maintained in Notion only. |
+| `Annual Fee` | number | config | Card/account annual fee. Maintained in Notion only. |
+| `Billing Day` | number | config | Day of month. Maintained in Notion only. |
+| `Due Day` | number | config | Day of month. Maintained in Notion only. |
+| `Inactive` | checkbox | config | Hide inactive accounts from normal selects. Maintained in Notion only. |
+| `Income Label` | text | config | Label helper if still used. Maintained in Notion only. |
+| `Expense Label` | text | config | Label helper if still used. Maintained in Notion only. |
+| `Balance Label` | text | config | Label helper if still used. Maintained in Notion only. |
 | `Incomes` | relation | readOnly | Reverse/related records. |
 | `Expenses` | relation | readOnly | Reverse/related records. |
 | `CC, Debt or Transfer` | relation | readOnly | Related income records. |
@@ -56,15 +57,15 @@ Notion is the canonical store for finance records. The app metadata store is pla
 | `Total Credit Interest` | rollup | computed | Display only. |
 | `Total Pasabuy` | rollup | computed | Display only. |
 
-Account delete behavior: mark the account inactive by setting `Inactive`; do not physically delete account records.
+Accounts are read-only in normal app flows. The app must not expose account create, edit, or delete actions. Account setup, inactive marking, and other maintenance happen directly in Notion.
 
-Default account views should show active accounts only. The app should provide gallery/card and table views. Account create/edit forms should adapt to `Account Type`; credit-specific fields are only shown when the type needs them, especially `Credit Account` and `BYPL`.
+Default account views should show active accounts only. The app should provide gallery/card and table views. The month selector should not appear for Accounts because the app does not need per-month balance snapshots.
 
 ## Income Categories
 
 | Notion Field | Type | Access | Notes |
 | --- | --- | --- | --- |
-| `Source of Income` | title | write | Category/source name. |
+| `Source of Income` | title | config | Category/source name. Maintained in Notion only. |
 | `Incomes` | relation | readOnly | Related income records. |
 | `toCalculator` | relation | readOnly | Monthly monitoring relation. |
 | `Monthly Earnings` | formula | computed | Display only. |
@@ -75,6 +76,8 @@ Default account views should show active accounts only. The app should provide g
 | `Earning Percentage` | formula | computed | Display only. |
 
 Normal Income category pickers must exclude auxiliary workflow categories. Current Notion view evidence identifies the auxiliary income labels as `IOU`, `Transfer`, `Old Income Logger`, `Credit Card Payment`, and `Debt Payment`.
+
+Income Categories are read-only reference/configuration data in normal app flows. The app should query IDs and `Source of Income` names for selectors, filters, and category mapping, but it should not expose category create, edit, or delete actions. Notion formula/rollup values such as `Monthly Earnings`, `Monthly Net Income`, and `Earning Percentage` are not the source for selectable-month reporting; the app calculates those metrics from scoped Income records.
 
 ## Incomes
 
@@ -88,8 +91,8 @@ Normal Income category pickers must exclude auxiliary workflow categories. Curre
 | `Categories` | relation | write | Income category relation. |
 | `Transacted Account` | relation | write | Transfer/transaction account relation. |
 | `CC Payment Covered` | relation | write | Expense payment receipt relation when needed. |
-| `Net Income` | formula | computed | Display only. |
-| `Transaction Amount` | formula | computed | Display only. |
+| `Net Income` | formula | computed | App calculates normal Income display from `Gross Income - Capital Expenditure`; Notion value is not needed for normal forms. |
+| `Transaction Amount` | formula | computed | Hidden from normal app views; database helper only. |
 | `Monthly Capital Expenditure Sorter` | formula | computed | Hidden from normal UI. |
 | `Monthly Net Sorter` | formula | computed | Hidden from normal UI. |
 | `Monthly Gross Sorter` | formula | computed | Hidden from normal UI. |
@@ -98,6 +101,8 @@ Normal Income category pickers must exclude auxiliary workflow categories. Curre
 Delete behavior: update `Name` to `Original Name [Deleted: 1234.56]` using the current `Gross Income` value, then clear `Gross Income`.
 
 Normal Income forms should not expose every writable Incomes field. They should show income-related fields only: `Name`, `Date`, `Gross Income`, `Capital Expenditure`, `Accounts`, and `Categories`. `Transacted Account` and `CC Payment Covered` remain writable only for specialized transaction workflows such as transfer and credit card payment.
+
+Income table views should include `Capital Expenditure` and app-calculated `Net Income`. `Transaction Amount` should not be shown in Income or transaction-style app views.
 
 ## Transactions
 
@@ -109,8 +114,10 @@ Workflow-specific rules:
 
 - Transfer uses the `Transfer` category automatically and does not allow the user to change it.
 - Credit Card Payment uses the `Credit Card Payment` category automatically and does not allow the user to change it.
-- Transfer and credit card payment workflows include the transacted account/payment-through account context that normal Income forms hide.
-- Alkansya and Receivables are Monthly transaction-style workflows unless implementation discovery remaps them.
+- Transfer labels the primary relation as `Source Account` and the transacted relation as `Transfer Account`; both selectors use non-credit accounts.
+- Credit Card Payment labels the primary relation as `CC Account` and limits it to credit-like accounts (`Credit Account` and `BYPL`). It labels the transacted/payment-through account as `Payer Account` and limits it to non-credit accounts.
+- Alkansya uses the `Savings` category automatically and currently represents amounts as negative values so they do not inflate total accumulated money.
+- Receivables use the same visible fields as normal Income forms. A record remains a receivable while the receiving account relation is empty; selecting a receiving account moves it to normal Income logs.
 
 Delete behavior follows Incomes.
 
@@ -118,20 +125,22 @@ Delete behavior follows Incomes.
 
 | Notion Field | Type | Access | Notes |
 | --- | --- | --- | --- |
-| `Categories` | title | write | Expense category name. |
-| `Monthly Budget` | number | write | Current monthly budget. |
-| `Upcoming Budget` | number | write | Future budget if used. |
-| `Auxiliary` | select | write | Yes/No. |
+| `Categories` | title | config | Expense category name. Maintained in Notion only. |
+| `Monthly Budget` | number | config | Current monthly budget. Maintained in Notion only and used for app-calculated budget remaining. |
+| `Upcoming Budget` | number | config | Future budget if used. Maintained in Notion only. |
+| `Auxiliary` | select | config | Yes/No. Maintained in Notion only. |
 | `Expenses` | relation | readOnly | Related expenses. |
 | `toCalculator` | relation | readOnly | Monthly monitoring relation. |
 | `Spending` | formula | computed | Display only. |
 | `Remaining` | formula | computed | Display only. |
 | `Overview` | formula | computed | Display only. |
-| `Total Overview` | formula | computed | Display only. |
+| `Total Overview` | formula | computed | Category spending share over total expense, expressed as a percentage. |
 | `Rollup of Specific Monthly Spending` | rollup | computed | Display only. |
 | `Total Overall Monthly Expense` | rollup | computed | Display only. |
 
 Normal Expense category pickers should hide records marked as auxiliary when the current workflow does not require them. View-specific workflows such as Pasabuy may intentionally include their category.
+
+Expense Categories are read-only reference/configuration data in normal app flows. The app should query IDs, names, `Auxiliary`, `Monthly Budget`, and `Upcoming Budget` for selectors, filters, and category/budget mapping, but it should not expose category create, edit, or delete actions. Notion formula/rollup values such as `Spending`, `Remaining`, `Overview`, and `Total Overview` are not the source for selectable-month reporting; the app calculates those metrics from scoped Expense records plus budget config.
 
 ## Expenses
 
@@ -151,25 +160,29 @@ Normal Expense category pickers should hide records marked as auxiliary when the
 | `Paid period` | number | write | Paid periods. |
 | `CC Link Payment Receipt` | relation | write | Related income/payment receipt. |
 | `Pasabuyer` | select | write | Shared, Maimai, Claire, 22-H in current Notion schema. |
-| `Pasabuy Status` | select | write | Pasabuy payment status. |
+| `Pasabuy Status` | select | write | Current Notion labels: `Payment not yet receive`, `Payment partially received`, `Payment partially received (installment)`, `Payment fully received`. |
 | `Pasabuy paid period` | number | write | Pasabuy paid periods. |
 | `Pasabuy Date of Payment` | date | write | Pasabuy payment date. |
 | `Pasabuy Account Receiver` | relation | write | Account receiving pasabuy payment. |
-| `Gross Price` | formula | computed | Display only. |
-| `Installment Amount` | formula | computed | Display only. |
-| `Paid Amount` | formula | computed | Display only. |
-| `Remaining Balance` | formula | computed | Display only. |
+| `Gross Price` | formula | computed | App calculates normal Expense display from `Expense Amount + Interest`. |
+| `Installment Amount` | formula | computed | App calculates normal Expense display when payment status is `Installment`. |
+| `Paid Amount` | formula | computed | App calculates normal Expense display from status, installment amount, and paid period. |
+| `Remaining Balance` | formula | computed | App calculates normal Expense display from gross price less paid amount. |
 | `Monthly Total` | formula | computed | Display only. |
-| `Expected payment date` | formula | computed | Display only. |
+| `Expected payment date` | formula | computed | App calculates normal Expense display from purchase date and account billing/due days. |
 | `Extracted Billing Day` | rollup | computed | Display only. |
 | `Extracted Due Day` | rollup | computed | Display only. |
-| `Pasabuy Received Amount` | formula | computed | Display only. |
-| `Pasabuyer Balance` | formula | computed | Display only. |
+| `Pasabuy Received Amount` | formula | computed | App calculates normal Expense display from Pasabuy status and paid period context. |
+| `Pasabuyer Balance` | formula | computed | App calculates normal Expense display from gross price less Pasabuy received amount. |
 | `Date range calculator` | formula | computed | Hidden from normal UI. |
 
 Delete behavior: update `Purchase description` to `Original Name [Deleted: 1234.56]` using the current `Expense Amount` value, then clear `Expense Amount`.
 
-Expense forms should adapt to the selected view, category, and account. Credit-card related fields are shown only when the selected account type is `Credit Account` or `BYPL`. Pasabuy fields are shown only when the Pasabuy view/category is selected.
+Expense forms should adapt to the selected view, category, and account. Base fields are `Purchase description`, `Purchase Date`, `Accounts`, `Categories`, `Expense Amount`, and `Date Paid`. Credit-card related fields are shown only when the selected account type is `Credit Account` or `BYPL`. Pasabuy fields are shown only when the Unpaid Pasabuy view/category is selected. Expense category filtering should include All, W/out Pasabuy, and specific-category choices; Unpaid Pasabuy can also be filtered by `Pasabuyer`.
+
+Expense Monthly view uses `Purchase Date` as the month anchor. Expense supports Daily, Weekly, Monthly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions views; Annually is intentionally out of Expense scope.
+
+Formula ownership rule: selectable-month Dashboard, Monthly Monitoring, Income, Expense, and category reporting should be calculated in app/shared source code from scoped Notion records. Notion formulas/rollups from Monthly Monitoring, Income Categories, and Expense Categories are not the source for historical selected-month reporting. Current Account computed values may still be displayed as read-only Notion-backed account state.
 
 ## Expense Scheduler
 
@@ -181,7 +194,7 @@ Delete behavior follows Expenses.
 
 ## Monthly Monitoring
 
-Monthly Monitoring is in app scope as a read-focused monitoring section. It should not create, edit, or delete Monthly Monitoring records through normal app flows.
+Monthly Monitoring is in app scope as a read-focused monitoring section. It should not create, edit, or delete Monthly Monitoring records through normal app flows. The Notion Monthly Monitoring DB remains useful schema context, but app Monthly Monitoring reports should be calculated from scoped Income and Expense records for the selected month rather than from Notion Monthly Monitoring formulas/rollups.
 
 | Notion Field | Type | Access | Notes |
 | --- | --- | --- | --- |
@@ -197,6 +210,8 @@ Monthly Monitoring is in app scope as a read-focused monitoring section. It shou
 | `For Wants` | formula | computed | Display only. |
 | `For Savings` | formula | computed | Display only. |
 
+App-calculated Monthly Monitoring uses Income `Date` and Expense `Purchase Date` as month anchors. Category names and budget config come from Notion category records. Monthly income, gross income, expense total, gross margin, needs/wants/savings, category spending, remaining budget, and percentages are calculated in app/shared code for the selected month.
+
 ## Relationships
 
 - Account has many Incomes through `Accounts`.
@@ -204,7 +219,7 @@ Monthly Monitoring is in app scope as a read-focused monitoring section. It shou
 - Account has many transfer-like Incomes through `Transacted Account`.
 - Income Category has many Incomes through `Categories`.
 - Expense Category has many Expenses through `Categories`.
-- Monthly Monitoring relates to Income Categories and Expense Categories for month-level calculations and is displayed as a read-focused app section.
+- Monthly Monitoring in Notion relates to Income Categories and Expense Categories for Notion-side current/calculator views, but app Monthly Monitoring should calculate selected-month reports from scoped records.
 - Incomes can relate to Expenses through `CC Payment Covered` / `CC Link Payment Receipt`.
 
 ## Supporting App Data

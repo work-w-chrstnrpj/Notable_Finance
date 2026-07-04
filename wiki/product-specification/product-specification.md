@@ -4,16 +4,19 @@
 
 Notion Finance is a finance UI application for an existing Notion financial workspace. Notion remains the source of truth. The app provides a focused encoding and viewing experience over multiple Notion databases so the user can manage finance records without working directly inside complex Notion tables and formula-heavy views.
 
-The app must support create, edit, delete, view, and sync workflows for:
+The app must support view and sync workflows for:
 
 - Accounts
 - Income Categories
+- Expense Categories
+- Monthly Monitoring
+
+The app must support create, edit, delete, view, and sync workflows for transaction-like finance records:
+
 - Incomes
 - Transactions
-- Expense Categories
 - Expenses
 - Expense Scheduler
-- Monthly Monitoring
 
 ## Problem
 
@@ -45,6 +48,8 @@ Planned user types:
 - Sync must support both direct-save form submissions and explicit queued changes through a Sync button.
 - App metadata storage is planned from the start for sync logs, sessions if needed, conflicts, pending mutations, audit events, and snapshots.
 - Canonical mapping docs must preserve live Notion select labels exactly, even when labels are awkward. App UI labels may be friendlier when they stay obvious and close to the Notion meaning.
+- Accounts, Income Categories, and Expense Categories are Notion-maintained reference/configuration data in the app. The app may query and display them, but it must not expose add, edit, or delete flows for them.
+- Dashboard, Monthly Monitoring, and category reporting for selectable months must be calculated from scoped Income and Expense records plus category/account reference data. Do not use Notion Monthly Monitoring, Income Category, or Expense Category formulas/rollups as the reporting source for arbitrary selected months.
 - Monthly Monitoring is an app section for month-level monitoring. It is display-focused and must not expose Notion formula, rollup, or relation-maintenance fields for editing.
 - Transaction is an app workflow backed by the existing Incomes data source and Transaction views.
 - Expense Scheduler is an app workflow backed by the existing Expenses data source and Expense Scheduler views.
@@ -60,7 +65,7 @@ Planned user types:
 
 ### Create A Record
 
-1. User opens a form for an account, category, income, or expense.
+1. User opens a form for an income, transaction, expense, or expense-scheduler record.
 2. App shows only writable fields.
 3. User submits the form.
 4. App queues or sends a create operation to the backend.
@@ -87,8 +92,7 @@ Deletion policy:
 - Income and Expense records are soft-deleted by updating the title to include the deleted amount value, then clearing the amount field. For incomes, this means `NameOfToBeDeleted [Deleted: 1234.56]` using the current `Gross Income` value, then clearing `Gross Income`. For expenses, this means `NameOfToBeDeleted [Deleted: 1234.56]` using the current `Expense Amount` value, then clearing `Expense Amount`.
 - Transaction records follow the income deletion policy because they are backed by the Incomes data source.
 - Expense Scheduler records follow the expense deletion policy because they are backed by the Expenses data source.
-- Income Categories and Expense Categories are deleted.
-- Accounts are not physically deleted. Deleting an account marks the account as inactive by setting `Inactive`.
+- Accounts, Income Categories, and Expense Categories are maintained in Notion only; the app does not expose deletion flows for these resources.
 
 ### Sync
 
@@ -117,79 +121,95 @@ The app should expose these primary sections:
 
 Section labels in the app may be clearer than raw Notion field names. The backend mapping must still preserve the exact Notion property names and select labels.
 
+The persistent top bar should show controls and sync state without repeating the active section title. The sidebar can be toggled to an icon-only width; while collapsed, hovering or focusing the sidebar temporarily reveals full labels until the pointer leaves or focus moves away.
+
+The Dashboard should show `Total Cash Flow` as the sum of active non-credit account balances. Credit-like accounts such as `Credit Account` and `BYPL` are excluded from this total.
+
 ### Accounts
 
 - View account name, type, balances, limits, billing day, and due day.
 - Show active accounts only by default by filtering out records where `Inactive` is set.
 - Support gallery/card view and table view.
-- Create and edit normal account setup fields.
-- In account creation and editing, adjust fields based on selected `Account Type`.
-- Show credit-specific fields such as credit limit, credit points, annual fee, billing day, and due day only when they apply, especially for `Credit Account` and `BYPL`.
-- Delete by marking the account inactive, not by physically deleting the Notion record.
+- Do not show the global month selector in Accounts; account balances are current Notion account state and do not require per-month snapshots in the app.
+- Do not expose account create, edit, or delete actions. Account setup and maintenance stay in Notion.
 - Show computed balances and limits as read-only.
-- Hide relation and rollup fields from normal forms unless needed for an advanced/admin view.
+- Hide relation and rollup fields unless they are explicitly needed for read-only display.
 
 ### Income Categories
 
-- View income sources and computed income metrics.
-- Create and edit the source name.
-- Show monthly totals and percentages as read-only.
+- Query income category IDs and `Source of Income` names from Notion for dropdowns, filters, and category mapping.
+- Do not expose income category create, edit, or delete actions. Category maintenance stays in Notion.
+- Do not use Notion income category formula/rollup values for month-selectable reporting. Monthly earnings, gross, net, expenditure, and percentage values should be calculated from scoped Income records.
 
 ### Incomes
 
 - View income records by date, category, and related account.
 - Support Daily, Weekly, Monthly, and Annually view modes.
-- Support frontend-only filters for Account and Categories.
+- Show the global month selector only for Monthly view. Daily, Weekly, and Annually are anchored to the current date/current period and should not show the month selector.
+- Query only the records needed for the active Income view. The default Income query should use the current month for Monthly view; selected historical months should be queried only when the month selector is used.
+- Support Account and Categories filters over the scoped result set.
 - Create and edit income title, date, gross income, capital expenditure, account relation, and category relation.
 - Do not show transaction-only fields such as `Transacted Account` or `CC Payment Covered` in the normal add-income form.
 - Normal income category choices must exclude auxiliary workflow categories. Current Notion evidence shows these auxiliary income category labels: `IOU`, `Transfer`, `Old Income Logger`, `Credit Card Payment`, and `Debt Payment`.
-- Show net income and transaction amount as read-only computed values.
+- Calculate net income in the app from gross income less capital expenditure, and color net income green for positive values, red for negative values, and black for zero.
+- Hide `Transaction Amount` from Income and transaction-style views because it is only a database calculation helper.
 
 ### Expense Categories
 
-- View category name, budget, spending, remaining budget, and summaries.
-- Create and edit category name, monthly budget, upcoming budget if supported, and auxiliary flag.
-- Show spending, remaining, overview, and rollups as read-only.
+- Query expense category IDs, `Categories` names, `Auxiliary`, `Monthly Budget`, and `Upcoming Budget` from Notion for dropdowns, filters, and budget mapping.
+- Do not expose expense category create, edit, or delete actions. Category maintenance stays in Notion.
+- Do not use Notion expense category formula/rollup values for month-selectable reporting. Spending, remaining budget, overview, total overview, and category percentages should be calculated from scoped Expense records plus Notion-maintained budget config.
 
 ### Expenses
 
-- View expense records by date, status, account, category, frequency, installment, and pasabuy fields.
-- Support Daily, Weekly, Monthly, Annually, Pasabuy, To pay, To buy, Installments, and CC Transactions view modes.
-- Support frontend-only filters for Account and Categories.
+- View expense records by date, description, amount, account, category, date paid, and a local expense status indicator derived only from `Date Paid`.
+- Support Daily, Weekly, Monthly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions view modes. Annually is intentionally not in Expense scope.
+- Use `Purchase Date` as the month anchor for monthly Expense reporting.
+- Show the global month selector only for Monthly view. Other Expense views are scoped to their own current-period or outstanding-workflow logic and should not show the month selector.
+- Query only the records needed for the active Expense view. The default Monthly query should use the current month; selected historical months should be queried only when the month selector is used.
+- Support Account and Categories filters over the scoped result set. Category filtering must support All, W/out Pasabuy, and specific category options in general Expense views.
+- In Unpaid Pasabuy, all records are Pasabuy records, so the category filter should be hidden/ignored; include records where `Date Paid` is empty or `Pasabuy Status` is not `Payment fully received`, and allow filtering by `Pasabuyer`.
 - Allow the user to toggle the expense view mode so each mode corresponds to the relevant filtered Notion-backed workflow.
-- Create and edit purchase date, date paid, amount, interest, account, category, payment status, payment frequency, period count, paid period, pasabuy fields, and payment receipt relation where supported.
+- Create and edit purchase description, purchase date, account, category, amount, and date paid for base expense records.
 - Adjust expense form fields based on selected category and account.
-- Show credit-card related fields only when the selected account is `Credit Account` or `BYPL`.
-- Show Pasabuy related fields only when the Pasabuy workflow/view is active and the selected category is Pasabuy.
-- Show computed amount fields, expected dates, extracted account days, and balances as read-only.
+- Show credit-card related fields only when the selected account is `Credit Account` or `BYPL`; these include payment status, interest, payment frequency, period count, paid period, and app-calculated gross price, installment amount, paid amount, remaining balance, and expected payment date.
+- Show Pasabuy related fields only when the Unpaid Pasabuy workflow/view is active or the selected category is Pasabuy; these include pasabuyer, pasabuy status, pasabuy date of payment, pasabuy account receiver, pasabuy paid period, and app-calculated received amount and balance.
+- Daily, Weekly, and Monthly views do not depend on paid state. Unpaid Pasabuy, To pay, Installments, and CC Transactions show records that are not paid, not fully paid, or have no paid date.
+- For Dashboard, Monthly Monitoring, Income, Expense, and category reporting, calculate display values in application/shared code from scoped records when they can be derived from writable Notion fields. Use Notion formula/rollup values only where they represent current account state that the app deliberately displays as read-only.
 
 ### Transactions
 
 - Support transfer, credit card payment, debt payment, receivable, Alkansya, and related transaction flows shown in the Notion Transaction views.
 - Reuse the Incomes data source fields and validation.
 - Keep computed income fields read-only.
+- Hide `Transaction Amount` from transaction-style app views.
+- Transaction workflow lists should display full `Date` values. The selected month only scopes records; rows should not replace dates with month-only labels.
 
 ### Transfer
 
 - Show a Monthly view.
 - Use the `Transfer` category automatically and do not allow the user to change it in this workflow.
-- Include the transaction account field because transfers need both the source and destination account context.
+- Show `Source Account`, `Transfer Account`, and `Transfer Amount`.
+- Allow only non-credit accounts in both Transfer account selectors.
 
 ### Credit Card Payment
 
 - Show a Monthly view.
 - Use the `Credit Card Payment` category automatically and do not allow the user to change it in this workflow.
-- Include the transacted account/payment-through account field needed by the Notion credit card payment views.
+- Show `CC Account` for the credit-like account being paid and `Payer Account` for the non-credit account used to pay.
+- Allow only `Credit Account` and `BYPL` accounts for `CC Account`; allow only non-credit accounts for `Payer Account`.
 
 ### Alkansya
 
 - Show a Monthly view.
-- Treat Alkansya as a specialized transaction-style workflow backed by the existing Notion income/transaction records unless implementation discovery proves it belongs to another backing view.
+- Use the `Savings` category automatically.
+- Represent Alkansya amounts as negative values for now so they do not inflate total accumulated money.
 
 ### Receivables
 
 - Show a Monthly view.
-- Treat Receivables as a specialized transaction-style workflow backed by the existing Notion income/transaction records.
+- Use the same visible fields as normal Income forms.
+- Treat Receivables as normal income records that do not yet have a receiving account. Once a receiving account is selected, the record should move to normal Income logs.
 
 ### Expense Scheduler
 
@@ -200,8 +220,9 @@ Section labels in the app may be clearer than raw Notion field names. The backen
 ### Monthly Monitoring
 
 - Show Monthly Monitoring in the app as a month-level monitoring section.
-- Include category budget context and income category context from the related Notion databases.
-- Show monthly income total, monthly expense total, gross margin, needs, wants, and savings values as read-only.
+- Include category budget context and income category context from Notion reference/configuration data.
+- Show monthly income total, monthly gross income, monthly expense total, gross margin, needs, wants, savings, and category breakdowns as read-only.
+- Calculate Monthly Monitoring values from Income and Expense records queried for the selected month, using Income `Date` and Expense `Purchase Date` as month anchors. Do not rely on Notion Monthly Monitoring formulas/rollups for historical selected months.
 - Do not create, edit, or delete Monthly Monitoring records through normal app flows.
 
 ### Sync And Status
@@ -231,9 +252,10 @@ Section labels in the app may be clearer than raw Notion field names. The backen
 - Security constraints state that Notion secrets must not live in frontend code.
 - Source code is created only after an explicit implementation request.
 - Authentication direction is email sign-in and Google sign-in.
-- Account delete behavior is inactive marking through the `Inactive` field.
+- Account and category maintenance is Notion-only; the app does not expose create, edit, or delete flows for Accounts, Income Categories, or Expense Categories.
 - Normal income forms exclude transaction-only fields and auxiliary income categories.
 - Expense forms show credit-card and Pasabuy fields only in the relevant account/category/view contexts.
+- Dashboard and Monthly Monitoring selectable-month reports are calculated from scoped records rather than Notion calculator rollups.
 
 ## Out Of Scope For Initial Planning
 
@@ -248,15 +270,19 @@ Section labels in the app may be clearer than raw Notion field names. The backen
 ## Resolved Planning Decisions
 
 - Authentication should support email sign-in and Google sign-in so the app can be used by other people.
-- Account delete marks the account inactive through `Inactive`.
+- Account maintenance, including inactive marking, happens in Notion only; the app does not expose account delete.
 - Destructive testing will use a duplicated Notion space provided by the project owner.
 - Real Next.js and NestJS code should be created only after the user explicitly says to implement.
 - PostgreSQL app metadata storage should use Neon Free while the app remains within free-tier limits.
 - Sync starts by pulling from Notion, then writes updates, then pulls fresh Notion data again.
 - Schema verification should be available through a button after the Notion integration key is configured.
 - The app sections are Dashboard, Accounts, Income, Expense, Monthly Monitoring, Transfer, Credit Card Payment, Alkansya, and Receivables.
+- Accounts, Income Categories, and Expense Categories are queried from Notion as read-only reference/configuration data; all add/edit/delete maintenance for them happens in Notion.
+- Dashboard, Monthly Monitoring, and category reports use app-calculated month-scoped values. Notion Monthly Monitoring and category formulas are not the source for selectable-month reporting.
+- Expense month-scoped reporting uses `Purchase Date` as the month anchor.
+- Expense does not include an Annually view.
 
 ## Open Questions
 
 - Which exact fields should appear in compact list views versus detail views after the first UI wireframe pass?
-- Confirm whether Alkansya should remain an Incomes-backed transaction workflow or needs a distinct Notion view mapping during implementation discovery.
+- Confirm live Notion category IDs and relation mappings when backend integration starts.

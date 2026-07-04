@@ -20,7 +20,6 @@ import {
   FileWarning,
   Gauge,
   LayoutDashboard,
-  ListFilter,
   LockKeyhole,
   LogOut,
   PiggyBank,
@@ -53,30 +52,53 @@ import {
   expenseRecords,
   financeSections,
   getAccountName,
-  getAccountType,
   getActiveSectionLabel,
   getExpenseCategoryName,
   getIncomeCategoryName,
   incomeCategories,
   incomeRecords,
-  monthlyMonitoring,
   months,
   syncLog,
 } from "@/lib/finance-data";
 import {
-  getAccountFormFields,
+  calculateCategoryTotalOverview,
+  calculateExpectedPaymentDate,
+  calculateGrossPrice,
+  calculateInstallmentAmount,
+  calculateNetIncome,
+  calculatePaidAmount,
+  calculatePasabuyerBalance,
+  calculatePasabuyReceivedAmount,
+  calculateRemainingBalance,
+  calculateTotalCashFlow,
   getExpenseConditionalSections,
+  getExpenseStatusFromDatePaid,
+  getMoneyValueTone,
   getNormalIncomeCategories,
   getWorkflowFixedCategory,
+  getMonthKeyFromIsoDate,
+  isExpenseRecordInViewScope,
+  isIncomeRecordInViewScope,
+  isCreditAccountExpense,
   isCreditLikeAccountType,
+  isOutstandingExpense,
+  isPasabuyCategoryName,
+  isUnpaidPasabuyExpense,
+  pasabuyerLabels,
+  pasabuyStatusLabels,
+  paymentFrequencyLabels,
+  paymentStatusLabels,
+  shouldShowGlobalMonthSelector,
 } from "@/lib/finance-rules";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import type {
-  AccountType,
   ExpenseViewMode,
   FinanceSection,
   FinanceSectionId,
   IncomeViewMode,
+  PasabuyStatus,
+  PaymentFrequency,
+  PaymentStatus,
   SchemaHealth,
   SyncState,
   WorkflowSectionId,
@@ -101,87 +123,22 @@ const expenseViewModes: ExpenseViewMode[] = [
   "Daily",
   "Weekly",
   "Monthly",
-  "Annually",
-  "Pasabuy",
+  "Unpaid Pasabuy",
   "To pay",
   "To buy",
   "Installments",
   "CC Transactions",
 ];
 
-const accountTypes: AccountType[] = [
-  "Cash",
-  "Credit Account",
-  "Debit",
-  "Savings Account",
-  "e-Wallet",
-  "Digital Bank",
-  "BYPL",
-  "Auxiliary",
-];
-
-const totalIncome = incomeRecords.reduce((sum, record) => sum + record.netIncome, 0);
-const totalExpenses = expenseRecords.reduce((sum, record) => sum + record.amount, 0);
 const activeAccounts = accounts.filter((account) => !account.inactive);
+const nonCreditActiveAccounts = activeAccounts.filter((account) => !isCreditLikeAccountType(account.type));
+const creditActiveAccounts = activeAccounts.filter((account) => isCreditLikeAccountType(account.type));
 const normalIncomeCategories = getNormalIncomeCategories(incomeCategories);
+const expenseCategoryFilterAll = "__all";
+const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
 const prototypeAccent = "#5B6CF9";
 
-const dashboardTrendData = [
-  { month: "Feb", income: 82000, expenses: 38500 },
-  { month: "Mar", income: 85000, expenses: 41200 },
-  { month: "Apr", income: 85000, expenses: 43800 },
-  { month: "May", income: 110000, expenses: 47200 },
-  { month: "Jun", income: 85000, expenses: 39600 },
-  { month: "Jul", income: 103400, expenses: 31216 },
-];
-
-const spendingBreakdownData = [
-  { name: "Housing", value: 12500, color: prototypeAccent },
-  { name: "Food", value: 5200, color: "#0D9488" },
-  { name: "Transport", value: 2200, color: "#D97706" },
-  { name: "Gadgets", value: 3866, color: "#E11D48" },
-  { name: "Shopping", value: 3500, color: "#7C3AED" },
-];
-
 const categoryPalette = [prototypeAccent, "#0D9488", "#D97706", "#E11D48", "#7C3AED", "#64748B"];
-
-const recentTransactionsData = [
-  {
-    id: "recent-july-salary",
-    title: "July Salary - Accenture",
-    meta: "Employment - Jul 15",
-    value: 72500,
-    tone: "green" as const,
-  },
-  {
-    id: "recent-freelance",
-    title: "Freelance - Globe API",
-    meta: "Freelance - Jul 05",
-    value: 20000,
-    tone: "green" as const,
-  },
-  {
-    id: "recent-groceries",
-    title: "S&R Groceries",
-    meta: "Food & Dining - Jul 03",
-    value: -3500,
-    tone: "rose" as const,
-  },
-  {
-    id: "recent-load",
-    title: "Grab Monthly Load",
-    meta: "Transportation - Jul 02",
-    value: -2200,
-    tone: "rose" as const,
-  },
-  {
-    id: "recent-rent",
-    title: "Pasig Studio Rent",
-    meta: "Housing - Jul 01",
-    value: -12500,
-    tone: "rose" as const,
-  },
-];
 
 type ModalState = {
   mode: "new" | "edit";
@@ -201,6 +158,15 @@ function getMonthLabel(value: string) {
   }).format(date);
 }
 
+function getShortMonthLabel(value: string) {
+  const [year, month] = value.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+  }).format(date);
+}
+
 function getAdjacentMonth(value: string, delta: number) {
   const index = months.indexOf(value);
 
@@ -215,8 +181,250 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+function parseNumberInput(value: string) {
+  const parsed = Number(value.replace(/,/g, ""));
+
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function parseOptionalNumberInput(value: string) {
+  if (value.trim() === "") {
+    return null;
+  }
+
+  return parseNumberInput(value);
+}
+
+function isSpecificExpenseCategoryFilter(value: string) {
+  return value !== expenseCategoryFilterAll && value !== expenseCategoryFilterWithoutPasabuy;
+}
+
+function matchesExpenseCategoryFilter(
+  categoryId: string,
+  categoryName: string,
+  filterValue: string,
+) {
+  if (filterValue === expenseCategoryFilterAll) {
+    return true;
+  }
+
+  if (filterValue === expenseCategoryFilterWithoutPasabuy) {
+    return !isPasabuyCategoryName(categoryName);
+  }
+
+  return categoryId === filterValue;
+}
+
+function matchesExpenseViewMode(
+  record: (typeof expenseRecords)[number],
+  categoryName: string,
+  viewMode: ExpenseViewMode,
+) {
+  if (viewMode === "Daily" || viewMode === "Weekly" || viewMode === "Monthly") {
+    return true;
+  }
+
+  if (viewMode === "Unpaid Pasabuy") {
+    return isUnpaidPasabuyExpense(record, categoryName);
+  }
+
+  if (viewMode === "To pay") {
+    return isOutstandingExpense(record);
+  }
+
+  if (viewMode === "To buy") {
+    return record.paymentStatus === "Unpaid" && isOutstandingExpense(record);
+  }
+
+  if (viewMode === "Installments") {
+    return record.paymentStatus === "Installment" && isOutstandingExpense(record);
+  }
+
+  return isCreditAccountExpense(record, accounts) && isOutstandingExpense(record);
+}
+
+function getIncomeRecordsForMonth(month: string) {
+  return incomeRecords.filter((record) => getMonthKeyFromIsoDate(record.date) === month);
+}
+
+function getExpenseRecordsForMonth(month: string) {
+  return expenseRecords.filter((record) => getMonthKeyFromIsoDate(record.purchaseDate) === month);
+}
+
+function getIncomeGrossTotal(records: typeof incomeRecords) {
+  return records.reduce((sum, record) => sum + record.grossIncome, 0);
+}
+
+function getIncomeCapitalExpenditureTotal(records: typeof incomeRecords) {
+  return records.reduce((sum, record) => sum + record.capitalExpenditure, 0);
+}
+
+function getIncomeNetTotal(records: typeof incomeRecords) {
+  return records.reduce(
+    (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
+    0,
+  );
+}
+
+function getExpenseTotal(records: typeof expenseRecords) {
+  return records.reduce((sum, record) => sum + record.amount, 0);
+}
+
+function getAvailableCreditTotal() {
+  return creditActiveAccounts.reduce((sum, account) => sum + (account.availableLimit ?? 0), 0);
+}
+
+function getCreditLimitTotal() {
+  return creditActiveAccounts.reduce((sum, account) => sum + (account.creditLimit ?? 0), 0);
+}
+
+function getCreditBalanceTotal() {
+  return creditActiveAccounts.reduce((sum, account) => sum + Math.abs(account.currentBalance), 0);
+}
+
+function getPasabuyBalance(records: typeof expenseRecords) {
+  return records.reduce((sum, record) => {
+    const categoryName = getExpenseCategoryName(record.categoryId);
+
+    if (!isUnpaidPasabuyExpense(record, categoryName)) {
+      return sum;
+    }
+
+    const grossPrice = calculateGrossPrice(record.amount, record.interest);
+    const installmentAmount = calculateInstallmentAmount({
+      grossPrice,
+      paymentStatus: record.paymentStatus,
+      periodCount: record.periodCount,
+    });
+    const receivedAmount = calculatePasabuyReceivedAmount({
+      grossPrice,
+      pasabuyStatus: record.pasabuyStatus ?? "",
+      installmentAmount,
+      pasabuyPaidPeriod: record.pasabuyPaidPeriod,
+      periodCount: record.periodCount,
+    });
+
+    return sum + calculatePasabuyerBalance(grossPrice, receivedAmount);
+  }, 0);
+}
+
+function getIncomeCategorySummaries(records: typeof incomeRecords) {
+  const totalNetIncome = getIncomeNetTotal(records);
+
+  return normalIncomeCategories.map((category) => {
+    const categoryRecords = records.filter((record) => record.categoryId === category.id);
+    const grossIncome = getIncomeGrossTotal(categoryRecords);
+    const capitalExpenditure = getIncomeCapitalExpenditureTotal(categoryRecords);
+    const netIncome = getIncomeNetTotal(categoryRecords);
+
+    return {
+      id: category.id,
+      source: category.source,
+      grossIncome,
+      capitalExpenditure,
+      netIncome,
+      earningPercentage: calculateCategoryTotalOverview(netIncome, totalNetIncome),
+    };
+  });
+}
+
+function getExpenseCategorySummaries(records: typeof expenseRecords) {
+  const totalExpense = getExpenseTotal(records);
+
+  return expenseCategories
+    .filter((category) => category.auxiliary === "No")
+    .map((category) => {
+      const categoryRecords = records.filter((record) => record.categoryId === category.id);
+      const spending = getExpenseTotal(categoryRecords);
+      const remaining = category.monthlyBudget - spending;
+      const usage = calculateCategoryTotalOverview(spending, category.monthlyBudget);
+
+      return {
+        id: category.id,
+        name: category.name,
+        monthlyBudget: category.monthlyBudget,
+        upcomingBudget: category.upcomingBudget,
+        auxiliary: category.auxiliary,
+        spending,
+        remaining,
+        overview: `${formatPercent(usage)} used`,
+        totalOverview: calculateCategoryTotalOverview(spending, totalExpense),
+      };
+    });
+}
+
+function getMonthlyMonitoringSnapshot(month: string) {
+  const scopedIncomeRecords = getIncomeRecordsForMonth(month);
+  const scopedExpenseRecords = getExpenseRecordsForMonth(month);
+  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords);
+  const monthlyExpense = getExpenseTotal(scopedExpenseRecords);
+  const grossMargin = monthlyIncome - monthlyExpense;
+
+  return {
+    month,
+    monthlyIncome,
+    monthlyGrossIncome: getIncomeGrossTotal(scopedIncomeRecords),
+    monthlyCapitalExpenditure: getIncomeCapitalExpenditureTotal(scopedIncomeRecords),
+    monthlyExpense,
+    grossMargin,
+    forNeeds: grossMargin * 0.5,
+    forWants: grossMargin * 0.2,
+    forSavings: grossMargin * 0.3,
+  };
+}
+
+function getDashboardTrendData(selectedMonth: string) {
+  const selectedIndex = Math.max(months.indexOf(selectedMonth), 0);
+  const trendMonths = months.slice(Math.max(selectedIndex - 5, 0), selectedIndex + 1);
+
+  return trendMonths.map((month) => ({
+    month: getShortMonthLabel(month),
+    income: getIncomeNetTotal(getIncomeRecordsForMonth(month)),
+    expenses: getExpenseTotal(getExpenseRecordsForMonth(month)),
+  }));
+}
+
+function getSpendingBreakdownData(records: typeof expenseRecords) {
+  return getExpenseCategorySummaries(records)
+    .filter((category) => category.spending > 0)
+    .map((category, index) => ({
+      name: category.name,
+      value: category.spending,
+      color: categoryPalette[index % categoryPalette.length],
+    }));
+}
+
+function getRecentTransactionsData(
+  scopedIncomeRecords: typeof incomeRecords,
+  scopedExpenseRecords: typeof expenseRecords,
+) {
+  return [
+    ...scopedIncomeRecords.map((record) => ({
+      id: record.id,
+      date: record.date,
+      title: record.name,
+      meta: `${getIncomeCategoryName(record.categoryId)} - ${formatDate(record.date)}`,
+      value: calculateNetIncome(record.grossIncome, record.capitalExpenditure),
+      tone: "green" as const,
+    })),
+    ...scopedExpenseRecords.map((record) => ({
+      id: record.id,
+      date: record.purchaseDate,
+      title: record.description,
+      meta: `${getExpenseCategoryName(record.categoryId)} - ${formatDate(record.purchaseDate)}`,
+      value: -record.amount,
+      tone: "rose" as const,
+    })),
+  ]
+    .sort((left, right) => right.date.localeCompare(left.date))
+    .slice(0, 5);
+}
+
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
   const [selectedMonth, setSelectedMonth] = useState("2026-07");
+  const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
+  const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
   const [pendingOperations, setPendingOperations] = useState(3);
@@ -236,11 +444,17 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   }
 
   return (
-    <div className="workspace">
-      <Sidebar activeSection={activeSection} />
+    <div className={cx("workspace", sidebarCollapsed && "workspace--sidebar-collapsed")}>
+      <Sidebar
+        activeSection={activeSection}
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((current) => !current)}
+      />
       <div className="workspace__main">
         <TopBar
           activeSection={activeSection}
+          expenseViewMode={expenseViewMode}
+          incomeViewMode={incomeViewMode}
           lastSync={lastSync}
           pendingOperations={pendingOperations}
           schemaHealth={schemaHealth}
@@ -251,12 +465,30 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         />
         <main className="workspace__content">
           {activeSection === "dashboard" && (
-            <DashboardPage lastSync={lastSync} pendingOperations={pendingOperations} />
+            <DashboardPage
+              lastSync={lastSync}
+              pendingOperations={pendingOperations}
+              selectedMonth={selectedMonth}
+            />
           )}
           {activeSection === "accounts" && <AccountsPage />}
-          {activeSection === "income" && <IncomePage />}
-          {activeSection === "expense" && <ExpensePage />}
-          {activeSection === "monthly-monitoring" && <MonthlyMonitoringPage />}
+          {activeSection === "income" && (
+            <IncomePage
+              selectedMonth={selectedMonth}
+              viewMode={incomeViewMode}
+              onViewModeChange={setIncomeViewMode}
+            />
+          )}
+          {activeSection === "expense" && (
+            <ExpensePage
+              selectedMonth={selectedMonth}
+              viewMode={expenseViewMode}
+              onViewModeChange={setExpenseViewMode}
+            />
+          )}
+          {activeSection === "monthly-monitoring" && (
+            <MonthlyMonitoringPage selectedMonth={selectedMonth} />
+          )}
           {isWorkflowSection(activeSection) && (
             <WorkflowPage section={activeSection} selectedMonth={selectedMonth} />
           )}
@@ -288,7 +520,15 @@ function isWorkflowSection(section: FinanceSectionId): section is WorkflowSectio
   );
 }
 
-function Sidebar({ activeSection }: { activeSection: FinanceSectionId }) {
+function Sidebar({
+  activeSection,
+  collapsed,
+  onToggle,
+}: {
+  activeSection: FinanceSectionId;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
@@ -305,6 +545,15 @@ function Sidebar({ activeSection }: { activeSection: FinanceSectionId }) {
         <div>
           <p className="brand__name">Notion Finance</p>
         </div>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={onToggle}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
       </div>
       <nav className="nav" aria-label="Finance sections">
         <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} />
@@ -356,6 +605,8 @@ function NavGroup({
 
 function TopBar({
   activeSection,
+  expenseViewMode,
+  incomeViewMode,
   lastSync,
   pendingOperations,
   schemaHealth,
@@ -365,6 +616,8 @@ function TopBar({
   onSync,
 }: {
   activeSection: FinanceSectionId;
+  expenseViewMode: ExpenseViewMode;
+  incomeViewMode: IncomeViewMode;
   lastSync: string;
   pendingOperations: number;
   schemaHealth: SchemaHealth;
@@ -373,21 +626,26 @@ function TopBar({
   onMonthChange: (month: string) => void;
   onSync: () => void;
 }) {
+  const showMonthSelector = shouldShowGlobalMonthSelector({
+    section: activeSection,
+    incomeViewMode,
+    expenseViewMode,
+  });
+
   return (
     <header className="topbar">
-      <div>
-        <h1>{getActiveSectionLabel(activeSection)}</h1>
-      </div>
-      <div className="topbar__actions">
-        <div className="month-stepper" aria-label="Selected month">
-          <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, -1))}>
-            <ChevronLeft size={13} />
-          </button>
-          <span>{getMonthLabel(selectedMonth)}</span>
-          <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, 1))}>
-            <ChevronRight size={13} />
-          </button>
-        </div>
+      <div className="topbar__actions" aria-label="Workspace controls">
+        {showMonthSelector && (
+          <div className="month-stepper" aria-label="Selected month">
+            <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, -1))}>
+              <ChevronLeft size={13} />
+            </button>
+            <span>{getMonthLabel(selectedMonth)}</span>
+            <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, 1))}>
+              <ChevronRight size={13} />
+            </button>
+          </div>
+        )}
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
         <span className="sync-meta">{pendingOperations} pending</span>
         <span className="sync-meta">Last sync {lastSync}</span>
@@ -446,33 +704,45 @@ function StatusPill({
 function DashboardPage({
   lastSync,
   pendingOperations,
+  selectedMonth,
 }: {
   lastSync: string;
   pendingOperations: number;
+  selectedMonth: string;
 }) {
-  const balance = activeAccounts.reduce((sum, account) => sum + account.currentBalance, 0);
+  const totalCashFlow = calculateTotalCashFlow(accounts);
+  const scopedIncomeRecords = getIncomeRecordsForMonth(selectedMonth);
+  const scopedExpenseRecords = getExpenseRecordsForMonth(selectedMonth);
+  const monthlyGrossIncome = getIncomeGrossTotal(scopedIncomeRecords);
+  const monthlyNetIncome = getIncomeNetTotal(scopedIncomeRecords);
+  const monthlyExpenses = getExpenseTotal(scopedExpenseRecords);
+  const monthlyExpenseSummaries = getExpenseCategorySummaries(scopedExpenseRecords);
+  const spendingBreakdownData = getSpendingBreakdownData(scopedExpenseRecords);
+  const recentTransactionsData = getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords);
+  const pasabuyBalance = getPasabuyBalance(scopedExpenseRecords);
+  const monthLabel = getMonthLabel(selectedMonth);
 
   return (
     <div className="page-stack">
       <section className="metric-grid metric-grid--prototype">
         <MetricCard
-          title="Total Balance"
-          value={formatMoney(balance)}
-          detail="All accounts combined"
+          title="Total Cash Flow"
+          value={formatMoney(totalCashFlow)}
+          detail="Non-credit accounts"
           icon={WalletCards}
           tone="blue"
         />
         <MetricCard
           title="Monthly Net Income"
-          value={formatMoney(totalIncome)}
-          detail="July 2026"
+          value={formatMoney(monthlyNetIncome)}
+          detail={monthLabel}
           icon={ArrowUpRight}
           tone="green"
         />
         <MetricCard
           title="Monthly Expenses"
-          value={formatMoney(totalExpenses)}
-          detail="Budget usage tracked below"
+          value={formatMoney(monthlyExpenses)}
+          detail={monthLabel}
           icon={Receipt}
           tone="rose"
         />
@@ -488,48 +758,58 @@ function DashboardPage({
       <section className="metric-grid metric-grid--prototype">
         <MetricCard
           title="Available Credit"
-          value={formatMoney(216700)}
-          detail="Limit ₱350,000"
+          value={formatMoney(getAvailableCreditTotal())}
+          detail={`Limit ${formatMoney(getCreditLimitTotal(), { compact: true })}`}
           icon={CreditCard}
           tone="blue"
         />
         <MetricCard
           title="Monthly Gross"
-          value={formatMoney(110000)}
-          detail="Before deductions"
+          value={formatMoney(monthlyGrossIncome)}
+          detail={monthLabel}
           icon={Banknote}
           tone="green"
         />
         <MetricCard
           title="Pasabuy Balance"
-          value={formatMoney(8000)}
-          detail="1 active pasabuy"
+          value={formatMoney(pasabuyBalance)}
+          detail="Unpaid Pasabuy"
           icon={PiggyBank}
           tone="amber"
         />
         <MetricCard
           title="CC Balance Total"
-          value={formatMoney(133300)}
-          detail="2 credit cards"
+          value={formatMoney(getCreditBalanceTotal())}
+          detail={`${creditActiveAccounts.length} credit accounts`}
           icon={AlertTriangle}
           tone="rose"
         />
       </section>
 
       <section className="dashboard-chart-grid">
-        <IncomeExpenseChart />
-        <SpendingBreakdownCard />
+        <IncomeExpenseChart data={getDashboardTrendData(selectedMonth)} />
+        <SpendingBreakdownCard data={spendingBreakdownData} monthLabel={monthLabel} />
       </section>
 
       <section className="dashboard-bottom-grid">
-        <BudgetUsageCard />
-        <RecentTransactionsList />
+        <BudgetUsageCard summaries={monthlyExpenseSummaries} />
+        <RecentTransactionsList records={recentTransactionsData} />
       </section>
     </div>
   );
 }
 
-function RecentTransactionsList() {
+function RecentTransactionsList({
+  records,
+}: {
+  records: Array<{
+    id: string;
+    title: string;
+    meta: string;
+    value: number;
+    tone: "green" | "rose";
+  }>;
+}) {
   return (
     <section className="dashboard-card recent-list-card">
       <div className="recent-list-card__header">
@@ -537,7 +817,7 @@ function RecentTransactionsList() {
         <Link href={"/income" as Route}>View all</Link>
       </div>
       <div className="recent-list">
-        {recentTransactionsData.map((record) => {
+        {records.map((record) => {
           const Icon = record.tone === "green" ? ArrowDownRight : ArrowUpRight;
           const prefix = record.value > 0 ? "+" : "-";
 
@@ -562,7 +842,11 @@ function RecentTransactionsList() {
   );
 }
 
-function IncomeExpenseChart() {
+function IncomeExpenseChart({
+  data,
+}: {
+  data: Array<{ month: string; income: number; expenses: number }>;
+}) {
   return (
     <section className="dashboard-card dashboard-card--income-expense">
       <div className="dashboard-card__header">
@@ -577,7 +861,7 @@ function IncomeExpenseChart() {
       </div>
       <div className="income-expense-chart" aria-label="Income versus expenses chart">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={dashboardTrendData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={prototypeAccent} stopOpacity={0.18} />
@@ -641,44 +925,54 @@ function IncomeExpenseChart() {
   );
 }
 
-function SpendingBreakdownCard() {
+function SpendingBreakdownCard({
+  data,
+  monthLabel,
+}: {
+  data: Array<{ name: string; value: number; color: string }>;
+  monthLabel: string;
+}) {
   return (
     <section className="dashboard-card dashboard-card--spending">
       <div className="dashboard-card__header dashboard-card__header--stacked">
         <h2>Spending Breakdown</h2>
-        <p>July 2026</p>
+        <p>{monthLabel}</p>
       </div>
       <div className="spending-donut" aria-label="Spending breakdown donut chart">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              cx="50%"
-              cy="50%"
-              data={spendingBreakdownData}
-              dataKey="value"
-              innerRadius={47}
-              isAnimationActive={false}
-              outerRadius={76}
-              stroke="none"
-            >
-              {spendingBreakdownData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid rgba(28,25,23,0.09)",
-                borderRadius: 10,
-                fontSize: 12,
-              }}
-              formatter={(value) => formatMoney(Number(value))}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {data.length ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                cx="50%"
+                cy="50%"
+                data={data}
+                dataKey="value"
+                innerRadius={47}
+                isAnimationActive={false}
+                outerRadius={76}
+                stroke="none"
+              >
+                {data.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid rgba(28,25,23,0.09)",
+                  borderRadius: 10,
+                  fontSize: 12,
+                }}
+                formatter={(value) => formatMoney(Number(value))}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <EmptyState title="No spending" detail="No expenses are scoped to this month." />
+        )}
       </div>
       <div className="spending-list">
-        {spendingBreakdownData.map((item) => (
+        {data.map((item) => (
           <div key={item.name} className="spending-list__row">
             <span><i style={{ backgroundColor: item.color }} />{item.name}</span>
             <strong>{formatMoney(item.value, { compact: true })}</strong>
@@ -689,7 +983,11 @@ function SpendingBreakdownCard() {
   );
 }
 
-function BudgetUsageCard() {
+function BudgetUsageCard({
+  summaries,
+}: {
+  summaries: ReturnType<typeof getExpenseCategorySummaries>;
+}) {
   return (
     <section className="dashboard-card">
       <div className="dashboard-card__header dashboard-card__header--stacked">
@@ -697,8 +995,11 @@ function BudgetUsageCard() {
         <p>Top spending categories</p>
       </div>
       <div className="budget-usage-list">
-        {expenseCategories.slice(0, 5).map((category) => {
-          const percent = Math.min(Math.round((category.spending / category.monthlyBudget) * 100), 100);
+        {summaries.slice(0, 5).map((category) => {
+          const percent = Math.min(
+            category.monthlyBudget > 0 ? Math.round((category.spending / category.monthlyBudget) * 100) : 0,
+            100,
+          );
           const color = percent > 90 ? "#E11D48" : percent > 75 ? "#D97706" : prototypeAccent;
 
           return (
@@ -720,11 +1021,7 @@ function BudgetUsageCard() {
 
 function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [accountScope, setAccountScope] = useState<AccountScope>("all");
-  const [accountType, setAccountType] = useState<AccountType | "">("");
-  const [accountName, setAccountName] = useState("");
-  const [selectedAccount, setSelectedAccount] = useState<(typeof accounts)[number] | null>(null);
-  const [modal, setModal] = useState<ModalState>(null);
+  const [accountScope, setAccountScope] = useState<AccountScope>("standard");
   const visibleAccounts = accounts.filter((account) => {
     if (accountScope === "all") {
       return true;
@@ -736,19 +1033,6 @@ function AccountsPage() {
 
     return !account.inactive && !isCreditLikeAccountType(account.type);
   });
-  const visibleFields = accountType ? getAccountFormFields(accountType) : [];
-  const selectedAccountTotalIncome = selectedAccount
-    ? getAccountTotalIncome(selectedAccount.id)
-    : 0;
-  const selectedAccountTotalExpense = selectedAccount
-    ? getAccountTotalExpense(selectedAccount.id)
-    : 0;
-  const selectedAccountIsCreditLike = accountType !== "" && isCreditLikeAccountType(accountType);
-  const scopeDetail = {
-    all: "All account records",
-    standard: "Non-credit and non-BNPL accounts",
-    credit: "Credit Account and BNPL accounts",
-  } satisfies Record<AccountScope, string>;
   const accountTableHeaders =
     accountScope === "standard"
       ? ["Account", "Type", "Balance", "Total Income", "Total Expense"]
@@ -778,7 +1062,10 @@ function AccountsPage() {
   function getAccountTotalIncome(accountId: string) {
     return incomeRecords
       .filter((record) => record.accountId === accountId)
-      .reduce((sum, record) => sum + record.netIncome, 0);
+      .reduce(
+        (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
+        0,
+      );
   }
 
   function getAccountTotalExpense(accountId: string) {
@@ -787,108 +1074,10 @@ function AccountsPage() {
       .reduce((sum, record) => sum + record.amount, 0);
   }
 
-  function getBalanceValueTone(value: number): ComputedValueTone {
-    if (value > 0) {
-      return "green";
-    }
-
-    if (value < 0) {
-      return "rose";
-    }
-
-    return "ink";
-  }
-
-  function openAccountModal(mode: "new" | "edit", title: string, account?: (typeof accounts)[number]) {
-    setSelectedAccount(account ?? null);
-    setAccountName(account?.name ?? "");
-    setAccountType(account?.type ?? "");
-    setModal({ mode, title });
-  }
-
-  function getAccountField(field: string) {
-    if (field === "Account Name") {
-      return (
-        <input
-          value={accountName}
-          onChange={(event) => setAccountName(event.target.value)}
-          placeholder="Account name"
-        />
-      );
-    }
-
-    if (field === "Account Information") {
-      return <input defaultValue={selectedAccount?.information ?? ""} placeholder="Account information" />;
-    }
-
-    if (field === "Starting Balance") {
-      return (
-        <input
-          defaultValue={selectedAccount?.startingBalance ?? ""}
-          inputMode="decimal"
-          placeholder="0.00"
-        />
-      );
-    }
-
-    if (field === "Credit Limit") {
-      return (
-        <input
-          defaultValue={selectedAccount?.creditLimit ?? ""}
-          inputMode="decimal"
-          placeholder="0.00"
-        />
-      );
-    }
-
-    if (field === "Credit Points") {
-      return (
-        <input
-          defaultValue={selectedAccount?.creditPoints ?? ""}
-          inputMode="numeric"
-          placeholder="0"
-        />
-      );
-    }
-
-    if (field === "Annual Fee") {
-      return (
-        <input
-          defaultValue={selectedAccount?.annualFee ?? ""}
-          inputMode="decimal"
-          placeholder="0.00"
-        />
-      );
-    }
-
-    if (field === "Billing Day") {
-      return (
-        <input
-          defaultValue={selectedAccount?.billingDay ?? ""}
-          inputMode="numeric"
-          placeholder="1-31"
-        />
-      );
-    }
-
-    if (field === "Due Day") {
-      return (
-        <input
-          defaultValue={selectedAccount?.dueDay ?? ""}
-          inputMode="numeric"
-          placeholder="1-31"
-        />
-      );
-    }
-
-    return <input placeholder={field} />;
-  }
-
   return (
     <div className="page-stack">
       <PageToolbar
         title="Accounts"
-        detail={`${visibleAccounts.length} shown - ${scopeDetail[accountScope]}`}
         actions={
           <>
             <SegmentedControl
@@ -910,14 +1099,6 @@ function AccountsPage() {
               value={accountScope}
               onChange={(value) => setAccountScope(value as AccountScope)}
             />
-            <button
-              type="button"
-              className="button button--primary"
-              onClick={() => openAccountModal("new", "New Account")}
-            >
-              <Plus size={16} />
-              New Account
-            </button>
           </>
         }
       />
@@ -925,12 +1106,7 @@ function AccountsPage() {
       {viewMode === "cards" ? (
         <section className="account-grid">
           {visibleAccounts.map((account) => (
-            <button
-              type="button"
-              className="account-card account-card--button"
-              key={account.id}
-              onClick={() => openAccountModal("edit", account.name, account)}
-            >
+            <article className="account-card" key={account.id}>
               <div className="account-card__top">
                 <div>
                   <h2>{account.name}</h2>
@@ -955,102 +1131,59 @@ function AccountsPage() {
               {account.availableLimit !== null && (
                 <MoneyLine label="Available Limit" value={account.availableLimit} />
               )}
-            </button>
+            </article>
           ))}
         </section>
       ) : (
         <DataTable
           headers={accountTableHeaders}
           rows={accountTableRows}
-          onRowClick={(rowIndex) => {
-            const account = visibleAccounts[rowIndex];
-            if (account) {
-              openAccountModal("edit", account.name, account);
-            }
-          }}
         />
       )}
-
-      <FormModal
-        deleteLabel="Mark as Inactive"
-        modal={modal}
-        saveLabel="Save Account"
-        secondaryDeleteLabel="Delete"
-        subtitle={
-          modal?.mode === "new"
-            ? "Choose an account type first. Related fields appear before you save."
-            : "Writable account fields only; computed balances stay outside the form."
-        }
-        onClose={() => setModal(null)}
-      >
-        <div className="form-grid form-grid--modal">
-          <Field label="Account Type">
-            <select value={accountType} onChange={(event) => setAccountType(event.target.value as AccountType)}>
-              <option value="" disabled>
-                Select your account type
-              </option>
-              {accountTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {visibleFields.map((field) => (
-            <Field key={field} label={field} className={field === "Account Information" ? "field--full" : undefined}>
-              {getAccountField(field)}
-            </Field>
-          ))}
-          {modal?.mode === "edit" && selectedAccount && (
-            <div className="computed-summary">
-              <ComputedField
-                label="Total Income"
-                value={formatMoney(selectedAccountTotalIncome)}
-                valueTone="green"
-              />
-              <ComputedField
-                label="Total Expense"
-                value={formatMoney(selectedAccountTotalExpense)}
-                valueTone="rose"
-              />
-              {selectedAccountIsCreditLike ? (
-                <>
-                  <ComputedField
-                    label="Current Balance"
-                    value={formatMoney(selectedAccount.currentBalance)}
-                    valueTone={getBalanceValueTone(selectedAccount.currentBalance)}
-                  />
-                  <ComputedField
-                    label="Available Limit"
-                    value={selectedAccount.availableLimit !== null ? formatMoney(selectedAccount.availableLimit) : "-"}
-                    valueTone="amber"
-                  />
-                </>
-              ) : (
-                <ComputedField
-                  label="Current Balance"
-                  value={formatMoney(selectedAccount.currentBalance)}
-                  valueTone={getBalanceValueTone(selectedAccount.currentBalance)}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </FormModal>
     </div>
   );
 }
 
-function IncomePage() {
-  const [viewMode, setViewMode] = useState<IncomeViewMode>("Monthly");
+function IncomePage({
+  selectedMonth,
+  viewMode,
+  onViewModeChange,
+}: {
+  selectedMonth: string;
+  viewMode: IncomeViewMode;
+  onViewModeChange: (viewMode: IncomeViewMode) => void;
+}) {
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [grossIncomeInput, setGrossIncomeInput] = useState("");
+  const [capitalExpenditureInput, setCapitalExpenditureInput] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
+  const calculatedNetIncome = calculateNetIncome(
+    parseNumberInput(grossIncomeInput),
+    parseNumberInput(capitalExpenditureInput),
+  );
+  const visibleIncomeRecords = incomeRecords.filter((record) => {
+    if (!isIncomeRecordInViewScope(record, viewMode, selectedMonth)) {
+      return false;
+    }
+
+    if (accountId && record.accountId !== accountId) {
+      return false;
+    }
+
+    if (categoryId && record.categoryId !== categoryId) {
+      return false;
+    }
+
+    return true;
+  });
 
   function openIncomeModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record = incomeRecords.find((item) => item.id === recordId);
     setAccountId(record?.accountId ?? "");
     setCategoryId(record?.categoryId ?? "");
+    setGrossIncomeInput(record?.grossIncome.toString() ?? "");
+    setCapitalExpenditureInput(record?.capitalExpenditure.toString() ?? "");
     setModal({ mode, title });
   }
 
@@ -1058,23 +1191,20 @@ function IncomePage() {
     <div className="page-stack">
       <PageToolbar
         title="Income"
-        detail="Daily, weekly, monthly, and annual views"
         actions={
           <>
             <FilterSelect
-              icon={WalletCards}
               placeholder="Select your account"
               value={accountId}
               onChange={setAccountId}
             >
-              {activeAccounts.map((account) => (
+              {nonCreditActiveAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name}
                 </option>
               ))}
             </FilterSelect>
             <FilterSelect
-              icon={ListFilter}
               placeholder="Select your category"
               value={categoryId}
               onChange={setCategoryId}
@@ -1101,22 +1231,27 @@ function IncomePage() {
         label="Income view"
         options={incomeViewModes.map((mode) => ({ label: mode, value: mode }))}
         value={viewMode}
-        onChange={(value) => setViewMode(value as IncomeViewMode)}
+        onChange={(value) => onViewModeChange(value as IncomeViewMode)}
       />
 
-      <Panel title={`${viewMode} Income Records`} action={<Badge tone="green">Normal categories</Badge>}>
+      <Panel title={`${viewMode} Income Records`}>
         <DataTable
-          headers={["Name", "Date", "Account", "Category", "Gross", "Net"]}
-          rows={incomeRecords.map((record) => [
-            record.name,
-            formatDate(record.date),
-            getAccountName(record.accountId),
-            getIncomeCategoryName(record.categoryId),
-            formatMoney(record.grossIncome),
-            formatMoney(record.netIncome),
-          ])}
+          headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
+          rows={visibleIncomeRecords.map((record) => {
+            const netIncome = calculateNetIncome(record.grossIncome, record.capitalExpenditure);
+
+            return [
+              record.name,
+              formatDate(record.date),
+              getAccountName(record.accountId),
+              getIncomeCategoryName(record.categoryId),
+              formatMoney(record.grossIncome),
+              formatMoney(record.capitalExpenditure),
+              <MoneyValue key={`${record.id}-net`} value={netIncome} />,
+            ];
+          })}
           onRowClick={(rowIndex) => {
-            const record = incomeRecords[rowIndex];
+            const record = visibleIncomeRecords[rowIndex];
             if (record) {
               openIncomeModal("edit", record.name, record.id);
             }
@@ -1128,20 +1263,34 @@ function IncomePage() {
         deleteLabel="Soft Delete"
         modal={modal}
         saveLabel="Direct Save"
-        subtitle="Computed Notion fields are shown for context but cannot be edited."
+        subtitle="Net income updates from gross income less capital expenditure."
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
           <Field label="Name"><input placeholder="Income title" /></Field>
           <Field label="Date"><input type="date" /></Field>
-          <Field label="Gross Income"><input inputMode="decimal" placeholder="0.00" /></Field>
-          <Field label="Capital Expenditure"><input inputMode="decimal" placeholder="0.00" /></Field>
+          <Field label="Gross Income">
+            <input
+              inputMode="decimal"
+              placeholder="0.00"
+              value={grossIncomeInput}
+              onChange={(event) => setGrossIncomeInput(event.target.value)}
+            />
+          </Field>
+          <Field label="Capital Expenditure">
+            <input
+              inputMode="decimal"
+              placeholder="0.00"
+              value={capitalExpenditureInput}
+              onChange={(event) => setCapitalExpenditureInput(event.target.value)}
+            />
+          </Field>
           <Field label="Accounts">
             <select value={accountId} onChange={(event) => setAccountId(event.target.value)}>
               <option value="" disabled>
                 Select your account
               </option>
-              {activeAccounts.map((account) => (
+              {nonCreditActiveAccounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
             </select>
@@ -1156,62 +1305,189 @@ function IncomePage() {
               ))}
             </select>
           </Field>
-          <ComputedField label="Net Income" value={formatMoney(80000)} />
-          <ComputedField label="Transaction Amount" value={formatMoney(80000)} />
+          <ComputedField
+            label="Net Income"
+            value={formatMoney(calculatedNetIncome)}
+            valueTone={getMoneyValueTone(calculatedNetIncome)}
+          />
         </div>
       </FormModal>
     </div>
   );
 }
 
-function ExpensePage() {
-  const [viewMode, setViewMode] = useState<ExpenseViewMode>("Monthly");
-  const [accountId, setAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+function ExpensePage({
+  selectedMonth,
+  viewMode,
+  onViewModeChange,
+}: {
+  selectedMonth: string;
+  viewMode: ExpenseViewMode;
+  onViewModeChange: (viewMode: ExpenseViewMode) => void;
+}) {
+  const [accountFilterId, setAccountFilterId] = useState("");
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState(expenseCategoryFilterAll);
+  const [pasabuyerFilter, setPasabuyerFilter] = useState("");
+  const [formAccountId, setFormAccountId] = useState("");
+  const [formCategoryId, setFormCategoryId] = useState("");
+  const [purchaseDateInput, setPurchaseDateInput] = useState("");
+  const [datePaidInput, setDatePaidInput] = useState("");
+  const [expenseAmountInput, setExpenseAmountInput] = useState("");
+  const [interestInput, setInterestInput] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "">("");
+  const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
+  const [periodCountInput, setPeriodCountInput] = useState("");
+  const [paidPeriodInput, setPaidPeriodInput] = useState("");
+  const [pasabuyer, setPasabuyer] = useState("");
+  const [pasabuyStatus, setPasabuyStatus] = useState<PasabuyStatus | "">("");
+  const [pasabuyDateOfPaymentInput, setPasabuyDateOfPaymentInput] = useState("");
+  const [pasabuyPaidPeriodInput, setPasabuyPaidPeriodInput] = useState("");
+  const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
 
-  const accountType = getAccountType(accountId);
-  const categoryName = getExpenseCategoryName(categoryId);
+  const pasabuyCategory = expenseCategories.find((category) => isPasabuyCategoryName(category.name));
+  const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
+  const accountType = selectedFormAccount?.type ?? "Cash";
+  const categoryName = getExpenseCategoryName(formCategoryId);
   const sections = getExpenseConditionalSections({
     accountType,
     viewMode,
     categoryName,
   });
+  const expenseAmount = parseNumberInput(expenseAmountInput);
+  const interestAmount = sections.creditCard ? parseNumberInput(interestInput) : 0;
+  const periodCount = parseOptionalNumberInput(periodCountInput);
+  const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
+  const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
+  const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
+  const installmentAmount = calculateInstallmentAmount({
+    grossPrice,
+    paymentStatus,
+    periodCount,
+  });
+  const paidAmount = calculatePaidAmount({
+    grossPrice,
+    paymentStatus,
+    installmentAmount,
+    paidPeriod,
+  });
+  const remainingBalance = calculateRemainingBalance(grossPrice, paidAmount);
+  const expectedPaymentDate = calculateExpectedPaymentDate({
+    purchaseDate: purchaseDateInput,
+    billingDay: selectedFormAccount?.billingDay ?? null,
+    dueDay: selectedFormAccount?.dueDay ?? null,
+  });
+  const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
+    grossPrice,
+    pasabuyStatus,
+    installmentAmount,
+    pasabuyPaidPeriod,
+    periodCount,
+  });
+  const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
+  const visibleExpenseRecords = expenseRecords.filter((record) => {
+    const recordCategoryName = getExpenseCategoryName(record.categoryId);
+
+    if (!isExpenseRecordInViewScope(record, viewMode, selectedMonth)) {
+      return false;
+    }
+
+    if (accountFilterId && record.accountId !== accountFilterId) {
+      return false;
+    }
+
+    if (
+      viewMode !== "Unpaid Pasabuy" &&
+      !matchesExpenseCategoryFilter(record.categoryId, recordCategoryName, expenseCategoryFilter)
+    ) {
+      return false;
+    }
+
+    if (!matchesExpenseViewMode(record, recordCategoryName, viewMode)) {
+      return false;
+    }
+
+    if (viewMode === "Unpaid Pasabuy" && pasabuyerFilter && record.pasabuyer !== pasabuyerFilter) {
+      return false;
+    }
+
+    return true;
+  });
 
   function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record = expenseRecords.find((item) => item.id === recordId);
-    setAccountId(record?.accountId ?? "");
-    setCategoryId(record?.categoryId ?? "");
+    const nextCategoryId =
+      record?.categoryId ??
+      (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
+      (isSpecificExpenseCategoryFilter(expenseCategoryFilter) ? expenseCategoryFilter : "");
+
+    setFormAccountId(record?.accountId ?? accountFilterId);
+    setFormCategoryId(nextCategoryId);
+    setPurchaseDateInput(record?.purchaseDate ?? "");
+    setDatePaidInput(record?.datePaid ?? "");
+    setExpenseAmountInput(record?.amount.toString() ?? "");
+    setInterestInput(record?.interest.toString() ?? "");
+    setPaymentStatus(record?.paymentStatus ?? "");
+    setPaymentFrequency(record?.paymentFrequency ?? "");
+    setPeriodCountInput(record?.periodCount?.toString() ?? "");
+    setPaidPeriodInput(record?.paidPeriod?.toString() ?? "");
+    setPasabuyer(record?.pasabuyer ?? "");
+    setPasabuyStatus(record?.pasabuyStatus ?? "");
+    setPasabuyDateOfPaymentInput(record?.pasabuyDateOfPayment ?? "");
+    setPasabuyPaidPeriodInput(record?.pasabuyPaidPeriod?.toString() ?? "");
+    setPasabuyAccountReceiverId(record?.pasabuyAccountReceiverId ?? "");
     setModal({ mode, title });
+  }
+
+  function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
+    if (nextViewMode === "Unpaid Pasabuy") {
+      setExpenseCategoryFilter(expenseCategoryFilterAll);
+    }
+
+    onViewModeChange(nextViewMode);
   }
 
   return (
     <div className="page-stack">
       <PageToolbar
         title="Expense"
-        detail="Filtered Notion-backed expense workflows"
         actions={
           <>
             <FilterSelect
-              icon={WalletCards}
-              placeholder="Select your account"
-              value={accountId}
-              onChange={setAccountId}
+              placeholder="All accounts"
+              placeholderDisabled={false}
+              value={accountFilterId}
+              onChange={setAccountFilterId}
             >
               {activeAccounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
             </FilterSelect>
-            <FilterSelect
-              icon={ListFilter}
-              placeholder="Select your category"
-              value={categoryId}
-              onChange={setCategoryId}
-            >
-              {expenseCategories.map((category) => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </FilterSelect>
+            {viewMode !== "Unpaid Pasabuy" && (
+              <FilterSelect
+                placeholder="All categories"
+                value={expenseCategoryFilter}
+                onChange={setExpenseCategoryFilter}
+              >
+                <option value={expenseCategoryFilterAll}>All</option>
+                <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
+                {expenseCategories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </FilterSelect>
+            )}
+            {viewMode === "Unpaid Pasabuy" && (
+              <FilterSelect
+                placeholder="All pasabuyers"
+                placeholderDisabled={false}
+                value={pasabuyerFilter}
+                onChange={setPasabuyerFilter}
+              >
+                {pasabuyerLabels.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </FilterSelect>
+            )}
             <button
               type="button"
               className="button button--primary"
@@ -1228,22 +1504,26 @@ function ExpensePage() {
         label="Expense view"
         options={expenseViewModes.map((mode) => ({ label: mode, value: mode }))}
         value={viewMode}
-        onChange={(value) => setViewMode(value as ExpenseViewMode)}
+        onChange={(value) => handleExpenseViewModeChange(value as ExpenseViewMode)}
       />
 
-      <Panel title={`${viewMode} Expenses`} action={<Badge tone="amber">Frontend filters</Badge>}>
+      <Panel title={`${viewMode} Expenses`}>
         <DataTable
-          headers={["Description", "Date", "Account", "Category", "Status", "Amount"]}
-          rows={expenseRecords.map((record) => [
-            record.description,
+          headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid", "Expense Status"]}
+          rows={visibleExpenseRecords.map((record) => [
             formatDate(record.purchaseDate),
+            record.description,
+            formatMoney(record.amount),
             getAccountName(record.accountId),
             getExpenseCategoryName(record.categoryId),
-            record.paymentStatus,
-            formatMoney(record.amount),
+            record.datePaid ? formatDate(record.datePaid) : "-",
+            <ExpenseStatusDot
+              key={`${record.id}-expense-status`}
+              status={getExpenseStatusFromDatePaid(record.datePaid)}
+            />,
           ])}
           onRowClick={(rowIndex) => {
-            const record = expenseRecords[rowIndex];
+            const record = visibleExpenseRecords[rowIndex];
             if (record) {
               openExpenseModal("edit", record.description, record.id);
             }
@@ -1260,12 +1540,15 @@ function ExpensePage() {
       >
         <div className="form-grid form-grid--single">
           <Field label="Purchase description"><input placeholder="Purchase description" /></Field>
-          <Field label="Purchase Date"><input type="date" /></Field>
-          <Field label="Date Paid"><input type="date" /></Field>
-          <Field label="Expense Amount"><input inputMode="decimal" placeholder="0.00" /></Field>
-          <Field label="Interest"><input inputMode="decimal" placeholder="0.00" /></Field>
+          <Field label="Purchase Date">
+            <input
+              type="date"
+              value={purchaseDateInput}
+              onChange={(event) => setPurchaseDateInput(event.target.value)}
+            />
+          </Field>
           <Field label="Accounts">
-            <select value={accountId} onChange={(event) => setAccountId(event.target.value)}>
+            <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
               <option value="" disabled>
                 Select your account
               </option>
@@ -1275,7 +1558,7 @@ function ExpensePage() {
             </select>
           </Field>
           <Field label="Categories">
-            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+            <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
               <option value="" disabled>
                 Select your category
               </option>
@@ -1284,56 +1567,144 @@ function ExpensePage() {
               ))}
             </select>
           </Field>
-          <Field label="Payment Status">
-            <select defaultValue="">
-              <option value="" disabled>
-                Select your payment status
-              </option>
-              <option>Paid</option>
-              <option>Unpaid</option>
-              <option>Installment</option>
-              <option>Cancelled</option>
-            </select>
+          <Field label="Expense Amount">
+            <input
+              inputMode="decimal"
+              placeholder="0.00"
+              value={expenseAmountInput}
+              onChange={(event) => setExpenseAmountInput(event.target.value)}
+            />
           </Field>
-          <Field label="Payment Frequency">
-            <select defaultValue="">
-              <option value="" disabled>
-                Select your payment frequency
-              </option>
-              <option>Daily</option>
-              <option>Weekly</option>
-              <option>Monthly</option>
-              <option>Quarterly</option>
-              <option>Annually</option>
-            </select>
+          <Field label="Date Paid">
+            <input
+              type="date"
+              value={datePaidInput}
+              onChange={(event) => setDatePaidInput(event.target.value)}
+            />
           </Field>
           {sections.creditCard && (
             <>
-              <Field label="CC Link Payment Receipt"><input placeholder="Related payment receipt" /></Field>
-              <ComputedField label="Extracted Billing Day" value="15" />
-              <ComputedField label="Extracted Due Day" value="10" />
+              <FormSectionDivider title="CC Transaction" />
+              <Field label="Payment Status">
+                <select
+                  value={paymentStatus}
+                  onChange={(event) => setPaymentStatus(event.target.value as PaymentStatus)}
+                >
+                  <option value="" disabled>
+                    Select your payment status
+                  </option>
+                  {paymentStatusLabels.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Interest">
+                <input
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={interestInput}
+                  onChange={(event) => setInterestInput(event.target.value)}
+                />
+              </Field>
+              <ComputedField label="Gross Price" value={formatMoney(grossPrice)} />
+              <Field label="Payment Frequency">
+                <select
+                  value={paymentFrequency}
+                  onChange={(event) => setPaymentFrequency(event.target.value as PaymentFrequency)}
+                >
+                  <option value="" disabled>
+                    Select your payment frequency
+                  </option>
+                  {paymentFrequencyLabels.map((frequency) => (
+                    <option key={frequency} value={frequency}>{frequency}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Period Count">
+                <input
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={periodCountInput}
+                  onChange={(event) => setPeriodCountInput(event.target.value)}
+                />
+              </Field>
+              {paymentStatus === "Installment" && installmentAmount !== null && (
+                <ComputedField label="Installment Amount" value={formatMoney(installmentAmount)} />
+              )}
+              <Field label="Paid period">
+                <input
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={paidPeriodInput}
+                  onChange={(event) => setPaidPeriodInput(event.target.value)}
+                />
+              </Field>
+              <ComputedField label="Paid Amount" value={formatMoney(paidAmount)} />
+              <ComputedField label="Remaining Balance" value={formatMoney(remainingBalance)} />
+              <ComputedField
+                label="Expected payment date"
+                value={expectedPaymentDate ? formatDate(expectedPaymentDate) : "-"}
+              />
             </>
           )}
           {sections.pasabuy && (
             <>
+              <FormSectionDivider title="Pasabuy Transaction" />
               <Field label="Pasabuyer">
-                <select defaultValue="">
+                <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
                   <option value="" disabled>
                     Select your pasabuyer
                   </option>
-                  <option>Shared</option>
-                  <option>Maimai</option>
-                  <option>Claire</option>
-                  <option>22-H</option>
+                  {pasabuyerLabels.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </Field>
-              <Field label="Pasabuy Status"><input placeholder="Pasabuy status" /></Field>
-              <Field label="Pasabuy Account Receiver"><input placeholder="Receiver account" /></Field>
+              <Field label="Pasabuy Status">
+                <select
+                  value={pasabuyStatus}
+                  onChange={(event) => setPasabuyStatus(event.target.value as PasabuyStatus)}
+                >
+                  <option value="" disabled>
+                    Select your pasabuy status
+                  </option>
+                  {pasabuyStatusLabels.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Pasabuy Date of Payment">
+                <input
+                  type="date"
+                  value={pasabuyDateOfPaymentInput}
+                  onChange={(event) => setPasabuyDateOfPaymentInput(event.target.value)}
+                />
+              </Field>
+              <Field label="Pasabuy Account Receiver">
+                <select
+                  value={pasabuyAccountReceiverId}
+                  onChange={(event) => setPasabuyAccountReceiverId(event.target.value)}
+                >
+                  <option value="" disabled>
+                    Select receiver account
+                  </option>
+                  {activeAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>{account.name}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Pasabuy paid period">
+                <input
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={pasabuyPaidPeriodInput}
+                  onChange={(event) => setPasabuyPaidPeriodInput(event.target.value)}
+                />
+              </Field>
+              <ComputedField label="Pasabuy Received Amount" value={formatMoney(pasabuyReceivedAmount)} />
+              <ComputedField label="Pasabuyer Balance" value={formatMoney(pasabuyerBalance)} />
             </>
           )}
-          <ComputedField label="Gross Price" value={formatMoney(46200)} />
-          <ComputedField label="Installment Amount" value={formatMoney(3866.67)} />
-          <ComputedField label="Remaining Balance" value={formatMoney(33400)} />
         </div>
       </FormModal>
     </div>
@@ -1349,27 +1720,63 @@ function WorkflowPage({
 }) {
   const fixedCategory = getWorkflowFixedCategory(section);
   const label = getActiveSectionLabel(section);
+  const isTransfer = section === "transfer";
+  const isCreditCardPayment = section === "credit-card-payment";
+  const isAlkansya = section === "alkansya";
+  const isReceivables = section === "receivables";
+  const sourceAccountLabel = isTransfer
+    ? "Source Account"
+    : isCreditCardPayment
+      ? "CC Account"
+      : isReceivables
+        ? "Receiving Account"
+        : "Accounts";
+  const sourceAccountOptions = isCreditCardPayment ? creditActiveAccounts : nonCreditActiveAccounts;
+  const secondaryAccountLabel = isTransfer
+    ? "Transfer Account"
+    : isCreditCardPayment
+      ? "Payer Account"
+      : null;
+  const amountLabel = isTransfer
+    ? "Transfer Amount"
+    : isCreditCardPayment
+      ? "Payment Amount"
+      : isAlkansya
+        ? "Savings Amount"
+        : "Gross Income";
   const [modal, setModal] = useState<ModalState>(null);
   const [receivingAccountId, setReceivingAccountId] = useState("");
   const [transactedAccountId, setTransactedAccountId] = useState("");
   const [workflowCategoryId, setWorkflowCategoryId] = useState("");
+  const [workflowAmountInput, setWorkflowAmountInput] = useState("");
+  const [workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput] = useState("");
+  const workflowNetIncome = calculateNetIncome(
+    parseNumberInput(workflowAmountInput),
+    parseNumberInput(workflowCapitalExpenditureInput),
+  );
+  const workflowAmounts = isAlkansya ? [-12000, -3500] : [12000, 3500];
+  const workflowAccountIds = isCreditCardPayment
+    ? ["acct-metrobank-card", "acct-bypl"]
+    : ["acct-bdo-checking", "acct-gcash"];
+  const workflowDates = [`${selectedMonth}-05`, `${selectedMonth}-18`];
+  const workflowCategory = fixedCategory ?? label;
   const workflowRows =
-    section === "receivables" && receivingAccountId
+    isReceivables && receivingAccountId
       ? []
       : [
           [
             `${label} sample`,
-            selectedMonth,
-            getAccountName("acct-bdo-checking"),
-            fixedCategory ?? label,
-            formatMoney(12000),
+            formatDate(workflowDates[0]),
+            getAccountName(workflowAccountIds[0]),
+            workflowCategory,
+            formatMoney(workflowAmounts[0]),
           ],
           [
             `${label} adjustment`,
-            selectedMonth,
-            getAccountName("acct-gcash"),
-            fixedCategory ?? label,
-            formatMoney(3500),
+            formatDate(workflowDates[1]),
+            getAccountName(workflowAccountIds[1]),
+            workflowCategory,
+            formatMoney(workflowAmounts[1]),
           ],
         ];
 
@@ -1377,6 +1784,8 @@ function WorkflowPage({
     setReceivingAccountId("");
     setTransactedAccountId("");
     setWorkflowCategoryId("");
+    setWorkflowAmountInput(isAlkansya ? "-12000" : "");
+    setWorkflowCapitalExpenditureInput("");
     setModal({ mode, title });
   }
 
@@ -1384,7 +1793,6 @@ function WorkflowPage({
     <div className="page-stack">
       <PageToolbar
         title={label}
-        detail={`${selectedMonth} monthly workflow`}
         actions={
           <button
             type="button"
@@ -1397,10 +1805,10 @@ function WorkflowPage({
         }
       />
 
-      <Panel title="Monthly Records" action={<Badge tone="green">Incomes-backed workflow</Badge>}>
+      <Panel title="Records">
         {workflowRows.length ? (
           <DataTable
-            headers={["Name", "Month", "Account", "Category", "Amount"]}
+            headers={["Name", "Date", sourceAccountLabel, "Category", "Amount"]}
             rows={workflowRows}
             onRowClick={(rowIndex) => openWorkflowModal("edit", workflowRows[rowIndex]?.[0] ?? label)}
           />
@@ -1422,27 +1830,46 @@ function WorkflowPage({
         <div className="form-grid form-grid--single">
           <Field label="Name"><input placeholder={`${label} title`} /></Field>
           <Field label="Date"><input type="date" /></Field>
-          <Field label="Gross Income"><input inputMode="decimal" placeholder="0.00" /></Field>
-          <Field label={section === "receivables" ? "Receiving Account" : "Accounts"}>
+          <Field label={amountLabel}>
+            <input
+              inputMode="decimal"
+              placeholder={isAlkansya ? "-0.00" : "0.00"}
+              value={workflowAmountInput}
+              onChange={(event) => setWorkflowAmountInput(event.target.value)}
+            />
+          </Field>
+          {isReceivables && (
+            <Field label="Capital Expenditure">
+              <input
+                inputMode="decimal"
+                placeholder="0.00"
+                value={workflowCapitalExpenditureInput}
+                onChange={(event) => setWorkflowCapitalExpenditureInput(event.target.value)}
+              />
+            </Field>
+          )}
+          <Field label={sourceAccountLabel}>
             <select value={receivingAccountId} onChange={(event) => setReceivingAccountId(event.target.value)}>
               <option value="" disabled>
                 Select your account
               </option>
-              {activeAccounts.map((account) => (
+              {sourceAccountOptions.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
             </select>
           </Field>
-          <Field label="Transacted Account">
-            <select value={transactedAccountId} onChange={(event) => setTransactedAccountId(event.target.value)}>
-              <option value="" disabled>
-                Select your transacted account
-              </option>
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </select>
-          </Field>
+          {secondaryAccountLabel && (
+            <Field label={secondaryAccountLabel}>
+              <select value={transactedAccountId} onChange={(event) => setTransactedAccountId(event.target.value)}>
+                <option value="" disabled>
+                  Select your account
+                </option>
+                {nonCreditActiveAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>{account.name}</option>
+                ))}
+              </select>
+            </Field>
+          )}
           {fixedCategory ? (
             <ComputedField label="Categories" value={fixedCategory} />
           ) : (
@@ -1457,63 +1884,63 @@ function WorkflowPage({
               </select>
             </Field>
           )}
-          <ComputedField label="Transaction Amount" value={formatMoney(12000)} />
+          {isReceivables && (
+            <ComputedField
+              label="Net Income"
+              value={formatMoney(workflowNetIncome)}
+              valueTone={getMoneyValueTone(workflowNetIncome)}
+            />
+          )}
         </div>
       </FormModal>
     </div>
   );
 }
 
-function MonthlyMonitoringPage() {
+function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
-  const [categoryModal, setCategoryModal] = useState<ModalState>(null);
-  const [categoryKind, setCategoryKind] = useState<"income" | "expense">("income");
-  const [categoryAuxiliary, setCategoryAuxiliary] = useState<"" | "Yes" | "No">("");
-  const incomeOverviewCategories = normalIncomeCategories;
-  const budgetCategories = expenseCategories.filter((category) => category.auxiliary === "No");
-  const incomeEarningsTotal = incomeOverviewCategories.reduce(
-    (sum, category) => sum + category.monthlyEarnings,
+  const scopedIncomeRecords = getIncomeRecordsForMonth(selectedMonth);
+  const scopedExpenseRecords = getExpenseRecordsForMonth(selectedMonth);
+  const monitoring = getMonthlyMonitoringSnapshot(selectedMonth);
+  const incomeCategorySummaries = getIncomeCategorySummaries(scopedIncomeRecords);
+  const expenseCategorySummaries = getExpenseCategorySummaries(scopedExpenseRecords);
+  const incomeNetTotal = getIncomeNetTotal(scopedIncomeRecords);
+  const incomeGrossTotal = getIncomeGrossTotal(scopedIncomeRecords);
+  const incomeCapitalExpenditureTotal = getIncomeCapitalExpenditureTotal(scopedIncomeRecords);
+  const monthlyBudgetTotal = expenseCategorySummaries.reduce(
+    (sum, category) => sum + category.monthlyBudget,
     0,
   );
-  const monthlyBudgetTotal = budgetCategories.reduce((sum, category) => sum + category.monthlyBudget, 0);
-  const spendingTotal = budgetCategories.reduce((sum, category) => sum + category.spending, 0);
-  const remainingTotal = budgetCategories.reduce((sum, category) => sum + category.remaining, 0);
-  const totalOverviewSum = budgetCategories.reduce((sum, category) => sum + category.totalOverview, 0);
-
-  function openCategoryModal(
-    kind: "income" | "expense",
-    mode: "new" | "edit",
-    title: string,
-    auxiliary?: "Yes" | "No",
-  ) {
-    setCategoryKind(kind);
-    setCategoryAuxiliary(auxiliary ?? "");
-    setCategoryModal({ mode, title });
-  }
+  const budgetSpendingTotal = expenseCategorySummaries.reduce(
+    (sum, category) => sum + category.spending,
+    0,
+  );
+  const remainingTotal = expenseCategorySummaries.reduce(
+    (sum, category) => sum + category.remaining,
+    0,
+  );
 
   return (
     <div className="page-stack">
       <PageToolbar
         title="Monthly Monitoring"
-        detail={monthlyMonitoring.month}
-        actions={<Badge tone="blue">Read-only</Badge>}
       />
       <section className="metric-grid">
-        <MetricCard title="Monthly Income" value={formatMoney(monthlyMonitoring.monthlyIncome)} detail="Rollup" icon={ArrowUpRight} tone="green" />
-        <MetricCard title="Monthly Expense" value={formatMoney(monthlyMonitoring.monthlyExpense)} detail="Rollup" icon={Receipt} tone="rose" />
-        <MetricCard title="Gross Margin" value={formatMoney(monthlyMonitoring.grossMargin)} detail="Formula" icon={CircleDollarSign} tone="blue" />
-        <MetricCard title="For Savings" value={formatMoney(monthlyMonitoring.forSavings)} detail="Formula" icon={PiggyBank} tone="amber" />
+        <MetricCard title="Monthly Income" value={formatMoney(monitoring.monthlyIncome)} detail={getMonthLabel(selectedMonth)} icon={ArrowUpRight} tone="green" />
+        <MetricCard title="Monthly Expense" value={formatMoney(monitoring.monthlyExpense)} detail={getMonthLabel(selectedMonth)} icon={Receipt} tone="rose" />
+        <MetricCard title="Gross Margin" value={formatMoney(monitoring.grossMargin)} detail="Income less expenses" icon={CircleDollarSign} tone="blue" />
+        <MetricCard title="For Savings" value={formatMoney(monitoring.forSavings)} detail="30% allocation" icon={PiggyBank} tone="amber" />
       </section>
       <section className="two-column">
-        <Panel title="Budget Allocation" action={<Badge tone="neutral">Formula values</Badge>}>
-          <BudgetRow label="Needs" spent={monthlyMonitoring.forNeeds} budget={monthlyMonitoring.grossMargin} />
-          <BudgetRow label="Wants" spent={monthlyMonitoring.forWants} budget={monthlyMonitoring.grossMargin} />
-          <BudgetRow label="Savings" spent={monthlyMonitoring.forSavings} budget={monthlyMonitoring.grossMargin} />
+        <Panel title="Budget Allocation">
+          <BudgetRow label="Needs" spent={monitoring.forNeeds} budget={monitoring.grossMargin} />
+          <BudgetRow label="Wants" spent={monitoring.forWants} budget={monitoring.grossMargin} />
+          <BudgetRow label="Savings" spent={monitoring.forSavings} budget={monitoring.grossMargin} />
         </Panel>
-        <Panel title="Category Context" action={<Badge tone="green">Relations displayed</Badge>}>
+        <Panel title="Category Context">
           <div className="category-grid category-grid--compact">
-            {expenseCategories.slice(0, 4).map((category) => (
+            {expenseCategorySummaries.slice(0, 4).map((category) => (
               <CategoryCard
                 key={category.id}
                 title={category.name}
@@ -1528,63 +1955,58 @@ function MonthlyMonitoringPage() {
       <Panel
         title="Income Categories"
         action={
-          <button
-            type="button"
-            className="button"
-            onClick={() => openCategoryModal("income", "new", "New Income Category")}
-          >
-            <Plus size={16} />
-            New Category
-          </button>
+          <div className="panel-header-actions">
+            <SegmentedControl
+              label="Income category view"
+              options={[
+                { label: "Table", value: "table" },
+                { label: "Chart", value: "chart" },
+                { label: "Cards", value: "cards" },
+              ]}
+              value={incomeCategoryView}
+              onChange={setIncomeCategoryView}
+            />
+          </div>
         }
       >
-        <div className="panel-tools">
-          <SegmentedControl
-            label="Income category view"
-            options={[
-              { label: "Table", value: "table" },
-              { label: "Chart", value: "chart" },
-              { label: "Cards", value: "cards" },
-            ]}
-            value={incomeCategoryView}
-            onChange={setIncomeCategoryView}
-          />
-        </div>
         {incomeCategoryView === "table" && (
           <DataTable
-            headers={["Income Type", "Monthly Earnings", "Earning Percentage"]}
-            rows={incomeOverviewCategories.map((category) => [
+            headers={["Income Type", "Gross Income", "Expenditure", "Net Income", "Earning Percentage"]}
+            rows={incomeCategorySummaries.map((category) => [
               category.source,
-              formatMoney(category.monthlyEarnings),
+              formatMoney(category.grossIncome),
+              formatMoney(category.capitalExpenditure),
+              <MoneyValue key={`${category.id}-net`} value={category.netIncome} />,
               formatPercent(category.earningPercentage),
             ])}
-            footerRows={[["Total", formatMoney(incomeEarningsTotal), formatPercent(100)]]}
-            onRowClick={(rowIndex) => {
-              const category = incomeOverviewCategories[rowIndex];
-              if (category) {
-                openCategoryModal("income", "edit", category.source);
-              }
-            }}
+            footerRows={[
+              [
+                "Total",
+                formatMoney(incomeGrossTotal),
+                formatMoney(incomeCapitalExpenditureTotal),
+                formatMoney(incomeNetTotal),
+                formatPercent(incomeNetTotal > 0 ? 100 : 0),
+              ],
+            ]}
           />
         )}
         {incomeCategoryView === "chart" && (
           <CategoryDonutChart
-            data={incomeOverviewCategories.map((category, index) => ({
+            data={incomeCategorySummaries.map((category, index) => ({
               name: category.source,
-              value: category.monthlyEarnings,
+              value: Math.max(category.netIncome, 0),
               color: categoryPalette[index % categoryPalette.length],
             }))}
           />
         )}
         {incomeCategoryView === "cards" && (
           <div className="category-grid">
-            {incomeOverviewCategories.map((category) => (
+            {incomeCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
                 title={category.source}
                 detail={formatPercent(category.earningPercentage)}
-                value={formatMoney(category.monthlyEarnings)}
-                onClick={() => openCategoryModal("income", "edit", category.source)}
+                value={formatMoney(category.netIncome)}
               />
             ))}
           </div>
@@ -1594,47 +2016,33 @@ function MonthlyMonitoringPage() {
       <Panel
         title="Expense Categories"
         action={
-          <button
-            type="button"
-            className="button"
-            onClick={() => openCategoryModal("expense", "new", "New Expense Category")}
-          >
-            <Plus size={16} />
-            New Category
-          </button>
+          <div className="panel-header-actions">
+            <SegmentedControl
+              label="Expense category view"
+              options={[
+                { label: "Simplified", value: "simplified" },
+                { label: "MB Breakdown", value: "breakdown" },
+                { label: "Chart", value: "chart" },
+                { label: "Cards", value: "cards" },
+              ]}
+              value={expenseCategoryView}
+              onChange={setExpenseCategoryView}
+            />
+          </div>
         }
       >
-        <div className="panel-tools">
-          <SegmentedControl
-            label="Expense category view"
-            options={[
-              { label: "Simplified", value: "simplified" },
-              { label: "MB Breakdown", value: "breakdown" },
-              { label: "Chart", value: "chart" },
-              { label: "Cards", value: "cards" },
-            ]}
-            value={expenseCategoryView}
-            onChange={setExpenseCategoryView}
-          />
-        </div>
         {expenseCategoryView === "simplified" && (
           <DataTable
             headers={["Expense category", "Monthly Budget", "Spending", "Remaining"]}
-            rows={budgetCategories.map((category) => [
+            rows={expenseCategorySummaries.map((category) => [
               category.name,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
               formatMoney(category.remaining),
             ])}
             footerRows={[
-              ["Total", formatMoney(monthlyBudgetTotal), formatMoney(spendingTotal), formatMoney(remainingTotal)],
+              ["Total", formatMoney(monthlyBudgetTotal), formatMoney(budgetSpendingTotal), formatMoney(remainingTotal)],
             ]}
-            onRowClick={(rowIndex) => {
-              const category = budgetCategories[rowIndex];
-              if (category) {
-                openCategoryModal("expense", "edit", category.name, category.auxiliary);
-              }
-            }}
           />
         )}
         {expenseCategoryView === "breakdown" && (
@@ -1647,35 +2055,29 @@ function MonthlyMonitoringPage() {
               "Overview",
               "Total Overview",
             ]}
-            rows={budgetCategories.map((category) => [
+            rows={expenseCategorySummaries.map((category) => [
               category.name,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
               formatMoney(category.remaining),
               category.overview,
-              formatMoney(category.totalOverview),
+              formatPercent(category.totalOverview),
             ])}
             footerRows={[
               [
                 "Total",
                 formatMoney(monthlyBudgetTotal),
-                formatMoney(spendingTotal),
+                formatMoney(budgetSpendingTotal),
                 formatMoney(remainingTotal),
                 "",
-                formatMoney(totalOverviewSum),
+                formatPercent(calculateCategoryTotalOverview(budgetSpendingTotal, monitoring.monthlyExpense)),
               ],
             ]}
-            onRowClick={(rowIndex) => {
-              const category = budgetCategories[rowIndex];
-              if (category) {
-                openCategoryModal("expense", "edit", category.name, category.auxiliary);
-              }
-            }}
           />
         )}
         {expenseCategoryView === "chart" && (
           <CategoryDonutChart
-            data={budgetCategories.map((category, index) => ({
+            data={expenseCategorySummaries.map((category, index) => ({
               name: category.name,
               value: category.spending,
               color: categoryPalette[index % categoryPalette.length],
@@ -1684,60 +2086,17 @@ function MonthlyMonitoringPage() {
         )}
         {expenseCategoryView === "cards" && (
           <div className="category-grid">
-            {budgetCategories.map((category) => (
+            {expenseCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
                 title={category.name}
                 detail={`Remaining ${formatMoney(category.remaining, { compact: true })}`}
                 value={formatMoney(category.monthlyBudget, { compact: true })}
-                onClick={() => openCategoryModal("expense", "edit", category.name, category.auxiliary)}
               />
             ))}
           </div>
         )}
       </Panel>
-
-      <FormModal
-        deleteLabel={categoryKind === "income" ? "Delete Category" : "Delete Category"}
-        modal={categoryModal}
-        saveLabel="Save Category"
-        subtitle={
-          categoryKind === "income"
-            ? "Matches the Income Overview view from Notion."
-            : "Matches MB Simplified and Monthly Budget (v1) from Notion."
-        }
-        onClose={() => setCategoryModal(null)}
-      >
-        {categoryKind === "income" ? (
-          <div className="form-grid form-grid--single">
-            <Field label="Income Type"><input placeholder="Source of income" /></Field>
-            <ComputedField label="Monthly Earnings" value={formatMoney(85000)} />
-            <ComputedField label="Earning Percentage" value={formatPercent(74.4)} />
-          </div>
-        ) : (
-          <div className="form-grid form-grid--single">
-            <Field label="Expense category"><input placeholder="Expense category" /></Field>
-            <Field label="Monthly Budget"><input inputMode="decimal" placeholder="0.00" /></Field>
-            <Field label="Upcoming Budget"><input inputMode="decimal" placeholder="0.00" /></Field>
-            <Field label="Auxiliary">
-              <select
-                value={categoryAuxiliary}
-                onChange={(event) => setCategoryAuxiliary(event.target.value as "Yes" | "No")}
-              >
-                <option value="" disabled>
-                  Select your auxiliary status
-                </option>
-                <option>Yes</option>
-                <option>No</option>
-              </select>
-            </Field>
-            <ComputedField label="Spending" value={formatMoney(12500)} />
-            <ComputedField label="Remaining" value={formatMoney(2500)} />
-            <ComputedField label="Overview" value="83% used" />
-            <ComputedField label="Total Overview" value={formatMoney(2500)} />
-          </div>
-        )}
-      </FormModal>
     </div>
   );
 }
@@ -1858,18 +2217,15 @@ function SettingsPage({
 
 function PageToolbar({
   title,
-  detail,
   actions,
 }: {
   title: string;
-  detail: string;
   actions?: ReactNode;
 }) {
   return (
     <div className="page-toolbar">
       <div>
         <h2>{title}</h2>
-        <p>{detail}</p>
       </div>
       {actions && <div className="page-toolbar__actions">{actions}</div>}
     </div>
@@ -1966,8 +2322,35 @@ function ComputedField({
     <div className="computed-field">
       <span>{label}</span>
       <strong className={cx("computed-field__value", `computed-field__value--${valueTone}`)}>{value}</strong>
-      <Badge tone="neutral">Read-only</Badge>
     </div>
+  );
+}
+
+function FormSectionDivider({ title }: { title: string }) {
+  return (
+    <div className="form-section-divider">
+      <span>{title}</span>
+    </div>
+  );
+}
+
+function MoneyValue({ value }: { value: number }) {
+  const tone = getMoneyValueTone(value);
+
+  return (
+    <span className={cx("money-value", `money-value--${tone}`)}>
+      {formatMoney(value)}
+    </span>
+  );
+}
+
+function ExpenseStatusDot({ status }: { status: "paid" | "unpaid" }) {
+  return (
+    <span
+      aria-label={status === "paid" ? "Paid" : "Unpaid"}
+      className={cx("expense-status-dot", `expense-status-dot--${status}`)}
+      role="img"
+    />
   );
 }
 
@@ -2057,8 +2440,8 @@ function DataTable({
   onRowClick,
 }: {
   headers: string[];
-  rows: string[][];
-  footerRows?: string[][];
+  rows: ReactNode[][];
+  footerRows?: ReactNode[][];
   onRowClick?: (rowIndex: number) => void;
 }) {
   return (
@@ -2074,7 +2457,7 @@ function DataTable({
         <tbody>
           {rows.map((row, rowIndex) => (
             <tr
-              key={`${row[0]}-${rowIndex}`}
+              key={`row-${rowIndex}`}
               className={cx(onRowClick && "table-row--clickable")}
               tabIndex={onRowClick ? 0 : undefined}
               onClick={() => onRowClick?.(rowIndex)}
@@ -2090,7 +2473,7 @@ function DataTable({
               }}
             >
               {row.map((cell, cellIndex) => (
-                <td key={`${cell}-${cellIndex}`}>{cell}</td>
+                <td key={`cell-${rowIndex}-${cellIndex}`}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -2098,9 +2481,9 @@ function DataTable({
         {footerRows.length > 0 && (
           <tfoot>
             {footerRows.map((row, rowIndex) => (
-              <tr key={`footer-${row[0]}-${rowIndex}`}>
+              <tr key={`footer-${rowIndex}`}>
                 {row.map((cell, cellIndex) => (
-                  <td key={`footer-${cell}-${cellIndex}`}>{cell}</td>
+                  <td key={`footer-cell-${rowIndex}-${cellIndex}`}>{cell}</td>
                 ))}
               </tr>
             ))}
@@ -2139,23 +2522,22 @@ function SegmentedControl({
 }
 
 function FilterSelect({
-  icon: Icon,
   placeholder,
+  placeholderDisabled = true,
   value,
   onChange,
   children,
 }: {
-  icon: LucideIcon;
   placeholder: string;
+  placeholderDisabled?: boolean;
   value: string;
   onChange: (value: string) => void;
   children: ReactNode;
 }) {
   return (
     <label className="filter-select">
-      <Icon size={15} />
       <select value={value} onChange={(event) => onChange(event.target.value)}>
-        <option value="" disabled>
+        <option value="" disabled={placeholderDisabled}>
           {placeholder}
         </option>
         {children}
@@ -2213,7 +2595,7 @@ function CategoryDonutChart({
 }
 
 function BudgetRow({ label, spent, budget }: { label: string; spent: number; budget: number }) {
-  const ratio = Math.min(100, Math.round((spent / budget) * 100));
+  const ratio = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
   return (
     <div className="budget-row">
       <div>

@@ -11,8 +11,8 @@ flowchart TD
     Pull --> Dashboard[View dashboard and lists]
     Dashboard --> Action{Choose action}
     Action --> View[View record details]
-    Action --> Create[Create record]
-    Action --> Edit[Edit writable fields]
+    Action --> Create[Create supported record]
+    Action --> Edit[Edit supported writable fields]
     Action --> Delete[Request delete]
     View --> Dashboard
     Create --> Validate[Validate input]
@@ -34,6 +34,8 @@ flowchart TD
 ## Form Rule
 
 Forms show writable fields only. Computed fields from Notion appear in detail, list, or dashboard views as read-only values.
+
+Forms are for supported transactional records only. Accounts, Income Categories, and Expense Categories are maintained in Notion and appear in the app as reference/configuration data.
 
 Normal Income forms show only income-related fields and hide transaction-only fields such as `Transacted Account`. Expense forms adapt to the selected account, category, and view so credit-card and Pasabuy fields appear only when relevant.
 

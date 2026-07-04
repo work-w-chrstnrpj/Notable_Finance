@@ -47,7 +47,7 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-03, frontend implementation has started because implementation was explicitly requested. The Next.js frontend foundation now exists under `application/`, with app routing, a workspace shell, typed mock DTOs, frontend field-visibility rules, a backend API client boundary, and initial rule tests. Backend, integration, and testing workstreams remain unstarted.
+As of 2026-07-04, frontend implementation has started because implementation was explicitly requested. The Next.js frontend foundation now exists under `application/`, with app routing, a workspace shell, typed mock DTOs, frontend field-visibility rules, a backend API client boundary, and initial rule tests. Backend, integration, and testing workstreams remain unstarted. The backend workstream has been realigned to the current design where Accounts, Income Categories, and Expense Categories are read-only app resources maintained in Notion.
 
 | Workstream | Total Rows | Not Started | Blocked | Needs Decision |
 | --- | ---: | ---: | ---: | ---: |
@@ -61,7 +61,7 @@ Frontend status detail: 3 `Implemented`, 14 `In Progress`.
 ## Resolved Decisions
 
 - Authentication should support email sign-in and Google sign-in so other people can use the app.
-- Account delete marks the account inactive through `Inactive`; account records are not physically deleted.
+- Accounts, Income Categories, and Expense Categories are maintained in Notion only. The app queries them as read-only reference/configuration data and does not expose add, edit, or delete flows for them.
 - Destructive testing will use a duplicated Notion space provided by the project owner.
 - Real Next.js and NestJS code should be created only when the user explicitly says to implement.
 - PostgreSQL is the primary durable metadata store, using Neon Free as the planned provider while the app remains within free-tier limits.
@@ -71,17 +71,27 @@ Frontend status detail: 3 `Implemented`, 14 `In Progress`.
 - Recommended test tooling is ESLint, TypeScript, Vitest, React Testing Library, Jest or Vitest for NestJS depending on scaffold defaults, Supertest, and Playwright.
 - Planned deployment targets are Vercel for the frontend and Render for the backend, with switchable local development and local production-style environment configuration.
 - Primary app sections are Dashboard, Accounts, Income, Expense, Monthly Monitoring, Transfer, Credit Card Payment, Alkansya, and Receivables.
-- Monthly Monitoring is in app scope as a read-focused monitoring section.
+- Monthly Monitoring is in app scope as a read-focused monitoring section, but app reports should be calculated from scoped Income and Expense records rather than from Notion Monthly Monitoring formulas/rollups.
 - Accounts show active accounts by default and support gallery/card plus table views.
+- Accounts do not show the month selector because account balance snapshots by month are out of app scope.
 - Normal Income forms hide transaction-only fields and exclude auxiliary income categories such as `IOU`, `Transfer`, `Old Income Logger`, `Credit Card Payment`, and `Debt Payment`.
-- Expense forms adapt to selected account, category, and view; credit-card fields appear only for `Credit Account` or `BYPL`, and Pasabuy fields appear only for Pasabuy flows.
-- Transfer and Credit Card Payment are Monthly workflows with fixed, non-editable category values.
+- Income shows the month selector only for Monthly view. Daily, Weekly, and Annually use current-date/current-period scope.
+- Normal Income displays hide `Transaction Amount`, show `Capital Expenditure`, and calculate `Net Income` in the app from gross income less capital expenditure.
+- Expense forms adapt to selected account, category, and view; credit-card fields appear only for `Credit Account` or `BYPL`, and Pasabuy fields appear only for Unpaid Pasabuy/category flows.
+- Expense supports Daily, Weekly, Monthly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions. Annually is intentionally removed from Expense scope.
+- Expense shows the month selector only for Monthly view, and Monthly Expense reporting uses `Purchase Date` as its month anchor.
+- Expense filters include All, W/out Pasabuy, and specific categories; Unpaid Pasabuy can be filtered by `Pasabuyer`.
+- Dashboard, Monthly Monitoring, Income, Expense, and category reporting calculate derivable selected-month values in app/shared source code from scoped Notion records. Notion Monthly Monitoring, Income Category, and Expense Category formulas/rollups are not used as historical reporting APIs.
+- Transfer and Credit Card Payment are Monthly workflows with fixed, non-editable category values and account selectors filtered by payment context.
+- Alkansya uses the `Savings` category with negative amount values for now.
+- Receivables use normal Income-style fields and move to Income logs when a receiving account is selected.
 
 ## Remaining Planning Work
 
+- Continue implementation from the 2026-07-04 docs-only design update: wire the UI/API contract so the month selector appears only where it changes query scope; keep Accounts and Categories as read-only app resources; calculate Dashboard, Monthly Monitoring, and category reporting from scoped records instead of Notion calculator formulas.
 - Wire the frontend mock DTO surfaces to backend `/api/v1` contracts as those endpoints are implemented.
 - Choose exact compact list-view fields versus detail-view fields after the first UI wireframe pass.
-- Confirm final Alkansya backing view during implementation discovery.
+- Confirm live Notion category IDs and relation mappings when backend integration starts.
 - Document access details for the duplicated Notion space when it is available.
 - Expand Playwright and manual QA coverage after backend contracts are available.
 

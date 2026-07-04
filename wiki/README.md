@@ -27,6 +27,7 @@ This folder is the project intent and operating record for Notion Finance.
 ## Rules
 
 - Notion is the source of truth.
-- Monthly Monitoring is in app scope as a read-focused monitoring section.
+- Accounts, Income Categories, and Expense Categories are Notion-maintained reference/configuration data in the app.
+- Monthly Monitoring is in app scope as a read-focused monitoring section, with selected-month values calculated from scoped Income and Expense records.
 - Draft files with `-draft` in the name are not canonical.
 - Keep wiki pages concise, current, and tied to implementation truth as code is added.

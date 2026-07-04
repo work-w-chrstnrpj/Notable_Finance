@@ -143,8 +143,10 @@ erDiagram
 ## Rules
 
 - `notionPageId` maps app records back to their Notion pages.
+- Accounts, Income Categories, and Expense Categories are maintained in Notion and treated as reference/configuration data by the app.
 - Transaction views are filtered workflows over Incomes, not separate canonical records.
 - Expense Scheduler views are filtered workflows over Expenses, not separate canonical records.
-- Computed fields are read from Notion or derived for display and must not be submitted in mutation payloads.
+- Computed fields are read from Notion or derived in app/shared code for display and must not be submitted in mutation payloads.
+- Selected-month Dashboard, Monthly Monitoring, and category metrics are derived from scoped Income and Expense records instead of Notion Monthly Monitoring or category formula values.
 - Sync metadata is supporting state only.
 - Notion data source mappings belong in backend configuration or server-side metadata, not frontend code.

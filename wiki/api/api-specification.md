@@ -21,6 +21,8 @@ The planned runtime stack is Next.js plus NestJS. This file defines the planned 
 - Dates use ISO date strings, such as `2026-07-03`.
 - Create/update requests must accept writable fields only.
 - Read-only and computed fields may appear in responses, but must be rejected in mutation payloads.
+- Accounts, Income Categories, and Expense Categories are read-only app resources. The backend queries them from Notion for current account state, dropdowns, filters, category labels, auxiliary flags, and budget config, but normal app APIs must not expose create, update, or delete operations for them. If a client attempts a mutation for these resources, the backend must reject it with `FORBIDDEN` or `VALIDATION_ERROR`; it must not translate the request into a Notion write.
+- Dashboard, Monthly Monitoring, and category reporting endpoints calculate selected-month values from scoped Income and Expense records. They must not use Notion Monthly Monitoring, Income Category, or Expense Category formula/rollup values as the source for arbitrary selected-month reports.
 
 ## Common Response Shape
 
@@ -64,14 +66,14 @@ Error response:
 
 | Resource | Collection Endpoint | Notion Backing Store | CRUD Scope |
 | --- | --- | --- | --- |
-| Accounts | `/accounts` | Accounts | Create, read, update; delete marks `Inactive` |
-| Income Categories | `/income-categories` | Income Categories | Create, read, update, delete |
+| Accounts | `/accounts` | Accounts | Read only in app |
+| Income Categories | `/income-categories` | Income Categories | Read-only reference/config |
 | Incomes | `/incomes` | Incomes | Create, read, update, soft delete by title/amount mutation |
 | Transactions | `/transactions` | Incomes Transaction views | Create, read, update, soft delete by income title/amount mutation |
-| Expense Categories | `/expense-categories` | Expense Categories | Create, read, update, delete |
+| Expense Categories | `/expense-categories` | Expense Categories | Read-only reference/config |
 | Expenses | `/expenses` | Expenses | Create, read, update, soft delete by title/amount mutation |
 | Expense Scheduler | `/expense-scheduler` | Expenses Scheduler views | Create, read, update, soft delete by expense title/amount mutation |
-| Monthly Monitoring | `/monthly-monitoring` | Monthly Monitoring | Read only |
+| Monthly Monitoring | `/monthly-monitoring` | Calculated from scoped Incomes, Expenses, Accounts, and category config | Read only |
 | Transfer | `/transfers` | Incomes Transaction views | Create, read, update, soft delete with fixed `Transfer` category |
 | Credit Card Payment | `/credit-card-payments` | Incomes Transaction views | Create, read, update, soft delete with fixed `Credit Card Payment` category |
 | Alkansya | `/alkansya` | Incomes Transaction views unless remapped during implementation | Create, read, update, soft delete by income title/amount mutation |
@@ -79,7 +81,7 @@ Error response:
 
 ## Standard Resource Endpoints
 
-Most writable resources should follow:
+Writable resources should follow:
 
 ```http
 GET /api/v1/{resource}
@@ -89,28 +91,49 @@ PATCH /api/v1/{resource}/{id}
 DELETE /api/v1/{resource}/{id}
 ```
 
-`DELETE` behavior is resource-specific:
+`DELETE` behavior is resource-specific for writable resources:
 
 - Incomes and Transactions: update `Name` to `Original Name [Deleted: 1234.56]` using the current `Gross Income` value, then clear `Gross Income`.
 - Expenses and Expense Scheduler records: update `Purchase description` to `Original Name [Deleted: 1234.56]` using the current `Expense Amount` value, then clear `Expense Amount`.
-- Income Categories and Expense Categories: delete the category records.
-- Accounts: mark the account inactive by setting `Inactive`; do not physically delete the Notion record.
+- Accounts, Income Categories, and Expense Categories have no normal app delete endpoint.
+
+Read-only resources should expose list/detail reads only:
+
+```http
+GET /api/v1/accounts
+GET /api/v1/accounts/{id}
+GET /api/v1/income-categories
+GET /api/v1/income-categories/{id}
+GET /api/v1/expense-categories
+GET /api/v1/expense-categories/{id}
+```
+
+Read-only reference resources should still be protected by the same authentication and authorization model as the rest of the app. They may include current Notion-computed values in responses when those values are intentionally displayed as read-only state, such as account balances or limits, but they must not accept those fields in request bodies.
 
 ## Query Parameters
 
 List endpoints may support:
 
 ```text
-viewMode=daily|weekly|monthly|annually|pasabuy|toPay|toBuy|installments|ccTransactions
+viewMode=daily|weekly|monthly|annually
+expenseViewMode=daily|weekly|monthly|unpaidPasabuy|toPay|toBuy|installments|ccTransactions
 month=YYYY-MM
 accountId=...
-categoryId=...
+categoryId=...|withoutPasabuy|all
+pasabuyer=...
 paymentStatus=...
 cursor=...
 limit=...
 ```
 
-Account and category filtering for Income and Expense is expected to be frontend-only for MVP when the loaded result set is practical. Backend query support may still be added for pagination or performance.
+Income supports Annually. Expense intentionally does not.
+
+Income and Expense endpoints should query only the records needed for the active view and scope:
+
+- Accounts are fetched as current read-only reference data and do not use `month`.
+- Income Monthly view uses Income `Date` and `month=YYYY-MM`; Daily, Weekly, and Annually use the current date/current period unless a later contract explicitly adds another period selector.
+- Expense Monthly view uses Expense `Purchase Date` and `month=YYYY-MM`; Daily, Weekly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions use their own current-period or outstanding-workflow scopes.
+- Account/category/pasabuyer filters narrow the scoped query or scoped result set.
 
 The final parameter set should be confirmed per resource during implementation.
 
@@ -132,25 +155,23 @@ Returns last sync time, pending operation count, failed operation count, and sch
 POST /api/v1/sync/pull
 ```
 
+Request examples should be scoped by active view instead of requesting all finance resources together. Accounts may be included as current read-only reference data when a view needs account labels or account-type logic.
+Read-only reference resources may be returned in a pull snapshot, but queued operations must not include create, update, or delete actions for `accounts`, `incomeCategories`, or `expenseCategories`.
+
 Request:
 
 ```json
 {
   "resources": [
     "accounts",
-    "incomeCategories",
-    "incomes",
-    "transactions",
-    "transfers",
-    "creditCardPayments",
-    "alkansya",
-    "receivables",
     "expenseCategories",
-    "expenses",
-    "expenseScheduler",
-    "monthlyMonitoring"
+    "expenses"
   ],
-  "month": "2026-07"
+  "scope": {
+    "resource": "expenses",
+    "viewMode": "monthly",
+    "month": "2026-07"
+  }
 }
 ```
 
@@ -184,6 +205,8 @@ Request:
 ```
 
 Response includes applied operations, failed operations, and the fresh snapshot when requested.
+
+`/sync/commit` must reject operations against read-only reference resources. For example, a queued `update` to an Account or Expense Category must fail validation before any Notion write is attempted.
 
 ## System API
 
@@ -223,6 +246,8 @@ GET /api/v1/dashboard/summary?month=YYYY-MM
 
 Returns app-friendly summaries built from pulled Notion data. Summary values remain derived from Notion-backed records, not from an independent finance database.
 
+Dashboard summary should calculate selected-month values from scoped Income and Expense records plus Account and category reference/config data. It should not depend on the Notion Monthly Monitoring database or category formula/rollup values for selected-month reporting.
+
 ## Monthly Monitoring API
 
 ```http
@@ -230,7 +255,7 @@ GET /api/v1/monthly-monitoring?month=YYYY-MM
 GET /api/v1/monthly-monitoring/{id}
 ```
 
-Returns read-only month-level monitoring data, including related income category and expense category budget context. Mutation endpoints are not planned for Monthly Monitoring in normal app flows.
+Returns read-only app-calculated month-level monitoring data for `month=YYYY-MM`, including category budget context and income/expense category breakdowns. Income uses `Date` as the month anchor. Expense uses `Purchase Date` as the month anchor. Mutation endpoints are not planned for Monthly Monitoring in normal app flows.
 
 ## Workflow APIs
 

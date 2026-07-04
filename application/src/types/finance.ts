@@ -27,12 +27,21 @@ export type ExpenseViewMode =
   | "Daily"
   | "Weekly"
   | "Monthly"
-  | "Annually"
-  | "Pasabuy"
+  | "Unpaid Pasabuy"
   | "To pay"
   | "To buy"
   | "Installments"
   | "CC Transactions";
+
+export type PaymentStatus = "Paid" | "Unpaid" | "Installment" | "Cancelled";
+
+export type PaymentFrequency = "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Annually";
+
+export type PasabuyStatus =
+  | "Payment not yet receive"
+  | "Payment partially received"
+  | "Payment partially received (installment)"
+  | "Payment fully received";
 
 export type SyncState = "idle" | "syncing" | "fresh" | "error";
 
@@ -78,8 +87,6 @@ export type IncomeRecord = {
   capitalExpenditure: number;
   accountId: string;
   categoryId: string;
-  netIncome: number;
-  transactionAmount: number;
 };
 
 export type ExpenseCategory = {
@@ -103,25 +110,15 @@ export type ExpenseRecord = {
   interest: number;
   accountId: string;
   categoryId: string;
-  paymentStatus: "Paid" | "Unpaid" | "Partial" | "Installment" | "Overdue";
-  paymentFrequency: "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Annually" | "One-time";
+  paymentStatus: PaymentStatus;
+  paymentFrequency: PaymentFrequency | null;
   periodCount: number | null;
   paidPeriod: number | null;
   pasabuyer: string | null;
-  installmentAmount: number | null;
-  paidAmount: number;
-  remainingBalance: number;
-};
-
-export type MonthlyMonitoring = {
-  id: string;
-  month: string;
-  monthlyIncome: number;
-  monthlyExpense: number;
-  grossMargin: number;
-  forNeeds: number;
-  forWants: number;
-  forSavings: number;
+  pasabuyStatus: PasabuyStatus | null;
+  pasabuyDateOfPayment: string | null;
+  pasabuyPaidPeriod: number | null;
+  pasabuyAccountReceiverId: string | null;
 };
 
 export type SyncLogEntry = {

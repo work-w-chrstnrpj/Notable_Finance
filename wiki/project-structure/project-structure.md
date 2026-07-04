@@ -31,12 +31,14 @@ notion-finance/
 Owns the user-facing finance experience. Current foundation files include Next.js routing, a finance workspace shell, typed mock DTO data, frontend field-visibility rules, a backend API client boundary, CSS, and rule tests.
 
 - Dashboard and summary views.
-- Accounts, income categories, incomes, transactions, expense categories, expenses, and expense scheduler screens.
-- Create/edit forms that show writable fields only.
+- Accounts, income category, and expense category reference/configuration screens.
+- Income, transaction, expense, expense scheduler, Transfer, Credit Card Payment, Alkansya, Receivables, Dashboard, and Monthly Monitoring screens.
+- Create/edit forms for supported transactional records that show writable fields only.
 - Sync status UI and pending operation indicators.
 - API client calls to the backend service.
 
 The frontend must not call Notion directly and must not contain Notion tokens.
+Account and category maintenance remains a Notion-only function; the app should not expose create, edit, or delete actions for Accounts, Income Categories, or Expense Categories.
 
 ### `service/`
 

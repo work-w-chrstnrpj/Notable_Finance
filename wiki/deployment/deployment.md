@@ -41,7 +41,7 @@ NOTION_INCOME_CATEGORIES_DATA_SOURCE_ID
 NOTION_INCOMES_DATA_SOURCE_ID
 NOTION_EXPENSE_CATEGORIES_DATA_SOURCE_ID
 NOTION_EXPENSES_DATA_SOURCE_ID
-NOTION_MONTHLY_MONITORING_DATA_SOURCE_ID # optional/out of app scope
+NOTION_MONTHLY_MONITORING_DATA_SOURCE_ID # optional/schema context only; selected-month reporting is app-calculated
 DATABASE_URL
 REDIS_URL # optional, only if Redis is enabled
 AUTH_SECRET
@@ -67,7 +67,8 @@ Before production use:
 - Notion schema status returns healthy for app-scoped data sources and views.
 - The schema verification button reports a healthy state after the Notion integration key is configured.
 - Frontend can pull and display data without receiving Notion secrets.
-- A non-production create/edit/delete sync succeeds in staging.
+- Non-production create/edit/delete sync succeeds in staging for supported transactional records.
+- Account and category create/edit/delete flows are absent from the app and remain Notion-only maintenance.
 - Logs do not expose tokens or raw sensitive payloads.
 
 ## Rollback Notes
@@ -80,4 +81,4 @@ Rollback strategy is TBD after deployment target selection. Because Notion remai
 - Notion API failures or rate limits can delay sync.
 - Incorrect environment configuration can point staging or local production-style testing at production data.
 - Token exposure would compromise private financial data.
-- Category deletes can remove classification records if implemented carelessly.
+- Deleting or renaming category records directly in Notion can break selectors, filters, and category reporting.

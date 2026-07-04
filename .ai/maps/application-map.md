@@ -22,14 +22,14 @@ Use this map for finance UI work. Application source code has started under `app
 ## UI Areas
 
 - Dashboard and summary views.
-- Accounts list, detail, create, and edit screens.
-- Income Categories list, detail, create, and edit screens.
+- Accounts reference/configuration views only.
+- Income Categories reference/configuration views only.
 - Incomes list, detail, create, and edit screens.
 - Transactions list, detail, create, and edit screens.
-- Expense Categories list, detail, create, and edit screens.
+- Expense Categories reference/configuration views only.
 - Expenses list, detail, create, and edit screens.
 - Expense Scheduler list, detail, create, and edit screens.
-- Monthly Monitoring read-only section.
+- Monthly Monitoring display-focused section with app-calculated selected-month values.
 - Sync status and pending changes center.
 - Direct-save forms and queued Sync button flows.
 - Settings for schema health and integration status, if included.
