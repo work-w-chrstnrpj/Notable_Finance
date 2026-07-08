@@ -47,17 +47,17 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-04, frontend and backend implementation have started because implementation was explicitly requested. The Next.js frontend foundation exists under `application/`. The NestJS backend foundation exists under `service/`, with `/api/v1` route modules, server-side configuration loading, field mapping, mutation validation, read-only reference endpoints, app-calculated dashboard/monthly monitoring responses, sync orchestration over a development Notion-shaped repository, and automated backend tests. Live Notion API writes, live schema verification, PostgreSQL metadata persistence, and production auth hardening remain in progress or blocked on external configuration/access.
+As of 2026-07-09, frontend and backend implementation have advanced. On the backend, startup configuration validation, Passport JWT strategy, PostgreSQL metadata repository design, error normalization classes, and Winston structured logging were completed. The Next.js frontend foundation exists under `application/`. The NestJS backend foundation exists under `service/`, with `/api/v1` route modules, server-side configuration loading, field mapping, mutation validation, read-only reference endpoints, app-calculated dashboard/monthly monitoring responses, sync orchestration over a development Notion-shaped repository, and automated backend tests. Live Notion API writes, live schema verification, PostgreSQL metadata persistence, and production auth hardening remain in progress or blocked on external configuration/access.
 
 | Workstream | Total Rows | Not Started | In Progress | Implemented | Blocked | Needs Decision | Deferred |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Frontend | 17 | 0 | 14 | 3 | 0 | 0 | 0 |
-| Backend | 21 | 0 | 13 | 6 | 2 | 0 | 0 |
+| Backend | 21 | 0 | 8 | 11 | 2 | 0 | 0 |
 | Integration | 19 | 19 | 0 | 0 | 0 | 0 | 0 |
 | Testing | 17 | 17 | 0 | 0 | 0 | 0 | 0 |
 
 Frontend status detail: 3 `Implemented`, 14 `In Progress`.
-Backend status detail: 6 `Implemented`, 13 `In Progress`, 2 `Blocked`.
+Backend status detail: 11 `Implemented`, 8 `In Progress`, 2 `Blocked`.
 
 ## Resolved Decisions
 
@@ -92,7 +92,6 @@ Backend status detail: 6 `Implemented`, 13 `In Progress`, 2 `Blocked`.
 - Continue backend implementation by replacing the in-memory Notion-shaped development repository with the live Notion adapter once integration credentials and duplicated Notion workspace access are available.
 - Wire the UI/API contract so the month selector appears only where it changes query scope; keep Accounts and Categories as read-only app resources; calculate Dashboard, Monthly Monitoring, and category reporting from scoped records instead of Notion calculator formulas.
 - Wire the frontend mock DTO surfaces to backend `/api/v1` contracts as those endpoints are implemented.
-- Add PostgreSQL persistence for sync logs, pending mutations, conflicts, audit events, sessions if needed, and cached snapshots.
 - Choose exact compact list-view fields versus detail-view fields after the first UI wireframe pass.
 - Confirm live Notion category IDs and relation mappings when backend integration starts.
 - Document access details for the duplicated Notion space when it is available.

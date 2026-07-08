@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ResourceName, SyncCommitRequest } from '../common/finance.types';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { NotionService } from '../notion/notion.service';
 
 interface PullRequest {
@@ -21,6 +22,7 @@ export class SyncController {
   }
 
   @Post('pull')
+  @UseGuards(JwtAuthGuard)
   pull(@Body() body: PullRequest) {
     return {
       snapshot: this.notionService.pull(body.resources ?? [], body.scope),
@@ -30,6 +32,7 @@ export class SyncController {
   }
 
   @Post('commit')
+  @UseGuards(JwtAuthGuard)
   commit(@Body() body: SyncCommitRequest) {
     return this.notionService.commit(
       body.operations ?? [],

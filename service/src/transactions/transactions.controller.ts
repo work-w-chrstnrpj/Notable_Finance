@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ListQuery, ResourceName } from '../common/finance.types';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { NotionService } from '../notion/notion.service';
 
 abstract class WorkflowController {
@@ -19,16 +20,19 @@ abstract class WorkflowController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() body: Record<string, unknown>) {
     return this.notionService.create(this.resource, body);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() body: Record<string, unknown>) {
     return this.notionService.update(this.resource, id, body);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   delete(@Param('id') id: string) {
     return this.notionService.delete(this.resource, id);
   }

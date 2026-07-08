@@ -17,6 +17,7 @@ export default () => ({
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
     googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
   database: {
     url: process.env.DATABASE_URL,

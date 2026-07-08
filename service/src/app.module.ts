@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { ConfigModule as AppConfigModule } from './config/config.module';
@@ -20,6 +21,7 @@ import { SyncModule } from './sync/sync.module';
 import { ConflictModule } from './conflict/conflict.module';
 import { SchemaDriftModule } from './schema-drift/schema-drift.module';
 import { LoggingModule } from './logging/logging.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import configuration from './config/configuration';
 
 @Module({
@@ -49,5 +51,11 @@ import configuration from './config/configuration';
     LoggingModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

@@ -1,11 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { LoggingService } from './logging/logging.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+
+  const loggingService = app.get(LoggingService);
+  app.useLogger(loggingService);
 
   app.setGlobalPrefix('api/v1');
 
@@ -21,11 +26,15 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`Notion Finance API running on port ${port}`);
+  loggingService.log(`Notion Finance API running on port ${port}`, 'Bootstrap');
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  // Cannot use LoggingService here since bootstrap never completed
+  console.error('Failed to start application:', err instanceof Error ? err.message : err);
+  process.exit(1);
+});
