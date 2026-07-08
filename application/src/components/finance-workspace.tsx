@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Banknote,
+  Building2,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
@@ -19,6 +21,7 @@ import {
   Database,
   FileWarning,
   Gauge,
+  Landmark,
   LayoutDashboard,
   LockKeyhole,
   LogOut,
@@ -29,6 +32,7 @@ import {
   Save,
   Settings,
   ShieldCheck,
+  Smartphone,
   Trash2,
   WalletCards,
   X,
@@ -92,6 +96,8 @@ import {
 } from "@/lib/finance-rules";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import type {
+  Account,
+  AccountType,
   ExpenseViewMode,
   FinanceSection,
   FinanceSectionId,
@@ -517,6 +523,52 @@ function isWorkflowSection(section: FinanceSectionId): section is WorkflowSectio
     section === "credit-card-payment" ||
     section === "alkansya" ||
     section === "receivables"
+  );
+}
+
+function AccountTypeIcon({ type, size = 18 }: { type: AccountType; size?: number }) {
+  switch (type) {
+    case "Cash":
+      return <Banknote size={size} />;
+    case "Credit Account":
+    case "BYPL":
+      return <CreditCard size={size} />;
+    case "Savings Account":
+      return <Landmark size={size} />;
+    case "e-Wallet":
+    case "Digital Bank":
+      return <Smartphone size={size} />;
+    default:
+      return <Building2 size={size} />;
+  }
+}
+
+function AccountIcon({ account }: { account: Account }) {
+  if (account.icon) {
+    return (
+      <Image
+        src={account.icon}
+        alt=""
+        width={24}
+        height={24}
+        className="account-icon"
+        unoptimized
+        onError={(event) => {
+          const target = event.currentTarget;
+          target.style.display = "none";
+          const fallback = target.nextElementSibling;
+          if (fallback) {
+            (fallback as HTMLElement).style.display = "grid";
+          }
+        }}
+      />
+    );
+  }
+
+  return (
+    <span className="account-icon account-icon--fallback">
+      <AccountTypeIcon type={account.type} size={18} />
+    </span>
   );
 }
 
@@ -1022,6 +1074,7 @@ function BudgetUsageCard({
 function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const visibleAccounts = accounts.filter((account) => {
     if (accountScope === "all") {
       return true;
@@ -1038,9 +1091,16 @@ function AccountsPage() {
       ? ["Account", "Type", "Balance", "Total Income", "Total Expense"]
       : ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Billing", "Due"];
   const accountTableRows = visibleAccounts.map((account) => {
+    const accountCell = (
+      <span className="account-cell">
+        <AccountIcon account={account} />
+        {account.name}
+      </span>
+    );
+
     if (accountScope === "standard") {
       return [
-        account.name,
+        accountCell,
         account.type,
         formatMoney(account.currentBalance),
         formatMoney(getAccountTotalIncome(account.id), { compact: true }),
@@ -1049,7 +1109,7 @@ function AccountsPage() {
     }
 
     return [
-      account.name,
+      accountCell,
       account.type,
       formatMoney(account.currentBalance),
       account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
@@ -1106,11 +1166,19 @@ function AccountsPage() {
       {viewMode === "cards" ? (
         <section className="account-grid">
           {visibleAccounts.map((account) => (
-            <article className="account-card" key={account.id}>
+            <button
+              type="button"
+              className="account-card account-card--button"
+              key={account.id}
+              onClick={() => setSelectedAccount(account)}
+            >
               <div className="account-card__top">
-                <div>
-                  <h2>{account.name}</h2>
-                  {account.inactive && <p>Inactive account</p>}
+                <div className="account-card__name-row">
+                  <AccountIcon account={account} />
+                  <div>
+                    <h2>{account.name}</h2>
+                    {account.inactive && <p>Inactive account</p>}
+                  </div>
                 </div>
                 <Badge
                   tone={
@@ -1131,13 +1199,26 @@ function AccountsPage() {
               {account.availableLimit !== null && (
                 <MoneyLine label="Available Limit" value={account.availableLimit} />
               )}
-            </article>
+            </button>
           ))}
         </section>
       ) : (
         <DataTable
           headers={accountTableHeaders}
           rows={accountTableRows}
+          onRowClick={(rowIndex) => {
+            const account = visibleAccounts[rowIndex];
+            if (account) {
+              setSelectedAccount(account);
+            }
+          }}
+        />
+      )}
+
+      {selectedAccount && (
+        <AccountDetailModal
+          account={selectedAccount}
+          onClose={() => setSelectedAccount(null)}
         />
       )}
     </div>
@@ -2351,6 +2432,149 @@ function ExpenseStatusDot({ status }: { status: "paid" | "unpaid" }) {
       className={cx("expense-status-dot", `expense-status-dot--${status}`)}
       role="img"
     />
+  );
+}
+
+function AccountDetailModal({
+  account,
+  onClose,
+}: {
+  account: Account;
+  onClose: () => void;
+}) {
+  const isCredit = isCreditLikeAccountType(account.type);
+  const totalIncome = incomeRecords
+    .filter((r) => r.accountId === account.id)
+    .reduce((s, r) => s + calculateNetIncome(r.grossIncome, r.capitalExpenditure), 0);
+  const totalExpense = expenseRecords
+    .filter((r) => r.accountId === account.id)
+    .reduce((s, r) => s + r.amount, 0);
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        aria-labelledby="account-modal-title"
+        aria-modal="true"
+        className="modal-panel modal-panel--account"
+        role="dialog"
+      >
+        <div className="modal-panel__header">
+          <div className="account-modal__title-row">
+            {account.icon ? (
+              <Image src={account.icon} alt="" width={40} height={40} className="account-icon account-icon--large" unoptimized />
+            ) : (
+              <span className="account-icon account-icon--fallback account-icon--large">
+                <AccountTypeIcon type={account.type} size={22} />
+              </span>
+            )}
+            <div>
+              <h2 id="account-modal-title">{account.name}</h2>
+              <p>{account.information}</p>
+            </div>
+          </div>
+          <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
+            <X size={17} />
+          </button>
+        </div>
+        <div className="modal-panel__body">
+          <div className="account-detail-grid">
+            <div className="account-detail-section">
+              <h3 className="account-detail-section__title">Account Info</h3>
+              <div className="account-detail-fields">
+                <div className="account-detail-field">
+                  <span>Type</span>
+                  <strong>{account.type}</strong>
+                </div>
+                <div className="account-detail-field">
+                  <span>Status</span>
+                  <strong>{account.inactive ? "Inactive" : "Active"}</strong>
+                </div>
+                {account.information && (
+                  <div className="account-detail-field account-detail-field--span">
+                    <span>Information</span>
+                    <strong>{account.information}</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="account-detail-section">
+              <h3 className="account-detail-section__title">Balances</h3>
+              <div className="account-detail-fields">
+                <div className="account-detail-field">
+                  <span>Starting Balance</span>
+                  <MoneyValue value={account.startingBalance} />
+                </div>
+                <div className="account-detail-field">
+                  <span>Current Balance</span>
+                  <MoneyValue value={account.currentBalance} />
+                </div>
+                <div className="account-detail-field">
+                  <span>Total Income</span>
+                  <MoneyValue value={totalIncome} />
+                </div>
+                <div className="account-detail-field">
+                  <span>Total Expense</span>
+                  <MoneyValue value={totalExpense} />
+                </div>
+              </div>
+            </div>
+
+            {isCredit && (
+              <div className="account-detail-section">
+                <h3 className="account-detail-section__title">Credit Details</h3>
+                <div className="account-detail-fields">
+                  {account.creditLimit !== null && (
+                    <div className="account-detail-field">
+                      <span>Credit Limit</span>
+                      <MoneyValue value={account.creditLimit} />
+                    </div>
+                  )}
+                  {account.availableLimit !== null && (
+                    <div className="account-detail-field">
+                      <span>Available Limit</span>
+                      <MoneyValue value={account.availableLimit} />
+                    </div>
+                  )}
+                  {account.creditPoints !== null && (
+                    <div className="account-detail-field">
+                      <span>Credit Points</span>
+                      <strong>{account.creditPoints.toLocaleString()}</strong>
+                    </div>
+                  )}
+                  {account.annualFee !== null && (
+                    <div className="account-detail-field">
+                      <span>Annual Fee</span>
+                      <MoneyValue value={account.annualFee} />
+                    </div>
+                  )}
+                  {account.billingDay !== null && (
+                    <div className="account-detail-field">
+                      <span>Billing Day</span>
+                      <strong>Day {account.billingDay}</strong>
+                    </div>
+                  )}
+                  {account.dueDay !== null && (
+                    <div className="account-detail-field">
+                      <span>Due Day</span>
+                      <strong>Day {account.dueDay}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
 

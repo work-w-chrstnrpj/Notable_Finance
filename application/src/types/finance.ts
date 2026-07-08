@@ -58,6 +58,7 @@ export type Account = {
   id: string;
   name: string;
   type: AccountType;
+  icon: string | null;
   information: string;
   startingBalance: number;
   currentBalance: number;

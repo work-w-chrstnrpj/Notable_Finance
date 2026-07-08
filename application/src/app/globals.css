@@ -960,6 +960,119 @@ input {
   font-size: 16px;
 }
 
+.account-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.account-icon--fallback {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+}
+
+.account-icon--large {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.account-icon--large.account-icon--fallback svg {
+  width: 22px;
+  height: 22px;
+}
+
+.account-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.account-card__name-row h2 {
+  font-size: 16px;
+}
+
+.account-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-modal__title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.account-modal__title-row h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.account-modal__title-row p {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.modal-panel--account .modal-panel__body {
+  padding: 0;
+}
+
+.account-detail-grid {
+  display: grid;
+}
+
+.account-detail-section {
+  border-bottom: 1px solid var(--line);
+  padding: 18px;
+}
+
+.account-detail-section:last-child {
+  border-bottom: 0;
+}
+
+.account-detail-section__title {
+  margin: 0 0 12px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-detail-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.account-detail-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-detail-field span {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.account-detail-field strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.account-detail-field--span {
+  display: grid;
+  gap: 4px;
+}
+
 .money-line {
   border-top: 1px solid var(--line);
   padding-top: 10px;

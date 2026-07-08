@@ -41,6 +41,7 @@ export interface AccountDto {
   id: string;
   name: string;
   type: AccountType;
+  icon: string | null;
   information: string;
   startingBalance: number;
   currentBalance: number;
