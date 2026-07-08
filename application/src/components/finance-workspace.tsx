@@ -64,6 +64,8 @@ import {
   months,
   syncLog,
 } from "@/lib/finance-data";
+import { useAccounts, useDashboardData, useSyncStatus } from "@/lib/use-data";
+import { syncApi } from "@/lib/api-client";
 import {
   calculateCategoryTotalOverview,
   calculateExpectedPaymentDate,
@@ -436,17 +438,46 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [pendingOperations, setPendingOperations] = useState(3);
   const [lastSync, setLastSync] = useState("2026-07-03 09:30");
 
-  function runSync() {
+  async function runSync() {
     setSyncState("syncing");
-    window.setTimeout(() => {
-      setSyncState("fresh");
-      setPendingOperations(0);
-      setLastSync("2026-07-03 09:42");
-    }, 700);
+
+    try {
+      const result = await syncApi.commit({
+        operations: [],
+        returnFreshSnapshot: true,
+      });
+
+      if (result.success) {
+        setSyncState("fresh");
+        setPendingOperations(0);
+        setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
+      } else {
+        setSyncState("error");
+      }
+    } catch {
+      // Fall back to mock sync behavior
+      setSyncState("syncing");
+      window.setTimeout(() => {
+        setSyncState("fresh");
+        setPendingOperations(0);
+        setLastSync("2026-07-03 09:42");
+      }, 700);
+    }
   }
 
-  function verifySchema() {
-    setSchemaHealth("warning");
+  async function verifySchema() {
+    try {
+      const result = await syncApi.schemaStatus();
+
+      if (result.success) {
+        setSchemaHealth("verified");
+      } else {
+        setSchemaHealth("warning");
+      }
+    } catch {
+      // Fall back to mock verify behavior
+      setSchemaHealth("warning");
+    }
   }
 
   return (
@@ -762,46 +793,100 @@ function DashboardPage({
   pendingOperations: number;
   selectedMonth: string;
 }) {
+  const { state: dashboardState } = useDashboardData(selectedMonth);
+
+  // Compute mock-derived data as fallback when API is unavailable
   const totalCashFlow = calculateTotalCashFlow(accounts);
   const scopedIncomeRecords = getIncomeRecordsForMonth(selectedMonth);
   const scopedExpenseRecords = getExpenseRecordsForMonth(selectedMonth);
   const monthlyGrossIncome = getIncomeGrossTotal(scopedIncomeRecords);
   const monthlyNetIncome = getIncomeNetTotal(scopedIncomeRecords);
   const monthlyExpenses = getExpenseTotal(scopedExpenseRecords);
-  const monthlyExpenseSummaries = getExpenseCategorySummaries(scopedExpenseRecords);
-  const spendingBreakdownData = getSpendingBreakdownData(scopedExpenseRecords);
-  const recentTransactionsData = getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords);
-  const pasabuyBalance = getPasabuyBalance(scopedExpenseRecords);
   const monthLabel = getMonthLabel(selectedMonth);
+
+  // Use API data when available, fall back to mock-derived
+  const apiData = dashboardState.status === "success" ? dashboardState.data : null;
+
+  const display = {
+    totalCashFlow: apiData?.totalCashFlow ?? totalCashFlow,
+    monthlyNetIncome: apiData?.netIncome ?? monthlyNetIncome,
+    monthlyGrossIncome: apiData?.grossIncome ?? monthlyGrossIncome,
+    monthlyExpenses: apiData?.expenses ?? monthlyExpenses,
+    pendingOperations: apiData?.pendingOperations ?? pendingOperations,
+    lastSync: apiData?.lastSync ?? lastSync,
+    availableCredit: apiData?.availableCredit ?? getAvailableCreditTotal(),
+    creditLimit: apiData?.creditLimit ?? getCreditLimitTotal(),
+    creditBalanceTotal: apiData?.creditBalanceTotal ?? getCreditBalanceTotal(),
+    pasabuyBalance: apiData?.pasabuyBalance ?? getPasabuyBalance(scopedExpenseRecords),
+    trendMonths: apiData?.trendMonths ?? [],
+    incomeTrend: apiData?.incomeTrend ?? [],
+    expenseTrend: apiData?.expenseTrend ?? [],
+    spendingBreakdown: apiData?.spendingBreakdown ?? getSpendingBreakdownData(scopedExpenseRecords),
+    recentTransactions: apiData?.recentTransactions ?? getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords),
+  };
+
+  // If we don't have trend data from API, compute from mock
+  const trendData = display.trendMonths.length > 0
+    ? display.trendMonths.map((month, index) => ({
+        month,
+        income: display.incomeTrend[index] ?? 0,
+        expenses: display.expenseTrend[index] ?? 0,
+      }))
+    : getDashboardTrendData(selectedMonth);
+
+  // Map spendingBreakdown to the format expected by subcomponents
+  const spendingData = display.spendingBreakdown.length > 0
+    ? display.spendingBreakdown.map((item) => ({
+        name: item.name,
+        value: item.value,
+        color: categoryPalette[display.spendingBreakdown.indexOf(item) % categoryPalette.length],
+      }))
+    : getSpendingBreakdownData(scopedExpenseRecords);
+
+  // Map recentTransactions to the format expected by the subcomponent
+  const toneForValue = (value: number): "green" | "rose" => value >= 0 ? "green" : "rose";
+  const recentData = display.recentTransactions.length > 0
+    ? display.recentTransactions.map((item) => ({
+        id: item.id,
+        date: item.date,
+        title: item.title,
+        meta: item.meta,
+        value: item.value,
+        tone: toneForValue(item.value),
+      }))
+    : getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords);
+
+  // Compute expense category summaries (still from mock for budget tracking until API provides it)
+  const monthlyExpenseSummaries = getExpenseCategorySummaries(scopedExpenseRecords);
 
   return (
     <div className="page-stack">
       <section className="metric-grid metric-grid--prototype">
         <MetricCard
           title="Total Cash Flow"
-          value={formatMoney(totalCashFlow)}
+          value={formatMoney(display.totalCashFlow)}
           detail="Non-credit accounts"
           icon={WalletCards}
           tone="blue"
         />
         <MetricCard
           title="Monthly Net Income"
-          value={formatMoney(monthlyNetIncome)}
+          value={formatMoney(display.monthlyNetIncome)}
           detail={monthLabel}
           icon={ArrowUpRight}
           tone="green"
         />
         <MetricCard
           title="Monthly Expenses"
-          value={formatMoney(monthlyExpenses)}
+          value={formatMoney(display.monthlyExpenses)}
           detail={monthLabel}
           icon={Receipt}
           tone="rose"
         />
         <MetricCard
           title="Sync Queue"
-          value={`${pendingOperations}`}
-          detail={`Last sync ${lastSync}`}
+          value={`${display.pendingOperations}`}
+          detail={`Last sync ${display.lastSync}`}
           icon={RefreshCw}
           tone="amber"
         />
@@ -810,28 +895,28 @@ function DashboardPage({
       <section className="metric-grid metric-grid--prototype">
         <MetricCard
           title="Available Credit"
-          value={formatMoney(getAvailableCreditTotal())}
-          detail={`Limit ${formatMoney(getCreditLimitTotal(), { compact: true })}`}
+          value={formatMoney(display.availableCredit)}
+          detail={`Limit ${formatMoney(display.creditLimit, { compact: true })}`}
           icon={CreditCard}
           tone="blue"
         />
         <MetricCard
           title="Monthly Gross"
-          value={formatMoney(monthlyGrossIncome)}
+          value={formatMoney(display.monthlyGrossIncome)}
           detail={monthLabel}
           icon={Banknote}
           tone="green"
         />
         <MetricCard
           title="Pasabuy Balance"
-          value={formatMoney(pasabuyBalance)}
+          value={formatMoney(display.pasabuyBalance)}
           detail="Unpaid Pasabuy"
           icon={PiggyBank}
           tone="amber"
         />
         <MetricCard
           title="CC Balance Total"
-          value={formatMoney(getCreditBalanceTotal())}
+          value={formatMoney(display.creditBalanceTotal)}
           detail={`${creditActiveAccounts.length} credit accounts`}
           icon={AlertTriangle}
           tone="rose"
@@ -839,13 +924,13 @@ function DashboardPage({
       </section>
 
       <section className="dashboard-chart-grid">
-        <IncomeExpenseChart data={getDashboardTrendData(selectedMonth)} />
-        <SpendingBreakdownCard data={spendingBreakdownData} monthLabel={monthLabel} />
+        <IncomeExpenseChart data={trendData} />
+        <SpendingBreakdownCard data={spendingData} monthLabel={monthLabel} />
       </section>
 
       <section className="dashboard-bottom-grid">
         <BudgetUsageCard summaries={monthlyExpenseSummaries} />
-        <RecentTransactionsList records={recentTransactionsData} />
+        <RecentTransactionsList records={recentData} />
       </section>
     </div>
   );
@@ -1075,7 +1160,13 @@ function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const visibleAccounts = accounts.filter((account) => {
+  const { state: accountsState } = useAccounts(true);
+
+  // Use API data when available, fall back to mock accounts
+  const sourceAccounts =
+    accountsState.status === "success" ? accountsState.data : accounts;
+
+  const visibleAccounts = sourceAccounts.filter((account) => {
     if (accountScope === "all") {
       return true;
     }
@@ -2197,13 +2288,25 @@ function SyncPage({
   onSchemaVerify: () => void;
   onSync: () => void;
 }) {
+  const { state: syncStatusState } = useSyncStatus();
+
+  // Use API sync status when available, fall back to parent props
+  const apiStatus =
+    syncStatusState.status === "success" ? syncStatusState.data : null;
+
+  const displayLastSync =
+    apiStatus?.lastSyncAt?.replace("T", " ").slice(0, 16) ?? lastSync;
+  const displayPending =
+    apiStatus?.pendingOperations ?? pendingOperations;
+  const displayFailed = apiStatus?.failedOperations ?? 1;
+
   return (
     <div className="page-stack">
       <section className="metric-grid">
-        <MetricCard title="Last Successful Sync" value={lastSync.split(" ")[1]} detail={lastSync.split(" ")[0]} icon={RefreshCw} tone="blue" />
-        <MetricCard title="Pending Operations" value={`${pendingOperations}`} detail="Queued changes" icon={ClipboardCheck} tone="amber" />
-        <MetricCard title="Failed Operations" value="1" detail="Needs review" icon={AlertTriangle} tone="rose" />
-        <MetricCard title="Schema Health" value={schemaHealth === "warning" ? "Review" : "Unchecked"} detail="/api/v1/system/schema-status" icon={Database} tone="green" />
+        <MetricCard title="Last Successful Sync" value={displayLastSync.split(" ")[1] || "-"} detail={displayLastSync.split(" ")[0] || "-"} icon={RefreshCw} tone="blue" />
+        <MetricCard title="Pending Operations" value={`${displayPending}`} detail="Queued changes" icon={ClipboardCheck} tone="amber" />
+        <MetricCard title="Failed Operations" value={`${displayFailed}`} detail="Needs review" icon={AlertTriangle} tone="rose" />
+        <MetricCard title="Schema Health" value={schemaHealth === "warning" ? "Review" : schemaHealth === "verified" ? "Verified" : "Unchecked"} detail="/api/v1/system/schema-status" icon={Database} tone="green" />
       </section>
       <section className="two-column">
         <Panel title="Sync Actions" action={<StatusPill syncState={syncState} schemaHealth={schemaHealth} />}>

@@ -1,3 +1,14 @@
+import type {
+  Account,
+  DashboardSummary,
+  ExpenseCategory,
+  ExpenseRecord,
+  ExpenseSchedulerRecord,
+  IncomeCategory,
+  IncomeRecord,
+  SyncStatus,
+} from "@/types/finance";
+
 export type ApiResult<TData> =
   | {
       success: true;
@@ -56,24 +67,304 @@ export async function requestBackend<TData>(
   return payload;
 }
 
-export const financeApi = {
-  dashboardSummary(month: string) {
-    return requestBackend(`/dashboard/summary?month=${encodeURIComponent(month)}`);
+// ── Accounts ──────────────────────────────────────────────────────────
+
+export type AccountsListParams = {
+  includeInactive?: boolean;
+};
+
+export const accountsApi = {
+  list(params?: AccountsListParams) {
+    const query = params?.includeInactive ? "?includeInactive=true" : "";
+    return requestBackend<Account[]>(`/accounts${query}`);
   },
-  syncStatus() {
-    return requestBackend("/sync/status");
+  detail(id: string) {
+    return requestBackend<Account>(`/accounts/${encodeURIComponent(id)}`);
+  },
+};
+
+// ── Income Categories ─────────────────────────────────────────────────
+
+export type IncomeCategoriesListParams = {
+  normalOnly?: boolean;
+};
+
+export const incomeCategoriesApi = {
+  list(params?: IncomeCategoriesListParams) {
+    const query = params?.normalOnly ? "?normalOnly=true" : "";
+    return requestBackend<IncomeCategory[]>(`/income-categories${query}`);
+  },
+  detail(id: string) {
+    return requestBackend<IncomeCategory>(`/income-categories/${encodeURIComponent(id)}`);
+  },
+};
+
+// ── Expense Categories ────────────────────────────────────────────────
+
+export const expenseCategoriesApi = {
+  list() {
+    return requestBackend<ExpenseCategory[]>("/expense-categories");
+  },
+  detail(id: string) {
+    return requestBackend<ExpenseCategory>(`/expense-categories/${encodeURIComponent(id)}`);
+  },
+};
+
+// ── Incomes ───────────────────────────────────────────────────────────
+
+export type IncomesListParams = {
+  month?: string;
+  categoryId?: string;
+  accountId?: string;
+};
+
+export const incomesApi = {
+  list(params?: IncomesListParams) {
+    const query = buildQueryString(params);
+    return requestBackend<IncomeRecord[]>(`/incomes${query}`);
+  },
+  detail(id: string) {
+    return requestBackend<IncomeRecord>(`/incomes/${encodeURIComponent(id)}`);
+  },
+  create(body: Record<string, unknown>) {
+    return requestBackend<IncomeRecord>("/incomes", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  update(id: string, body: Record<string, unknown>) {
+    return requestBackend<IncomeRecord>(`/incomes/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+  delete(id: string) {
+    return requestBackend<void>(`/incomes/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+// ── Expenses ──────────────────────────────────────────────────────────
+
+export type ExpensesListParams = {
+  month?: string;
+  categoryId?: string;
+  accountId?: string;
+  paymentStatus?: string;
+  expenseViewMode?: string;
+  pasabuyer?: string;
+};
+
+export const expensesApi = {
+  list(params?: ExpensesListParams) {
+    const query = buildQueryString(params);
+    return requestBackend<ExpenseRecord[]>(`/expenses${query}`);
+  },
+  detail(id: string) {
+    return requestBackend<ExpenseRecord>(`/expenses/${encodeURIComponent(id)}`);
+  },
+  create(body: Record<string, unknown>) {
+    return requestBackend<ExpenseRecord>("/expenses", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  update(id: string, body: Record<string, unknown>) {
+    return requestBackend<ExpenseRecord>(`/expenses/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+  delete(id: string) {
+    return requestBackend<void>(`/expenses/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+// ── Transactions / Workflows ──────────────────────────────────────────
+
+export const transactionsApi = {
+  list() {
+    return requestBackend("/transactions");
+  },
+};
+
+// ── Transfers ─────────────────────────────────────────────────────────
+
+export const transfersApi = {
+  list() {
+    return requestBackend("/transfers");
+  },
+};
+
+// ── Credit Card Payments ──────────────────────────────────────────────
+
+export const creditCardPaymentsApi = {
+  list() {
+    return requestBackend("/credit-card-payments");
+  },
+};
+
+// ── Alkansya ──────────────────────────────────────────────────────────
+
+export const alkansyaApi = {
+  list() {
+    return requestBackend("/alkansya");
+  },
+};
+
+// ── Receivables ───────────────────────────────────────────────────────
+
+export const receivablesApi = {
+  list() {
+    return requestBackend("/receivables");
+  },
+};
+
+// ── Monthly Monitoring ────────────────────────────────────────────────
+
+export const monthlyMonitoringApi = {
+  list(month?: string) {
+    const query = month ? `?month=${encodeURIComponent(month)}` : "";
+    return requestBackend(`/monthly-monitoring${query}`);
+  },
+};
+
+// ── Dashboard ─────────────────────────────────────────────────────────
+
+export const dashboardApi = {
+  summary(month: string) {
+    return requestBackend<DashboardSummary>(
+      `/dashboard/summary?month=${encodeURIComponent(month)}`,
+    );
+  },
+};
+
+// ── Expense Scheduler ─────────────────────────────────────────────────
+
+export const expenseSchedulerApi = {
+  list() {
+    return requestBackend<ExpenseSchedulerRecord[]>("/expense-scheduler");
+  },
+};
+
+// ── Sync ──────────────────────────────────────────────────────────────
+
+export interface PullLatestOptions {
+  resources: PullResource[];
+  month?: string;
+  viewMode?: string;
+  accountId?: string;
+}
+
+export interface SyncCommitRequest {
+  operations: Array<{
+    clientOperationId: string;
+    resource: PullResource;
+    action: "create" | "update" | "delete";
+    id?: string;
+    data?: Record<string, unknown>;
+  }>;
+  returnFreshSnapshot?: boolean;
+  snapshotMonth?: string;
+}
+
+export const syncApi = {
+  status() {
+    return requestBackend<SyncStatus>("/sync/status");
   },
   schemaStatus() {
     return requestBackend("/system/schema-status");
   },
-  pullLatest(options: {
-    month?: string;
-    resources: PullResource[];
-    viewMode?: string;
-  }) {
+  pullLatest(options: PullLatestOptions) {
     return requestBackend("/sync/pull", {
       method: "POST",
       body: JSON.stringify(options),
     });
+  },
+  commit(body: SyncCommitRequest) {
+    return requestBackend("/sync/commit", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+};
+
+// ── Auth ──────────────────────────────────────────────────────────────
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export const authApi = {
+  login(body: LoginRequest) {
+    return requestBackend<{ accessToken: string; user: AuthUser }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  google(token: string) {
+    return requestBackend<{ accessToken: string; user: AuthUser }>("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  },
+  logout() {
+    return requestBackend<void>("/auth/logout", {
+      method: "POST",
+    });
+  },
+  me() {
+    return requestBackend<AuthUser>("/auth/me");
+  },
+};
+
+// ── Utility ───────────────────────────────────────────────────────────
+
+function buildQueryString(params?: Record<string, string | undefined>): string {
+  if (!params) {
+    return "";
+  }
+
+  const entries = Object.entries(params).filter(
+    ([, value]) => value !== undefined && value !== "",
+  );
+
+  if (entries.length === 0) {
+    return "";
+  }
+
+  return `?${entries
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value!)}`,
+    )
+    .join("&")}`;
+}
+
+// ── Legacy financeApi (backward compatibility) ────────────────────────
+
+/** @deprecated Use the resource-specific API objects instead. */
+export const financeApi = {
+  dashboardSummary(month: string) {
+    return dashboardApi.summary(month);
+  },
+  syncStatus() {
+    return syncApi.status();
+  },
+  schemaStatus() {
+    return syncApi.schemaStatus();
+  },
+  pullLatest(options: PullLatestOptions) {
+    return syncApi.pullLatest(options);
   },
 };

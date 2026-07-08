@@ -86,8 +86,12 @@ export type IncomeRecord = {
   date: string;
   grossIncome: number;
   capitalExpenditure: number;
-  accountId: string;
+  accountId: string | null;
   categoryId: string;
+  /** Transaction-only fields returned from backend, not editable in normal income forms */
+  transactedAccountId?: string | null;
+  ccPaymentCoveredId?: string | null;
+  deleted?: boolean;
 };
 
 export type ExpenseCategory = {
@@ -135,3 +139,52 @@ export type WorkflowSectionId =
   | "credit-card-payment"
   | "alkansya"
   | "receivables";
+
+// ── API types from the backend ────────────────────────────────────────
+
+export type DashboardSummary = {
+  month: string;
+  totalCashFlow: number;
+  netIncome: number;
+  grossIncome: number;
+  expenses: number;
+  availableCredit: number;
+  creditLimit: number;
+  creditBalanceTotal: number;
+  pasabuyBalance: number;
+  pendingOperations: number;
+  lastSync: string;
+  trendMonths: string[];
+  incomeTrend: number[];
+  expenseTrend: number[];
+  spendingBreakdown: Array<{
+    name: string;
+    value: number;
+  }>;
+  recentTransactions: Array<{
+    id: string;
+    date: string;
+    title: string;
+    meta: string;
+    value: number;
+    type: "income" | "expense";
+  }>;
+};
+
+export type ExpenseSchedulerRecord = {
+  id: string;
+  description: string;
+  amount: number;
+  nextDueDate: string;
+  frequency: string;
+  category: string;
+  account: string;
+  status: "active" | "completed" | "paused";
+};
+
+export type SyncStatus = {
+  lastSyncAt: string | null;
+  state: SyncState;
+  pendingOperations: number;
+  failedOperations: number;
+};

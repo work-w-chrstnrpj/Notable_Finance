@@ -332,11 +332,19 @@ export const syncLog: SyncLogEntry[] = [
   { id: "sync-5", type: "error", resource: "Schema", description: "Payment Status option mismatch requires review", timestamp: "2026-07-02 18:48" },
 ];
 
-export function getAccountName(id: string) {
+export function getAccountName(id: string | null) {
+  if (!id) {
+    return "Unknown account";
+  }
+
   return accounts.find((account) => account.id === id)?.name ?? "Unknown account";
 }
 
-export function getAccountType(id: string) {
+export function getAccountType(id: string | null) {
+  if (!id) {
+    return "Cash";
+  }
+
   return accounts.find((account) => account.id === id)?.type ?? "Cash";
 }
 

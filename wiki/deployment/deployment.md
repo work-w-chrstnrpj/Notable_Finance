@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Deployment is not configured because implementation has not started. This guide records deployment requirements and decisions that must be satisfied later.
+Frontend and backend foundations exist with build scripts, but no production deployment is configured. The application can be built locally (`npm --prefix application run build`, `npm --prefix service run build`). Actual deployment to Vercel (frontend) and Render (backend) remains pending integration and hardening work. This guide records deployment requirements and decisions that must be satisfied before production use.
 
 Planned deployment targets:
 
