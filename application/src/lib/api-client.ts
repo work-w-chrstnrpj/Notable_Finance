@@ -40,16 +40,32 @@ export type PullResource =
 export const backendApiBasePath =
   process.env.NEXT_PUBLIC_BACKEND_API_BASE_PATH ?? "/api/v1";
 
+let authToken: string | null = null;
+
+export function setAuthToken(t: string | null) {
+  authToken = t;
+}
+
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
 export async function requestBackend<TData>(
   endpoint: string,
   init?: RequestInit,
 ): Promise<ApiResult<TData>> {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+
+  if (authToken) {
+    headers.authorization = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(`${backendApiBasePath}${endpoint}`, {
     ...init,
-    headers: {
-      "content-type": "application/json",
-      ...init?.headers,
-    },
+    headers,
   });
 
   const payload = (await response.json()) as ApiResult<TData>;
@@ -299,15 +315,34 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name?: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
 }
 
+export interface UserNotionConfig {
+  configured: boolean;
+  token: string;
+  tokenConfigured: boolean;
+  dbIds: Record<string, string>;
+}
+
 export const authApi = {
   login(body: LoginRequest) {
     return requestBackend<{ accessToken: string; user: AuthUser }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  register(body: RegisterRequest) {
+    return requestBackend<{ accessToken: string; user: AuthUser }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -325,6 +360,23 @@ export const authApi = {
   },
   me() {
     return requestBackend<AuthUser>("/auth/me");
+  },
+};
+
+export const userNotionConfigApi = {
+  get() {
+    return requestBackend<UserNotionConfig>("/user/notion-config");
+  },
+  save(body: { token?: string; dbIds?: Record<string, string> }) {
+    return requestBackend<void>("/user/notion-config", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  },
+  remove() {
+    return requestBackend<void>("/user/notion-config", {
+      method: "DELETE",
+    });
   },
 };
 

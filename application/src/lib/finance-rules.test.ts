@@ -27,7 +27,37 @@ import {
   paymentStatusLabels,
   shouldShowGlobalMonthSelector,
 } from "./finance-rules";
-import { accounts, expenseRecords, incomeCategories, incomeRecords } from "./finance-data";
+import type { Account, ExpenseRecord, IncomeCategory, IncomeRecord } from "@/types/finance";
+
+const testIncomeCategories: IncomeCategory[] = [
+  { id: "inc-employment", source: "Employment", monthlyEarnings: 85000, monthlyExpenditure: 5000, monthlyGross: 80000, earningPercentage: 74.4 },
+  { id: "inc-freelance", source: "Freelance", monthlyEarnings: 25000, monthlyExpenditure: 2500, monthlyGross: 22500, earningPercentage: 20.9 },
+  { id: "inc-dividends", source: "Dividends", monthlyEarnings: 5000, monthlyExpenditure: 0, monthlyGross: 5000, earningPercentage: 4.7 },
+  { id: "inc-savings", source: "Savings", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-transfer", source: "Transfer", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-cc-payment", source: "Credit Card Payment", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-iou", source: "IOU", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+];
+
+const testAccounts: Account[] = [
+  { id: "acct-bdo-checking", name: "BDO Checking", type: "Cash", icon: null, information: "Daily operating account", startingBalance: 25000, currentBalance: 45230.5, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
+  { id: "acct-bpi-savings", name: "BPI Savings", type: "Savings Account", icon: "https://img.icons8.com/color/48/bank-building.png", information: "Emergency and savings", startingBalance: 80000, currentBalance: 123450, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
+  { id: "acct-metrobank-card", name: "Metrobank Credit Card", type: "Credit Account", icon: "https://img.icons8.com/color/48/credit-card.png", information: "Primary card", startingBalance: 0, currentBalance: -45800, creditLimit: 150000, availableLimit: 104200, creditPoints: 1820, annualFee: 4500, billingDay: 15, dueDay: 10, inactive: false },
+  { id: "acct-gcash", name: "GCash Wallet", type: "e-Wallet", icon: "https://img.icons8.com/color/48/wallet.png", information: "Small payments", startingBalance: 5000, currentBalance: 8750.25, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
+  { id: "acct-bypl", name: "ShopNow BYPL", type: "BYPL", icon: null, information: "Installment purchases", startingBalance: 0, currentBalance: -12800, creditLimit: 40000, availableLimit: 27200, creditPoints: null, annualFee: 0, billingDay: 3, dueDay: 18, inactive: false },
+];
+
+const testIncomeRecords: IncomeRecord[] = [
+  { id: "income-july-salary", name: "July Salary", date: "2026-07-15", grossIncome: 85000, capitalExpenditure: 5000, accountId: "acct-bdo-checking", categoryId: "inc-employment" },
+  { id: "income-project-retainer", name: "Project Retainer", date: "2026-07-05", grossIncome: 25000, capitalExpenditure: 2500, accountId: "acct-bpi-savings", categoryId: "inc-freelance" },
+  { id: "income-dividend", name: "Dividend Payout", date: "2026-07-20", grossIncome: 5000, capitalExpenditure: 0, accountId: "acct-bpi-savings", categoryId: "inc-dividends" },
+];
+
+const testExpenseRecords: ExpenseRecord[] = [
+  { id: "expense-rent", description: "Monthly Rent", purchaseDate: "2026-07-01", datePaid: "2026-07-01", amount: 12500, interest: 0, accountId: "acct-bdo-checking", categoryId: "exp-housing", paymentStatus: "Paid", paymentFrequency: "Monthly", periodCount: null, paidPeriod: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null },
+  { id: "expense-phone", description: "Phone Installment", purchaseDate: "2026-06-20", datePaid: null, amount: 45000, interest: 1200, accountId: "acct-metrobank-card", categoryId: "exp-gadgets", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 12, paidPeriod: 3, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null },
+  { id: "expense-pasabuy", description: "Pasabuy Purchase", purchaseDate: "2026-07-05", datePaid: null, amount: 8000, interest: 0, accountId: "acct-bypl", categoryId: "exp-pasabuy", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 2, paidPeriod: 1, pasabuyer: "Maimai", pasabuyStatus: "Payment partially received (installment)", pasabuyDateOfPayment: "2026-07-12", pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "acct-bdo-checking" },
+];
 
 describe("finance frontend rules", () => {
   it("keeps normal income forms focused on income fields", () => {
@@ -44,7 +74,7 @@ describe("finance frontend rules", () => {
   });
 
   it("excludes auxiliary income categories from normal income choices", () => {
-    const normalCategories = getNormalIncomeCategories(incomeCategories).map(
+    const normalCategories = getNormalIncomeCategories(testIncomeCategories).map(
       (category) => category.source,
     );
 
@@ -54,7 +84,7 @@ describe("finance frontend rules", () => {
   });
 
   it("calculates dashboard total cash flow from active non-credit accounts", () => {
-    expect(calculateTotalCashFlow(accounts)).toBe(177430.75);
+    expect(calculateTotalCashFlow(testAccounts)).toBe(177430.75);
   });
 
   it("derives expense table status from date paid only", () => {
@@ -131,8 +161,8 @@ describe("finance frontend rules", () => {
 
   it("scopes income and expense records by selected month only for monthly views", () => {
     const referenceDate = new Date(2026, 6, 4);
-    const julyIncome = incomeRecords.find((record) => record.id === "income-project-retainer");
-    const juneExpense = expenseRecords.find((record) => record.id === "expense-phone");
+    const julyIncome = testIncomeRecords.find((record) => record.id === "income-project-retainer");
+    const juneExpense = testExpenseRecords.find((record) => record.id === "expense-phone");
 
     expect(julyIncome).toBeDefined();
     expect(juneExpense).toBeDefined();
@@ -207,7 +237,7 @@ describe("finance frontend rules", () => {
   });
 
   it("treats unpaid pasabuy records as not fully received", () => {
-    const pasabuyRecord = expenseRecords.find((record) => record.id === "expense-pasabuy");
+    const pasabuyRecord = testExpenseRecords.find((record) => record.id === "expense-pasabuy");
 
     expect(pasabuyRecord).toBeDefined();
     expect(isOutstandingExpense(pasabuyRecord!)).toBe(true);

@@ -21,6 +21,9 @@ import { SyncModule } from './sync/sync.module';
 import { ConflictModule } from './conflict/conflict.module';
 import { SchemaDriftModule } from './schema-drift/schema-drift.module';
 import { LoggingModule } from './logging/logging.module';
+import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
+import { UserConfigModule } from './user-config/user-config.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import configuration from './config/configuration';
 
@@ -49,6 +52,9 @@ import configuration from './config/configuration';
     ConflictModule,
     SchemaDriftModule,
     LoggingModule,
+    DatabaseModule,
+    UsersModule,
+    UserConfigModule,
   ],
   controllers: [AppController],
   providers: [

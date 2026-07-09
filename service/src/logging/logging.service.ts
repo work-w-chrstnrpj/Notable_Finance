@@ -35,7 +35,6 @@ export class LoggingService implements LoggerService {
 
     this.logger = winston.createLogger({
       level: isProduction ? 'info' : 'debug',
-      levels: winston.config.syslog.levels,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),

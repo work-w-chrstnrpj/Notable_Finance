@@ -13,6 +13,10 @@ export default () => ({
       monthlyMonitoring: process.env.NOTION_MONTHLY_MONITORING_DB_ID,
     },
   },
+  jwt: {
+    secret: process.env.JWT_SECRET ?? 'fallback-dev-secret',
+    expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+  },
   auth: {
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
@@ -22,4 +26,5 @@ export default () => ({
   database: {
     url: process.env.DATABASE_URL,
   },
+  encryptionKey: process.env.ENCRYPTION_KEY,
 });

@@ -3,8 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, startTransition } from "react";
 import type { ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { userNotionConfigApi } from "@/lib/api-client";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -51,18 +53,12 @@ import {
   YAxis,
 } from "recharts";
 import {
-  accounts,
-  expenseCategories,
-  expenseRecords,
   financeSections,
   getAccountName,
   getActiveSectionLabel,
   getExpenseCategoryName,
   getIncomeCategoryName,
-  incomeCategories,
-  incomeRecords,
   months,
-  syncLog,
 } from "@/lib/finance-data";
 import { useAccounts, useDashboardData, useSyncStatus } from "@/lib/use-data";
 import { syncApi } from "@/lib/api-client";
@@ -80,16 +76,8 @@ import {
   getExpenseConditionalSections,
   getExpenseStatusFromDatePaid,
   getMoneyValueTone,
-  getNormalIncomeCategories,
   getWorkflowFixedCategory,
-  getMonthKeyFromIsoDate,
-  isExpenseRecordInViewScope,
-  isIncomeRecordInViewScope,
-  isCreditAccountExpense,
   isCreditLikeAccountType,
-  isOutstandingExpense,
-  isPasabuyCategoryName,
-  isUnpaidPasabuyExpense,
   pasabuyerLabels,
   pasabuyStatusLabels,
   paymentFrequencyLabels,
@@ -100,15 +88,20 @@ import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import type {
   Account,
   AccountType,
+  ExpenseCategory,
+  ExpenseRecord,
   ExpenseViewMode,
   FinanceSection,
   FinanceSectionId,
+  IncomeCategory,
+  IncomeRecord,
   IncomeViewMode,
   PasabuyStatus,
   PaymentFrequency,
   PaymentStatus,
   SchemaHealth,
   SyncState,
+  SyncLogEntry,
   WorkflowSectionId,
 } from "@/types/finance";
 
@@ -138,10 +131,10 @@ const expenseViewModes: ExpenseViewMode[] = [
   "CC Transactions",
 ];
 
-const activeAccounts = accounts.filter((account) => !account.inactive);
-const nonCreditActiveAccounts = activeAccounts.filter((account) => !isCreditLikeAccountType(account.type));
-const creditActiveAccounts = activeAccounts.filter((account) => isCreditLikeAccountType(account.type));
-const normalIncomeCategories = getNormalIncomeCategories(incomeCategories);
+const activeAccounts: Account[] = [];
+const nonCreditActiveAccounts: Account[] = [];
+const creditActiveAccounts: Account[] = [];
+const normalIncomeCategories: IncomeCategory[] = [];
 const expenseCategoryFilterAll = "__all";
 const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
 const prototypeAccent = "#5B6CF9";
@@ -163,15 +156,6 @@ function getMonthLabel(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
     year: "numeric",
-  }).format(date);
-}
-
-function getShortMonthLabel(value: string) {
-  const [year, month] = value.split("-");
-  const date = new Date(Number(year), Number(month) - 1, 1);
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
   }).format(date);
 }
 
@@ -207,116 +191,26 @@ function isSpecificExpenseCategoryFilter(value: string) {
   return value !== expenseCategoryFilterAll && value !== expenseCategoryFilterWithoutPasabuy;
 }
 
-function matchesExpenseCategoryFilter(
-  categoryId: string,
-  categoryName: string,
-  filterValue: string,
-) {
-  if (filterValue === expenseCategoryFilterAll) {
-    return true;
-  }
-
-  if (filterValue === expenseCategoryFilterWithoutPasabuy) {
-    return !isPasabuyCategoryName(categoryName);
-  }
-
-  return categoryId === filterValue;
-}
-
-function matchesExpenseViewMode(
-  record: (typeof expenseRecords)[number],
-  categoryName: string,
-  viewMode: ExpenseViewMode,
-) {
-  if (viewMode === "Daily" || viewMode === "Weekly" || viewMode === "Monthly") {
-    return true;
-  }
-
-  if (viewMode === "Unpaid Pasabuy") {
-    return isUnpaidPasabuyExpense(record, categoryName);
-  }
-
-  if (viewMode === "To pay") {
-    return isOutstandingExpense(record);
-  }
-
-  if (viewMode === "To buy") {
-    return record.paymentStatus === "Unpaid" && isOutstandingExpense(record);
-  }
-
-  if (viewMode === "Installments") {
-    return record.paymentStatus === "Installment" && isOutstandingExpense(record);
-  }
-
-  return isCreditAccountExpense(record, accounts) && isOutstandingExpense(record);
-}
-
-function getIncomeRecordsForMonth(month: string) {
-  return incomeRecords.filter((record) => getMonthKeyFromIsoDate(record.date) === month);
-}
-
-function getExpenseRecordsForMonth(month: string) {
-  return expenseRecords.filter((record) => getMonthKeyFromIsoDate(record.purchaseDate) === month);
-}
-
-function getIncomeGrossTotal(records: typeof incomeRecords) {
+function getIncomeGrossTotal(records: IncomeRecord[]) {
   return records.reduce((sum, record) => sum + record.grossIncome, 0);
 }
 
-function getIncomeCapitalExpenditureTotal(records: typeof incomeRecords) {
+function getIncomeCapitalExpenditureTotal(records: IncomeRecord[]) {
   return records.reduce((sum, record) => sum + record.capitalExpenditure, 0);
 }
 
-function getIncomeNetTotal(records: typeof incomeRecords) {
+function getIncomeNetTotal(records: IncomeRecord[]) {
   return records.reduce(
     (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
     0,
   );
 }
 
-function getExpenseTotal(records: typeof expenseRecords) {
+function getExpenseTotal(records: ExpenseRecord[]) {
   return records.reduce((sum, record) => sum + record.amount, 0);
 }
 
-function getAvailableCreditTotal() {
-  return creditActiveAccounts.reduce((sum, account) => sum + (account.availableLimit ?? 0), 0);
-}
-
-function getCreditLimitTotal() {
-  return creditActiveAccounts.reduce((sum, account) => sum + (account.creditLimit ?? 0), 0);
-}
-
-function getCreditBalanceTotal() {
-  return creditActiveAccounts.reduce((sum, account) => sum + Math.abs(account.currentBalance), 0);
-}
-
-function getPasabuyBalance(records: typeof expenseRecords) {
-  return records.reduce((sum, record) => {
-    const categoryName = getExpenseCategoryName(record.categoryId);
-
-    if (!isUnpaidPasabuyExpense(record, categoryName)) {
-      return sum;
-    }
-
-    const grossPrice = calculateGrossPrice(record.amount, record.interest);
-    const installmentAmount = calculateInstallmentAmount({
-      grossPrice,
-      paymentStatus: record.paymentStatus,
-      periodCount: record.periodCount,
-    });
-    const receivedAmount = calculatePasabuyReceivedAmount({
-      grossPrice,
-      pasabuyStatus: record.pasabuyStatus ?? "",
-      installmentAmount,
-      pasabuyPaidPeriod: record.pasabuyPaidPeriod,
-      periodCount: record.periodCount,
-    });
-
-    return sum + calculatePasabuyerBalance(grossPrice, receivedAmount);
-  }, 0);
-}
-
-function getIncomeCategorySummaries(records: typeof incomeRecords) {
+function getIncomeCategorySummaries(records: IncomeRecord[]) {
   const totalNetIncome = getIncomeNetTotal(records);
 
   return normalIncomeCategories.map((category) => {
@@ -336,10 +230,10 @@ function getIncomeCategorySummaries(records: typeof incomeRecords) {
   });
 }
 
-function getExpenseCategorySummaries(records: typeof expenseRecords) {
+function getExpenseCategorySummaries(records: ExpenseRecord[], categories: ExpenseCategory[]) {
   const totalExpense = getExpenseTotal(records);
 
-  return expenseCategories
+  return categories
     .filter((category) => category.auxiliary === "No")
     .map((category) => {
       const categoryRecords = records.filter((record) => record.categoryId === category.id);
@@ -359,73 +253,6 @@ function getExpenseCategorySummaries(records: typeof expenseRecords) {
         totalOverview: calculateCategoryTotalOverview(spending, totalExpense),
       };
     });
-}
-
-function getMonthlyMonitoringSnapshot(month: string) {
-  const scopedIncomeRecords = getIncomeRecordsForMonth(month);
-  const scopedExpenseRecords = getExpenseRecordsForMonth(month);
-  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords);
-  const monthlyExpense = getExpenseTotal(scopedExpenseRecords);
-  const grossMargin = monthlyIncome - monthlyExpense;
-
-  return {
-    month,
-    monthlyIncome,
-    monthlyGrossIncome: getIncomeGrossTotal(scopedIncomeRecords),
-    monthlyCapitalExpenditure: getIncomeCapitalExpenditureTotal(scopedIncomeRecords),
-    monthlyExpense,
-    grossMargin,
-    forNeeds: grossMargin * 0.5,
-    forWants: grossMargin * 0.2,
-    forSavings: grossMargin * 0.3,
-  };
-}
-
-function getDashboardTrendData(selectedMonth: string) {
-  const selectedIndex = Math.max(months.indexOf(selectedMonth), 0);
-  const trendMonths = months.slice(Math.max(selectedIndex - 5, 0), selectedIndex + 1);
-
-  return trendMonths.map((month) => ({
-    month: getShortMonthLabel(month),
-    income: getIncomeNetTotal(getIncomeRecordsForMonth(month)),
-    expenses: getExpenseTotal(getExpenseRecordsForMonth(month)),
-  }));
-}
-
-function getSpendingBreakdownData(records: typeof expenseRecords) {
-  return getExpenseCategorySummaries(records)
-    .filter((category) => category.spending > 0)
-    .map((category, index) => ({
-      name: category.name,
-      value: category.spending,
-      color: categoryPalette[index % categoryPalette.length],
-    }));
-}
-
-function getRecentTransactionsData(
-  scopedIncomeRecords: typeof incomeRecords,
-  scopedExpenseRecords: typeof expenseRecords,
-) {
-  return [
-    ...scopedIncomeRecords.map((record) => ({
-      id: record.id,
-      date: record.date,
-      title: record.name,
-      meta: `${getIncomeCategoryName(record.categoryId)} - ${formatDate(record.date)}`,
-      value: calculateNetIncome(record.grossIncome, record.capitalExpenditure),
-      tone: "green" as const,
-    })),
-    ...scopedExpenseRecords.map((record) => ({
-      id: record.id,
-      date: record.purchaseDate,
-      title: record.description,
-      meta: `${getExpenseCategoryName(record.categoryId)} - ${formatDate(record.purchaseDate)}`,
-      value: -record.amount,
-      tone: "rose" as const,
-    })),
-  ]
-    .sort((left, right) => right.date.localeCompare(left.date))
-    .slice(0, 5);
 }
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
@@ -504,21 +331,18 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           {activeSection === "dashboard" && (
             <DashboardPage
               lastSync={lastSync}
-              pendingOperations={pendingOperations}
               selectedMonth={selectedMonth}
             />
           )}
           {activeSection === "accounts" && <AccountsPage />}
           {activeSection === "income" && (
             <IncomePage
-              selectedMonth={selectedMonth}
               viewMode={incomeViewMode}
               onViewModeChange={setIncomeViewMode}
             />
           )}
           {activeSection === "expense" && (
             <ExpensePage
-              selectedMonth={selectedMonth}
               viewMode={expenseViewMode}
               onViewModeChange={setExpenseViewMode}
             />
@@ -612,6 +436,7 @@ function Sidebar({
   collapsed: boolean;
   onToggle: () => void;
 }) {
+  const { user, logout } = useAuth();
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
@@ -620,6 +445,9 @@ function Sidebar({
     }),
     [],
   );
+  const initials = user?.name
+    ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   return (
     <aside className="sidebar">
@@ -644,14 +472,16 @@ function Sidebar({
         <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} />
       </nav>
       <div className="sidebar-profile">
-        <div className="sidebar-profile__avatar">CP</div>
+        <div className="sidebar-profile__avatar">{initials}</div>
         <div>
-          <p>Christian Paje</p>
-          <span>Owner</span>
+          <p>{user?.name ?? user?.email ?? "Guest"}</p>
+          <span>{user ? "Authenticated" : "Not signed in"}</span>
         </div>
-        <button type="button" title="Sign out">
-          <LogOut size={13} />
-        </button>
+        {user && (
+          <button type="button" title="Sign out" onClick={logout}>
+            <LogOut size={13} />
+          </button>
+        )}
       </div>
     </aside>
   );
@@ -686,6 +516,24 @@ function NavGroup({
   );
 }
 
+function useSyncStale(lastSync: string): boolean {
+  const [stale, setStale] = useState(false);
+
+  useEffect(() => {
+    function check() {
+      if (!lastSync) return setStale(false);
+      const parsed = new Date(lastSync.replace(" ", "T"));
+      if (isNaN(parsed.getTime())) return setStale(false);
+      setStale(Date.now() - parsed.getTime() > 600_000);
+    }
+    check();
+    const id = setInterval(check, 30_000);
+    return () => clearInterval(id);
+  }, [lastSync]);
+
+  return stale;
+}
+
 function TopBar({
   activeSection,
   expenseViewMode,
@@ -709,11 +557,16 @@ function TopBar({
   onMonthChange: (month: string) => void;
   onSync: () => void;
 }) {
+  const { user } = useAuth();
+  const stale = useSyncStale(lastSync);
   const showMonthSelector = shouldShowGlobalMonthSelector({
     section: activeSection,
     incomeViewMode,
     expenseViewMode,
   });
+  const initials = user?.name
+    ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   return (
     <header className="topbar">
@@ -732,11 +585,14 @@ function TopBar({
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
         <span className="sync-meta">{pendingOperations} pending</span>
         <span className="sync-meta">Last sync {lastSync}</span>
-        <button type="button" className="button button--primary" onClick={onSync}>
-          <RefreshCw size={12} className={syncState === "syncing" ? "spin" : undefined} />
-          Sync
-        </button>
-        <div className="topbar__avatar">CP</div>
+        <div className="sync-btn-wrapper">
+          <button type="button" className="button button--primary" onClick={onSync}>
+            <RefreshCw size={12} className={syncState === "syncing" ? "spin" : undefined} />
+            Sync
+          </button>
+          {stale && <span className="sync-btn-tooltip">No sync for 10+ min — click to refresh</span>}
+        </div>
+        <Link href="/settings" className="topbar__avatar">{initials}</Link>
       </div>
     </header>
   );
@@ -786,64 +642,51 @@ function StatusPill({
 
 function DashboardPage({
   lastSync,
-  pendingOperations,
   selectedMonth,
 }: {
   lastSync: string;
-  pendingOperations: number;
   selectedMonth: string;
 }) {
   const { state: dashboardState } = useDashboardData(selectedMonth);
-
-  // Compute mock-derived data as fallback when API is unavailable
-  const totalCashFlow = calculateTotalCashFlow(accounts);
-  const scopedIncomeRecords = getIncomeRecordsForMonth(selectedMonth);
-  const scopedExpenseRecords = getExpenseRecordsForMonth(selectedMonth);
-  const monthlyGrossIncome = getIncomeGrossTotal(scopedIncomeRecords);
-  const monthlyNetIncome = getIncomeNetTotal(scopedIncomeRecords);
-  const monthlyExpenses = getExpenseTotal(scopedExpenseRecords);
   const monthLabel = getMonthLabel(selectedMonth);
 
-  // Use API data when available, fall back to mock-derived
+  // Use API data when available, fall back to empty defaults
   const apiData = dashboardState.status === "success" ? dashboardState.data : null;
 
   const display = {
-    totalCashFlow: apiData?.totalCashFlow ?? totalCashFlow,
-    monthlyNetIncome: apiData?.netIncome ?? monthlyNetIncome,
-    monthlyGrossIncome: apiData?.grossIncome ?? monthlyGrossIncome,
-    monthlyExpenses: apiData?.expenses ?? monthlyExpenses,
-    pendingOperations: apiData?.pendingOperations ?? pendingOperations,
+    totalCashFlow: apiData?.totalCashFlow ?? calculateTotalCashFlow([]),
+    monthlyNetIncome: apiData?.netIncome ?? 0,
+    monthlyGrossIncome: apiData?.grossIncome ?? 0,
+    monthlyExpenses: apiData?.expenses ?? 0,
+    pendingOperations: apiData?.pendingOperations ?? 0,
     lastSync: apiData?.lastSync ?? lastSync,
-    availableCredit: apiData?.availableCredit ?? getAvailableCreditTotal(),
-    creditLimit: apiData?.creditLimit ?? getCreditLimitTotal(),
-    creditBalanceTotal: apiData?.creditBalanceTotal ?? getCreditBalanceTotal(),
-    pasabuyBalance: apiData?.pasabuyBalance ?? getPasabuyBalance(scopedExpenseRecords),
+    availableCredit: apiData?.availableCredit ?? 0,
+    creditLimit: apiData?.creditLimit ?? 0,
+    creditBalanceTotal: apiData?.creditBalanceTotal ?? 0,
+    pasabuyBalance: apiData?.pasabuyBalance ?? 0,
     trendMonths: apiData?.trendMonths ?? [],
     incomeTrend: apiData?.incomeTrend ?? [],
     expenseTrend: apiData?.expenseTrend ?? [],
-    spendingBreakdown: apiData?.spendingBreakdown ?? getSpendingBreakdownData(scopedExpenseRecords),
-    recentTransactions: apiData?.recentTransactions ?? getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords),
+    spendingBreakdown: apiData?.spendingBreakdown ?? [],
+    recentTransactions: apiData?.recentTransactions ?? [],
   };
 
-  // If we don't have trend data from API, compute from mock
   const trendData = display.trendMonths.length > 0
     ? display.trendMonths.map((month, index) => ({
         month,
         income: display.incomeTrend[index] ?? 0,
         expenses: display.expenseTrend[index] ?? 0,
       }))
-    : getDashboardTrendData(selectedMonth);
+    : [];
 
-  // Map spendingBreakdown to the format expected by subcomponents
   const spendingData = display.spendingBreakdown.length > 0
     ? display.spendingBreakdown.map((item) => ({
         name: item.name,
         value: item.value,
         color: categoryPalette[display.spendingBreakdown.indexOf(item) % categoryPalette.length],
       }))
-    : getSpendingBreakdownData(scopedExpenseRecords);
+    : [];
 
-  // Map recentTransactions to the format expected by the subcomponent
   const toneForValue = (value: number): "green" | "rose" => value >= 0 ? "green" : "rose";
   const recentData = display.recentTransactions.length > 0
     ? display.recentTransactions.map((item) => ({
@@ -854,10 +697,10 @@ function DashboardPage({
         value: item.value,
         tone: toneForValue(item.value),
       }))
-    : getRecentTransactionsData(scopedIncomeRecords, scopedExpenseRecords);
+    : [];
 
-  // Compute expense category summaries (still from mock for budget tracking until API provides it)
-  const monthlyExpenseSummaries = getExpenseCategorySummaries(scopedExpenseRecords);
+  // TODO: populate from API data
+  const monthlyExpenseSummaries = [] as ReturnType<typeof getExpenseCategorySummaries>;
 
   return (
     <div className="page-stack">
@@ -1162,9 +1005,8 @@ function AccountsPage() {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const { state: accountsState } = useAccounts(true);
 
-  // Use API data when available, fall back to mock accounts
   const sourceAccounts =
-    accountsState.status === "success" ? accountsState.data : accounts;
+    accountsState.status === "success" ? accountsState.data : ([] as Account[]);
 
   const visibleAccounts = sourceAccounts.filter((account) => {
     if (accountScope === "all") {
@@ -1210,19 +1052,16 @@ function AccountsPage() {
     ];
   });
 
-  function getAccountTotalIncome(accountId: string) {
-    return incomeRecords
-      .filter((record) => record.accountId === accountId)
-      .reduce(
-        (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
-        0,
-      );
+  // TODO: populate from API data
+  function getAccountTotalIncome(_accountId: string) {
+    void _accountId;
+    return 0;
   }
 
-  function getAccountTotalExpense(accountId: string) {
-    return expenseRecords
-      .filter((record) => record.accountId === accountId)
-      .reduce((sum, record) => sum + record.amount, 0);
+  // TODO: populate from API data
+  function getAccountTotalExpense(_accountId: string) {
+    void _accountId;
+    return 0;
   }
 
   return (
@@ -1317,11 +1156,9 @@ function AccountsPage() {
 }
 
 function IncomePage({
-  selectedMonth,
   viewMode,
   onViewModeChange,
 }: {
-  selectedMonth: string;
   viewMode: IncomeViewMode;
   onViewModeChange: (viewMode: IncomeViewMode) => void;
 }) {
@@ -1334,24 +1171,12 @@ function IncomePage({
     parseNumberInput(grossIncomeInput),
     parseNumberInput(capitalExpenditureInput),
   );
-  const visibleIncomeRecords = incomeRecords.filter((record) => {
-    if (!isIncomeRecordInViewScope(record, viewMode, selectedMonth)) {
-      return false;
-    }
+  // TODO: populate from API via useIncomes hook
+  const visibleIncomeRecords: IncomeRecord[] = [];
 
-    if (accountId && record.accountId !== accountId) {
-      return false;
-    }
-
-    if (categoryId && record.categoryId !== categoryId) {
-      return false;
-    }
-
-    return true;
-  });
-
-  function openIncomeModal(mode: "new" | "edit", title: string, recordId?: string) {
-    const record = incomeRecords.find((item) => item.id === recordId);
+  function openIncomeModal(mode: "new" | "edit", title: string, _recordId?: string) {
+    void _recordId;
+    const record = undefined as IncomeRecord | undefined;
     setAccountId(record?.accountId ?? "");
     setCategoryId(record?.categoryId ?? "");
     setGrossIncomeInput(record?.grossIncome.toString() ?? "");
@@ -1489,11 +1314,9 @@ function IncomePage({
 }
 
 function ExpensePage({
-  selectedMonth,
   viewMode,
   onViewModeChange,
 }: {
-  selectedMonth: string;
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
 }) {
@@ -1517,7 +1340,8 @@ function ExpensePage({
   const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
 
-  const pasabuyCategory = expenseCategories.find((category) => isPasabuyCategoryName(category.name));
+  // TODO: populate from API via useExpenseCategories
+  const pasabuyCategory = undefined as ExpenseCategory | undefined;
   const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
   const accountType = selectedFormAccount?.type ?? "Cash";
   const categoryName = getExpenseCategoryName(formCategoryId);
@@ -1557,37 +1381,12 @@ function ExpensePage({
     periodCount,
   });
   const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
-  const visibleExpenseRecords = expenseRecords.filter((record) => {
-    const recordCategoryName = getExpenseCategoryName(record.categoryId);
+  // TODO: populate from API via useExpenses hook
+  const visibleExpenseRecords: ExpenseRecord[] = [];
 
-    if (!isExpenseRecordInViewScope(record, viewMode, selectedMonth)) {
-      return false;
-    }
-
-    if (accountFilterId && record.accountId !== accountFilterId) {
-      return false;
-    }
-
-    if (
-      viewMode !== "Unpaid Pasabuy" &&
-      !matchesExpenseCategoryFilter(record.categoryId, recordCategoryName, expenseCategoryFilter)
-    ) {
-      return false;
-    }
-
-    if (!matchesExpenseViewMode(record, recordCategoryName, viewMode)) {
-      return false;
-    }
-
-    if (viewMode === "Unpaid Pasabuy" && pasabuyerFilter && record.pasabuyer !== pasabuyerFilter) {
-      return false;
-    }
-
-    return true;
-  });
-
-  function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
-    const record = expenseRecords.find((item) => item.id === recordId);
+  function openExpenseModal(mode: "new" | "edit", title: string, _recordId?: string) {
+    void _recordId;
+    const record = undefined as ExpenseRecord | undefined;
     const nextCategoryId =
       record?.categoryId ??
       (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
@@ -1643,7 +1442,7 @@ function ExpensePage({
               >
                 <option value={expenseCategoryFilterAll}>All</option>
                 <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
-                {expenseCategories.map((category) => (
+                {([] as ExpenseCategory[]).map((category) => (
                   <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </FilterSelect>
@@ -1734,7 +1533,7 @@ function ExpensePage({
               <option value="" disabled>
                 Select your category
               </option>
-              {expenseCategories.map((category) => (
+              {([] as ExpenseCategory[]).map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
@@ -2072,11 +1871,22 @@ function WorkflowPage({
 function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
-  const scopedIncomeRecords = getIncomeRecordsForMonth(selectedMonth);
-  const scopedExpenseRecords = getExpenseRecordsForMonth(selectedMonth);
-  const monitoring = getMonthlyMonitoringSnapshot(selectedMonth);
+  // TODO: populate from API via useMonthlyMonitoring hook
+  const scopedIncomeRecords: IncomeRecord[] = [];
+  const scopedExpenseRecords: ExpenseRecord[] = [];
+  const monitoring = {
+    month: selectedMonth,
+    monthlyIncome: 0,
+    monthlyGrossIncome: 0,
+    monthlyCapitalExpenditure: 0,
+    monthlyExpense: 0,
+    grossMargin: 0,
+    forNeeds: 0,
+    forWants: 0,
+    forSavings: 0,
+  };
   const incomeCategorySummaries = getIncomeCategorySummaries(scopedIncomeRecords);
-  const expenseCategorySummaries = getExpenseCategorySummaries(scopedExpenseRecords);
+  const expenseCategorySummaries = getExpenseCategorySummaries(scopedExpenseRecords, []);
   const incomeNetTotal = getIncomeNetTotal(scopedIncomeRecords);
   const incomeGrossTotal = getIncomeGrossTotal(scopedIncomeRecords);
   const incomeCapitalExpenditureTotal = getIncomeCapitalExpenditureTotal(scopedIncomeRecords);
@@ -2335,9 +2145,9 @@ function SyncPage({
           </div>
         </Panel>
       </section>
-      <Panel title="Activity Log" action={<Badge tone="neutral">{syncLog.length} entries</Badge>}>
+      <Panel title="Activity Log" action={<Badge tone="neutral">0 entries</Badge>}>
         <div className="activity-list">
-          {syncLog.map((entry) => (
+          {([] as SyncLogEntry[]).map((entry) => (
             <div className="activity-row" key={entry.id}>
               <Badge tone={entry.type === "error" || entry.type === "conflict" ? "amber" : "blue"}>
                 {entry.type}
@@ -2355,6 +2165,15 @@ function SyncPage({
   );
 }
 
+const KNOWN_DB_ID_KEYS = [
+  { key: "accounts", label: "Accounts" },
+  { key: "incomeCategories", label: "Income Categories" },
+  { key: "incomes", label: "Incomes" },
+  { key: "expenseCategories", label: "Expense Categories" },
+  { key: "expenses", label: "Expenses" },
+  { key: "monthlyMonitoring", label: "Monthly Monitoring" },
+] as const;
+
 function SettingsPage({
   schemaHealth,
   onSchemaVerify,
@@ -2362,32 +2181,94 @@ function SettingsPage({
   schemaHealth: SchemaHealth;
   onSchemaVerify: () => void;
 }) {
+  const { user, loading, logout } = useAuth();
+  const [notionToken, setNotionToken] = useState("");
+  const [dbIds, setDbIds] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    userNotionConfigApi.get().then((res) => {
+      if (cancelled || !res.success || !res.data.configured) return;
+      startTransition(() => {
+        setNotionToken(res.data.tokenConfigured ? "stored" : "");
+        setDbIds(res.data.dbIds);
+      });
+    });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  function setDbId(key: string, value: string) {
+    setDbIds((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSaveNotionConfig() {
+    setSaving(true);
+    setSaved(false);
+    const token = notionToken === "stored" ? undefined : notionToken;
+    const res = await userNotionConfigApi.save({
+      token: token || undefined,
+      dbIds,
+    });
+    setSaving(false);
+    if (res.success) {
+      setSaved(true);
+      setNotionToken(token ? "stored" : "");
+    }
+  }
+
+  async function handleRemoveNotionConfig() {
+    setSaving(true);
+    await userNotionConfigApi.remove();
+    setSaving(false);
+    setNotionToken("");
+    setDbIds({});
+    setSaved(false);
+  }
+
   return (
     <div className="page-stack">
       <section className="two-column">
-        <Panel title="Access" action={<Badge tone="green">Email and Google</Badge>}>
-          <div className="auth-preview">
-            <button type="button" className="button button--primary">
-              <LockKeyhole size={16} />
-              Email Sign In
-            </button>
-            <button type="button" className="button">
-              <ShieldCheck size={16} />
-              Google Sign In
-            </button>
-            <div className="snapshot-card">
-              <p className="snapshot-card__title">Session State</p>
-              <p>Signed-in, signed-out, loading, and unauthorized states are represented in the shell contract.</p>
+        <Panel
+          title="Account"
+          action={
+            user
+              ? <Badge tone="green">{user.email}</Badge>
+              : <Badge tone="neutral">Not signed in</Badge>
+          }
+        >
+          {loading ? (
+            <p>Loading...</p>
+          ) : user ? (
+            <div className="form-grid form-grid--single">
+              <Field label="Name"><input value={user.name} readOnly /></Field>
+              <Field label="Email"><input value={user.email} readOnly /></Field>
+              <button type="button" className="button" onClick={logout}>
+                <LogOut size={16} />
+                Sign Out
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="auth-preview">
+              <Link href="/login" className="button button--primary">
+                <LockKeyhole size={16} />
+                Sign In
+              </Link>
+              <Link href="/register" className="button">
+                <ShieldCheck size={16} />
+                Create Account
+              </Link>
+            </div>
+          )}
         </Panel>
         <Panel title="Schema" action={<StatusPill syncState="idle" schemaHealth={schemaHealth} />}>
           <div className="form-grid form-grid--single">
             <Field label="Backend API Base Path">
               <input value="/api/v1" readOnly />
             </Field>
-            <ComputedField label="Token Storage" value="Backend only" />
-            <ComputedField label="Database Mapping" value="Server configuration" />
+            <ComputedField label="Token Storage" value="Backend only (AES-256-GCM encrypted)" />
+            <ComputedField label="Database Mapping" value="Per-user Notion configuration" />
             <button type="button" className="button button--primary" onClick={onSchemaVerify}>
               <Database size={16} />
               Verify Schema
@@ -2395,6 +2276,42 @@ function SettingsPage({
           </div>
         </Panel>
       </section>
+      {user && (
+        <Panel title="Notion Configuration">
+          <div className="form-grid form-grid--single">
+            <Field label="Notion Integration Token">
+              <input
+                type="password"
+                value={notionToken}
+                onChange={(e) => setNotionToken(e.target.value)}
+                placeholder={notionToken === "stored" ? "Token is stored (enter new to replace)" : "secret_..."}
+              />
+            </Field>
+            <FormSectionDivider title="Database IDs" />
+            {KNOWN_DB_ID_KEYS.map(({ key, label }) => (
+              <Field key={key} label={`${label} Database ID`}>
+                <input
+                  value={dbIds[key] ?? ""}
+                  onChange={(e) => setDbId(key, e.target.value)}
+                  placeholder={`${key} database ID`}
+                  style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.8rem" }}
+                />
+              </Field>
+            ))}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" className="button button--primary" onClick={handleSaveNotionConfig} disabled={saving}>
+                <Save size={16} />
+                {saving ? "Saving..." : "Save Configuration"}
+              </button>
+              <button type="button" className="button" onClick={handleRemoveNotionConfig} disabled={saving}>
+                <Trash2 size={16} />
+                Remove
+              </button>
+              {saved && <span style={{ color: "var(--success, #22c55e)", fontSize: "0.85rem", alignSelf: "center" }}>Saved</span>}
+            </div>
+          </div>
+        </Panel>
+      )}
     </div>
   );
 }
@@ -2546,12 +2463,9 @@ function AccountDetailModal({
   onClose: () => void;
 }) {
   const isCredit = isCreditLikeAccountType(account.type);
-  const totalIncome = incomeRecords
-    .filter((r) => r.accountId === account.id)
-    .reduce((s, r) => s + calculateNetIncome(r.grossIncome, r.capitalExpenditure), 0);
-  const totalExpense = expenseRecords
-    .filter((r) => r.accountId === account.id)
-    .reduce((s, r) => s + r.amount, 0);
+  // TODO: populate from API data
+  const totalIncome = 0;
+  const totalExpense = 0;
 
   return (
     <div

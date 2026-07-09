@@ -14,6 +14,17 @@ import {
 import { AppConfigService } from '../config/config.service';
 import { MappingService } from '../mapping/mapping.service';
 import { ValidationService } from '../validation/validation.service';
+import { NotionClientFactory } from './notion-client-factory.service';
+import { NotionApiClient } from './notion-api-client';
+import {
+  pageToAccount,
+  pageToExpenseCategory,
+  pageToExpenseRecord,
+  pageToIncomeCategory,
+  pageToIncomeRecord,
+  incomeDtoToProperties,
+  expenseDtoToProperties,
+} from './notion-property-mapper';
 
 export type FinanceRecord =
   | AccountDto
@@ -51,6 +62,14 @@ const roundMoney = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+interface LiveCache {
+  accounts: AccountDto[];
+  incomeCategories: IncomeCategoryDto[];
+  expenseCategories: ExpenseCategoryDto[];
+  incomes: IncomeRecordDto[];
+  expenses: ExpenseRecordDto[];
+}
 
 @Injectable()
 export class NotionService {
@@ -313,19 +332,137 @@ export class NotionService {
     timestamp: string;
   }> = [];
 
+  private liveCaches = new Map<string, LiveCache | null>();
+
   constructor(
     private readonly appConfig: AppConfigService,
     private readonly mappingService: MappingService,
     private readonly validationService: ValidationService,
+    private readonly clientFactory: NotionClientFactory,
   ) {}
 
-  list(resource: ResourceName, query: ListQuery = {}) {
-    const records = this.getCollection(resource);
+  private getLiveCacheKey(userId?: string): string {
+    return userId ?? '__env__';
+  }
+
+  private async loadLive(userId: string | undefined, resource: ResourceName): Promise<NotionApiClient | null> {
+    const key = this.getLiveCacheKey(userId);
+
+    if (this.liveCaches.has(key) && resource !== 'monthlyMonitoring') {
+      return null;
+    }
+
+    const client = await this.clientFactory.getClient(userId);
+    if (!client) return null;
+
+    const [accounts, incomeCategories, incomes, expenseCategories, expenses] =
+      await Promise.all([
+        client.queryDatabase('accounts'),
+        client.queryDatabase('incomeCategories'),
+        client.queryDatabase('incomes'),
+        client.queryDatabase('expenseCategories'),
+        client.queryDatabase('expenses'),
+      ]);
+
+    this.liveCaches.set(key, {
+      accounts: accounts.map(pageToAccount),
+      incomeCategories: incomeCategories.map(pageToIncomeCategory),
+      incomes: incomes.map(pageToIncomeRecord),
+      expenseCategories: expenseCategories.map(pageToExpenseCategory),
+      expenses: expenses.map(pageToExpenseRecord),
+    });
+
+    return client;
+  }
+
+  private async getLiveClient(userId?: string): Promise<NotionApiClient | null> {
+    const key = this.getLiveCacheKey(userId);
+    if (this.liveCaches.has(key)) {
+      return this.clientFactory.getClient(userId);
+    }
+    const client = await this.loadLive(userId, 'accounts');
+    return client;
+  }
+
+  private async loadLiveSingle(
+    userId: string | undefined,
+    resource: ResourceName,
+    pageId: string,
+  ): Promise<FinanceRecord | null> {
+    const client = await this.clientFactory.getClient(userId);
+    if (!client) return null;
+    try {
+      const page = await client.retrievePage(pageId);
+      if (resource === 'accounts') return pageToAccount(page);
+      if (resource === 'incomeCategories') return pageToIncomeCategory(page);
+      if (resource === 'expenseCategories') return pageToExpenseCategory(page);
+      if (this.isIncomeBacked(resource)) return pageToIncomeRecord(page);
+      if (this.isExpenseBacked(resource)) return pageToExpenseRecord(page);
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private refreshCache(userId?: string): void {
+    const key = this.getLiveCacheKey(userId);
+    this.liveCaches.delete(key);
+  }
+
+  get isGloballyConfigured(): boolean {
+    return this.clientFactory.isGloballyConfigured;
+  }
+
+  private getCollectedAccounts(userId?: string): AccountDto[] {
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) return cache.accounts;
+    return this.accounts;
+  }
+
+  private getCollectedIncomeCategories(userId?: string): IncomeCategoryDto[] {
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) return cache.incomeCategories;
+    return this.incomeCategories;
+  }
+
+  private getCollectedIncomes(userId?: string): IncomeRecordDto[] {
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) return cache.incomes;
+    return this.incomes;
+  }
+
+  private getCollectedExpenseCategories(userId?: string): ExpenseCategoryDto[] {
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) return cache.expenseCategories;
+    return this.expenseCategories;
+  }
+
+  private getCollectedExpenses(userId?: string): ExpenseRecordDto[] {
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) return cache.expenses;
+    return this.expenses;
+  }
+
+  async list(resource: ResourceName, query: ListQuery = {}, userId?: string): Promise<FinanceRecord[]> {
+    if (resource === 'monthlyMonitoring') {
+      const month = query.month ?? this.currentMonth();
+      return [await this.monthlyMonitoring(month, userId)] as FinanceRecord[];
+    }
+    await this.loadLive(userId, resource);
+    const records = this.getCollection(resource, userId);
     return this.applyQuery(resource, records, query);
   }
 
-  detail(resource: ResourceName, id: string) {
-    const record = this.getCollection(resource).find((item) => item.id === id);
+  async detail(resource: ResourceName, id: string, userId?: string): Promise<FinanceRecord> {
+    await this.loadLive(userId, resource);
+    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
+    if (cache) {
+      const record = this.getCollection(resource, userId).find((item) => item.id === id);
+      if (record) return clone(record);
+      const liveRecord = await this.loadLiveSingle(userId, resource, id);
+      if (liveRecord) return clone(liveRecord);
+    }
+    const record = this.getCollection(resource, userId).find((item) => item.id === id);
     if (!record) {
       throw new ApiException(
         HttpStatus.NOT_FOUND,
@@ -337,17 +474,62 @@ export class NotionService {
     return clone(record);
   }
 
-  create(resource: ResourceName, data: Record<string, unknown>) {
+  async create(resource: ResourceName, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
+    await this.loadLive(userId, resource);
     this.validationService.validateMutation(resource, 'create', data);
     const record = this.makeRecord(resource, data);
-    this.getMutableCollection(resource).push(record);
+
+    const client = await this.getLiveClient(userId);
+    if (client) {
+      try {
+        const properties = this.buildNotionProperties(resource, data);
+        const page = client.isConfigured
+          ? await client.createPage(resource, properties)
+          : null;
+
+        if (page) {
+          this.refreshCache(userId);
+          const createdRecord = this.isIncomeBacked(resource)
+            ? (pageToIncomeRecord(page) as FinanceRecord)
+            : (pageToExpenseRecord(page) as FinanceRecord);
+          this.addSyncEvent('create', resource, `Created ${createdRecord.id}`);
+          return clone(createdRecord);
+        }
+      } catch (error) {
+        this.logError('create', resource, error);
+        throw error;
+      }
+    }
+
+    this.getMutableCollection(resource, userId).push(record as MutableFinanceRecord);
     this.addSyncEvent('create', resource, `Created ${record.id}`);
     return clone(record);
   }
 
-  update(resource: ResourceName, id: string, data: Record<string, unknown>) {
+  async update(resource: ResourceName, id: string, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
+    await this.loadLive(userId, resource);
     this.validationService.validateMutation(resource, 'update', data);
-    const collection = this.getMutableCollection(resource);
+
+    const client = await this.getLiveClient(userId);
+    if (client) {
+      try {
+        const properties = this.buildNotionProperties(resource, data);
+        const page = await client.updatePage(id, properties);
+        this.refreshCache(userId);
+
+        const updatedRecord = this.isIncomeBacked(resource)
+          ? (pageToIncomeRecord(page) as FinanceRecord)
+          : (pageToExpenseRecord(page) as FinanceRecord);
+
+        this.addSyncEvent('update', resource, `Updated ${id}`);
+        return clone(updatedRecord);
+      } catch (error) {
+        this.logError('update', resource, error);
+        throw error;
+      }
+    }
+
+    const collection = this.getMutableCollection(resource, userId);
     const index = collection.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new ApiException(
@@ -362,10 +544,46 @@ export class NotionService {
     return clone(collection[index]);
   }
 
-  delete(resource: ResourceName, id: string) {
+  async delete(resource: ResourceName, id: string, userId?: string): Promise<FinanceRecord> {
+    await this.loadLive(userId, resource);
     this.validationService.validateMutation(resource, 'delete');
     const mapping = this.mappingService.get(resource);
-    const collection = this.getMutableCollection(resource);
+
+    const client = await this.getLiveClient(userId);
+    if (client) {
+      try {
+        const record = await this.detail(resource, id, userId);
+        const softDeleteData =
+          mapping.deletePolicy === 'incomeSoftDelete' && 'grossIncome' in record
+            ? {
+                name: `${(record as IncomeRecordDto).name} [Deleted: ${(record as IncomeRecordDto).grossIncome}]`,
+                grossIncome: 0,
+              }
+            : mapping.deletePolicy === 'expenseSoftDelete' && 'amount' in record
+              ? {
+                  description: `${(record as ExpenseRecordDto).description} [Deleted: ${(record as ExpenseRecordDto).amount}]`,
+                  amount: 0,
+                }
+              : {};
+
+        const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>);
+        const page = await client.updatePage(id, properties);
+        this.refreshCache(userId);
+
+        const deletedRecord = this.isIncomeBacked(resource)
+          ? (pageToIncomeRecord(page) as FinanceRecord)
+          : (pageToExpenseRecord(page) as FinanceRecord);
+
+        Object.assign(deletedRecord, { deleted: true });
+        this.addSyncEvent('delete', resource, `Soft-deleted ${id}`);
+        return clone(deletedRecord);
+      } catch (error) {
+        this.logError('delete', resource, error);
+        throw error;
+      }
+    }
+
+    const collection = this.getMutableCollection(resource, userId);
     const index = collection.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new ApiException(
@@ -382,31 +600,53 @@ export class NotionService {
         name: `${record.name} [Deleted: ${record.grossIncome}]`,
         grossIncome: 0,
         deleted: true,
-      };
+      } as MutableFinanceRecord;
     } else if (mapping.deletePolicy === 'expenseSoftDelete' && 'amount' in record) {
       collection[index] = {
         ...record,
         description: `${record.description} [Deleted: ${record.amount}]`,
         amount: 0,
         deleted: true,
-      };
+      } as MutableFinanceRecord;
     }
     this.addSyncEvent('delete', resource, `Soft-deleted ${id}`);
     return clone(collection[index]);
   }
 
-  pull(resources: ResourceName[], scope?: { month?: string; viewMode?: string }) {
-    return resources.reduce<Record<string, FinanceRecord[]>>((snapshot, resource) => {
-      snapshot[resource] = this.list(resource, {
+  async pull(
+    resources: ResourceName[],
+    scope?: { month?: string; viewMode?: string },
+    userId?: string,
+  ): Promise<Record<string, FinanceRecord[]>> {
+    this.refreshCache(userId);
+    await this.loadLive(userId, 'accounts');
+    const snapshot: Record<string, FinanceRecord[]> = {};
+    for (const resource of resources) {
+      snapshot[resource] = (await this.list(resource, {
         month: scope?.month,
         viewMode: scope?.viewMode,
         expenseViewMode: scope?.viewMode,
-      }) as FinanceRecord[];
-      return snapshot;
-    }, {});
+      }, userId)) as FinanceRecord[];
+    }
+    return snapshot;
   }
 
-  commit(operations: SyncOperation[], returnFreshSnapshot = false, snapshotMonth?: string) {
+  async commit(
+    operations: SyncOperation[],
+    returnFreshSnapshot = false,
+    snapshotMonth?: string,
+    userId?: string,
+  ): Promise<{
+    applied: Array<{ clientOperationId: string; resource: ResourceName; id: string }>;
+    failed: Array<{
+      clientOperationId: string;
+      resource: ResourceName;
+      code: string;
+      message: string;
+      details?: Record<string, unknown>;
+    }>;
+    freshSnapshot?: Record<string, FinanceRecord[]>;
+  }> {
     const applied: Array<{ clientOperationId: string; resource: ResourceName; id: string }> = [];
     const failed: Array<{
       clientOperationId: string;
@@ -418,12 +658,13 @@ export class NotionService {
 
     for (const operation of operations) {
       try {
-        const result =
+        const result: FinanceRecord =
           operation.action === 'create'
-            ? this.create(operation.resource, operation.data ?? {})
+            ? await this.create(operation.resource, operation.data ?? {}, userId)
             : operation.action === 'update'
-              ? this.update(operation.resource, this.requireId(operation), operation.data ?? {})
-              : this.delete(operation.resource, this.requireId(operation));
+              ? await this.update(operation.resource, this.requireId(operation), operation.data ?? {}, userId)
+              : await this.delete(operation.resource, this.requireId(operation), userId);
+
         applied.push({
           clientOperationId: operation.clientOperationId,
           resource: operation.resource,
@@ -461,26 +702,68 @@ export class NotionService {
       applied,
       failed,
       freshSnapshot: returnFreshSnapshot
-        ? this.pull(['accounts', 'incomeCategories', 'expenseCategories', 'incomes', 'expenses'], {
-            month: snapshotMonth,
-            viewMode: 'monthly',
-          })
+        ? await this.pull(
+            ['accounts', 'incomeCategories', 'expenseCategories', 'incomes', 'expenses'],
+            {
+              month: snapshotMonth,
+              viewMode: 'monthly',
+            },
+            userId,
+          )
         : undefined,
     };
   }
 
-  syncStatus() {
+  async syncStatus(userId?: string): Promise<{
+    lastSyncAt: string | null;
+    pendingOperationCount: number;
+    failedOperationCount: number;
+    schemaStatus: string;
+  }> {
+    const client = await this.clientFactory.getClient(userId);
+    const schema = await this.schemaStatus(userId);
     return {
       lastSyncAt: this.syncEvents.at(-1)?.timestamp ?? null,
       pendingOperationCount: 0,
       failedOperationCount: this.syncEvents.filter((event) => event.type === 'error').length,
-      schemaStatus: this.schemaStatus().status,
+      schemaStatus: client ? 'live' : (this.clientFactory.isGloballyConfigured ? 'live' : schema.status),
     };
   }
 
-  schemaStatus() {
+  async schemaStatus(userId?: string): Promise<{
+    status: string;
+    checkedAt: string;
+    configured: boolean;
+    missing: string[];
+    checks: Array<{
+      resource: string;
+      notionSource: string;
+      status: string;
+      requiredWritableFields: string[];
+      readOnly: boolean;
+    }>;
+  }> {
+    const client = await this.clientFactory.getClient(userId);
     const missing = this.appConfig.missingRequiredNotionConfig;
-    const configured = missing.length === 0;
+    const configured = client !== null;
+
+    if (client) {
+      const checks = this.mappingService.getAll().map((mapping) => ({
+        resource: mapping.resource,
+        notionSource: mapping.notionSource,
+        status: 'live' as const,
+        requiredWritableFields: mapping.writableFields,
+        readOnly: mapping.readOnly,
+      }));
+      return {
+        status: configured ? 'configured' : 'notConfigured',
+        checkedAt: nowIso(),
+        configured,
+        missing,
+        checks,
+      };
+    }
+
     return {
       status: configured ? 'configured' : 'notConfigured',
       checkedAt: nowIso(),
@@ -496,13 +779,27 @@ export class NotionService {
     };
   }
 
-  dashboardSummary(month: string) {
-    const incomes = this.filterByMonth(this.incomes, 'date', month).filter(
-      (record) => !record.deleted,
-    );
-    const expenses = this.filterByMonth(this.expenses, 'purchaseDate', month).filter(
-      (record) => !record.deleted,
-    );
+  async dashboardSummary(month: string, userId?: string): Promise<{
+    month: string;
+    totalIncome: number;
+    totalExpense: number;
+    grossMargin: number;
+    totalCashFlow: number;
+    activeAccountCount: number;
+    pendingExpenseCount: number;
+  }> {
+    await this.loadLive(userId, 'incomes');
+    await this.loadLive(userId, 'accounts');
+
+    const incomes = (await this.list('incomes', { month }, userId)).filter(
+      (record) => !('deleted' in record) || !record.deleted,
+    ) as IncomeRecordDto[];
+
+    const expenses = (await this.list('expenses', { month }, userId)).filter(
+      (record) => !('deleted' in record) || !record.deleted,
+    ) as ExpenseRecordDto[];
+
+    const accounts = this.getCollectedAccounts(userId);
     const totalIncome = roundMoney(
       incomes.reduce((sum, item) => sum + item.grossIncome - item.capitalExpenditure, 0),
     );
@@ -510,7 +807,7 @@ export class NotionService {
       expenses.reduce((sum, item) => sum + item.amount + item.interest, 0),
     );
     const totalCashFlow = roundMoney(
-      this.accounts
+      accounts
         .filter((account) => !account.inactive && !this.isCreditLike(account.type))
         .reduce((sum, account) => sum + account.currentBalance, 0),
     );
@@ -521,18 +818,26 @@ export class NotionService {
       totalExpense,
       grossMargin: roundMoney(totalIncome - totalExpense),
       totalCashFlow,
-      activeAccountCount: this.accounts.filter((account) => !account.inactive).length,
+      activeAccountCount: accounts.filter((account) => !account.inactive).length,
       pendingExpenseCount: expenses.filter((expense) => expense.datePaid === null).length,
     };
   }
 
-  monthlyMonitoring(month: string) {
-    const incomes = this.filterByMonth(this.incomes, 'date', month).filter(
-      (record) => !record.deleted,
-    );
-    const expenses = this.filterByMonth(this.expenses, 'purchaseDate', month).filter(
-      (record) => !record.deleted,
-    );
+  async monthlyMonitoring(month: string, userId?: string): Promise<MonthlyMonitoringDto> {
+    await this.loadLive(userId, 'incomes');
+    await this.loadLive(userId, 'accounts');
+
+    const incomes = (await this.list('incomes', { month }, userId)).filter(
+      (record) => !('deleted' in record) || !record.deleted,
+    ) as IncomeRecordDto[];
+
+    const expenses = (await this.list('expenses', { month }, userId)).filter(
+      (record) => !('deleted' in record) || !record.deleted,
+    ) as ExpenseRecordDto[];
+
+    const expenseCategories = this.getCollectedExpenseCategories(userId);
+    const incomeCategories = this.getCollectedIncomeCategories(userId);
+
     const monthlyGrossIncome = roundMoney(
       incomes.reduce((sum, item) => sum + item.grossIncome, 0),
     );
@@ -542,7 +847,7 @@ export class NotionService {
     const monthlyExpense = roundMoney(
       expenses.reduce((sum, item) => sum + item.amount + item.interest, 0),
     );
-    const categoryRows = this.expenseCategories.map((category) => {
+    const categoryRows = expenseCategories.map((category) => {
       const spending = roundMoney(
         expenses
           .filter((expense) => expense.categoryId === category.id)
@@ -569,7 +874,7 @@ export class NotionService {
       forNeeds: roundMoney(monthlyIncome * 0.5),
       forWants: roundMoney(monthlyIncome * 0.3),
       forSavings: roundMoney(monthlyIncome * 0.2),
-      incomeCategories: this.incomeCategories.map((category) => ({
+      incomeCategories: incomeCategories.map((category) => ({
         id: category.id,
         source: category.source,
         total: roundMoney(
@@ -582,19 +887,54 @@ export class NotionService {
     };
   }
 
-  private getCollection(resource: ResourceName): FinanceRecord[] {
-    if (resource === 'accounts') return this.accounts;
-    if (resource === 'incomeCategories') return this.incomeCategories;
-    if (resource === 'expenseCategories') return this.expenseCategories;
-    if (resource === 'monthlyMonitoring') return [this.monthlyMonitoring(this.currentMonth())];
-    if (this.isIncomeBacked(resource)) return this.incomes;
-    if (this.isExpenseBacked(resource)) return this.expenses;
+  private buildNotionProperties(
+    resource: ResourceName,
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    if (this.isIncomeBacked(resource)) {
+      const mapping = this.mappingService.get(resource);
+      const categoryId =
+        mapping.fixedCategory !== undefined
+          ? this.findIncomeCategoryId(mapping.fixedCategory)
+          : String(data.categoryId ?? '');
+
+      return incomeDtoToProperties(data, {
+        accountId: (data.accountId as string) ?? null,
+        categoryId,
+        transactedAccountId: (data.transactedAccountId as string) ?? null,
+        ccPaymentCoveredId: (data.ccPaymentCoveredId as string) ?? null,
+      });
+    }
+
+    if (this.isExpenseBacked(resource)) {
+      return expenseDtoToProperties(data, {
+        accountId: String(data.accountId ?? ''),
+        categoryId: String(data.categoryId ?? ''),
+        ccLinkPaymentReceiptId: (data.ccLinkPaymentReceiptId as string) ?? null,
+        pasabuyAccountReceiverId: (data.pasabuyAccountReceiverId as string) ?? null,
+      });
+    }
+
+    throw new ApiException(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'INTERNAL_SERVER_ERROR',
+      `Cannot build Notion properties for resource: ${resource}`,
+      { resource },
+    );
+  }
+
+  private getCollection(resource: ResourceName, userId?: string): FinanceRecord[] {
+    if (resource === 'accounts') return this.getCollectedAccounts(userId);
+    if (resource === 'incomeCategories') return this.getCollectedIncomeCategories(userId);
+    if (resource === 'expenseCategories') return this.getCollectedExpenseCategories(userId);
+    if (this.isIncomeBacked(resource)) return this.getCollectedIncomes(userId);
+    if (this.isExpenseBacked(resource)) return this.getCollectedExpenses(userId);
     return [];
   }
 
-  private getMutableCollection(resource: ResourceName): MutableFinanceRecord[] {
-    if (this.isIncomeBacked(resource)) return this.incomes;
-    if (this.isExpenseBacked(resource)) return this.expenses;
+  private getMutableCollection(resource: ResourceName, userId?: string): MutableFinanceRecord[] {
+    if (this.isIncomeBacked(resource)) return this.getCollectedIncomes(userId);
+    if (this.isExpenseBacked(resource)) return this.getCollectedExpenses(userId);
     throw new ApiException(
       HttpStatus.FORBIDDEN,
       'FORBIDDEN',
@@ -603,7 +943,35 @@ export class NotionService {
     );
   }
 
-  private applyQuery(resource: ResourceName, records: FinanceRecord[], query: ListQuery) {
+  private findIncomeCategoryId(source: string): string {
+    const category = this.getCollectedIncomeCategories().find((item) => item.source === source);
+    if (!category) {
+      throw new ApiException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'INTERNAL_SERVER_ERROR',
+        `Required income category is not configured: ${source}`,
+      );
+    }
+    return category.id;
+  }
+
+  private findExpenseCategoryId(name: string): string {
+    const category = this.getCollectedExpenseCategories().find((item) => item.name === name);
+    if (!category) {
+      throw new ApiException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'INTERNAL_SERVER_ERROR',
+        `Required expense category is not configured: ${name}`,
+      );
+    }
+    return category.id;
+  }
+
+  private async applyQuery(
+    resource: ResourceName,
+    records: FinanceRecord[],
+    query: ListQuery,
+  ): Promise<FinanceRecord[]> {
     let filtered = records.filter((item) => !('deleted' in item) || !item.deleted);
 
     if (resource === 'accounts') {
@@ -642,13 +1010,8 @@ export class NotionService {
     resource: ResourceName,
     records: IncomeRecordDto[],
     query: ListQuery,
-  ) {
+  ): IncomeRecordDto[] {
     let filtered = records;
-    const mapping = this.mappingService.get(resource);
-    if (mapping.fixedCategory) {
-      const categoryId = this.findIncomeCategoryId(mapping.fixedCategory);
-      filtered = filtered.filter((record) => record.categoryId === categoryId);
-    }
     if (resource === 'receivables') {
       filtered = filtered.filter((record) => !record.accountId);
     }
@@ -664,7 +1027,7 @@ export class NotionService {
     return filtered;
   }
 
-  private filterExpenseBacked(records: ExpenseRecordDto[], query: ListQuery) {
+  private filterExpenseBacked(records: ExpenseRecordDto[], query: ListQuery): ExpenseRecordDto[] {
     let filtered = records;
     const mode = query.expenseViewMode ?? query.viewMode;
     if (query.month && (!mode || mode.toLowerCase() === 'monthly')) {
@@ -698,13 +1061,8 @@ export class NotionService {
     return filtered;
   }
 
-  private makeRecord(resource: ResourceName, data: Record<string, unknown>) {
-    const mapping = this.mappingService.get(resource);
+  private makeRecord(resource: ResourceName, data: Record<string, unknown>): FinanceRecord {
     if (this.isIncomeBacked(resource)) {
-      const categoryId =
-        mapping.fixedCategory !== undefined
-          ? this.findIncomeCategoryId(mapping.fixedCategory)
-          : String(data.categoryId);
       const grossIncome = Number(data.grossIncome ?? 0);
       const adjustedGross =
         resource === 'alkansya' && grossIncome > 0 ? grossIncome * -1 : grossIncome;
@@ -718,7 +1076,7 @@ export class NotionService {
           data.accountId === undefined || data.accountId === null
             ? null
             : String(data.accountId),
-        categoryId,
+        categoryId: String(data.categoryId),
         transactedAccountId:
           data.transactedAccountId === undefined || data.transactedAccountId === null
             ? null
@@ -763,15 +1121,11 @@ export class NotionService {
     } satisfies ExpenseRecordDto;
   }
 
-  private filterByMonth<T>(
-    records: T[],
-    field: keyof T,
-    month: string,
-  ) {
+  private filterByMonth<T>(records: T[], field: keyof T, month: string): T[] {
     return records.filter((record) => String(record[field]).startsWith(month));
   }
 
-  private isIncomeBacked(resource: ResourceName) {
+  private isIncomeBacked(resource: ResourceName): boolean {
     return [
       'incomes',
       'transactions',
@@ -782,43 +1136,19 @@ export class NotionService {
     ].includes(resource);
   }
 
-  private isExpenseBacked(resource: ResourceName) {
+  private isExpenseBacked(resource: ResourceName): boolean {
     return resource === 'expenses' || resource === 'expenseScheduler';
   }
 
-  private findIncomeCategoryId(source: string) {
-    const category = this.incomeCategories.find((item) => item.source === source);
-    if (!category) {
-      throw new ApiException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'INTERNAL_SERVER_ERROR',
-        `Required income category is not configured: ${source}`,
-      );
-    }
-    return category.id;
-  }
-
-  private findExpenseCategoryId(name: string) {
-    const category = this.expenseCategories.find((item) => item.name === name);
-    if (!category) {
-      throw new ApiException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'INTERNAL_SERVER_ERROR',
-        `Required expense category is not configured: ${name}`,
-      );
-    }
-    return category.id;
-  }
-
-  private currentMonth() {
+  private currentMonth(): string {
     return new Date().toISOString().slice(0, 7);
   }
 
-  private isCreditLike(type: string) {
+  private isCreditLike(type: string): boolean {
     return type === 'Credit Account' || type === 'BYPL';
   }
 
-  private requireId(operation: SyncOperation) {
+  private requireId(operation: SyncOperation): string {
     if (!operation.id) {
       throw new ApiException(
         HttpStatus.BAD_REQUEST,
@@ -830,7 +1160,7 @@ export class NotionService {
     return operation.id;
   }
 
-  private addSyncEvent(type: string, resource: string, description: string) {
+  private addSyncEvent(type: string, resource: string, description: string): void {
     this.syncEvents.push({
       id: randomUUID(),
       type,
@@ -838,5 +1168,10 @@ export class NotionService {
       description,
       timestamp: nowIso(),
     });
+  }
+
+  private logError(action: string, resource: ResourceName, error: unknown): void {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    this.appConfig['logger']?.error?.(`Failed to ${action} ${resource}: ${message}`);
   }
 }
