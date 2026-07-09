@@ -74,6 +74,7 @@ export type Account = {
 export type IncomeCategory = {
   id: string;
   source: string;
+  auxiliary: boolean;
   monthlyEarnings: number;
   monthlyExpenditure: number;
   monthlyGross: number;

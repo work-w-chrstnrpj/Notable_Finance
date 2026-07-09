@@ -10,7 +10,7 @@
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "node -e \"console.log('Playwright e2e pending backend integration')\""
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "lucide-react": "^1.23.0",
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

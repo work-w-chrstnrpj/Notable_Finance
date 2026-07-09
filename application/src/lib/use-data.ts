@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ApiResult } from "./api-client";
 import {
   accountsApi,
+  alkansyaApi,
+  creditCardPaymentsApi,
   dashboardApi,
   expenseCategoriesApi,
   expenseSchedulerApi,
@@ -11,7 +13,10 @@ import {
   incomeCategoriesApi,
   incomesApi,
   monthlyMonitoringApi,
+  receivablesApi,
   syncApi,
+  transfersApi,
+  type WorkflowListParams,
 } from "./api-client";
 import type {
   Account,
@@ -33,6 +38,12 @@ export type AsyncState<T> =
 export function useApiData<T>(
   fetcher: () => Promise<ApiResult<T>>,
   fallback?: T,
+  /**
+   * Serialized query key. When it changes the data is refetched — this is what
+   * makes month/view-mode switches issue a fresh query instead of showing the
+   * initial (stale) result forever.
+   */
+  key?: string,
 ) {
   const [state, setState] = useState<AsyncState<T>>({ status: "loading" });
 
@@ -75,7 +86,7 @@ export function useApiData<T>(
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [key]);
 
   const refetch = useCallback(async () => {
     setState({ status: "loading" });
@@ -145,12 +156,17 @@ export function useExpenseCategories() {
 export function useIncomes(
   params?: {
     month?: string;
+    rangeStart?: string;
+    rangeEnd?: string;
     categoryId?: string;
     accountId?: string;
   },
 ) {
+  const key = JSON.stringify(params ?? {});
   return useApiData<IncomeRecord[]>(
     () => incomesApi.list(params),
+    undefined,
+    key,
   );
 }
 
@@ -159,6 +175,8 @@ export function useIncomes(
 export function useExpenses(
   params?: {
     month?: string;
+    rangeStart?: string;
+    rangeEnd?: string;
     categoryId?: string;
     accountId?: string;
     paymentStatus?: string;
@@ -166,8 +184,55 @@ export function useExpenses(
     pasabuyer?: string;
   },
 ) {
+  const key = JSON.stringify(params ?? {});
   return useApiData<ExpenseRecord[]>(
     () => expensesApi.list(params),
+    undefined,
+    key,
+  );
+}
+
+// ── Workflow hooks (income-backed views) ──────────────────────────────
+
+export function useTransfers(params?: WorkflowListParams) {
+  return useApiData<IncomeRecord[]>(() => transfersApi.list(params));
+}
+
+export function useCreditCardPayments(params?: WorkflowListParams) {
+  return useApiData<IncomeRecord[]>(() => creditCardPaymentsApi.list(params));
+}
+
+export function useAlkansya(params?: WorkflowListParams) {
+  return useApiData<IncomeRecord[]>(() => alkansyaApi.list(params));
+}
+
+export function useReceivables(params?: WorkflowListParams) {
+  return useApiData<IncomeRecord[]>(() => receivablesApi.list(params));
+}
+
+export type WorkflowSection =
+  | "transfer"
+  | "credit-card-payment"
+  | "alkansya"
+  | "receivables";
+
+const workflowApiBySection = {
+  transfer: transfersApi,
+  "credit-card-payment": creditCardPaymentsApi,
+  alkansya: alkansyaApi,
+  receivables: receivablesApi,
+} as const;
+
+export function useWorkflowRecords(
+  section: WorkflowSection,
+  params?: WorkflowListParams,
+) {
+  const api = workflowApiBySection[section];
+  const key = JSON.stringify({ section, ...(params ?? {}) });
+  return useApiData<IncomeRecord[]>(
+    () => api.list(params),
+    undefined,
+    key,
   );
 }
 

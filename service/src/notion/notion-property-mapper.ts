@@ -26,6 +26,7 @@ export const NOTION_PROPERTY_NAMES = {
   },
   incomeCategories: {
     source: 'Source of Income',
+    auxiliary: 'Auxiliary',
     monthlyEarnings: 'Monthly Earnings',
     monthlyExpenditure: 'Monthly Expenditure',
     monthlyGross: 'Monthly Gross Earnings',
@@ -55,6 +56,7 @@ export const NOTION_PROPERTY_NAMES = {
     description: 'Purchase description',
     purchaseDate: 'Purchase Date',
     datePaid: 'Date Paid',
+    customEndRange: 'Custom end range',
     amount: 'Expense Amount',
     interest: 'Interest',
     accountId: 'Accounts',
@@ -231,6 +233,7 @@ export function pageToIncomeCategory(
   return {
     id: page.id as string,
     source: extractTitle(props, names.source),
+    auxiliary: extractCheckbox(props, names.auxiliary),
     monthlyEarnings: extractNumberOrFormula(props, names.monthlyEarnings) ?? 0,
     monthlyExpenditure:
       extractNumberOrFormula(props, names.monthlyExpenditure) ?? 0,
@@ -339,26 +342,43 @@ function buildRelation(value: string | null) {
 
 /**
  * Build Notion API properties for creating/updating an Income record.
- * Only includes writable fields defined in the mapping.
+ * Emits only fields present in `dto` so PATCH payloads don't clobber
+ * untouched properties. `categoryOverride` lets callers force a fixed
+ * category (used by transfers / receivables / etc.).
  */
 export function incomeDtoToProperties(
   dto: Record<string, unknown>,
-  includeRelations: {
-    accountId?: string | null;
-    categoryId: string;
-    transactedAccountId?: string | null;
-    ccPaymentCoveredId?: string | null;
-  },
+  options: { categoryOverride?: string } = {},
 ): Record<string, unknown> {
   const names = NOTION_PROPERTY_NAMES.incomes;
-  const properties: Record<string, unknown> = {
-    [names.name]: buildTitle(String(dto.name ?? '')),
-    [names.date]: buildDate(String(dto.date ?? null)),
-    [names.grossIncome]: buildNumber(Number(dto.grossIncome ?? 0)),
-    [names.capitalExpenditure]: buildNumber(Number(dto.capitalExpenditure ?? 0)),
-    [names.accountId]: buildRelation(includeRelations.accountId ?? null),
-    [names.categoryId]: buildRelation(includeRelations.categoryId),
-  };
+  const properties: Record<string, unknown> = {};
+
+  if (dto.name !== undefined) {
+    properties[names.name] = buildTitle(String(dto.name ?? ''));
+  }
+  if (dto.date !== undefined) {
+    properties[names.date] = buildDate(dto.date === null ? null : String(dto.date));
+  }
+  if (dto.grossIncome !== undefined) {
+    properties[names.grossIncome] = buildNumber(Number(dto.grossIncome ?? 0));
+  }
+  if (dto.capitalExpenditure !== undefined) {
+    properties[names.capitalExpenditure] = buildNumber(
+      Number(dto.capitalExpenditure ?? 0),
+    );
+  }
+  if (dto.accountId !== undefined) {
+    properties[names.accountId] = buildRelation(
+      (dto.accountId as string | null) ?? null,
+    );
+  }
+  if (options.categoryOverride !== undefined) {
+    properties[names.categoryId] = buildRelation(options.categoryOverride);
+  } else if (dto.categoryId !== undefined) {
+    properties[names.categoryId] = buildRelation(
+      (dto.categoryId as string | null) ?? null,
+    );
+  }
   if (dto.transactedAccountId !== undefined) {
     properties[names.transactedAccountId] = buildRelation(
       (dto.transactedAccountId as string) ?? null,
@@ -374,30 +394,62 @@ export function incomeDtoToProperties(
 
 /**
  * Build Notion API properties for creating/updating an Expense record.
- * Only includes writable fields defined in the mapping.
+ * Emits only fields present in `dto` so PATCH payloads don't clobber
+ * untouched properties.
  */
 export function expenseDtoToProperties(
   dto: Record<string, unknown>,
-  includeRelations: {
-    accountId: string;
-    categoryId: string;
-    ccLinkPaymentReceiptId?: string | null;
-    pasabuyAccountReceiverId?: string | null;
-  },
 ): Record<string, unknown> {
   const names = NOTION_PROPERTY_NAMES.expenses;
-  const properties: Record<string, unknown> = {
-    [names.description]: buildTitle(String(dto.description ?? '')),
-    [names.purchaseDate]: buildDate(String(dto.purchaseDate ?? null)),
-    [names.amount]: buildNumber(Number(dto.amount ?? 0)),
-    [names.interest]: buildNumber(Number(dto.interest ?? 0)),
-    [names.accountId]: buildRelation(includeRelations.accountId),
-    [names.categoryId]: buildRelation(includeRelations.categoryId),
-    [names.paymentStatus]: buildSelect((dto.paymentStatus as string) ?? 'Unpaid'),
-  };
+  const properties: Record<string, unknown> = {};
+
+  if (dto.description !== undefined) {
+    properties[names.description] = buildTitle(String(dto.description ?? ''));
+  }
+  if (dto.purchaseDate !== undefined) {
+    properties[names.purchaseDate] = buildDate(
+      dto.purchaseDate === null ? null : String(dto.purchaseDate),
+    );
+  }
+  if (dto.amount !== undefined) {
+    properties[names.amount] = buildNumber(Number(dto.amount ?? 0));
+  }
+  if (dto.interest !== undefined) {
+    properties[names.interest] = buildNumber(Number(dto.interest ?? 0));
+  }
+  if (dto.accountId !== undefined) {
+    properties[names.accountId] = buildRelation(
+      (dto.accountId as string | null) ?? null,
+    );
+  }
+  if (dto.categoryId !== undefined) {
+    properties[names.categoryId] = buildRelation(
+      (dto.categoryId as string | null) ?? null,
+    );
+  }
+  if (dto.paymentStatus !== undefined) {
+    properties[names.paymentStatus] = buildSelect(
+      (dto.paymentStatus as string) ?? null,
+    );
+  }
+  if (dto.ccLinkPaymentReceiptId !== undefined) {
+    properties[names.ccLinkPaymentReceiptId] = buildRelation(
+      (dto.ccLinkPaymentReceiptId as string) ?? null,
+    );
+  }
+  if (dto.pasabuyAccountReceiverId !== undefined) {
+    properties[names.pasabuyAccountReceiverId] = buildRelation(
+      (dto.pasabuyAccountReceiverId as string) ?? null,
+    );
+  }
   if (dto.datePaid !== undefined) {
     properties[names.datePaid] = buildDate(
       dto.datePaid === null ? null : String(dto.datePaid),
+    );
+  }
+  if (dto.customEndRange !== undefined) {
+    properties[names.customEndRange] = buildDate(
+      dto.customEndRange === null ? null : String(dto.customEndRange),
     );
   }
   if (dto.paymentFrequency !== undefined) {
@@ -413,11 +465,6 @@ export function expenseDtoToProperties(
   if (dto.paidPeriod !== undefined) {
     properties[names.paidPeriod] = buildNumber(
       dto.paidPeriod === null ? null : Number(dto.paidPeriod),
-    );
-  }
-  if (dto.ccLinkPaymentReceiptId !== undefined) {
-    properties[names.ccLinkPaymentReceiptId] = buildRelation(
-      (dto.ccLinkPaymentReceiptId as string) ?? null,
     );
   }
   if (dto.pasabuyer !== undefined) {

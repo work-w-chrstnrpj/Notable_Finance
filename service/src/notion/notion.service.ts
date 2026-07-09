@@ -160,6 +160,7 @@ export class NotionService {
     {
       id: 'inc-employment',
       source: 'Employment',
+      auxiliary: false,
       monthlyEarnings: 85000,
       monthlyExpenditure: 5000,
       monthlyGross: 80000,
@@ -168,6 +169,7 @@ export class NotionService {
     {
       id: 'inc-freelance',
       source: 'Freelance',
+      auxiliary: false,
       monthlyEarnings: 25000,
       monthlyExpenditure: 2500,
       monthlyGross: 22500,
@@ -176,6 +178,7 @@ export class NotionService {
     {
       id: 'inc-savings',
       source: 'Savings',
+      auxiliary: false,
       monthlyEarnings: 0,
       monthlyExpenditure: 0,
       monthlyGross: 0,
@@ -184,6 +187,7 @@ export class NotionService {
     {
       id: 'inc-transfer',
       source: 'Transfer',
+      auxiliary: true,
       monthlyEarnings: 0,
       monthlyExpenditure: 0,
       monthlyGross: 0,
@@ -192,6 +196,7 @@ export class NotionService {
     {
       id: 'inc-cc-payment',
       source: 'Credit Card Payment',
+      auxiliary: true,
       monthlyEarnings: 0,
       monthlyExpenditure: 0,
       monthlyGross: 0,
@@ -200,6 +205,7 @@ export class NotionService {
     {
       id: 'inc-iou',
       source: 'IOU',
+      auxiliary: true,
       monthlyEarnings: 0,
       monthlyExpenditure: 0,
       monthlyGross: 0,
@@ -450,7 +456,7 @@ export class NotionService {
     }
     await this.loadLive(userId, resource);
     const records = this.getCollection(resource, userId);
-    return this.applyQuery(resource, records, query);
+    return this.applyQuery(resource, records, query, userId);
   }
 
   async detail(resource: ResourceName, id: string, userId?: string): Promise<FinanceRecord> {
@@ -893,26 +899,15 @@ export class NotionService {
   ): Record<string, unknown> {
     if (this.isIncomeBacked(resource)) {
       const mapping = this.mappingService.get(resource);
-      const categoryId =
+      const categoryOverride =
         mapping.fixedCategory !== undefined
           ? this.findIncomeCategoryId(mapping.fixedCategory)
-          : String(data.categoryId ?? '');
-
-      return incomeDtoToProperties(data, {
-        accountId: (data.accountId as string) ?? null,
-        categoryId,
-        transactedAccountId: (data.transactedAccountId as string) ?? null,
-        ccPaymentCoveredId: (data.ccPaymentCoveredId as string) ?? null,
-      });
+          : undefined;
+      return incomeDtoToProperties(data, { categoryOverride });
     }
 
     if (this.isExpenseBacked(resource)) {
-      return expenseDtoToProperties(data, {
-        accountId: String(data.accountId ?? ''),
-        categoryId: String(data.categoryId ?? ''),
-        ccLinkPaymentReceiptId: (data.ccLinkPaymentReceiptId as string) ?? null,
-        pasabuyAccountReceiverId: (data.pasabuyAccountReceiverId as string) ?? null,
-      });
+      return expenseDtoToProperties(data);
     }
 
     throw new ApiException(
@@ -971,6 +966,7 @@ export class NotionService {
     resource: ResourceName,
     records: FinanceRecord[],
     query: ListQuery,
+    userId?: string,
   ): Promise<FinanceRecord[]> {
     let filtered = records.filter((item) => !('deleted' in item) || !item.deleted);
 
@@ -987,20 +983,16 @@ export class NotionService {
       filtered = includeAuxiliary
         ? filtered
         : filtered.filter(
-            (item) =>
-              'source' in item &&
-              !['IOU', 'Transfer', 'Old Income Logger', 'Credit Card Payment', 'Debt Payment']
-                .map((source) => source.toLowerCase())
-                .includes(String(item.source).toLowerCase()),
+            (item) => 'auxiliary' in item && !item.auxiliary,
           );
     }
 
     if (this.isIncomeBacked(resource)) {
-      filtered = this.filterIncomeBacked(resource, filtered as IncomeRecordDto[], query);
+      filtered = this.filterIncomeBacked(resource, filtered as IncomeRecordDto[], query, userId);
     }
 
     if (this.isExpenseBacked(resource)) {
-      filtered = this.filterExpenseBacked(filtered as ExpenseRecordDto[], query);
+      filtered = this.filterExpenseBacked(filtered as ExpenseRecordDto[], query, userId);
     }
 
     return clone(filtered);
@@ -1010,12 +1002,37 @@ export class NotionService {
     resource: ResourceName,
     records: IncomeRecordDto[],
     query: ListQuery,
+    userId?: string,
   ): IncomeRecordDto[] {
     let filtered = records;
+
+    // Workflow views (transfer, credit-card-payment, alkansya) are the Incomes
+    // data source filtered to their fixed income category. Receivables are
+    // Incomes with no receiving (primary) account yet.
+    const mapping = this.mappingService.get(resource);
+    if (mapping.fixedCategory !== undefined) {
+      const categoryId = this.tryFindIncomeCategoryId(mapping.fixedCategory, userId);
+      filtered = categoryId
+        ? filtered.filter((record) => record.categoryId === categoryId)
+        : [];
+    }
     if (resource === 'receivables') {
       filtered = filtered.filter((record) => !record.accountId);
     }
-    if (query.month) {
+    // The normal Income view excludes auxiliary/workflow-category records so
+    // transfers, CC payments, savings, etc. do not appear as plain income.
+    if (resource === 'incomes') {
+      const auxiliaryIds = this.getAuxiliaryIncomeCategoryIds(userId);
+      filtered = filtered.filter(
+        (record) => !auxiliaryIds.has(record.categoryId),
+      );
+    }
+
+    // Daily/Weekly/Monthly/Annually views pass an explicit [rangeStart,rangeEnd];
+    // fall back to the month prefix when no range is supplied.
+    if (query.rangeStart || query.rangeEnd) {
+      filtered = this.filterByRange(filtered, 'date', query.rangeStart, query.rangeEnd);
+    } else if (query.month) {
       filtered = this.filterByMonth(filtered, 'date', query.month);
     }
     if (query.accountId) {
@@ -1027,18 +1044,91 @@ export class NotionService {
     return filtered;
   }
 
-  private filterExpenseBacked(records: ExpenseRecordDto[], query: ListQuery): ExpenseRecordDto[] {
+  private tryFindIncomeCategoryId(source: string, userId?: string): string | undefined {
+    const target = source.toLowerCase();
+    return this.getCollectedIncomeCategories(userId).find(
+      (item) => item.source.toLowerCase() === target,
+    )?.id;
+  }
+
+  private getAuxiliaryIncomeCategoryIds(userId?: string): Set<string> {
+    return new Set(
+      this.getCollectedIncomeCategories(userId)
+        .filter((item) => item.auxiliary)
+        .map((item) => item.id),
+    );
+  }
+
+  private filterExpenseBacked(
+    records: ExpenseRecordDto[],
+    query: ListQuery,
+    userId?: string,
+  ): ExpenseRecordDto[] {
     let filtered = records;
-    const mode = query.expenseViewMode ?? query.viewMode;
-    if (query.month && (!mode || mode.toLowerCase() === 'monthly')) {
-      filtered = this.filterByMonth(filtered, 'purchaseDate', query.month);
+    const mode = this.normalizeExpenseViewMode(query.expenseViewMode ?? query.viewMode);
+    const creditAccountIds = this.getCreditAccountIds(userId);
+    const today = new Date().toISOString().slice(0, 10);
+
+    // ── View-mode semantics (each is independent of purchase-date range unless
+    //    it is one of the calendar views). ─────────────────────────────────
+    switch (mode) {
+      case 'unpaidPasabuy':
+        // Any expense still owed to a pasabuyer, regardless of purchase date.
+        filtered = filtered.filter(
+          (r) =>
+            r.pasabuyStatus === 'Payment not yet receive' ||
+            r.pasabuyStatus === 'Payment partially received',
+        );
+        break;
+      case 'toPay':
+        // Not yet paid — Date Paid empty, regardless of purchase date.
+        filtered = filtered.filter((r) => !r.datePaid);
+        break;
+      case 'toBuy':
+        // Wishlist/planned — no purchase date (or future) OR missing category/account.
+        filtered = filtered.filter(
+          (r) =>
+            !r.purchaseDate ||
+            r.purchaseDate > today ||
+            !r.categoryId ||
+            !r.accountId,
+        );
+        break;
+      case 'installments':
+        // Installment plans on a credit account, regardless of purchase date.
+        filtered = filtered.filter(
+          (r) =>
+            r.paymentStatus === 'Installment' &&
+            creditAccountIds.has(r.accountId),
+        );
+        break;
+      case 'ccTransactions':
+        // Outstanding credit-card charges: unpaid or not-yet-paid on a credit account.
+        filtered = filtered.filter(
+          (r) =>
+            creditAccountIds.has(r.accountId) &&
+            (r.paymentStatus === 'Unpaid' || !r.datePaid),
+        );
+        break;
+      case 'daily':
+      case 'weekly':
+      case 'monthly':
+      default:
+        if (query.rangeStart || query.rangeEnd) {
+          filtered = this.filterByRange(filtered, 'purchaseDate', query.rangeStart, query.rangeEnd);
+        } else if (query.month) {
+          filtered = this.filterByMonth(filtered, 'purchaseDate', query.month);
+        }
+        break;
     }
+
+    // ── Common secondary filters ─────────────────────────────────────────
     if (query.accountId) {
       filtered = filtered.filter((record) => record.accountId === query.accountId);
     }
     if (query.categoryId && query.categoryId !== 'all') {
       if (query.categoryId === 'withoutPasabuy') {
-        const pasabuyId = this.findExpenseCategoryId('Pasabuy');
+        const pasabuyId = this.tryFindExpenseCategoryId('Pasabuy', userId);
         filtered = filtered.filter((record) => record.categoryId !== pasabuyId);
       } else {
         filtered = filtered.filter((record) => record.categoryId === query.categoryId);
@@ -1050,15 +1140,47 @@ export class NotionService {
     if (query.paymentStatus) {
       filtered = filtered.filter((record) => record.paymentStatus === query.paymentStatus);
     }
-    if (mode === 'unpaidPasabuy' || mode === 'Unpaid Pasabuy') {
-      const pasabuyId = this.findExpenseCategoryId('Pasabuy');
-      filtered = filtered.filter(
-        (record) =>
-          record.categoryId === pasabuyId &&
-          (record.datePaid === null || record.pasabuyStatus !== 'Payment fully received'),
-      );
-    }
     return filtered;
+  }
+
+  private normalizeExpenseViewMode(mode?: string): string {
+    switch ((mode ?? '').toLowerCase().replace(/\s+/g, '')) {
+      case 'unpaidpasabuy':
+        return 'unpaidPasabuy';
+      case 'topay':
+        return 'toPay';
+      case 'tobuy':
+        return 'toBuy';
+      case 'installments':
+      case 'installment':
+        return 'installments';
+      case 'cctransactions':
+      case 'cctransaction':
+        return 'ccTransactions';
+      case 'daily':
+        return 'daily';
+      case 'weekly':
+        return 'weekly';
+      case 'monthly':
+        return 'monthly';
+      default:
+        return 'monthly';
+    }
+  }
+
+  private getCreditAccountIds(userId?: string): Set<string> {
+    return new Set(
+      this.getCollectedAccounts(userId)
+        .filter((a) => this.isCreditLike(a.type))
+        .map((a) => a.id),
+    );
+  }
+
+  private tryFindExpenseCategoryId(name: string, userId?: string): string | undefined {
+    const target = name.toLowerCase();
+    return this.getCollectedExpenseCategories(userId).find(
+      (item) => item.name.toLowerCase() === target,
+    )?.id;
   }
 
   private makeRecord(resource: ResourceName, data: Record<string, unknown>): FinanceRecord {
@@ -1123,6 +1245,26 @@ export class NotionService {
 
   private filterByMonth<T>(records: T[], field: keyof T, month: string): T[] {
     return records.filter((record) => String(record[field]).startsWith(month));
+  }
+
+  /**
+   * Inclusive date-range filter on an ISO date string field. Records with an
+   * empty date value are excluded. Bounds are compared lexicographically,
+   * which is correct for zero-padded YYYY-MM-DD strings.
+   */
+  private filterByRange<T>(
+    records: T[],
+    field: keyof T,
+    start?: string,
+    end?: string,
+  ): T[] {
+    return records.filter((record) => {
+      const value = record[field] ? String(record[field]).slice(0, 10) : '';
+      if (!value) return false;
+      if (start && value < start) return false;
+      if (end && value > end) return false;
+      return true;
+    });
   }
 
   private isIncomeBacked(resource: ResourceName): boolean {

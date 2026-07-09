@@ -27,6 +27,7 @@ import {
   LayoutDashboard,
   LockKeyhole,
   LogOut,
+  Pencil,
   PiggyBank,
   Plus,
   Receipt,
@@ -41,27 +42,46 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
   Cell,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis,
-  YAxis,
 } from "recharts";
 import {
   financeSections,
-  getAccountName,
   getActiveSectionLabel,
   getExpenseCategoryName,
-  getIncomeCategoryName,
-  months,
 } from "@/lib/finance-data";
-import { useAccounts, useDashboardData, useSyncStatus } from "@/lib/use-data";
-import { syncApi } from "@/lib/api-client";
+import {
+  useAccounts,
+  useExpenseCategories,
+  useExpenses,
+  useIncomeCategories,
+  useIncomes,
+  useSyncStatus,
+  useWorkflowRecords,
+} from "@/lib/use-data";
+import {
+  alkansyaApi,
+  creditCardPaymentsApi,
+  expensesApi,
+  incomesApi,
+  receivablesApi,
+  syncApi,
+  transfersApi,
+} from "@/lib/api-client";
+import {
+  activeSelectorUnit,
+  anchorMonth,
+  computeRange,
+  expenseModeToUnit,
+  incomeModeToUnit,
+  rangeLabel,
+  stepAnchor,
+  todayIso,
+  type ViewUnit,
+} from "@/lib/date-range";
 import {
   calculateCategoryTotalOverview,
   calculateExpectedPaymentDate,
@@ -72,7 +92,6 @@ import {
   calculatePasabuyerBalance,
   calculatePasabuyReceivedAmount,
   calculateRemainingBalance,
-  calculateTotalCashFlow,
   getExpenseConditionalSections,
   getExpenseStatusFromDatePaid,
   getMoneyValueTone,
@@ -82,7 +101,6 @@ import {
   pasabuyStatusLabels,
   paymentFrequencyLabels,
   paymentStatusLabels,
-  shouldShowGlobalMonthSelector,
 } from "@/lib/finance-rules";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import type {
@@ -131,10 +149,6 @@ const expenseViewModes: ExpenseViewMode[] = [
   "CC Transactions",
 ];
 
-const activeAccounts: Account[] = [];
-const nonCreditActiveAccounts: Account[] = [];
-const creditActiveAccounts: Account[] = [];
-const normalIncomeCategories: IncomeCategory[] = [];
 const expenseCategoryFilterAll = "__all";
 const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
 const prototypeAccent = "#5B6CF9";
@@ -157,16 +171,6 @@ function getMonthLabel(value: string) {
     month: "long",
     year: "numeric",
   }).format(date);
-}
-
-function getAdjacentMonth(value: string, delta: number) {
-  const index = months.indexOf(value);
-
-  if (index === -1) {
-    return value;
-  }
-
-  return months[(index + delta + months.length) % months.length];
 }
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -210,10 +214,70 @@ function getExpenseTotal(records: ExpenseRecord[]) {
   return records.reduce((sum, record) => sum + record.amount, 0);
 }
 
-function getIncomeCategorySummaries(records: IncomeRecord[]) {
+function useLiveCollections() {
+  const { state: accountsState } = useAccounts(true);
+  // All categories power the id→name lookup maps; the normal-only set (filtered
+  // server-side, excluding Transfer / Credit Card Payment / Savings / IOU / etc.)
+  // powers the pickers in the normal Income form.
+  const { state: allIncomeCategoriesState } = useIncomeCategories(false);
+  const { state: normalIncomeCategoriesState } = useIncomeCategories(true);
+  const { state: expenseCategoriesState } = useExpenseCategories();
+
+  const allAccounts: Account[] =
+    accountsState.status === "success" ? accountsState.data : [];
+  const activeAccounts = allAccounts.filter(
+    (account) => !account.inactive && account.type !== "Auxiliary",
+  );
+  const nonCreditActiveAccounts = activeAccounts.filter(
+    (account) => !isCreditLikeAccountType(account.type),
+  );
+  const creditActiveAccounts = activeAccounts.filter((account) =>
+    isCreditLikeAccountType(account.type),
+  );
+
+  const allIncomeCategories: IncomeCategory[] =
+    allIncomeCategoriesState.status === "success"
+      ? allIncomeCategoriesState.data
+      : [];
+  const normalIncomeCategories: IncomeCategory[] =
+    normalIncomeCategoriesState.status === "success"
+      ? normalIncomeCategoriesState.data
+      : [];
+
+  const expenseCategories: ExpenseCategory[] =
+    expenseCategoriesState.status === "success"
+      ? (expenseCategoriesState.data as ExpenseCategory[])
+      : [];
+
+  const accountNameById = new Map(allAccounts.map((a) => [a.id, a.name]));
+  const incomeCategoryNameById = new Map(
+    allIncomeCategories.map((c) => [c.id, c.source]),
+  );
+  const expenseCategoryNameById = new Map(
+    expenseCategories.map((c) => [c.id, c.name]),
+  );
+
+  return {
+    allAccounts,
+    activeAccounts,
+    nonCreditActiveAccounts,
+    creditActiveAccounts,
+    allIncomeCategories,
+    normalIncomeCategories,
+    expenseCategories,
+    accountNameById,
+    incomeCategoryNameById,
+    expenseCategoryNameById,
+  };
+}
+
+function getIncomeCategorySummaries(
+  records: IncomeRecord[],
+  categories: IncomeCategory[],
+) {
   const totalNetIncome = getIncomeNetTotal(records);
 
-  return normalIncomeCategories.map((category) => {
+  return categories.map((category) => {
     const categoryRecords = records.filter((record) => record.categoryId === category.id);
     const grossIncome = getIncomeGrossTotal(categoryRecords);
     const capitalExpenditure = getIncomeCapitalExpenditureTotal(categoryRecords);
@@ -256,25 +320,36 @@ function getExpenseCategorySummaries(records: ExpenseRecord[], categories: Expen
 }
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
-  const [selectedMonth, setSelectedMonth] = useState("2026-07");
+  const [selectedDate, setSelectedDate] = useState<string>(() => todayIso());
+  const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
-  const [pendingOperations, setPendingOperations] = useState(3);
-  const [lastSync, setLastSync] = useState("2026-07-03 09:30");
+  const [pendingOperations, setPendingOperations] = useState(0);
+  const [lastSync, setLastSync] = useState("—");
 
+  const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode);
+
+  // Sync is pull-only: it refreshes the app's cache from Notion. Creates and
+  // updates go straight to Notion from the item modals (POST/PATCH), so there
+  // is nothing to push here.
   async function runSync() {
     setSyncState("syncing");
 
     try {
-      const result = await syncApi.commit({
-        operations: [],
-        returnFreshSnapshot: true,
+      const pullResult = await syncApi.pullLatest({
+        resources: [
+          "accounts",
+          "incomeCategories",
+          "expenseCategories",
+          "incomes",
+          "expenses",
+        ],
+        month: selectedMonth,
       });
-
-      if (result.success) {
+      if (pullResult.success) {
         setSyncState("fresh");
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
@@ -282,13 +357,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         setSyncState("error");
       }
     } catch {
-      // Fall back to mock sync behavior
-      setSyncState("syncing");
-      window.setTimeout(() => {
-        setSyncState("fresh");
-        setPendingOperations(0);
-        setLastSync("2026-07-03 09:42");
-      }, 700);
+      setSyncState("error");
     }
   }
 
@@ -322,9 +391,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           lastSync={lastSync}
           pendingOperations={pendingOperations}
           schemaHealth={schemaHealth}
-          selectedMonth={selectedMonth}
+          selectedDate={selectedDate}
+          selectorUnit={selectorUnit}
           syncState={syncState}
-          onMonthChange={setSelectedMonth}
+          onDateChange={setSelectedDate}
+          onSchemaVerify={verifySchema}
           onSync={runSync}
         />
         <main className="workspace__content">
@@ -339,12 +410,14 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
             <IncomePage
               viewMode={incomeViewMode}
               onViewModeChange={setIncomeViewMode}
+              selectedDate={selectedDate}
             />
           )}
           {activeSection === "expense" && (
             <ExpensePage
               viewMode={expenseViewMode}
               onViewModeChange={setExpenseViewMode}
+              selectedDate={selectedDate}
             />
           )}
           {activeSection === "monthly-monitoring" && (
@@ -398,8 +471,12 @@ function AccountTypeIcon({ type, size = 18 }: { type: AccountType; size?: number
   }
 }
 
+function isImageUrl(value: string): boolean {
+  return /^(https?:\/\/|data:|\/)/.test(value);
+}
+
 function AccountIcon({ account }: { account: Account }) {
-  if (account.icon) {
+  if (account.icon && isImageUrl(account.icon)) {
     return (
       <Image
         src={account.icon}
@@ -417,6 +494,14 @@ function AccountIcon({ account }: { account: Account }) {
           }
         }}
       />
+    );
+  }
+
+  if (account.icon) {
+    return (
+      <span className="account-icon account-icon--emoji" aria-hidden="true">
+        {account.icon}
+      </span>
     );
   }
 
@@ -535,15 +620,14 @@ function useSyncStale(lastSync: string): boolean {
 }
 
 function TopBar({
-  activeSection,
-  expenseViewMode,
-  incomeViewMode,
   lastSync,
   pendingOperations,
   schemaHealth,
-  selectedMonth,
+  selectedDate,
+  selectorUnit,
   syncState,
-  onMonthChange,
+  onDateChange,
+  onSchemaVerify,
   onSync,
 }: {
   activeSection: FinanceSectionId;
@@ -552,18 +636,15 @@ function TopBar({
   lastSync: string;
   pendingOperations: number;
   schemaHealth: SchemaHealth;
-  selectedMonth: string;
+  selectedDate: string;
+  selectorUnit: ViewUnit | null;
   syncState: SyncState;
-  onMonthChange: (month: string) => void;
+  onDateChange: (isoDate: string) => void;
+  onSchemaVerify: () => void;
   onSync: () => void;
 }) {
   const { user } = useAuth();
   const stale = useSyncStale(lastSync);
-  const showMonthSelector = shouldShowGlobalMonthSelector({
-    section: activeSection,
-    incomeViewMode,
-    expenseViewMode,
-  });
   const initials = user?.name
     ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
@@ -571,20 +652,25 @@ function TopBar({
   return (
     <header className="topbar">
       <div className="topbar__actions" aria-label="Workspace controls">
-        {showMonthSelector && (
-          <div className="month-stepper" aria-label="Selected month">
-            <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, -1))}>
-              <ChevronLeft size={13} />
-            </button>
-            <span>{getMonthLabel(selectedMonth)}</span>
-            <button type="button" onClick={() => onMonthChange(getAdjacentMonth(selectedMonth, 1))}>
-              <ChevronRight size={13} />
-            </button>
-          </div>
+        {selectorUnit && (
+          <DateRangeSelector
+            unit={selectorUnit}
+            anchorDate={selectedDate}
+            onChange={onDateChange}
+          />
         )}
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
         <span className="sync-meta">{pendingOperations} pending</span>
         <span className="sync-meta">Last sync {lastSync}</span>
+        <button
+          type="button"
+          className="button"
+          onClick={onSchemaVerify}
+          title="Check /system/schema-status"
+        >
+          <Database size={12} />
+          Schema Check
+        </button>
         <div className="sync-btn-wrapper">
           <button type="button" className="button button--primary" onClick={onSync}>
             <RefreshCw size={12} className={syncState === "syncing" ? "spin" : undefined} />
@@ -595,6 +681,148 @@ function TopBar({
         <Link href="/settings" className="topbar__avatar">{initials}</Link>
       </div>
     </header>
+  );
+}
+
+const PICKER_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function DateRangeSelector({
+  unit,
+  anchorDate,
+  onChange,
+}: {
+  unit: ViewUnit;
+  anchorDate: string;
+  onChange: (isoDate: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [year, month, day] = anchorDate.split("-").map(Number);
+  const [draftYear, setDraftYear] = useState(year);
+
+  function toggleOpen() {
+    setOpen((v) => {
+      const next = !v;
+      if (next) setDraftYear(year); // sync draft to current anchor on open
+      return next;
+    });
+  }
+
+  const label = rangeLabel(unit, anchorDate);
+  const showDayPicker = unit === "day" || unit === "week";
+  const showMonthGrid = unit === "day" || unit === "week" || unit === "month";
+
+  function pickMonth(m: number) {
+    // Keep the day when possible; clamp to the 1st for month/year scopes.
+    const targetDay = showDayPicker ? day : 1;
+    onChange(
+      `${draftYear.toString().padStart(4, "0")}-${(m + 1)
+        .toString()
+        .padStart(2, "0")}-${targetDay.toString().padStart(2, "0")}`,
+    );
+    if (!showDayPicker) setOpen(false);
+  }
+
+  return (
+    <div className="month-stepper">
+      <button
+        type="button"
+        aria-label="Previous"
+        onClick={() => onChange(stepAnchor(unit, anchorDate, -1))}
+      >
+        <ChevronLeft size={13} />
+      </button>
+      <button
+        type="button"
+        className="month-stepper__label"
+        onClick={toggleOpen}
+        aria-expanded={open}
+      >
+        {label}
+      </button>
+      <button
+        type="button"
+        aria-label="Next"
+        onClick={() => onChange(stepAnchor(unit, anchorDate, 1))}
+      >
+        <ChevronRight size={13} />
+      </button>
+
+      {open && (
+        <>
+          <div
+            className="date-picker__backdrop"
+            role="presentation"
+            onClick={() => setOpen(false)}
+          />
+          <div className="date-picker" role="dialog" aria-label="Pick a date">
+            {unit === "year" ? (
+              <div className="date-picker__year-list">
+                {Array.from({ length: 9 }, (_, i) => year - 4 + i).map((y) => (
+                  <button
+                    type="button"
+                    key={y}
+                    className={cx("date-picker__cell", y === year && "is-active")}
+                    onClick={() => {
+                      onChange(`${y}-01-01`);
+                      setOpen(false);
+                    }}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="date-picker__year-row">
+                  <button type="button" onClick={() => setDraftYear((y) => y - 1)}>
+                    <ChevronLeft size={14} />
+                  </button>
+                  <strong>{draftYear}</strong>
+                  <button type="button" onClick={() => setDraftYear((y) => y + 1)}>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+                {showMonthGrid && (
+                  <div className="date-picker__month-grid">
+                    {PICKER_MONTHS.map((mName, m) => (
+                      <button
+                        type="button"
+                        key={mName}
+                        className={cx(
+                          "date-picker__cell",
+                          draftYear === year && m + 1 === month && "is-active",
+                        )}
+                        onClick={() => pickMonth(m)}
+                      >
+                        {mName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showDayPicker && (
+                  <label className="date-picker__day">
+                    Exact day
+                    <input
+                      type="date"
+                      value={anchorDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          onChange(e.target.value);
+                          setOpen(false);
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -647,37 +875,118 @@ function DashboardPage({
   lastSync: string;
   selectedMonth: string;
 }) {
-  const { state: dashboardState } = useDashboardData(selectedMonth);
+  const {
+    creditActiveAccounts,
+    nonCreditActiveAccounts,
+    expenseCategories,
+    accountNameById,
+    expenseCategoryNameById,
+  } = useLiveCollections();
+  const { state: incomesState } = useIncomes({ month: selectedMonth });
+  const { state: expensesState } = useExpenses({ month: selectedMonth });
   const monthLabel = getMonthLabel(selectedMonth);
 
-  // Use API data when available, fall back to empty defaults
-  const apiData = dashboardState.status === "success" ? dashboardState.data : null;
+  const monthIncomes: IncomeRecord[] = (
+    incomesState.status === "success" ? incomesState.data : []
+  ).filter((r) => !r.name?.includes("[Deleted:"));
+  const monthExpenses: ExpenseRecord[] = (
+    expensesState.status === "success" ? expensesState.data : []
+  ).filter((r) => !r.description?.includes("[Deleted:"));
+
+  const monthlyGrossIncome = monthIncomes.reduce(
+    (sum, r) => sum + r.grossIncome,
+    0,
+  );
+  const monthlyCapitalExpenditure = monthIncomes.reduce(
+    (sum, r) => sum + r.capitalExpenditure,
+    0,
+  );
+  const monthlyNetIncome = monthlyGrossIncome - monthlyCapitalExpenditure;
+  const monthlyExpenses = monthExpenses.reduce(
+    (sum, r) => sum + r.amount + (r.interest ?? 0),
+    0,
+  );
+
+  const totalCashFlow = nonCreditActiveAccounts.reduce(
+    (sum, a) => sum + (a.currentBalance ?? 0),
+    0,
+  );
+  const availableCredit = creditActiveAccounts.reduce(
+    (sum, a) => sum + (a.availableLimit ?? 0),
+    0,
+  );
+  const creditLimit = creditActiveAccounts.reduce(
+    (sum, a) => sum + (a.creditLimit ?? 0),
+    0,
+  );
+  const creditBalanceTotal = creditActiveAccounts.reduce(
+    (sum, a) => sum + (a.currentBalance ?? 0),
+    0,
+  );
+
+  // #1 — Monthly Total CC Transactions: sum of expenses on a credit account.
+  const creditAccountIds = new Set(creditActiveAccounts.map((a) => a.id));
+  const monthlyCcTransactions = monthExpenses
+    .filter((r) => creditAccountIds.has(r.accountId))
+    .reduce((sum, r) => sum + r.amount + (r.interest ?? 0), 0);
+
+  // #2 — Spending by category (with % of month's expense), used for both the
+  // Spending Breakdown donut and the Top 5 Spending Category panel.
+  const spendingBreakdown = expenseCategories
+    .map((cat) => {
+      const value = monthExpenses
+        .filter((r) => r.categoryId === cat.id)
+        .reduce((sum, r) => sum + r.amount + (r.interest ?? 0), 0);
+      return { name: cat.name, value };
+    })
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  const topSpendingCategories = spendingBreakdown.slice(0, 5).map((row) => ({
+    name: row.name,
+    value: row.value,
+    percent: monthlyExpenses > 0 ? (row.value / monthlyExpenses) * 100 : 0,
+  }));
+
+  // #2 — Most Expense Purchase of the Month (largest individual expenses).
+  const topExpensePurchases = [...monthExpenses]
+    .map((r) => ({
+      id: r.id,
+      description: r.description.replace(/\s*\[Deleted:.*\]/, ""),
+      amount: r.amount + (r.interest ?? 0),
+      category: expenseCategoryNameById.get(r.categoryId) ?? "—",
+      account: accountNameById.get(r.accountId) ?? "—",
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+
+  const recentTransactions = [...monthIncomes]
+    .sort((a, b) => (b.date > a.date ? 1 : -1))
+    .slice(0, 5)
+    .map((r) => ({
+      id: r.id,
+      date: r.date,
+      title: r.name.replace(/\s*\[Deleted:.*\]/, ""),
+      meta: "Income",
+      value: r.grossIncome - r.capitalExpenditure,
+    }));
 
   const display = {
-    totalCashFlow: apiData?.totalCashFlow ?? calculateTotalCashFlow([]),
-    monthlyNetIncome: apiData?.netIncome ?? 0,
-    monthlyGrossIncome: apiData?.grossIncome ?? 0,
-    monthlyExpenses: apiData?.expenses ?? 0,
-    pendingOperations: apiData?.pendingOperations ?? 0,
-    lastSync: apiData?.lastSync ?? lastSync,
-    availableCredit: apiData?.availableCredit ?? 0,
-    creditLimit: apiData?.creditLimit ?? 0,
-    creditBalanceTotal: apiData?.creditBalanceTotal ?? 0,
-    pasabuyBalance: apiData?.pasabuyBalance ?? 0,
-    trendMonths: apiData?.trendMonths ?? [],
-    incomeTrend: apiData?.incomeTrend ?? [],
-    expenseTrend: apiData?.expenseTrend ?? [],
-    spendingBreakdown: apiData?.spendingBreakdown ?? [],
-    recentTransactions: apiData?.recentTransactions ?? [],
+    totalCashFlow,
+    monthlyNetIncome,
+    monthlyGrossIncome,
+    monthlyExpenses,
+    pendingOperations: monthExpenses.filter((r) => r.datePaid === null).length,
+    lastSync,
+    availableCredit,
+    creditLimit,
+    creditBalanceTotal,
+    monthlyCcTransactions,
+    spendingBreakdown,
+    topSpendingCategories,
+    topExpensePurchases,
+    recentTransactions,
   };
-
-  const trendData = display.trendMonths.length > 0
-    ? display.trendMonths.map((month, index) => ({
-        month,
-        income: display.incomeTrend[index] ?? 0,
-        expenses: display.expenseTrend[index] ?? 0,
-      }))
-    : [];
 
   const spendingData = display.spendingBreakdown.length > 0
     ? display.spendingBreakdown.map((item) => ({
@@ -698,9 +1007,6 @@ function DashboardPage({
         tone: toneForValue(item.value),
       }))
     : [];
-
-  // TODO: populate from API data
-  const monthlyExpenseSummaries = [] as ReturnType<typeof getExpenseCategorySummaries>;
 
   return (
     <div className="page-stack">
@@ -751,10 +1057,10 @@ function DashboardPage({
           tone="green"
         />
         <MetricCard
-          title="Pasabuy Balance"
-          value={formatMoney(display.pasabuyBalance)}
-          detail="Unpaid Pasabuy"
-          icon={PiggyBank}
+          title="Monthly Total CC Transactions"
+          value={formatMoney(display.monthlyCcTransactions)}
+          detail={`${creditActiveAccounts.length} credit accounts · ${monthLabel}`}
+          icon={CreditCard}
           tone="amber"
         />
         <MetricCard
@@ -767,15 +1073,107 @@ function DashboardPage({
       </section>
 
       <section className="dashboard-chart-grid">
-        <IncomeExpenseChart data={trendData} />
+        <TopExpensePurchasesCard purchases={display.topExpensePurchases} monthLabel={monthLabel} />
         <SpendingBreakdownCard data={spendingData} monthLabel={monthLabel} />
       </section>
 
       <section className="dashboard-bottom-grid">
-        <BudgetUsageCard summaries={monthlyExpenseSummaries} />
+        <TopSpendingCategoriesCard categories={display.topSpendingCategories} monthLabel={monthLabel} />
         <RecentTransactionsList records={recentData} />
       </section>
     </div>
+  );
+}
+
+function TopExpensePurchasesCard({
+  purchases,
+  monthLabel,
+}: {
+  purchases: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    category: string;
+    account: string;
+  }>;
+  monthLabel: string;
+}) {
+  // Rank ramp: #1 red → #5 yellow.
+  const rankColors = ["#DC2626", "#EA580C", "#F97316", "#F59E0B", "#CA8A04"];
+
+  return (
+    <section className="dashboard-card">
+      <div className="dashboard-card__header dashboard-card__header--stacked">
+        <h2>Most Expense Purchase of the Month</h2>
+        <p>{monthLabel}</p>
+      </div>
+      {purchases.length === 0 ? (
+        <EmptyState title="No expenses" detail="No expenses are scoped to this month." />
+      ) : (
+        <div className="top-expense-list">
+          {purchases.map((p, index) => {
+            const color = rankColors[index] ?? rankColors[rankColors.length - 1];
+            return (
+              <div key={p.id} className="top-expense-row">
+                <span
+                  className="top-expense-row__rank"
+                  style={{ backgroundColor: color }}
+                >
+                  {index + 1}
+                </span>
+                <div className="top-expense-row__content">
+                  <strong className="top-expense-row__title" style={{ color }}>
+                    {p.description || "Untitled"}
+                  </strong>
+                  <div className="top-expense-row__meta">
+                    <span>{p.category} · {p.account}</span>
+                    <strong>{formatMoney(p.amount)}</strong>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function TopSpendingCategoriesCard({
+  categories,
+  monthLabel,
+}: {
+  categories: Array<{ name: string; value: number; percent: number }>;
+  monthLabel: string;
+}) {
+  return (
+    <section className="dashboard-card">
+      <div className="dashboard-card__header dashboard-card__header--stacked">
+        <h2>Top 5 Spending Category</h2>
+        <p>{monthLabel}</p>
+      </div>
+      {categories.length === 0 ? (
+        <EmptyState title="No spending" detail="No expenses are scoped to this month." />
+      ) : (
+        <div className="budget-usage-list">
+          {categories.map((cat) => {
+            const percent = Math.round(cat.percent);
+            const color = percent > 50 ? "#E11D48" : percent > 25 ? "#D97706" : prototypeAccent;
+            return (
+              <div key={cat.name} className="budget-usage-row">
+                <div>
+                  <span>{cat.name}</span>
+                  <strong>{formatMoney(cat.value, { compact: true })} · {percent}%</strong>
+                </div>
+                <div className="budget-usage-track">
+                  <i style={{ width: `${Math.min(percent, 100)}%`, backgroundColor: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -822,88 +1220,6 @@ function RecentTransactionsList({
   );
 }
 
-function IncomeExpenseChart({
-  data,
-}: {
-  data: Array<{ month: string; income: number; expenses: number }>;
-}) {
-  return (
-    <section className="dashboard-card dashboard-card--income-expense">
-      <div className="dashboard-card__header">
-        <div>
-          <h2>Income vs Expenses</h2>
-          <p>Last 6 months</p>
-        </div>
-        <div className="chart-legend">
-          <span><i style={{ backgroundColor: prototypeAccent }} />Income</span>
-          <span><i style={{ backgroundColor: "#FB7185" }} />Expenses</span>
-        </div>
-      </div>
-      <div className="income-expense-chart" aria-label="Income versus expenses chart">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={prototypeAccent} stopOpacity={0.18} />
-                <stop offset="95%" stopColor={prototypeAccent} stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#E11D48" stopOpacity={0.14} />
-                <stop offset="95%" stopColor="#E11D48" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(28,25,23,0.06)" />
-            <XAxis
-              axisLine={false}
-              dataKey="month"
-              tick={{ fontSize: 12, fill: "#79716B" }}
-              tickLine={false}
-            />
-            <YAxis
-              axisLine={false}
-              domain={[0, 120000]}
-              tick={{ fontSize: 11, fill: "#79716B" }}
-              tickFormatter={(value) => `₱${(Number(value) / 1000).toFixed(0)}k`}
-              tickLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid rgba(28,25,23,0.09)",
-                borderRadius: 12,
-                boxShadow: "0 16px 34px rgba(28,25,23,0.1)",
-                fontSize: 13,
-              }}
-              formatter={(value, name) => [
-                formatMoney(Number(value)),
-                name === "income" ? "Income" : "Expenses",
-              ]}
-              labelStyle={{ color: "#1C1917", marginBottom: 8 }}
-            />
-            <Area
-              activeDot={{ r: 4, stroke: "#FFFFFF", strokeWidth: 2 }}
-              dataKey="income"
-              fill="url(#incomeGradient)"
-              isAnimationActive={false}
-              stroke={prototypeAccent}
-              strokeWidth={2.25}
-              type="monotone"
-            />
-            <Area
-              activeDot={{ r: 4, stroke: "#FFFFFF", strokeWidth: 2 }}
-              dataKey="expenses"
-              fill="url(#expenseGradient)"
-              isAnimationActive={false}
-              stroke="#E11D48"
-              strokeWidth={2.25}
-              type="monotone"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </section>
-  );
-}
 
 function SpendingBreakdownCard({
   data,
@@ -963,41 +1279,6 @@ function SpendingBreakdownCard({
   );
 }
 
-function BudgetUsageCard({
-  summaries,
-}: {
-  summaries: ReturnType<typeof getExpenseCategorySummaries>;
-}) {
-  return (
-    <section className="dashboard-card">
-      <div className="dashboard-card__header dashboard-card__header--stacked">
-        <h2>Budget Usage</h2>
-        <p>Top spending categories</p>
-      </div>
-      <div className="budget-usage-list">
-        {summaries.slice(0, 5).map((category) => {
-          const percent = Math.min(
-            category.monthlyBudget > 0 ? Math.round((category.spending / category.monthlyBudget) * 100) : 0,
-            100,
-          );
-          const color = percent > 90 ? "#E11D48" : percent > 75 ? "#D97706" : prototypeAccent;
-
-          return (
-            <div key={category.id} className="budget-usage-row">
-              <div>
-                <span>{category.name}</span>
-                <strong>{percent}%</strong>
-              </div>
-              <div className="budget-usage-track">
-                <i style={{ width: `${percent}%`, backgroundColor: color }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
@@ -1009,20 +1290,15 @@ function AccountsPage() {
     accountsState.status === "success" ? accountsState.data : ([] as Account[]);
 
   const visibleAccounts = sourceAccounts.filter((account) => {
-    if (accountScope === "all") {
-      return true;
-    }
-
-    if (accountScope === "credit") {
-      return !account.inactive && isCreditLikeAccountType(account.type);
-    }
-
-    return !account.inactive && !isCreditLikeAccountType(account.type);
+    if (account.inactive) return false;
+    if (accountScope === "all") return account.type !== "Auxiliary";
+    if (accountScope === "credit") return isCreditLikeAccountType(account.type);
+    return !isCreditLikeAccountType(account.type) && account.type !== "Auxiliary";
   });
   const accountTableHeaders =
-    accountScope === "standard"
-      ? ["Account", "Type", "Balance", "Total Income", "Total Expense"]
-      : ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Billing", "Due"];
+    accountScope === "credit"
+      ? ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Billing", "Due"]
+      : ["Account", "Type", "Balance", "Total Income", "Total Expense"];
   const accountTableRows = visibleAccounts.map((account) => {
     const accountCell = (
       <span className="account-cell">
@@ -1031,13 +1307,15 @@ function AccountsPage() {
       </span>
     );
 
-    if (accountScope === "standard") {
+    if (accountScope === "credit") {
       return [
         accountCell,
         account.type,
         formatMoney(account.currentBalance),
-        formatMoney(getAccountTotalIncome(account.id), { compact: true }),
-        formatMoney(getAccountTotalExpense(account.id), { compact: true }),
+        account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
+        account.availableLimit !== null ? formatMoney(account.availableLimit, { compact: true }) : "-",
+        account.billingDay?.toString() ?? "-",
+        account.dueDay?.toString() ?? "-",
       ];
     }
 
@@ -1045,10 +1323,8 @@ function AccountsPage() {
       accountCell,
       account.type,
       formatMoney(account.currentBalance),
-      account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
-      account.availableLimit !== null ? formatMoney(account.availableLimit, { compact: true }) : "-",
-      account.billingDay?.toString() ?? "-",
-      account.dueDay?.toString() ?? "-",
+      formatMoney(getAccountTotalIncome(account.id), { compact: true }),
+      formatMoney(getAccountTotalExpense(account.id), { compact: true }),
     ];
   });
 
@@ -1123,10 +1399,10 @@ function AccountsPage() {
                 </Badge>
               </div>
               <MoneyLine label="Current Balance" value={account.currentBalance} />
-              {account.creditLimit !== null && (
+              {isCreditLikeAccountType(account.type) && account.creditLimit !== null && (
                 <MoneyLine label="Credit Limit" value={account.creditLimit} />
               )}
-              {account.availableLimit !== null && (
+              {isCreditLikeAccountType(account.type) && account.availableLimit !== null && (
                 <MoneyLine label="Available Limit" value={account.availableLimit} />
               )}
             </button>
@@ -1158,30 +1434,106 @@ function AccountsPage() {
 function IncomePage({
   viewMode,
   onViewModeChange,
+  selectedDate,
 }: {
   viewMode: IncomeViewMode;
   onViewModeChange: (viewMode: IncomeViewMode) => void;
+  selectedDate: string;
 }) {
+  const {
+    nonCreditActiveAccounts,
+    normalIncomeCategories,
+    accountNameById,
+    incomeCategoryNameById,
+  } = useLiveCollections();
+  const range = computeRange(incomeModeToUnit(viewMode), selectedDate);
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [formAccountId, setFormAccountId] = useState("");
+  const [formCategoryId, setFormCategoryId] = useState("");
   const [grossIncomeInput, setGrossIncomeInput] = useState("");
   const [capitalExpenditureInput, setCapitalExpenditureInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [dateInput, setDateInput] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const calculatedNetIncome = calculateNetIncome(
     parseNumberInput(grossIncomeInput),
     parseNumberInput(capitalExpenditureInput),
   );
-  // TODO: populate from API via useIncomes hook
-  const visibleIncomeRecords: IncomeRecord[] = [];
+  const { state: incomesState, refetch } = useIncomes({
+    rangeStart: range.start,
+    rangeEnd: range.end,
+    accountId: accountId || undefined,
+    categoryId: categoryId || undefined,
+  });
+  const isLoading = incomesState.status === "loading";
+  const allIncomeRecords: IncomeRecord[] =
+    incomesState.status === "success" ? incomesState.data : [];
+  const visibleIncomeRecords: IncomeRecord[] = allIncomeRecords.filter(
+    (record) => !record.name?.includes("[Deleted:"),
+  );
 
-  function openIncomeModal(mode: "new" | "edit", title: string, _recordId?: string) {
-    void _recordId;
-    const record = undefined as IncomeRecord | undefined;
-    setAccountId(record?.accountId ?? "");
-    setCategoryId(record?.categoryId ?? "");
-    setGrossIncomeInput(record?.grossIncome.toString() ?? "");
-    setCapitalExpenditureInput(record?.capitalExpenditure.toString() ?? "");
+  function openIncomeModal(mode: "new" | "edit", title: string, recordId?: string) {
+    const record =
+      recordId != null
+        ? visibleIncomeRecords.find((r) => r.id === recordId)
+        : undefined;
+    setNameInput(record?.name ?? "");
+    setDateInput(record?.date ?? "");
+    setFormAccountId(record?.accountId ?? "");
+    setFormCategoryId(record?.categoryId ?? "");
+    setGrossIncomeInput(record?.grossIncome?.toString() ?? "");
+    setCapitalExpenditureInput(record?.capitalExpenditure?.toString() ?? "");
+    setEditingId(record?.id ?? null);
+    setEditing(mode === "new"); // new starts editable; edit starts read-only
+    setSaveError(null);
     setModal({ mode, title });
+  }
+
+  async function handleSaveIncome() {
+    if (!nameInput.trim() || !dateInput || !formAccountId || !formCategoryId) {
+      setSaveError("Name, date, account and category are required.");
+      return;
+    }
+    const payload = {
+      name: nameInput.trim(),
+      date: dateInput,
+      grossIncome: parseNumberInput(grossIncomeInput),
+      capitalExpenditure: parseNumberInput(capitalExpenditureInput),
+      accountId: formAccountId,
+      categoryId: formCategoryId,
+    };
+    setSaving(true);
+    setSaveError(null);
+    const res =
+      modal?.mode === "edit" && editingId
+        ? await incomesApi.update(editingId, payload)
+        : await incomesApi.create(payload);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to save to Notion.");
+      return;
+    }
+    setModal(null);
+    await refetch();
+  }
+
+  async function handleDeleteIncome() {
+    if (!editingId) return;
+    if (!window.confirm("Soft-delete this income in Notion?")) return;
+    setSaving(true);
+    const res = await incomesApi.delete(editingId);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to delete.");
+      return;
+    }
+    setModal(null);
+    await refetch();
   }
 
   return (
@@ -1232,6 +1584,7 @@ function IncomePage({
       />
 
       <Panel title={`${viewMode} Income Records`}>
+        {isLoading && <LoadingBlock label="Querying Notion…" />}
         <DataTable
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
           rows={visibleIncomeRecords.map((record) => {
@@ -1240,8 +1593,8 @@ function IncomePage({
             return [
               record.name,
               formatDate(record.date),
-              getAccountName(record.accountId),
-              getIncomeCategoryName(record.categoryId),
+              accountNameById.get(record.accountId ?? "") ?? "—",
+              incomeCategoryNameById.get(record.categoryId) ?? "—",
               formatMoney(record.grossIncome),
               formatMoney(record.capitalExpenditure),
               <MoneyValue key={`${record.id}-net`} value={netIncome} />,
@@ -1259,13 +1612,30 @@ function IncomePage({
       <FormModal
         deleteLabel="Soft Delete"
         modal={modal}
-        saveLabel="Direct Save"
+        editing={editing}
+        saving={saving}
+        error={saveError}
         subtitle="Net income updates from gross income less capital expenditure."
+        onEdit={() => setEditing(true)}
+        onSave={handleSaveIncome}
+        onDelete={handleDeleteIncome}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Name"><input placeholder="Income title" /></Field>
-          <Field label="Date"><input type="date" /></Field>
+          <Field label="Name">
+            <input
+              placeholder="Income title"
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+            />
+          </Field>
+          <Field label="Date">
+            <input
+              type="date"
+              value={dateInput}
+              onChange={(event) => setDateInput(event.target.value)}
+            />
+          </Field>
           <Field label="Gross Income">
             <input
               inputMode="decimal"
@@ -1283,7 +1653,7 @@ function IncomePage({
             />
           </Field>
           <Field label="Accounts">
-            <select value={accountId} onChange={(event) => setAccountId(event.target.value)}>
+            <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
               <option value="" disabled>
                 Select your account
               </option>
@@ -1293,7 +1663,7 @@ function IncomePage({
             </select>
           </Field>
           <Field label="Categories">
-            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+            <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
               <option value="" disabled>
                 Select your category
               </option>
@@ -1316,10 +1686,24 @@ function IncomePage({
 function ExpensePage({
   viewMode,
   onViewModeChange,
+  selectedDate,
 }: {
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
+  selectedDate: string;
 }) {
+  const {
+    activeAccounts,
+    expenseCategories,
+    accountNameById,
+    expenseCategoryNameById,
+  } = useLiveCollections();
+  const expenseUnit = expenseModeToUnit(viewMode);
+  const expenseRange = expenseUnit ? computeRange(expenseUnit, selectedDate) : null;
+  const nonAuxExpenseCategories = expenseCategories.filter(
+    (c) => c.auxiliary === "No",
+  );
+  const [descriptionInput, setDescriptionInput] = useState("");
   const [accountFilterId, setAccountFilterId] = useState("");
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState(expenseCategoryFilterAll);
   const [pasabuyerFilter, setPasabuyerFilter] = useState("");
@@ -1340,8 +1724,7 @@ function ExpensePage({
   const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
 
-  // TODO: populate from API via useExpenseCategories
-  const pasabuyCategory = undefined as ExpenseCategory | undefined;
+  const pasabuyCategory = expenseCategories.find((c) => /pasabuy/i.test(c.name));
   const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
   const accountType = selectedFormAccount?.type ?? "Cash";
   const categoryName = getExpenseCategoryName(formCategoryId);
@@ -1381,23 +1764,47 @@ function ExpensePage({
     periodCount,
   });
   const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
-  // TODO: populate from API via useExpenses hook
-  const visibleExpenseRecords: ExpenseRecord[] = [];
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const { state: expensesState, refetch } = useExpenses({
+    rangeStart: expenseRange?.start,
+    rangeEnd: expenseRange?.end,
+    accountId: accountFilterId || undefined,
+    categoryId:
+      expenseCategoryFilter !== expenseCategoryFilterAll &&
+      expenseCategoryFilter !== expenseCategoryFilterWithoutPasabuy
+        ? expenseCategoryFilter
+        : undefined,
+    paymentStatus: undefined,
+    pasabuyer: pasabuyerFilter || undefined,
+    expenseViewMode: viewMode,
+  });
+  const isLoading = expensesState.status === "loading";
+  const allExpenseRecords: ExpenseRecord[] =
+    expensesState.status === "success" ? expensesState.data : [];
+  const visibleExpenseRecords: ExpenseRecord[] = allExpenseRecords.filter(
+    (record) => !record.description?.includes("[Deleted:"),
+  );
 
-  function openExpenseModal(mode: "new" | "edit", title: string, _recordId?: string) {
-    void _recordId;
-    const record = undefined as ExpenseRecord | undefined;
+  function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
+    const record =
+      recordId != null
+        ? visibleExpenseRecords.find((r) => r.id === recordId)
+        : undefined;
     const nextCategoryId =
       record?.categoryId ??
       (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
       (isSpecificExpenseCategoryFilter(expenseCategoryFilter) ? expenseCategoryFilter : "");
 
+    setDescriptionInput(record?.description ?? "");
     setFormAccountId(record?.accountId ?? accountFilterId);
     setFormCategoryId(nextCategoryId);
     setPurchaseDateInput(record?.purchaseDate ?? "");
     setDatePaidInput(record?.datePaid ?? "");
-    setExpenseAmountInput(record?.amount.toString() ?? "");
-    setInterestInput(record?.interest.toString() ?? "");
+    setExpenseAmountInput(record?.amount?.toString() ?? "");
+    setInterestInput(record?.interest?.toString() ?? "");
     setPaymentStatus(record?.paymentStatus ?? "");
     setPaymentFrequency(record?.paymentFrequency ?? "");
     setPeriodCountInput(record?.periodCount?.toString() ?? "");
@@ -1407,7 +1814,62 @@ function ExpensePage({
     setPasabuyDateOfPaymentInput(record?.pasabuyDateOfPayment ?? "");
     setPasabuyPaidPeriodInput(record?.pasabuyPaidPeriod?.toString() ?? "");
     setPasabuyAccountReceiverId(record?.pasabuyAccountReceiverId ?? "");
+    setEditingId(record?.id ?? null);
+    setEditing(mode === "new");
+    setSaveError(null);
     setModal({ mode, title });
+  }
+
+  async function handleSaveExpense() {
+    if (!descriptionInput.trim() || !purchaseDateInput || !formAccountId || !formCategoryId) {
+      setSaveError("Description, purchase date, account and category are required.");
+      return;
+    }
+    const payload: Record<string, unknown> = {
+      description: descriptionInput.trim(),
+      purchaseDate: purchaseDateInput,
+      datePaid: datePaidInput || null,
+      amount: parseNumberInput(expenseAmountInput),
+      interest: parseNumberInput(interestInput),
+      accountId: formAccountId,
+      categoryId: formCategoryId,
+      paymentStatus: paymentStatus || "Unpaid",
+      paymentFrequency: paymentFrequency || null,
+      periodCount: parseOptionalNumberInput(periodCountInput),
+      paidPeriod: parseOptionalNumberInput(paidPeriodInput),
+      pasabuyer: pasabuyer || null,
+      pasabuyStatus: pasabuyStatus || null,
+      pasabuyDateOfPayment: pasabuyDateOfPaymentInput || null,
+      pasabuyPaidPeriod: parseOptionalNumberInput(pasabuyPaidPeriodInput),
+      pasabuyAccountReceiverId: pasabuyAccountReceiverId || null,
+    };
+    setSaving(true);
+    setSaveError(null);
+    const res =
+      modal?.mode === "edit" && editingId
+        ? await expensesApi.update(editingId, payload)
+        : await expensesApi.create(payload);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to save to Notion.");
+      return;
+    }
+    setModal(null);
+    await refetch();
+  }
+
+  async function handleDeleteExpense() {
+    if (!editingId) return;
+    if (!window.confirm("Soft-delete this expense in Notion?")) return;
+    setSaving(true);
+    const res = await expensesApi.delete(editingId);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to delete.");
+      return;
+    }
+    setModal(null);
+    await refetch();
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
@@ -1442,7 +1904,7 @@ function ExpensePage({
               >
                 <option value={expenseCategoryFilterAll}>All</option>
                 <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
-                {([] as ExpenseCategory[]).map((category) => (
+                {nonAuxExpenseCategories.map((category) => (
                   <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </FilterSelect>
@@ -1479,14 +1941,15 @@ function ExpensePage({
       />
 
       <Panel title={`${viewMode} Expenses`}>
+        {isLoading && <LoadingBlock label="Querying Notion…" />}
         <DataTable
           headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid", "Expense Status"]}
           rows={visibleExpenseRecords.map((record) => [
             formatDate(record.purchaseDate),
             record.description,
             formatMoney(record.amount),
-            getAccountName(record.accountId),
-            getExpenseCategoryName(record.categoryId),
+            accountNameById.get(record.accountId ?? "") ?? "—",
+            expenseCategoryNameById.get(record.categoryId) ?? "—",
             record.datePaid ? formatDate(record.datePaid) : "-",
             <ExpenseStatusDot
               key={`${record.id}-expense-status`}
@@ -1505,12 +1968,23 @@ function ExpensePage({
       <FormModal
         deleteLabel="Soft Delete"
         modal={modal}
-        saveLabel="Direct Save"
+        editing={editing}
+        saving={saving}
+        error={saveError}
         subtitle="Context fields change from the selected account and category."
+        onEdit={() => setEditing(true)}
+        onSave={handleSaveExpense}
+        onDelete={handleDeleteExpense}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Purchase description"><input placeholder="Purchase description" /></Field>
+          <Field label="Purchase description">
+            <input
+              placeholder="Purchase description"
+              value={descriptionInput}
+              onChange={(event) => setDescriptionInput(event.target.value)}
+            />
+          </Field>
           <Field label="Purchase Date">
             <input
               type="date"
@@ -1533,7 +2007,7 @@ function ExpensePage({
               <option value="" disabled>
                 Select your category
               </option>
-              {([] as ExpenseCategory[]).map((category) => (
+              {nonAuxExpenseCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
@@ -1689,6 +2163,13 @@ function WorkflowPage({
   section: WorkflowSectionId;
   selectedMonth: string;
 }) {
+  const {
+    nonCreditActiveAccounts,
+    creditActiveAccounts,
+    normalIncomeCategories,
+    accountNameById,
+    incomeCategoryNameById,
+  } = useLiveCollections();
   const fixedCategory = getWorkflowFixedCategory(section);
   const label = getActiveSectionLabel(section);
   const isTransfer = section === "transfer";
@@ -1716,48 +2197,116 @@ function WorkflowPage({
         ? "Savings Amount"
         : "Gross Income";
   const [modal, setModal] = useState<ModalState>(null);
+  const [workflowNameInput, setWorkflowNameInput] = useState("");
+  const [workflowDateInput, setWorkflowDateInput] = useState("");
   const [receivingAccountId, setReceivingAccountId] = useState("");
   const [transactedAccountId, setTransactedAccountId] = useState("");
-  const [workflowCategoryId, setWorkflowCategoryId] = useState("");
+  const [workflowCategoryIdInput, setWorkflowCategoryIdInput] = useState("");
   const [workflowAmountInput, setWorkflowAmountInput] = useState("");
   const [workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
   );
-  const workflowAmounts = isAlkansya ? [-12000, -3500] : [12000, 3500];
-  const workflowAccountIds = isCreditCardPayment
-    ? ["acct-metrobank-card", "acct-bypl"]
-    : ["acct-bdo-checking", "acct-gcash"];
-  const workflowDates = [`${selectedMonth}-05`, `${selectedMonth}-18`];
-  const workflowCategory = fixedCategory ?? label;
-  const workflowRows =
-    isReceivables && receivingAccountId
-      ? []
-      : [
-          [
-            `${label} sample`,
-            formatDate(workflowDates[0]),
-            getAccountName(workflowAccountIds[0]),
-            workflowCategory,
-            formatMoney(workflowAmounts[0]),
-          ],
-          [
-            `${label} adjustment`,
-            formatDate(workflowDates[1]),
-            getAccountName(workflowAccountIds[1]),
-            workflowCategory,
-            formatMoney(workflowAmounts[1]),
-          ],
-        ];
 
-  function openWorkflowModal(mode: "new" | "edit", title: string) {
-    setReceivingAccountId("");
-    setTransactedAccountId("");
-    setWorkflowCategoryId("");
-    setWorkflowAmountInput(isAlkansya ? "-12000" : "");
-    setWorkflowCapitalExpenditureInput("");
+  // Each workflow is the Incomes data source filtered server-side by its fixed
+  // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
+  // alkansya→Savings) or, for receivables, by an empty receiving account.
+  const { state: workflowState, refetch } = useWorkflowRecords(section, {
+    month: selectedMonth,
+  });
+  const isLoading = workflowState.status === "loading";
+  const workflowIncomes: IncomeRecord[] = (
+    workflowState.status === "success" ? workflowState.data : []
+  ).filter((r) => !r.name?.includes("[Deleted:"));
+  const workflowApi =
+    section === "transfer"
+      ? transfersApi
+      : section === "credit-card-payment"
+        ? creditCardPaymentsApi
+        : section === "alkansya"
+          ? alkansyaApi
+          : receivablesApi;
+  const workflowRows = workflowIncomes.map((record) => [
+    record.name,
+    formatDate(record.date),
+    accountNameById.get(record.accountId ?? "") ?? "—",
+    fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
+    formatMoney(record.grossIncome),
+  ]);
+
+  function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
+    const record =
+      recordId != null
+        ? workflowIncomes.find((r) => r.id === recordId)
+        : undefined;
+    setWorkflowNameInput(record?.name ?? "");
+    setWorkflowDateInput(record?.date ?? "");
+    setReceivingAccountId(record?.accountId ?? "");
+    setTransactedAccountId(record?.transactedAccountId ?? "");
+    setWorkflowCategoryIdInput(record?.categoryId ?? "");
+    setWorkflowAmountInput(record?.grossIncome?.toString() ?? "");
+    setWorkflowCapitalExpenditureInput(
+      record?.capitalExpenditure?.toString() ?? "",
+    );
+    setEditingId(record?.id ?? null);
+    setEditing(mode === "new");
+    setSaveError(null);
     setModal({ mode, title });
+  }
+
+  async function handleSaveWorkflow() {
+    if (!workflowNameInput.trim() || !workflowDateInput || !receivingAccountId) {
+      setSaveError("Name, date and account are required.");
+      return;
+    }
+    const payload: Record<string, unknown> = {
+      name: workflowNameInput.trim(),
+      date: workflowDateInput,
+      grossIncome: parseNumberInput(workflowAmountInput),
+      capitalExpenditure: parseNumberInput(workflowCapitalExpenditureInput),
+      accountId: receivingAccountId,
+    };
+    // Transfer & CC Payment carry a transacted/payer account.
+    if (secondaryAccountLabel) {
+      payload.transactedAccountId = transactedAccountId || null;
+    }
+    // Receivables let the user choose the income category; the other workflows
+    // use their fixed category resolved server-side (must NOT send categoryId).
+    if (isReceivables) {
+      payload.categoryId = workflowCategoryIdInput;
+    }
+    setSaving(true);
+    setSaveError(null);
+    const res =
+      modal?.mode === "edit" && editingId
+        ? await workflowApi.update(editingId, payload)
+        : await workflowApi.create(payload);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to save to Notion.");
+      return;
+    }
+    setModal(null);
+    await refetch();
+  }
+
+  async function handleDeleteWorkflow() {
+    if (!editingId) return;
+    if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
+    setSaving(true);
+    const res = await workflowApi.delete(editingId);
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to delete.");
+      return;
+    }
+    setModal(null);
+    await refetch();
   }
 
   return (
@@ -1777,16 +2326,26 @@ function WorkflowPage({
       />
 
       <Panel title="Records">
+        {isLoading && <LoadingBlock label="Querying Notion…" />}
         {workflowRows.length ? (
           <DataTable
             headers={["Name", "Date", sourceAccountLabel, "Category", "Amount"]}
             rows={workflowRows}
-            onRowClick={(rowIndex) => openWorkflowModal("edit", workflowRows[rowIndex]?.[0] ?? label)}
+            onRowClick={(rowIndex) => {
+              const record = workflowIncomes[rowIndex];
+              if (record) {
+                openWorkflowModal("edit", record.name, record.id);
+              }
+            }}
           />
         ) : (
           <EmptyState
-            title="No outstanding receivables"
-            detail="Receivables leave this view after a receiving account is selected."
+            title={`No ${label.toLowerCase()} records this month`}
+            detail={
+              isReceivables
+                ? "Receivables are income records that do not yet have a receiving account."
+                : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`
+            }
           />
         )}
       </Panel>
@@ -1794,13 +2353,30 @@ function WorkflowPage({
       <FormModal
         deleteLabel="Soft Delete"
         modal={modal}
-        saveLabel="Direct Save"
+        editing={editing}
+        saving={saving}
+        error={saveError}
         subtitle={`${label} uses the same income-backed write path with workflow-only fields exposed.`}
+        onEdit={() => setEditing(true)}
+        onSave={handleSaveWorkflow}
+        onDelete={handleDeleteWorkflow}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Name"><input placeholder={`${label} title`} /></Field>
-          <Field label="Date"><input type="date" /></Field>
+          <Field label="Name">
+            <input
+              placeholder={`${label} title`}
+              value={workflowNameInput}
+              onChange={(event) => setWorkflowNameInput(event.target.value)}
+            />
+          </Field>
+          <Field label="Date">
+            <input
+              type="date"
+              value={workflowDateInput}
+              onChange={(event) => setWorkflowDateInput(event.target.value)}
+            />
+          </Field>
           <Field label={amountLabel}>
             <input
               inputMode="decimal"
@@ -1845,7 +2421,7 @@ function WorkflowPage({
             <ComputedField label="Categories" value={fixedCategory} />
           ) : (
             <Field label="Categories">
-              <select value={workflowCategoryId} onChange={(event) => setWorkflowCategoryId(event.target.value)}>
+              <select value={workflowCategoryIdInput} onChange={(event) => setWorkflowCategoryIdInput(event.target.value)}>
                 <option value="" disabled>
                   Select your category
                 </option>
@@ -1871,22 +2447,41 @@ function WorkflowPage({
 function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
-  // TODO: populate from API via useMonthlyMonitoring hook
-  const scopedIncomeRecords: IncomeRecord[] = [];
-  const scopedExpenseRecords: ExpenseRecord[] = [];
+  const { normalIncomeCategories, expenseCategories } = useLiveCollections();
+  const { state: incomesState } = useIncomes({ month: selectedMonth });
+  const { state: expensesState } = useExpenses({ month: selectedMonth });
+  const scopedIncomeRecords: IncomeRecord[] = (
+    incomesState.status === "success" ? incomesState.data : []
+  ).filter((record) => !record.name?.includes("[Deleted:"));
+  const scopedExpenseRecords: ExpenseRecord[] = (
+    expensesState.status === "success" ? expensesState.data : []
+  ).filter((record) => !record.description?.includes("[Deleted:"));
+  const monthlyGrossIncome = getIncomeGrossTotal(scopedIncomeRecords);
+  const monthlyCapitalExpenditure = getIncomeCapitalExpenditureTotal(
+    scopedIncomeRecords,
+  );
+  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords);
+  const monthlyExpense = getExpenseTotal(scopedExpenseRecords);
+  const grossMargin = monthlyIncome - monthlyExpense;
   const monitoring = {
     month: selectedMonth,
-    monthlyIncome: 0,
-    monthlyGrossIncome: 0,
-    monthlyCapitalExpenditure: 0,
-    monthlyExpense: 0,
-    grossMargin: 0,
-    forNeeds: 0,
-    forWants: 0,
-    forSavings: 0,
+    monthlyIncome,
+    monthlyGrossIncome,
+    monthlyCapitalExpenditure,
+    monthlyExpense,
+    grossMargin,
+    forNeeds: monthlyIncome * 0.5,
+    forWants: monthlyIncome * 0.3,
+    forSavings: monthlyIncome * 0.2,
   };
-  const incomeCategorySummaries = getIncomeCategorySummaries(scopedIncomeRecords);
-  const expenseCategorySummaries = getExpenseCategorySummaries(scopedExpenseRecords, []);
+  const incomeCategorySummaries = getIncomeCategorySummaries(
+    scopedIncomeRecords,
+    normalIncomeCategories,
+  );
+  const expenseCategorySummaries = getExpenseCategorySummaries(
+    scopedExpenseRecords,
+    expenseCategories,
+  );
   const incomeNetTotal = getIncomeNetTotal(scopedIncomeRecords);
   const incomeGrossTotal = getIncomeGrossTotal(scopedIncomeRecords);
   const incomeCapitalExpenditureTotal = getIncomeCapitalExpenditureTotal(scopedIncomeRecords);
@@ -2485,8 +3080,12 @@ function AccountDetailModal({
       >
         <div className="modal-panel__header">
           <div className="account-modal__title-row">
-            {account.icon ? (
+            {account.icon && isImageUrl(account.icon) ? (
               <Image src={account.icon} alt="" width={40} height={40} className="account-icon account-icon--large" unoptimized />
+            ) : account.icon ? (
+              <span className="account-icon account-icon--emoji account-icon--large" aria-hidden="true">
+                {account.icon}
+              </span>
             ) : (
               <span className="account-icon account-icon--fallback account-icon--large">
                 <AccountTypeIcon type={account.type} size={22} />
@@ -2599,16 +3198,25 @@ function FormModal({
   modal,
   subtitle,
   deleteLabel,
-  secondaryDeleteLabel,
-  saveLabel,
+  editing,
+  saving,
+  error,
+  onEdit,
+  onSave,
+  onDelete,
   onClose,
   children,
 }: {
   modal: ModalState;
   subtitle: string;
   deleteLabel: string;
-  secondaryDeleteLabel?: string;
-  saveLabel: string;
+  /** True when inputs are active. New items start editing; edits start read-only. */
+  editing: boolean;
+  saving: boolean;
+  error?: string | null;
+  onEdit: () => void;
+  onSave: () => void;
+  onDelete: () => void;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -2621,7 +3229,7 @@ function FormModal({
       className="modal-backdrop"
       role="presentation"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
+        if (event.target === event.currentTarget && !saving) {
           onClose();
         }
       }}
@@ -2635,30 +3243,40 @@ function FormModal({
         <div className="modal-panel__header">
           <div>
             <h2 id="form-modal-title">{modal.title}</h2>
-            <p>{subtitle}</p>
+            <p>{editing ? subtitle : "Read-only — click Edit to change and save to Notion."}</p>
           </div>
           <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
             <X size={17} />
           </button>
         </div>
-        <div className="modal-panel__body">{children}</div>
+        <div className="modal-panel__body">
+          {error && <div className="auth-form__error">{error}</div>}
+          <fieldset className="modal-fieldset" disabled={!editing || saving}>
+            {children}
+          </fieldset>
+        </div>
         <div className="modal-panel__footer">
           {modal.mode === "edit" && (
-            <button type="button" className="button" onClick={onClose}>
+            <button type="button" className="button" onClick={onDelete} disabled={saving}>
               <Trash2 size={16} />
               {deleteLabel}
             </button>
           )}
-          {modal.mode === "edit" && secondaryDeleteLabel && (
-            <button type="button" className="button button--danger" onClick={onClose}>
-              <Trash2 size={16} />
-              {secondaryDeleteLabel}
+          {!editing && modal.mode === "edit" ? (
+            <button type="button" className="button button--primary" onClick={onEdit}>
+              <Pencil size={16} />
+              Edit
+            </button>
+          ) : (
+            <button type="button" className="button button--primary" onClick={onSave} disabled={saving}>
+              {saving ? (
+                <RefreshCw size={16} className="spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              {saving ? "Saving…" : "Save"}
             </button>
           )}
-          <button type="button" className="button button--primary" onClick={onClose}>
-            <Save size={16} />
-            {saveLabel}
-          </button>
         </div>
       </section>
     </div>
@@ -2670,6 +3288,15 @@ function EmptyState({ title, detail }: { title: string; detail: string }) {
     <div className="empty-state">
       <strong>{title}</strong>
       <span>{detail}</span>
+    </div>
+  );
+}
+
+function LoadingBlock({ label }: { label: string }) {
+  return (
+    <div className="loading-block" role="status" aria-live="polite">
+      <RefreshCw size={16} className="spin" />
+      <span>{label}</span>
     </div>
   );
 }

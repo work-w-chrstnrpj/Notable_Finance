@@ -416,6 +416,126 @@ a {
   text-align: center;
 }
 
+.month-stepper {
+  position: relative;
+}
+
+.month-stepper__label {
+  min-width: 132px;
+  width: auto !important;
+  height: auto !important;
+  padding: 2px 10px !important;
+  color: var(--ink) !important;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.date-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.date-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 41;
+  width: 240px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.date-picker__year-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.date-picker__year-row button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+}
+
+.date-picker__year-row strong {
+  font-size: 15px;
+}
+
+.date-picker__month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.date-picker__year-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.date-picker__cell {
+  padding: 8px 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.date-picker__cell:hover {
+  border-color: var(--accent);
+}
+
+.date-picker__cell.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.date-picker__day {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.date-picker__day input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.loading-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
 .workspace__content {
   padding: 24px;
 }
@@ -657,6 +777,67 @@ a {
 }
 
 .spending-list__row strong {
+  color: var(--ink);
+  font-family: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.top-expense-list {
+  display: grid;
+  gap: 12px;
+}
+
+.top-expense-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.top-expense-row__rank {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.top-expense-row__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.top-expense-row__title {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  /* Allow the title to wrap to 2-3 lines instead of being squeezed to one. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.top-expense-row__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+}
+
+.top-expense-row__meta strong {
   color: var(--ink);
   font-family: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
   font-size: 13px;
@@ -975,6 +1156,18 @@ input {
   color: var(--ink-muted);
 }
 
+.account-icon--emoji {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.account-icon--emoji.account-icon--large {
+  font-size: 24px;
+}
+
 .account-icon--large {
   width: 40px;
   height: 40px;
@@ -1022,6 +1215,23 @@ input {
 
 .modal-panel--account .modal-panel__body {
   padding: 0;
+}
+
+/* Disabling fieldset toggles read-only vs. editable form state (no chrome). */
+.modal-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.modal-fieldset:disabled input,
+.modal-fieldset:disabled select,
+.modal-fieldset:disabled textarea {
+  background: var(--surface-muted);
+  color: var(--ink);
+  opacity: 1;
+  cursor: default;
 }
 
 .account-detail-grid {
@@ -1801,6 +2011,48 @@ tfoot td {
 
 .auth-form__footer a:hover {
   text-decoration: underline;
+}
+
+.auth-form--wide {
+  max-width: 520px;
+}
+
+.auth-form__notice {
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.notion-connect__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 0;
+}
+
+.notion-connect__fieldset legend {
+  padding: 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.button--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text-secondary) 10%, transparent);
 }
 
 .sync-btn-wrapper {

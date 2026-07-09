@@ -57,6 +57,7 @@ export interface AccountDto {
 export interface IncomeCategoryDto {
   id: string;
   source: string;
+  auxiliary: boolean;
   monthlyEarnings: number;
   monthlyExpenditure: number;
   monthlyGross: number;
@@ -114,6 +115,13 @@ export interface ListQuery {
   viewMode?: string;
   expenseViewMode?: string;
   month?: string;
+  /** ISO date (YYYY-MM-DD) anchoring day/week ranges. */
+  date?: string;
+  /** Four-digit year anchoring the annual range. */
+  year?: string;
+  /** Explicit inclusive range bounds (YYYY-MM-DD), used by day/week/year views. */
+  rangeStart?: string;
+  rangeEnd?: string;
   accountId?: string;
   categoryId?: string;
   pasabuyer?: string;

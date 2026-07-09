@@ -30,13 +30,13 @@ import {
 import type { Account, ExpenseRecord, IncomeCategory, IncomeRecord } from "@/types/finance";
 
 const testIncomeCategories: IncomeCategory[] = [
-  { id: "inc-employment", source: "Employment", monthlyEarnings: 85000, monthlyExpenditure: 5000, monthlyGross: 80000, earningPercentage: 74.4 },
-  { id: "inc-freelance", source: "Freelance", monthlyEarnings: 25000, monthlyExpenditure: 2500, monthlyGross: 22500, earningPercentage: 20.9 },
-  { id: "inc-dividends", source: "Dividends", monthlyEarnings: 5000, monthlyExpenditure: 0, monthlyGross: 5000, earningPercentage: 4.7 },
-  { id: "inc-savings", source: "Savings", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
-  { id: "inc-transfer", source: "Transfer", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
-  { id: "inc-cc-payment", source: "Credit Card Payment", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
-  { id: "inc-iou", source: "IOU", monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-employment", source: "Employment", auxiliary: false, monthlyEarnings: 85000, monthlyExpenditure: 5000, monthlyGross: 80000, earningPercentage: 74.4 },
+  { id: "inc-freelance", source: "Freelance", auxiliary: false, monthlyEarnings: 25000, monthlyExpenditure: 2500, monthlyGross: 22500, earningPercentage: 20.9 },
+  { id: "inc-dividends", source: "Dividends", auxiliary: false, monthlyEarnings: 5000, monthlyExpenditure: 0, monthlyGross: 5000, earningPercentage: 4.7 },
+  { id: "inc-savings", source: "Savings", auxiliary: false, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-transfer", source: "Transfer", auxiliary: true, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-cc-payment", source: "Credit Card Payment", auxiliary: true, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
+  { id: "inc-iou", source: "IOU", auxiliary: true, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 },
 ];
 
 const testAccounts: Account[] = [

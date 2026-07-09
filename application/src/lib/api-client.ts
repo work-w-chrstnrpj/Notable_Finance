@@ -130,6 +130,8 @@ export const expenseCategoriesApi = {
 
 export type IncomesListParams = {
   month?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
   categoryId?: string;
   accountId?: string;
 };
@@ -165,6 +167,8 @@ export const incomesApi = {
 
 export type ExpensesListParams = {
   month?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
   categoryId?: string;
   accountId?: string;
   paymentStatus?: string;
@@ -199,45 +203,48 @@ export const expensesApi = {
   },
 };
 
-// ── Transactions / Workflows ──────────────────────────────────────────
+// ── Transactions / Workflows (all income-backed views) ────────────────
 
-export const transactionsApi = {
-  list() {
-    return requestBackend("/transactions");
-  },
+export type WorkflowListParams = {
+  month?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
+  accountId?: string;
 };
 
-// ── Transfers ─────────────────────────────────────────────────────────
+function workflowApi(path: string) {
+  return {
+    list(params?: WorkflowListParams) {
+      return requestBackend<IncomeRecord[]>(`${path}${buildQueryString(params)}`);
+    },
+    detail(id: string) {
+      return requestBackend<IncomeRecord>(`${path}/${encodeURIComponent(id)}`);
+    },
+    create(body: Record<string, unknown>) {
+      return requestBackend<IncomeRecord>(path, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+    },
+    update(id: string, body: Record<string, unknown>) {
+      return requestBackend<IncomeRecord>(`${path}/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+    },
+    delete(id: string) {
+      return requestBackend<void>(`${path}/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    },
+  };
+}
 
-export const transfersApi = {
-  list() {
-    return requestBackend("/transfers");
-  },
-};
-
-// ── Credit Card Payments ──────────────────────────────────────────────
-
-export const creditCardPaymentsApi = {
-  list() {
-    return requestBackend("/credit-card-payments");
-  },
-};
-
-// ── Alkansya ──────────────────────────────────────────────────────────
-
-export const alkansyaApi = {
-  list() {
-    return requestBackend("/alkansya");
-  },
-};
-
-// ── Receivables ───────────────────────────────────────────────────────
-
-export const receivablesApi = {
-  list() {
-    return requestBackend("/receivables");
-  },
-};
+export const transactionsApi = workflowApi("/transactions");
+export const transfersApi = workflowApi("/transfers");
+export const creditCardPaymentsApi = workflowApi("/credit-card-payments");
+export const alkansyaApi = workflowApi("/alkansya");
+export const receivablesApi = workflowApi("/receivables");
 
 // ── Monthly Monitoring ────────────────────────────────────────────────
 
