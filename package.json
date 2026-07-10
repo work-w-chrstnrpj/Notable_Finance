@@ -8,7 +8,7 @@
     "deps:frontend": "npm --prefix application install",
     "deps:backend": "npm --prefix service install",
     "dev": "npm run dev:all",
-    "dev:all": "npm run dev:backend & npm run dev:frontend",
+    "dev:all": "concurrently -k -n BE,FE -c blue,magenta \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm --prefix application run dev",
     "dev:frontent": "npm run dev:frontend",
     "dev:backend": "npm --prefix service run dev",
@@ -29,5 +29,8 @@
     "test:frontend": "npm --prefix application run test",
     "test:backend": "npm --prefix service run test",
     "verify": "npm run lint && npm run typecheck && npm run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }

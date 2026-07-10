@@ -1,0 +1,29 @@
+(node:38684) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: 3e5213ad-3df7-8222-8c59-810025ff5337. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: b3a213ad-3df7-8300-b49e-017fd3abf182. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: c78213ad-3df7-83b6-8179-01e74fed5892. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: 06f213ad-3df7-82a7-bc02-017173153818. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: bdc213ad-3df7-826e-9136-0132906511a8. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}

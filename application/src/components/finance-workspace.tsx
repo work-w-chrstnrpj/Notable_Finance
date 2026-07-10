@@ -1283,6 +1283,7 @@ function SpendingBreakdownCard({
 function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
+  const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const { state: accountsState } = useAccounts(true);
 
@@ -1291,6 +1292,7 @@ function AccountsPage() {
 
   const visibleAccounts = sourceAccounts.filter((account) => {
     if (account.inactive) return false;
+    if (hideZeroBalance && account.currentBalance === 0) return false;
     if (accountScope === "all") return account.type !== "Auxiliary";
     if (accountScope === "credit") return isCreditLikeAccountType(account.type);
     return !isCreditLikeAccountType(account.type) && account.type !== "Auxiliary";
@@ -1340,6 +1342,31 @@ function AccountsPage() {
     return 0;
   }
 
+  const accountTotalBalance = visibleAccounts.reduce(
+    (sum, account) => sum + account.currentBalance,
+    0,
+  );
+  const accountTotalIncome = visibleAccounts.reduce(
+    (sum, account) => sum + getAccountTotalIncome(account.id),
+    0,
+  );
+  const accountTotalExpense = visibleAccounts.reduce(
+    (sum, account) => sum + getAccountTotalExpense(account.id),
+    0,
+  );
+  const accountTableFooterRows =
+    accountScope === "credit"
+      ? []
+      : [
+          [
+            "Total",
+            "",
+            formatMoney(accountTotalBalance),
+            formatMoney(accountTotalIncome, { compact: true }),
+            formatMoney(accountTotalExpense, { compact: true }),
+          ],
+        ];
+
   return (
     <div className="page-stack">
       <PageToolbar
@@ -1354,6 +1381,11 @@ function AccountsPage() {
               ]}
               value={viewMode}
               onChange={(value) => setViewMode(value as "cards" | "table")}
+            />
+            <FilterToggle
+              label="Hide zero balance"
+              checked={hideZeroBalance}
+              onChange={setHideZeroBalance}
             />
             <SegmentedControl
               label="Account mode"
@@ -1412,6 +1444,7 @@ function AccountsPage() {
         <DataTable
           headers={accountTableHeaders}
           rows={accountTableRows}
+          footerRows={accountTableFooterRows}
           onRowClick={(rowIndex) => {
             const account = visibleAccounts[rowIndex];
             if (account) {
@@ -1543,7 +1576,8 @@ function IncomePage({
         actions={
           <>
             <FilterSelect
-              placeholder="Select your account"
+              placeholder="All Accounts"
+              placeholderDisabled={false}
               value={accountId}
               onChange={setAccountId}
             >
@@ -1554,7 +1588,8 @@ function IncomePage({
               ))}
             </FilterSelect>
             <FilterSelect
-              placeholder="Select your category"
+              placeholder="All Categories"
+              placeholderDisabled={false}
               value={categoryId}
               onChange={setCategoryId}
             >
@@ -1600,6 +1635,20 @@ function IncomePage({
               <MoneyValue key={`${record.id}-net`} value={netIncome} />,
             ];
           })}
+          footerRows={[
+            [
+              "Total",
+              "",
+              "",
+              "",
+              formatMoney(getIncomeGrossTotal(visibleIncomeRecords)),
+              formatMoney(getIncomeCapitalExpenditureTotal(visibleIncomeRecords)),
+              <MoneyValue
+                key="income-total-net"
+                value={getIncomeNetTotal(visibleIncomeRecords)}
+              />,
+            ],
+          ]}
           onRowClick={(rowIndex) => {
             const record = visibleIncomeRecords[rowIndex];
             if (record) {
@@ -1956,6 +2005,17 @@ function ExpensePage({
               status={getExpenseStatusFromDatePaid(record.datePaid)}
             />,
           ])}
+          footerRows={[
+            [
+              "Total",
+              "",
+              formatMoney(getExpenseTotal(visibleExpenseRecords)),
+              "",
+              "",
+              "",
+              "",
+            ],
+          ]}
           onRowClick={(rowIndex) => {
             const record = visibleExpenseRecords[rowIndex];
             if (record) {
@@ -2447,6 +2507,9 @@ function WorkflowPage({
 function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
+  const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
+  const [hideZeroBudget, setHideZeroBudget] = useState(false);
+  const [hideZeroSpending, setHideZeroSpending] = useState(false);
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
@@ -2478,9 +2541,19 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     scopedIncomeRecords,
     normalIncomeCategories,
   );
+  const visibleIncomeCategorySummaries = hideZeroIncomeCategories
+    ? incomeCategorySummaries.filter((category) => category.grossIncome !== 0)
+    : incomeCategorySummaries;
   const expenseCategorySummaries = getExpenseCategorySummaries(
     scopedExpenseRecords,
     expenseCategories,
+  );
+  const visibleExpenseCategorySummaries = expenseCategorySummaries.filter(
+    (category) => {
+      if (hideZeroBudget && category.monthlyBudget === 0) return false;
+      if (hideZeroSpending && category.spending === 0) return false;
+      return true;
+    },
   );
   const incomeNetTotal = getIncomeNetTotal(scopedIncomeRecords);
   const incomeGrossTotal = getIncomeGrossTotal(scopedIncomeRecords);
@@ -2543,13 +2616,18 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               value={incomeCategoryView}
               onChange={setIncomeCategoryView}
             />
+            <FilterToggle
+              label="Hide zero gross"
+              checked={hideZeroIncomeCategories}
+              onChange={setHideZeroIncomeCategories}
+            />
           </div>
         }
       >
         {incomeCategoryView === "table" && (
           <DataTable
             headers={["Income Type", "Gross Income", "Expenditure", "Net Income", "Earning Percentage"]}
-            rows={incomeCategorySummaries.map((category) => [
+            rows={visibleIncomeCategorySummaries.map((category) => [
               category.source,
               formatMoney(category.grossIncome),
               formatMoney(category.capitalExpenditure),
@@ -2569,7 +2647,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
         )}
         {incomeCategoryView === "chart" && (
           <CategoryDonutChart
-            data={incomeCategorySummaries.map((category, index) => ({
+            data={visibleIncomeCategorySummaries.map((category, index) => ({
               name: category.source,
               value: Math.max(category.netIncome, 0),
               color: categoryPalette[index % categoryPalette.length],
@@ -2578,7 +2656,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
         )}
         {incomeCategoryView === "cards" && (
           <div className="category-grid">
-            {incomeCategorySummaries.map((category) => (
+            {visibleIncomeCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
                 title={category.source}
@@ -2605,13 +2683,23 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               value={expenseCategoryView}
               onChange={setExpenseCategoryView}
             />
+            <FilterToggle
+              label="Hide zero budget"
+              checked={hideZeroBudget}
+              onChange={setHideZeroBudget}
+            />
+            <FilterToggle
+              label="Hide zero spending"
+              checked={hideZeroSpending}
+              onChange={setHideZeroSpending}
+            />
           </div>
         }
       >
         {expenseCategoryView === "simplified" && (
           <DataTable
             headers={["Expense category", "Monthly Budget", "Spending", "Remaining"]}
-            rows={expenseCategorySummaries.map((category) => [
+            rows={visibleExpenseCategorySummaries.map((category) => [
               category.name,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
@@ -2632,7 +2720,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               "Overview",
               "Total Overview",
             ]}
-            rows={expenseCategorySummaries.map((category) => [
+            rows={visibleExpenseCategorySummaries.map((category) => [
               category.name,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
@@ -2654,7 +2742,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
         )}
         {expenseCategoryView === "chart" && (
           <CategoryDonutChart
-            data={expenseCategorySummaries.map((category, index) => ({
+            data={visibleExpenseCategorySummaries.map((category, index) => ({
               name: category.name,
               value: category.spending,
               color: categoryPalette[index % categoryPalette.length],
@@ -2663,7 +2751,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
         )}
         {expenseCategoryView === "cards" && (
           <div className="category-grid">
-            {expenseCategorySummaries.map((category) => (
+            {visibleExpenseCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
                 title={category.name}
@@ -3386,6 +3474,27 @@ function SegmentedControl({
         </button>
       ))}
     </div>
+  );
+}
+
+function FilterToggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className={cx("filter-toggle", checked && "filter-toggle--active")}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span>{label}</span>
+    </label>
   );
 }
 

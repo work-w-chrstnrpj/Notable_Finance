@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { ApiException } from '../common/api-exception';
 import {
@@ -33,8 +33,6 @@ export type FinanceRecord =
   | ExpenseCategoryDto
   | ExpenseRecordDto
   | MonthlyMonitoringDto;
-
-type MutableFinanceRecord = IncomeRecordDto | ExpenseRecordDto;
 
 export interface MonthlyMonitoringDto {
   id: string;
@@ -73,263 +71,7 @@ interface LiveCache {
 
 @Injectable()
 export class NotionService {
-  private readonly accounts: AccountDto[] = [
-    {
-      id: 'acct-bdo-checking',
-      name: 'BDO Checking',
-      type: 'Cash',
-      icon: null,
-      information: 'Daily operating account',
-      startingBalance: 25000,
-      currentBalance: 45230.5,
-      creditLimit: null,
-      availableLimit: null,
-      creditPoints: null,
-      annualFee: null,
-      billingDay: null,
-      dueDay: null,
-      inactive: false,
-    },
-    {
-      id: 'acct-bpi-savings',
-      name: 'BPI Savings',
-      type: 'Savings Account',
-      icon: null,
-      information: 'Emergency and savings',
-      startingBalance: 80000,
-      currentBalance: 123450,
-      creditLimit: null,
-      availableLimit: null,
-      creditPoints: null,
-      annualFee: null,
-      billingDay: null,
-      dueDay: null,
-      inactive: false,
-    },
-    {
-      id: 'acct-metrobank-card',
-      name: 'Metrobank Credit Card',
-      type: 'Credit Account',
-      icon: null,
-      information: 'Primary card',
-      startingBalance: 0,
-      currentBalance: -45800,
-      creditLimit: 150000,
-      availableLimit: 104200,
-      creditPoints: 1820,
-      annualFee: 4500,
-      billingDay: 15,
-      dueDay: 10,
-      inactive: false,
-    },
-    {
-      id: 'acct-bypl',
-      name: 'ShopNow BYPL',
-      type: 'BYPL',
-      icon: null,
-      information: 'Installment purchases',
-      startingBalance: 0,
-      currentBalance: -12800,
-      creditLimit: 40000,
-      availableLimit: 27200,
-      creditPoints: null,
-      annualFee: 0,
-      billingDay: 3,
-      dueDay: 18,
-      inactive: false,
-    },
-    {
-      id: 'acct-old-wallet',
-      name: 'Old Wallet',
-      type: 'Auxiliary',
-      icon: null,
-      information: 'Legacy account',
-      startingBalance: 0,
-      currentBalance: 0,
-      creditLimit: null,
-      availableLimit: null,
-      creditPoints: null,
-      annualFee: null,
-      billingDay: null,
-      dueDay: null,
-      inactive: true,
-    },
-  ];
-
-  private readonly incomeCategories: IncomeCategoryDto[] = [
-    {
-      id: 'inc-employment',
-      source: 'Employment',
-      auxiliary: false,
-      monthlyEarnings: 85000,
-      monthlyExpenditure: 5000,
-      monthlyGross: 80000,
-      earningPercentage: 74.4,
-    },
-    {
-      id: 'inc-freelance',
-      source: 'Freelance',
-      auxiliary: false,
-      monthlyEarnings: 25000,
-      monthlyExpenditure: 2500,
-      monthlyGross: 22500,
-      earningPercentage: 20.9,
-    },
-    {
-      id: 'inc-savings',
-      source: 'Savings',
-      auxiliary: false,
-      monthlyEarnings: 0,
-      monthlyExpenditure: 0,
-      monthlyGross: 0,
-      earningPercentage: 0,
-    },
-    {
-      id: 'inc-transfer',
-      source: 'Transfer',
-      auxiliary: true,
-      monthlyEarnings: 0,
-      monthlyExpenditure: 0,
-      monthlyGross: 0,
-      earningPercentage: 0,
-    },
-    {
-      id: 'inc-cc-payment',
-      source: 'Credit Card Payment',
-      auxiliary: true,
-      monthlyEarnings: 0,
-      monthlyExpenditure: 0,
-      monthlyGross: 0,
-      earningPercentage: 0,
-    },
-    {
-      id: 'inc-iou',
-      source: 'IOU',
-      auxiliary: true,
-      monthlyEarnings: 0,
-      monthlyExpenditure: 0,
-      monthlyGross: 0,
-      earningPercentage: 0,
-    },
-  ];
-
-  private readonly incomes: IncomeRecordDto[] = [
-    {
-      id: 'income-july-salary',
-      name: 'July Salary',
-      date: '2026-07-15',
-      grossIncome: 85000,
-      capitalExpenditure: 5000,
-      accountId: 'acct-bdo-checking',
-      categoryId: 'inc-employment',
-    },
-    {
-      id: 'income-project-retainer',
-      name: 'Project Retainer',
-      date: '2026-07-05',
-      grossIncome: 25000,
-      capitalExpenditure: 2500,
-      accountId: 'acct-bpi-savings',
-      categoryId: 'inc-freelance',
-    },
-  ];
-
-  private readonly expenseCategories: ExpenseCategoryDto[] = [
-    {
-      id: 'exp-housing',
-      name: 'Housing',
-      monthlyBudget: 15000,
-      upcomingBudget: 15000,
-      auxiliary: 'No',
-      spending: 12500,
-      remaining: 2500,
-      overview: '83% used',
-      totalOverview: 83.33,
-    },
-    {
-      id: 'exp-food',
-      name: 'Food & Dining',
-      monthlyBudget: 9000,
-      upcomingBudget: 9500,
-      auxiliary: 'No',
-      spending: 5200,
-      remaining: 3800,
-      overview: '58% used',
-      totalOverview: 57.78,
-    },
-    {
-      id: 'exp-pasabuy',
-      name: 'Pasabuy',
-      monthlyBudget: 6000,
-      upcomingBudget: 6000,
-      auxiliary: 'Yes',
-      spending: 3500,
-      remaining: 2500,
-      overview: '58% used',
-      totalOverview: 58.33,
-    },
-  ];
-
-  private readonly expenses: ExpenseRecordDto[] = [
-    {
-      id: 'expense-rent',
-      description: 'Monthly Rent',
-      purchaseDate: '2026-07-01',
-      datePaid: '2026-07-01',
-      amount: 12500,
-      interest: 0,
-      accountId: 'acct-bdo-checking',
-      categoryId: 'exp-housing',
-      paymentStatus: 'Paid',
-      paymentFrequency: 'Monthly',
-      periodCount: null,
-      paidPeriod: null,
-      pasabuyer: null,
-      pasabuyStatus: null,
-      pasabuyDateOfPayment: null,
-      pasabuyPaidPeriod: null,
-      pasabuyAccountReceiverId: null,
-    },
-    {
-      id: 'expense-groceries',
-      description: 'Groceries',
-      purchaseDate: '2026-07-03',
-      datePaid: null,
-      amount: 3500,
-      interest: 0,
-      accountId: 'acct-bdo-checking',
-      categoryId: 'exp-food',
-      paymentStatus: 'Unpaid',
-      paymentFrequency: null,
-      periodCount: null,
-      paidPeriod: null,
-      pasabuyer: null,
-      pasabuyStatus: null,
-      pasabuyDateOfPayment: null,
-      pasabuyPaidPeriod: null,
-      pasabuyAccountReceiverId: null,
-    },
-    {
-      id: 'expense-pasabuy',
-      description: 'Pasabuy Purchase',
-      purchaseDate: '2026-07-05',
-      datePaid: null,
-      amount: 8000,
-      interest: 0,
-      accountId: 'acct-bypl',
-      categoryId: 'exp-pasabuy',
-      paymentStatus: 'Installment',
-      paymentFrequency: 'Monthly',
-      periodCount: 2,
-      paidPeriod: 1,
-      pasabuyer: 'Maimai',
-      pasabuyStatus: 'Payment partially received (installment)',
-      pasabuyDateOfPayment: '2026-07-12',
-      pasabuyPaidPeriod: 1,
-      pasabuyAccountReceiverId: 'acct-bdo-checking',
-    },
-  ];
-
+  private readonly logger = new Logger(NotionService.name);
   private readonly syncEvents: Array<{
     id: string;
     type: string;
@@ -361,24 +103,30 @@ export class NotionService {
     const client = await this.clientFactory.getClient(userId);
     if (!client) return null;
 
-    const [accounts, incomeCategories, incomes, expenseCategories, expenses] =
-      await Promise.all([
-        client.queryDatabase('accounts'),
-        client.queryDatabase('incomeCategories'),
-        client.queryDatabase('incomes'),
-        client.queryDatabase('expenseCategories'),
-        client.queryDatabase('expenses'),
-      ]);
+    try {
+      const [accounts, incomeCategories, incomes, expenseCategories, expenses] =
+        await Promise.all([
+          client.queryDatabase('accounts'),
+          client.queryDatabase('incomeCategories'),
+          client.queryDatabase('incomes'),
+          client.queryDatabase('expenseCategories'),
+          client.queryDatabase('expenses'),
+        ]);
 
-    this.liveCaches.set(key, {
-      accounts: accounts.map(pageToAccount),
-      incomeCategories: incomeCategories.map(pageToIncomeCategory),
-      incomes: incomes.map(pageToIncomeRecord),
-      expenseCategories: expenseCategories.map(pageToExpenseCategory),
-      expenses: expenses.map(pageToExpenseRecord),
-    });
+      this.liveCaches.set(key, {
+        accounts: accounts.map(pageToAccount),
+        incomeCategories: incomeCategories.map(pageToIncomeCategory),
+        incomes: incomes.map(pageToIncomeRecord),
+        expenseCategories: expenseCategories.map(pageToExpenseCategory),
+        expenses: expenses.map(pageToExpenseRecord),
+      });
 
-    return client;
+      return client;
+    } catch (error) {
+      this.logger.warn(`Notion live load failed, falling back to static data: ${error instanceof Error ? error.message : error}`);
+      this.liveCaches.set(key, null);
+      return null;
+    }
   }
 
   private async getLiveClient(userId?: string): Promise<NotionApiClient | null> {
@@ -420,33 +168,33 @@ export class NotionService {
   }
 
   private getCollectedAccounts(userId?: string): AccountDto[] {
-    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
-    if (cache) return cache.accounts;
-    return this.accounts;
+    return this.liveCaches.get(this.getLiveCacheKey(userId))?.accounts ?? [];
   }
 
   private getCollectedIncomeCategories(userId?: string): IncomeCategoryDto[] {
-    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
-    if (cache) return cache.incomeCategories;
-    return this.incomeCategories;
+    return this.liveCaches.get(this.getLiveCacheKey(userId))?.incomeCategories ?? [];
   }
 
   private getCollectedIncomes(userId?: string): IncomeRecordDto[] {
-    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
-    if (cache) return cache.incomes;
-    return this.incomes;
+    return this.liveCaches.get(this.getLiveCacheKey(userId))?.incomes ?? [];
   }
 
   private getCollectedExpenseCategories(userId?: string): ExpenseCategoryDto[] {
-    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
-    if (cache) return cache.expenseCategories;
-    return this.expenseCategories;
+    return this.liveCaches.get(this.getLiveCacheKey(userId))?.expenseCategories ?? [];
   }
 
   private getCollectedExpenses(userId?: string): ExpenseRecordDto[] {
-    const cache = this.liveCaches.get(this.getLiveCacheKey(userId));
-    if (cache) return cache.expenses;
-    return this.expenses;
+    return this.liveCaches.get(this.getLiveCacheKey(userId))?.expenses ?? [];
+  }
+
+  private ensureNotionConfigured(client: NotionApiClient | null): asserts client is NotionApiClient {
+    if (!client) {
+      throw new ApiException(
+        HttpStatus.PRECONDITION_REQUIRED,
+        'NOTION_NOT_CONFIGURED',
+        'Notion integration is not configured for this user. Save your Notion token and database IDs in Settings first.',
+      );
+    }
   }
 
   async list(resource: ResourceName, query: ListQuery = {}, userId?: string): Promise<FinanceRecord[]> {
@@ -483,33 +231,23 @@ export class NotionService {
   async create(resource: ResourceName, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
     await this.loadLive(userId, resource);
     this.validationService.validateMutation(resource, 'create', data);
-    const record = this.makeRecord(resource, data);
 
     const client = await this.getLiveClient(userId);
-    if (client) {
-      try {
-        const properties = this.buildNotionProperties(resource, data);
-        const page = client.isConfigured
-          ? await client.createPage(resource, properties)
-          : null;
+    this.ensureNotionConfigured(client);
 
-        if (page) {
-          this.refreshCache(userId);
-          const createdRecord = this.isIncomeBacked(resource)
-            ? (pageToIncomeRecord(page) as FinanceRecord)
-            : (pageToExpenseRecord(page) as FinanceRecord);
-          this.addSyncEvent('create', resource, `Created ${createdRecord.id}`);
-          return clone(createdRecord);
-        }
-      } catch (error) {
-        this.logError('create', resource, error);
-        throw error;
-      }
+    try {
+      const properties = this.buildNotionProperties(resource, data);
+      const page = await client.createPage(resource, properties);
+      this.refreshCache(userId);
+      const createdRecord = this.isIncomeBacked(resource)
+        ? (pageToIncomeRecord(page) as FinanceRecord)
+        : (pageToExpenseRecord(page) as FinanceRecord);
+      this.addSyncEvent('create', resource, `Created ${createdRecord.id}`);
+      return clone(createdRecord);
+    } catch (error) {
+      this.logError('create', resource, error);
+      throw error;
     }
-
-    this.getMutableCollection(resource, userId).push(record as MutableFinanceRecord);
-    this.addSyncEvent('create', resource, `Created ${record.id}`);
-    return clone(record);
   }
 
   async update(resource: ResourceName, id: string, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
@@ -517,37 +255,23 @@ export class NotionService {
     this.validationService.validateMutation(resource, 'update', data);
 
     const client = await this.getLiveClient(userId);
-    if (client) {
-      try {
-        const properties = this.buildNotionProperties(resource, data);
-        const page = await client.updatePage(id, properties);
-        this.refreshCache(userId);
+    this.ensureNotionConfigured(client);
 
-        const updatedRecord = this.isIncomeBacked(resource)
-          ? (pageToIncomeRecord(page) as FinanceRecord)
-          : (pageToExpenseRecord(page) as FinanceRecord);
+    try {
+      const properties = this.buildNotionProperties(resource, data);
+      const page = await client.updatePage(id, properties);
+      this.refreshCache(userId);
 
-        this.addSyncEvent('update', resource, `Updated ${id}`);
-        return clone(updatedRecord);
-      } catch (error) {
-        this.logError('update', resource, error);
-        throw error;
-      }
+      const updatedRecord = this.isIncomeBacked(resource)
+        ? (pageToIncomeRecord(page) as FinanceRecord)
+        : (pageToExpenseRecord(page) as FinanceRecord);
+
+      this.addSyncEvent('update', resource, `Updated ${id}`);
+      return clone(updatedRecord);
+    } catch (error) {
+      this.logError('update', resource, error);
+      throw error;
     }
-
-    const collection = this.getMutableCollection(resource, userId);
-    const index = collection.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new ApiException(
-        HttpStatus.NOT_FOUND,
-        'NOT_FOUND',
-        `${resource} record was not found.`,
-        { resource, id },
-      );
-    }
-    collection[index] = { ...collection[index], ...data } as MutableFinanceRecord;
-    this.addSyncEvent('update', resource, `Updated ${id}`);
-    return clone(collection[index]);
   }
 
   async delete(resource: ResourceName, id: string, userId?: string): Promise<FinanceRecord> {
@@ -556,67 +280,38 @@ export class NotionService {
     const mapping = this.mappingService.get(resource);
 
     const client = await this.getLiveClient(userId);
-    if (client) {
-      try {
-        const record = await this.detail(resource, id, userId);
-        const softDeleteData =
-          mapping.deletePolicy === 'incomeSoftDelete' && 'grossIncome' in record
+    this.ensureNotionConfigured(client);
+
+    try {
+      const record = await this.detail(resource, id, userId);
+      const softDeleteData =
+        mapping.deletePolicy === 'incomeSoftDelete' && 'grossIncome' in record
+          ? {
+              name: `${(record as IncomeRecordDto).name} [Deleted: ${(record as IncomeRecordDto).grossIncome}]`,
+              grossIncome: 0,
+            }
+          : mapping.deletePolicy === 'expenseSoftDelete' && 'amount' in record
             ? {
-                name: `${(record as IncomeRecordDto).name} [Deleted: ${(record as IncomeRecordDto).grossIncome}]`,
-                grossIncome: 0,
+                description: `${(record as ExpenseRecordDto).description} [Deleted: ${(record as ExpenseRecordDto).amount}]`,
+                amount: 0,
               }
-            : mapping.deletePolicy === 'expenseSoftDelete' && 'amount' in record
-              ? {
-                  description: `${(record as ExpenseRecordDto).description} [Deleted: ${(record as ExpenseRecordDto).amount}]`,
-                  amount: 0,
-                }
-              : {};
+            : {};
 
-        const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>);
-        const page = await client.updatePage(id, properties);
-        this.refreshCache(userId);
+      const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>);
+      const page = await client.updatePage(id, properties);
+      this.refreshCache(userId);
 
-        const deletedRecord = this.isIncomeBacked(resource)
-          ? (pageToIncomeRecord(page) as FinanceRecord)
-          : (pageToExpenseRecord(page) as FinanceRecord);
+      const deletedRecord = this.isIncomeBacked(resource)
+        ? (pageToIncomeRecord(page) as FinanceRecord)
+        : (pageToExpenseRecord(page) as FinanceRecord);
 
-        Object.assign(deletedRecord, { deleted: true });
-        this.addSyncEvent('delete', resource, `Soft-deleted ${id}`);
-        return clone(deletedRecord);
-      } catch (error) {
-        this.logError('delete', resource, error);
-        throw error;
-      }
+      Object.assign(deletedRecord, { deleted: true });
+      this.addSyncEvent('delete', resource, `Soft-deleted ${id}`);
+      return clone(deletedRecord);
+    } catch (error) {
+      this.logError('delete', resource, error);
+      throw error;
     }
-
-    const collection = this.getMutableCollection(resource, userId);
-    const index = collection.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new ApiException(
-        HttpStatus.NOT_FOUND,
-        'NOT_FOUND',
-        `${resource} record was not found.`,
-        { resource, id },
-      );
-    }
-    const record = collection[index];
-    if (mapping.deletePolicy === 'incomeSoftDelete' && 'grossIncome' in record) {
-      collection[index] = {
-        ...record,
-        name: `${record.name} [Deleted: ${record.grossIncome}]`,
-        grossIncome: 0,
-        deleted: true,
-      } as MutableFinanceRecord;
-    } else if (mapping.deletePolicy === 'expenseSoftDelete' && 'amount' in record) {
-      collection[index] = {
-        ...record,
-        description: `${record.description} [Deleted: ${record.amount}]`,
-        amount: 0,
-        deleted: true,
-      } as MutableFinanceRecord;
-    }
-    this.addSyncEvent('delete', resource, `Soft-deleted ${id}`);
-    return clone(collection[index]);
   }
 
   async pull(
@@ -927,17 +622,6 @@ export class NotionService {
     return [];
   }
 
-  private getMutableCollection(resource: ResourceName, userId?: string): MutableFinanceRecord[] {
-    if (this.isIncomeBacked(resource)) return this.getCollectedIncomes(userId);
-    if (this.isExpenseBacked(resource)) return this.getCollectedExpenses(userId);
-    throw new ApiException(
-      HttpStatus.FORBIDDEN,
-      'FORBIDDEN',
-      `${resource} is read-only in the app.`,
-      { resource },
-    );
-  }
-
   private findIncomeCategoryId(source: string): string {
     const category = this.getCollectedIncomeCategories().find((item) => item.source === source);
     if (!category) {
@@ -1181,66 +865,6 @@ export class NotionService {
     return this.getCollectedExpenseCategories(userId).find(
       (item) => item.name.toLowerCase() === target,
     )?.id;
-  }
-
-  private makeRecord(resource: ResourceName, data: Record<string, unknown>): FinanceRecord {
-    if (this.isIncomeBacked(resource)) {
-      const grossIncome = Number(data.grossIncome ?? 0);
-      const adjustedGross =
-        resource === 'alkansya' && grossIncome > 0 ? grossIncome * -1 : grossIncome;
-      return {
-        id: randomUUID(),
-        name: String(data.name),
-        date: String(data.date),
-        grossIncome: adjustedGross,
-        capitalExpenditure: Number(data.capitalExpenditure ?? 0),
-        accountId:
-          data.accountId === undefined || data.accountId === null
-            ? null
-            : String(data.accountId),
-        categoryId: String(data.categoryId),
-        transactedAccountId:
-          data.transactedAccountId === undefined || data.transactedAccountId === null
-            ? null
-            : String(data.transactedAccountId),
-        ccPaymentCoveredId:
-          data.ccPaymentCoveredId === undefined || data.ccPaymentCoveredId === null
-            ? null
-            : String(data.ccPaymentCoveredId),
-      } satisfies IncomeRecordDto;
-    }
-
-    return {
-      id: randomUUID(),
-      description: String(data.description),
-      purchaseDate: String(data.purchaseDate),
-      datePaid: data.datePaid === undefined || data.datePaid === null ? null : String(data.datePaid),
-      amount: Number(data.amount),
-      interest: Number(data.interest ?? 0),
-      accountId: String(data.accountId),
-      categoryId: String(data.categoryId),
-      paymentStatus: (data.paymentStatus ?? 'Unpaid') as ExpenseRecordDto['paymentStatus'],
-      paymentFrequency: (data.paymentFrequency ?? null) as ExpenseRecordDto['paymentFrequency'],
-      periodCount: data.periodCount === undefined ? null : Number(data.periodCount),
-      paidPeriod: data.paidPeriod === undefined ? null : Number(data.paidPeriod),
-      ccLinkPaymentReceiptId:
-        data.ccLinkPaymentReceiptId === undefined || data.ccLinkPaymentReceiptId === null
-          ? null
-          : String(data.ccLinkPaymentReceiptId),
-      pasabuyer:
-        data.pasabuyer === undefined || data.pasabuyer === null ? null : String(data.pasabuyer),
-      pasabuyStatus: (data.pasabuyStatus ?? null) as ExpenseRecordDto['pasabuyStatus'],
-      pasabuyDateOfPayment:
-        data.pasabuyDateOfPayment === undefined || data.pasabuyDateOfPayment === null
-          ? null
-          : String(data.pasabuyDateOfPayment),
-      pasabuyPaidPeriod:
-        data.pasabuyPaidPeriod === undefined ? null : Number(data.pasabuyPaidPeriod),
-      pasabuyAccountReceiverId:
-        data.pasabuyAccountReceiverId === undefined || data.pasabuyAccountReceiverId === null
-          ? null
-          : String(data.pasabuyAccountReceiverId),
-    } satisfies ExpenseRecordDto;
   }
 
   private filterByMonth<T>(records: T[], field: keyof T, month: string): T[] {

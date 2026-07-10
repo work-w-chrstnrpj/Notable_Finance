@@ -1,0 +1,125 @@
+2026-07-10 15:28:17.201 [32minfo[39m: [NestFactory] Starting Nest application...
+2026-07-10 15:28:17.208 [32minfo[39m: [InstanceLoader] PassportModule dependencies initialized
+2026-07-10 15:28:17.212 [32minfo[39m: [InstanceLoader] MappingModule dependencies initialized
+2026-07-10 15:28:17.216 [32minfo[39m: [InstanceLoader] ConflictModule dependencies initialized
+2026-07-10 15:28:17.221 [32minfo[39m: [InstanceLoader] ConfigHostModule dependencies initialized
+2026-07-10 15:28:17.226 [32minfo[39m: [InstanceLoader] ThrottlerModule dependencies initialized
+2026-07-10 15:28:17.231 [32minfo[39m: [InstanceLoader] ValidationModule dependencies initialized
+2026-07-10 15:28:17.235 [32minfo[39m: [InstanceLoader] ConfigModule dependencies initialized
+2026-07-10 15:28:17.239 [32minfo[39m: [InstanceLoader] ConfigModule dependencies initialized
+2026-07-10 15:28:17.240 [32minfo[39m: [InstanceLoader] ConfigModule dependencies initialized
+2026-07-10 15:28:17.241 [32minfo[39m: [InstanceLoader] DatabaseModule dependencies initialized
+2026-07-10 15:28:17.242 [32minfo[39m: [InstanceLoader] LoggingModule dependencies initialized
+2026-07-10 15:28:17.242 [32minfo[39m: [InstanceLoader] UsersModule dependencies initialized
+2026-07-10 15:28:17.243 [32minfo[39m: [InstanceLoader] JwtModule dependencies initialized
+2026-07-10 15:28:17.243 [32minfo[39m: [InstanceLoader] MetadataModule dependencies initialized
+2026-07-10 15:28:17.244 [32minfo[39m: [InstanceLoader] AppModule dependencies initialized
+2026-07-10 15:28:17.245 [32minfo[39m: [InstanceLoader] NotionModule dependencies initialized
+2026-07-10 15:28:17.245 [32minfo[39m: [InstanceLoader] AccountsModule dependencies initialized
+2026-07-10 15:28:17.246 [32minfo[39m: [InstanceLoader] IncomeCategoriesModule dependencies initialized
+2026-07-10 15:28:17.246 [32minfo[39m: [InstanceLoader] ExpenseCategoriesModule dependencies initialized
+2026-07-10 15:28:17.247 [32minfo[39m: [InstanceLoader] MonthlyMonitoringModule dependencies initialized
+2026-07-10 15:28:17.247 [32minfo[39m: [InstanceLoader] DashboardModule dependencies initialized
+2026-07-10 15:28:17.248 [32minfo[39m: [InstanceLoader] SchemaDriftModule dependencies initialized
+2026-07-10 15:28:17.248 [32minfo[39m: [InstanceLoader] IncomesModule dependencies initialized
+2026-07-10 15:28:17.249 [32minfo[39m: [InstanceLoader] TransactionsModule dependencies initialized
+2026-07-10 15:28:17.249 [32minfo[39m: [InstanceLoader] ExpensesModule dependencies initialized
+2026-07-10 15:28:17.249 [32minfo[39m: [InstanceLoader] ExpenseSchedulerModule dependencies initialized
+2026-07-10 15:28:17.250 [32minfo[39m: [InstanceLoader] SyncModule dependencies initialized
+2026-07-10 15:28:17.250 [32minfo[39m: [InstanceLoader] UserConfigModule dependencies initialized
+2026-07-10 15:28:17.250 [32minfo[39m: [InstanceLoader] AuthModule dependencies initialized
+2026-07-10 15:28:17.251 [32minfo[39m: [RoutesResolver] AppController {/api/v1}:
+2026-07-10 15:28:17.251 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/health, GET} route
+2026-07-10 15:28:17.251 [32minfo[39m: [RoutesResolver] AuthController {/api/v1/auth}:
+2026-07-10 15:28:17.252 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/auth/register, POST} route
+2026-07-10 15:28:17.252 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/auth/login, POST} route
+2026-07-10 15:28:17.252 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/auth/me, GET} route
+2026-07-10 15:28:17.252 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/auth/logout, POST} route
+2026-07-10 15:28:17.253 [32minfo[39m: [RoutesResolver] UserConfigController {/api/v1/user/notion-config}:
+2026-07-10 15:28:17.253 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/user/notion-config, GET} route
+2026-07-10 15:28:17.253 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/user/notion-config, PUT} route
+2026-07-10 15:28:17.253 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/user/notion-config, DELETE} route
+2026-07-10 15:28:17.254 [32minfo[39m: [RoutesResolver] AccountsController {/api/v1/accounts}:
+2026-07-10 15:28:17.254 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/accounts, GET} route
+2026-07-10 15:28:17.254 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/accounts/:id, GET} route
+2026-07-10 15:28:17.254 [32minfo[39m: [RoutesResolver] IncomeCategoriesController {/api/v1/income-categories}:
+2026-07-10 15:28:17.254 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/income-categories, GET} route
+2026-07-10 15:28:17.255 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/income-categories/:id, GET} route
+2026-07-10 15:28:17.255 [32minfo[39m: [RoutesResolver] IncomesController {/api/v1/incomes}:
+2026-07-10 15:28:17.255 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/incomes, GET} route
+2026-07-10 15:28:17.255 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/incomes/:id, GET} route
+2026-07-10 15:28:17.256 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/incomes, POST} route
+2026-07-10 15:28:17.256 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/incomes/:id, PATCH} route
+2026-07-10 15:28:17.256 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/incomes/:id, DELETE} route
+2026-07-10 15:28:17.256 [32minfo[39m: [RoutesResolver] TransactionsController {/api/v1/transactions}:
+2026-07-10 15:28:17.256 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transactions, GET} route
+2026-07-10 15:28:17.257 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transactions/:id, GET} route
+2026-07-10 15:28:17.257 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transactions, POST} route
+2026-07-10 15:28:17.257 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transactions/:id, PATCH} route
+2026-07-10 15:28:17.257 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transactions/:id, DELETE} route
+2026-07-10 15:28:17.257 [32minfo[39m: [RoutesResolver] TransfersController {/api/v1/transfers}:
+2026-07-10 15:28:17.258 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transfers, GET} route
+2026-07-10 15:28:17.258 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transfers/:id, GET} route
+2026-07-10 15:28:17.258 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transfers, POST} route
+2026-07-10 15:28:17.258 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transfers/:id, PATCH} route
+2026-07-10 15:28:17.259 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/transfers/:id, DELETE} route
+2026-07-10 15:28:17.259 [32minfo[39m: [RoutesResolver] CreditCardPaymentsController {/api/v1/credit-card-payments}:
+2026-07-10 15:28:17.259 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/credit-card-payments, GET} route
+2026-07-10 15:28:17.259 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/credit-card-payments/:id, GET} route
+2026-07-10 15:28:17.260 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/credit-card-payments, POST} route
+2026-07-10 15:28:17.260 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/credit-card-payments/:id, PATCH} route
+2026-07-10 15:28:17.260 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/credit-card-payments/:id, DELETE} route
+2026-07-10 15:28:17.260 [32minfo[39m: [RoutesResolver] AlkansyaController {/api/v1/alkansya}:
+2026-07-10 15:28:17.260 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/alkansya, GET} route
+2026-07-10 15:28:17.261 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/alkansya/:id, GET} route
+2026-07-10 15:28:17.261 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/alkansya, POST} route
+2026-07-10 15:28:17.261 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/alkansya/:id, PATCH} route
+2026-07-10 15:28:17.261 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/alkansya/:id, DELETE} route
+2026-07-10 15:28:17.262 [32minfo[39m: [RoutesResolver] ReceivablesController {/api/v1/receivables}:
+2026-07-10 15:28:17.262 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/receivables, GET} route
+2026-07-10 15:28:17.262 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/receivables/:id, GET} route
+2026-07-10 15:28:17.262 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/receivables, POST} route
+2026-07-10 15:28:17.262 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/receivables/:id, PATCH} route
+2026-07-10 15:28:17.263 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/receivables/:id, DELETE} route
+2026-07-10 15:28:17.264 [32minfo[39m: [RoutesResolver] ExpenseCategoriesController {/api/v1/expense-categories}:
+2026-07-10 15:28:17.264 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-categories, GET} route
+2026-07-10 15:28:17.264 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-categories/:id, GET} route
+2026-07-10 15:28:17.264 [32minfo[39m: [RoutesResolver] ExpensesController {/api/v1/expenses}:
+2026-07-10 15:28:17.264 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expenses, GET} route
+2026-07-10 15:28:17.265 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expenses/:id, GET} route
+2026-07-10 15:28:17.265 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expenses, POST} route
+2026-07-10 15:28:17.265 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expenses/:id, PATCH} route
+2026-07-10 15:28:17.265 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expenses/:id, DELETE} route
+2026-07-10 15:28:17.265 [32minfo[39m: [RoutesResolver] ExpenseSchedulerController {/api/v1/expense-scheduler}:
+2026-07-10 15:28:17.266 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-scheduler, GET} route
+2026-07-10 15:28:17.266 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-scheduler/:id, GET} route
+2026-07-10 15:28:17.266 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-scheduler, POST} route
+2026-07-10 15:28:17.266 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-scheduler/:id, PATCH} route
+2026-07-10 15:28:17.266 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/expense-scheduler/:id, DELETE} route
+2026-07-10 15:28:17.267 [32minfo[39m: [RoutesResolver] MonthlyMonitoringController {/api/v1/monthly-monitoring}:
+2026-07-10 15:28:17.267 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/monthly-monitoring, GET} route
+2026-07-10 15:28:17.267 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/monthly-monitoring/:id, GET} route
+2026-07-10 15:28:17.267 [32minfo[39m: [RoutesResolver] DashboardController {/api/v1/dashboard}:
+2026-07-10 15:28:17.267 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/dashboard/summary, GET} route
+2026-07-10 15:28:17.268 [32minfo[39m: [RoutesResolver] SyncController {/api/v1/sync}:
+2026-07-10 15:28:17.268 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/sync/status, GET} route
+2026-07-10 15:28:17.268 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/sync/pull, POST} route
+2026-07-10 15:28:17.268 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/sync/commit, POST} route
+2026-07-10 15:28:17.268 [32minfo[39m: [RoutesResolver] SchemaDriftController {/api/v1/system}:
+2026-07-10 15:28:17.269 [32minfo[39m: [RouterExplorer] Mapped {/api/v1/system/schema-status, GET} route
+2026-07-10 15:28:17.269 [32minfo[39m: [DatabaseService] Running database migrations from C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\dist\sql\migrations...
+2026-07-10 15:28:17.269 [32minfo[39m: [DatabaseService] Migration applied: 001-initial-schema.sql
+2026-07-10 15:28:17.269 [32minfo[39m: [DatabaseService] Migration applied: 002-users-schema.sql
+2026-07-10 15:28:17.270 [32minfo[39m: [DatabaseService] Database migrations complete
+2026-07-10 15:28:17.270 [33mwarn[39m: [AppConfigService] Development startup config issues (the app may not work correctly):
+  ✖ NOTION_TOKEN is not configured – Notion integration will not work
+2026-07-10 15:28:17.270 [33mwarn[39m: [AppConfigService] Missing Notion Database IDs: notion.databases.accounts, notion.databases.incomeCategories, notion.databases.incomes, notion.databases.expenseCategories, notion.databases.expenses, notion.databases.monthlyMonitoring
+2026-07-10 15:28:17.270 [33mwarn[39m: [AppConfigService] GOOGLE_CLIENT_ID is not configured – Google OAuth sign-in will be unavailable
+2026-07-10 15:28:17.270 [33mwarn[39m: [AppConfigService] GOOGLE_CLIENT_SECRET is not configured – Google OAuth sign-in will be unavailable
+2026-07-10 15:28:17.271 [33mwarn[39m: [AppConfigService] CORS_ORIGIN is not configured or uses the default http://localhost:3000 – set a production origin
+2026-07-10 15:28:17.271 [32minfo[39m: [NestApplication] Nest application successfully started
+2026-07-10 15:28:17.271 [32minfo[39m: [Bootstrap] Notion Finance API running on port 3001
+2026-07-10 15:30:19.613 [33mwarn[39m: [NotionService] Notion live load failed, falling back to static data: Could not find database with ID: 3e5213ad-3df7-8222-8c59-810025ff5337. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".
+2026-07-10 15:30:50.081 [32minfo[39m: [UserConfigService] Notion config saved for user 225cce33-3bb0-46f6-9957-06db1d457ee0
+2026-07-10 15:33:58.678 [32minfo[39m: [UserConfigService] Notion config saved for user 225cce33-3bb0-46f6-9957-06db1d457ee0
+2026-07-10 15:37:44.581 [32minfo[39m: [UserConfigService] Notion config saved for user 225cce33-3bb0-46f6-9957-06db1d457ee0

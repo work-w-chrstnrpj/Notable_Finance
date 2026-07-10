@@ -1,10 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ListQuery } from '../common/finance.types';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { NotionService } from '../notion/notion.service';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
 @Controller('accounts')
+@UseGuards(OptionalJwtAuthGuard)
 export class AccountsController {
   constructor(private readonly notionService: NotionService) {}
 

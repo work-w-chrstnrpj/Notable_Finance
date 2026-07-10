@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ResourceName, SyncCommitRequest } from '../common/finance.types';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { NotionService } from '../notion/notion.service';
 import type { JwtPayload } from '../auth/jwt.strategy';
@@ -15,6 +16,7 @@ interface PullRequest {
 }
 
 @Controller('sync')
+@UseGuards(OptionalJwtAuthGuard)
 export class SyncController {
   constructor(private readonly notionService: NotionService) {}
 
@@ -25,9 +27,10 @@ export class SyncController {
 
   @Post('pull')
   @UseGuards(JwtAuthGuard)
-  pull(@Body() body: PullRequest, @CurrentUser() user: JwtPayload) {
+  async pull(@Body() body: PullRequest, @CurrentUser() user: JwtPayload) {
+    const snapshot = await this.notionService.pull(body.resources ?? [], body.scope, user.id);
     return {
-      snapshot: this.notionService.pull(body.resources ?? [], body.scope, user.id),
+      snapshot,
       scope: body.scope ?? {},
       pulledAt: new Date().toISOString(),
     };

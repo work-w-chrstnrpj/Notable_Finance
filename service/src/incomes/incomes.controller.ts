@@ -1,11 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ListQuery } from '../common/finance.types';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { NotionService } from '../notion/notion.service';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
 @Controller('incomes')
+@UseGuards(OptionalJwtAuthGuard)
 export class IncomesController {
   constructor(private readonly notionService: NotionService) {}
 

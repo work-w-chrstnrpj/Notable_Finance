@@ -1468,6 +1468,37 @@ tfoot td {
   box-shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 4px 12px rgba(28, 25, 23, 0.05);
 }
 
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  padding: 6px 10px;
+  min-height: 40px;
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--ink-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.filter-toggle:hover,
+.filter-toggle--active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 4px 12px rgba(28, 25, 23, 0.05);
+}
+
 .bar-chart {
   display: grid;
   grid-template-columns: repeat(6, minmax(46px, 1fr));

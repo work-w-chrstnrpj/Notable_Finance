@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ApiResult } from "./api-client";
+import { useAuth } from "./auth-context";
 import {
   accountsApi,
   alkansyaApi,
@@ -45,6 +46,7 @@ export function useApiData<T>(
    */
   key?: string,
 ) {
+  const { user, loading: authLoading } = useAuth();
   const [state, setState] = useState<AsyncState<T>>({ status: "loading" });
 
   const fetcherRef = useRef(fetcher);
@@ -55,6 +57,13 @@ export function useApiData<T>(
   fallbackRef.current = fallback;
 
   useEffect(() => {
+    // Wait for AuthProvider to finish deciding whether the caller is
+    // authenticated. If we fire the fetch before AuthProvider's own useEffect
+    // populates api-client's module-level authToken, the Bearer header is
+    // missing and every backend read returns empty (the per-user Notion
+    // config never gets loaded server-side).
+    if (authLoading) return;
+
     let cancelled = false;
 
     queueMicrotask(() => {
@@ -86,7 +95,7 @@ export function useApiData<T>(
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, authLoading, user?.id]);
 
   const refetch = useCallback(async () => {
     setState({ status: "loading" });

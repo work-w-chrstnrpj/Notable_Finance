@@ -1,0 +1,59 @@
+(node:113088) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+@notionhq/client warn: request fail {
+  code: 'object_not_found',
+  message: 'Could not find database with ID: 06f213ad-3df7-82a7-bc02-017173153818. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".'
+}
+C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\node_modules\@notionhq\client\build\src\errors.js:162
+        return new APIResponseError({
+               ^
+
+APIResponseError: Could not find database with ID: 06f213ad-3df7-82a7-bc02-017173153818. Make sure the relevant pages and databases are shared with your integration "NOTABLE-FINANCE".
+    at buildRequestError (C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NotionApiClient.queryDatabase (C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\dist\notion\notion-api-client.js:37:31)
+    at async Promise.all (index 4)
+    at async NotionService.loadLive (C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\dist\notion\notion.service.js:300:84)
+    at async NotionService.pull (C:\Users\christian.paje\Documents\Project BBB\notion-finance\service\dist\notion\notion.service.js:528:9) {
+  code: 'object_not_found',
+  status: 404,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [ 'Fri, 10 Jul 2026 07:21:30 GMT' ],
+      'content-type': [ 'application/json; charset=utf-8' ],
+      'transfer-encoding': [ 'chunked' ],
+      connection: [ 'keep-alive' ],
+      'cf-ray': [ 'a18dcfdb1dcd5bdd-MNL' ],
+      'cf-cache-status': [ 'DYNAMIC' ],
+      etag: [ 'W/"16d-cNyTDIOO90XtYqV6rUwc8cdulT8"' ],
+      server: [ 'cloudflare' ],
+      'strict-transport-security': [ 'max-age=31536000; includeSubDomains; preload' ],
+      vary: [ 'Accept-Encoding' ],
+      'content-security-policy': [ "default-src 'none'" ],
+      'referrer-policy': [ 'strict-origin-when-cross-origin' ],
+      'x-content-type-options': [ 'nosniff' ],
+      'x-dns-prefetch-control': [ 'off' ],
+      'x-download-options': [ 'noopen' ],
+      'x-frame-options': [ 'SAMEORIGIN' ],
+      'x-notion-request-id': [ '16e7806f-1e55-44e5-8a38-76e22998398e' ],
+      'x-permitted-cross-domain-policies': [ 'none' ],
+      'x-xss-protection': [ '0' ],
+      'set-cookie': [
+        '__cf_bm=CUivhjEKsrnITOl51pzw1EsiemAPaJ3vFmXKyEIDIEw-1783668090.0999742-1.0.1.1-EN4OLfJ3YJgd7BqC9aNt64hlNQIrnQxYjZ9jWyRV3Hi3e59haxDpPp32UgBA5ApdZERz0lBuQkEtc0PE_PHUYrMV.7QKwiLOGo6hML3tG5FFTm7fhFZtdlwV7uxKS16u; HttpOnly; SameSite=None; Secure; Path=/; Domain=notion.com; Expires=Fri, 10 Jul 2026 07:51:30 GMT'
+      ],
+      'content-encoding': [ 'gzip' ],
+      'alt-svc': [ 'h3=":443"; ma=86400' ]
+    }
+  },
+  body: '{"object":"error","status":404,"code":"object_not_found","message":"Could not find database with ID: 06f213ad-3df7-82a7-bc02-017173153818. Make sure the relevant pages and databases are shared with your integration \\"NOTABLE-FINANCE\\".","additional_data":{"integration_id":"399f39b1-fae7-81d6-b405-00277de53a90"},"request_id":"16e7806f-1e55-44e5-8a38-76e22998398e"}'
+}
+
+Node.js v20.20.2
