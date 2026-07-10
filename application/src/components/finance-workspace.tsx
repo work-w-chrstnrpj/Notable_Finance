@@ -93,7 +93,6 @@ import {
   calculatePasabuyReceivedAmount,
   calculateRemainingBalance,
   getExpenseConditionalSections,
-  getExpenseStatusFromDatePaid,
   getMoneyValueTone,
   getWorkflowFixedCategory,
   isCreditLikeAccountType,
@@ -149,7 +148,6 @@ const expenseViewModes: ExpenseViewMode[] = [
   "CC Transactions",
 ];
 
-const expenseCategoryFilterAll = "__all";
 const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
 const prototypeAccent = "#5B6CF9";
 
@@ -192,7 +190,7 @@ function parseOptionalNumberInput(value: string) {
 }
 
 function isSpecificExpenseCategoryFilter(value: string) {
-  return value !== expenseCategoryFilterAll && value !== expenseCategoryFilterWithoutPasabuy;
+  return value !== "" && value !== expenseCategoryFilterWithoutPasabuy;
 }
 
 function getIncomeGrossTotal(records: IncomeRecord[]) {
@@ -884,6 +882,9 @@ function DashboardPage({
   } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
+  const { state: alkansyaState } = useWorkflowRecords("alkansya", {
+    month: selectedMonth,
+  });
   const monthLabel = getMonthLabel(selectedMonth);
 
   const monthIncomes: IncomeRecord[] = (
@@ -892,18 +893,20 @@ function DashboardPage({
   const monthExpenses: ExpenseRecord[] = (
     expensesState.status === "success" ? expensesState.data : []
   ).filter((r) => !r.description?.includes("[Deleted:"));
+  const monthAlkansya: IncomeRecord[] = (
+    alkansyaState.status === "success" ? alkansyaState.data : []
+  ).filter((r) => !r.name?.includes("[Deleted:"));
 
   const monthlyGrossIncome = monthIncomes.reduce(
     (sum, r) => sum + r.grossIncome,
     0,
   );
-  const monthlyCapitalExpenditure = monthIncomes.reduce(
-    (sum, r) => sum + r.capitalExpenditure,
-    0,
-  );
-  const monthlyNetIncome = monthlyGrossIncome - monthlyCapitalExpenditure;
   const monthlyExpenses = monthExpenses.reduce(
     (sum, r) => sum + r.amount + (r.interest ?? 0),
+    0,
+  );
+  const alkansyaBalance = monthAlkansya.reduce(
+    (sum, r) => sum + (r.grossIncome - r.capitalExpenditure),
     0,
   );
 
@@ -973,9 +976,9 @@ function DashboardPage({
 
   const display = {
     totalCashFlow,
-    monthlyNetIncome,
     monthlyGrossIncome,
     monthlyExpenses,
+    alkansyaBalance,
     pendingOperations: monthExpenses.filter((r) => r.datePaid === null).length,
     lastSync,
     availableCredit,
@@ -1019,10 +1022,10 @@ function DashboardPage({
           tone="blue"
         />
         <MetricCard
-          title="Monthly Net Income"
-          value={formatMoney(display.monthlyNetIncome)}
+          title="Monthly Income Gross"
+          value={formatMoney(display.monthlyGrossIncome)}
           detail={monthLabel}
-          icon={ArrowUpRight}
+          icon={Banknote}
           tone="green"
         />
         <MetricCard
@@ -1043,18 +1046,18 @@ function DashboardPage({
 
       <section className="metric-grid metric-grid--prototype">
         <MetricCard
+          title="Alkansya Balance"
+          value={formatMoney(display.alkansyaBalance)}
+          detail={monthLabel}
+          icon={PiggyBank}
+          tone="green"
+        />
+        <MetricCard
           title="Available Credit"
           value={formatMoney(display.availableCredit)}
           detail={`Limit ${formatMoney(display.creditLimit, { compact: true })}`}
           icon={CreditCard}
           tone="blue"
-        />
-        <MetricCard
-          title="Monthly Gross"
-          value={formatMoney(display.monthlyGrossIncome)}
-          detail={monthLabel}
-          icon={Banknote}
-          tone="green"
         />
         <MetricCard
           title="Monthly Total CC Transactions"
@@ -1749,12 +1752,9 @@ function ExpensePage({
   } = useLiveCollections();
   const expenseUnit = expenseModeToUnit(viewMode);
   const expenseRange = expenseUnit ? computeRange(expenseUnit, selectedDate) : null;
-  const nonAuxExpenseCategories = expenseCategories.filter(
-    (c) => c.auxiliary === "No",
-  );
   const [descriptionInput, setDescriptionInput] = useState("");
   const [accountFilterId, setAccountFilterId] = useState("");
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState(expenseCategoryFilterAll);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState("");
   const [pasabuyerFilter, setPasabuyerFilter] = useState("");
   const [formAccountId, setFormAccountId] = useState("");
   const [formCategoryId, setFormCategoryId] = useState("");
@@ -1821,11 +1821,9 @@ function ExpensePage({
     rangeStart: expenseRange?.start,
     rangeEnd: expenseRange?.end,
     accountId: accountFilterId || undefined,
-    categoryId:
-      expenseCategoryFilter !== expenseCategoryFilterAll &&
-      expenseCategoryFilter !== expenseCategoryFilterWithoutPasabuy
-        ? expenseCategoryFilter
-        : undefined,
+    categoryId: isSpecificExpenseCategoryFilter(expenseCategoryFilter)
+      ? expenseCategoryFilter
+      : undefined,
     paymentStatus: undefined,
     pasabuyer: pasabuyerFilter || undefined,
     expenseViewMode: viewMode,
@@ -1834,7 +1832,17 @@ function ExpensePage({
   const allExpenseRecords: ExpenseRecord[] =
     expensesState.status === "success" ? expensesState.data : [];
   const visibleExpenseRecords: ExpenseRecord[] = allExpenseRecords.filter(
-    (record) => !record.description?.includes("[Deleted:"),
+    (record) => {
+      if (record.description?.includes("[Deleted:")) return false;
+      if (
+        expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
+        pasabuyCategory &&
+        record.categoryId === pasabuyCategory.id
+      ) {
+        return false;
+      }
+      return true;
+    },
   );
 
   function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
@@ -1923,7 +1931,7 @@ function ExpensePage({
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
     if (nextViewMode === "Unpaid Pasabuy") {
-      setExpenseCategoryFilter(expenseCategoryFilterAll);
+      setExpenseCategoryFilter("");
     }
 
     onViewModeChange(nextViewMode);
@@ -1947,13 +1955,13 @@ function ExpensePage({
             </FilterSelect>
             {viewMode !== "Unpaid Pasabuy" && (
               <FilterSelect
-                placeholder="All categories"
+                placeholder="All Categories"
+                placeholderDisabled={false}
                 value={expenseCategoryFilter}
                 onChange={setExpenseCategoryFilter}
               >
-                <option value={expenseCategoryFilterAll}>All</option>
                 <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
-                {nonAuxExpenseCategories.map((category) => (
+                {expenseCategories.map((category) => (
                   <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </FilterSelect>
@@ -1992,25 +2000,31 @@ function ExpensePage({
       <Panel title={`${viewMode} Expenses`}>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         <DataTable
-          headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid", "Expense Status"]}
-          rows={visibleExpenseRecords.map((record) => [
-            formatDate(record.purchaseDate),
-            record.description,
-            formatMoney(record.amount),
-            accountNameById.get(record.accountId ?? "") ?? "—",
-            expenseCategoryNameById.get(record.categoryId) ?? "—",
-            record.datePaid ? formatDate(record.datePaid) : "-",
-            <ExpenseStatusDot
-              key={`${record.id}-expense-status`}
-              status={getExpenseStatusFromDatePaid(record.datePaid)}
-            />,
-          ])}
+          headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
+          rows={visibleExpenseRecords.map((record) => {
+            const isUnpaid = !record.datePaid;
+            return [
+              formatDate(record.purchaseDate),
+              record.description,
+              formatMoney(record.amount),
+              accountNameById.get(record.accountId ?? "") ?? "—",
+              expenseCategoryNameById.get(record.categoryId) ?? "—",
+              record.datePaid ? formatDate(record.datePaid) : "-",
+            ].map((cell, cellIndex) =>
+              isUnpaid && (cellIndex === 1 || cellIndex === 2) ? (
+                <span className="expense-cell--unpaid" key={`cell-${record.id}-${cellIndex}`}>
+                  {cell}
+                </span>
+              ) : (
+                cell
+              ),
+            );
+          })}
           footerRows={[
             [
               "Total",
               "",
               formatMoney(getExpenseTotal(visibleExpenseRecords)),
-              "",
               "",
               "",
               "",
@@ -2067,7 +2081,7 @@ function ExpensePage({
               <option value="" disabled>
                 Select your category
               </option>
-              {nonAuxExpenseCategories.map((category) => (
+              {expenseCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
@@ -3125,16 +3139,6 @@ function MoneyValue({ value }: { value: number }) {
     <span className={cx("money-value", `money-value--${tone}`)}>
       {formatMoney(value)}
     </span>
-  );
-}
-
-function ExpenseStatusDot({ status }: { status: "paid" | "unpaid" }) {
-  return (
-    <span
-      aria-label={status === "paid" ? "Paid" : "Unpaid"}
-      className={cx("expense-status-dot", `expense-status-dot--${status}`)}
-      role="img"
-    />
   );
 }
 

@@ -503,7 +503,7 @@ a {
 
 .date-picker__cell.is-active {
   background: var(--accent);
-  color: #fff;
+  color: var(--blue);
 }
 
 .date-picker__day {
@@ -1558,20 +1558,8 @@ tfoot td {
   border-radius: 999px;
 }
 
-.expense-status-dot {
-  display: inline-flex;
-  width: 11px;
-  height: 11px;
-  border-radius: 999px;
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
-}
-
-.expense-status-dot--paid {
-  background: var(--green);
-}
-
-.expense-status-dot--unpaid {
-  background: var(--rose);
+.expense-cell--unpaid {
+  color: var(--rose);
 }
 
 .budget-list,
