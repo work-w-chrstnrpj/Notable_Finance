@@ -158,9 +158,12 @@ export function activeSelectorUnit(
     case "monthly-monitoring":
     case "transfer":
     case "credit-card-payment":
+      return "month";
+    // Alkansya (Savings) and Receivables are month-independent buckets, so
+    // they show no date selector and query every matching record.
     case "alkansya":
     case "receivables":
-      return "month";
+      return null;
     default:
       return null;
   }

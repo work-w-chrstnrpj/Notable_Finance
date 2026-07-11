@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
-import { useMemo, useState, useEffect, startTransition } from "react";
+import { useMemo, useState, useEffect, startTransition, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { userNotionConfigApi } from "@/lib/api-client";
@@ -15,10 +15,14 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronsUpDown,
   CircleDollarSign,
   ClipboardCheck,
+  TrendingUp,
   CreditCard,
   Database,
   FileWarning,
@@ -33,9 +37,11 @@ import {
   Receipt,
   RefreshCw,
   Save,
+  Frown,
   Settings,
   ShieldCheck,
   Smartphone,
+  Smile,
   Trash2,
   WalletCards,
   X,
@@ -152,6 +158,8 @@ const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
 const prototypeAccent = "#5B6CF9";
 
 const categoryPalette = [prototypeAccent, "#0D9488", "#D97706", "#E11D48", "#7C3AED", "#64748B"];
+
+type ForecastIncome = { id: string; label: string; amount: number };
 
 type ModalState = {
   mode: "new" | "edit";
@@ -457,9 +465,10 @@ function AccountTypeIcon({ type, size = 18 }: { type: AccountType; size?: number
     case "Cash":
       return <Banknote size={size} />;
     case "Credit Account":
-    case "BYPL":
+    case "e-Credit":
+    case "BNPL":
       return <CreditCard size={size} />;
-    case "Savings Account":
+    case "Savings":
       return <Landmark size={size} />;
     case "e-Wallet":
     case "Digital Bank":
@@ -935,7 +944,10 @@ function DashboardPage({
 
   // #2 — Spending by category (with % of month's expense), used for both the
   // Spending Breakdown donut and the Top 5 Spending Category panel.
+  // Pasabuy is a passthrough (someone else pays us back), not user spending —
+  // exclude it so the breakdown reflects real category spend.
   const spendingBreakdown = expenseCategories
+    .filter((cat) => !/pasabuy/i.test(cat.name))
     .map((cat) => {
       const value = monthExpenses
         .filter((r) => r.categoryId === cat.id)
@@ -1287,15 +1299,26 @@ function AccountsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
+  const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const { state: accountsState } = useAccounts(true);
 
   const sourceAccounts =
     accountsState.status === "success" ? accountsState.data : ([] as Account[]);
 
+  // Distinct account (card) types present, for the Card Type filter dropdown.
+  const cardTypeOptions = Array.from(
+    new Set(
+      sourceAccounts
+        .filter((a) => !a.inactive && a.type !== "Auxiliary")
+        .map((a) => a.type),
+    ),
+  ).sort();
+
   const visibleAccounts = sourceAccounts.filter((account) => {
     if (account.inactive) return false;
     if (hideZeroBalance && account.currentBalance === 0) return false;
+    if (cardTypeFilter && account.type !== cardTypeFilter) return false;
     if (accountScope === "all") return account.type !== "Auxiliary";
     if (accountScope === "credit") return isCreditLikeAccountType(account.type);
     return !isCreditLikeAccountType(account.type) && account.type !== "Auxiliary";
@@ -1376,6 +1399,21 @@ function AccountsPage() {
         title="Accounts"
         actions={
           <>
+            <FilterSelect
+              placeholder="All card types"
+              placeholderDisabled={false}
+              value={cardTypeFilter}
+              onChange={setCardTypeFilter}
+            >
+              {cardTypeOptions.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </FilterSelect>
+            <FilterToggle
+              label="Hide zero balance"
+              checked={hideZeroBalance}
+              onChange={setHideZeroBalance}
+            />
             <SegmentedControl
               label="Account view"
               options={[
@@ -1384,11 +1422,6 @@ function AccountsPage() {
               ]}
               value={viewMode}
               onChange={(value) => setViewMode(value as "cards" | "table")}
-            />
-            <FilterToggle
-              label="Hide zero balance"
-              checked={hideZeroBalance}
-              onChange={setHideZeroBalance}
             />
             <SegmentedControl
               label="Account mode"
@@ -1999,44 +2032,78 @@ function ExpensePage({
 
       <Panel title={`${viewMode} Expenses`}>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
-        <DataTable
-          headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
-          rows={visibleExpenseRecords.map((record) => {
-            const isUnpaid = !record.datePaid;
-            return [
+        {viewMode === "Unpaid Pasabuy" ? (
+          <DataTable
+            headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
+            rows={visibleExpenseRecords.map((record) => [
               formatDate(record.purchaseDate),
               record.description,
-              formatMoney(record.amount),
-              accountNameById.get(record.accountId ?? "") ?? "—",
-              expenseCategoryNameById.get(record.categoryId) ?? "—",
-              record.datePaid ? formatDate(record.datePaid) : "-",
-            ].map((cell, cellIndex) =>
-              isUnpaid && (cellIndex === 1 || cellIndex === 2) ? (
-                <span className="expense-cell--unpaid" key={`cell-${record.id}-${cellIndex}`}>
-                  {cell}
-                </span>
-              ) : (
-                cell
-              ),
-            );
-          })}
-          footerRows={[
-            [
-              "Total",
-              "",
-              formatMoney(getExpenseTotal(visibleExpenseRecords)),
-              "",
-              "",
-              "",
-            ],
-          ]}
-          onRowClick={(rowIndex) => {
-            const record = visibleExpenseRecords[rowIndex];
-            if (record) {
-              openExpenseModal("edit", record.description, record.id);
-            }
-          }}
-        />
+              formatMoney(record.pasabuyBalance),
+              record.pasabuyer ?? "—",
+              record.pasabuyStatus ?? "—",
+              record.pasabuyDateOfPayment ? formatDate(record.pasabuyDateOfPayment) : "—",
+              accountNameById.get(record.pasabuyAccountReceiverId ?? "") ?? "—",
+            ])}
+            footerRows={[
+              [
+                "Total",
+                "",
+                formatMoney(
+                  visibleExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
+                ),
+                "",
+                "",
+                "",
+                "",
+              ],
+            ]}
+            onRowClick={(rowIndex) => {
+              const record = visibleExpenseRecords[rowIndex];
+              if (record) {
+                openExpenseModal("edit", record.description, record.id);
+              }
+            }}
+          />
+        ) : (
+          <DataTable
+            headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
+            rows={visibleExpenseRecords.map((record) => {
+              const isUnpaid = !record.datePaid;
+              return [
+                formatDate(record.purchaseDate),
+                record.description,
+                formatMoney(record.amount),
+                accountNameById.get(record.accountId ?? "") ?? "—",
+                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                record.datePaid ? formatDate(record.datePaid) : "-",
+              ].map((cell, cellIndex) =>
+                isUnpaid && (cellIndex === 1 || cellIndex === 2) ? (
+                  <span className="expense-cell--unpaid" key={`cell-${record.id}-${cellIndex}`}>
+                    {cell}
+                  </span>
+                ) : (
+                  cell
+                ),
+              );
+            })}
+            footerRows={[
+              [
+                "Total",
+                "",
+                formatMoney(getExpenseTotal(visibleExpenseRecords)),
+                "",
+                "",
+                "",
+              ],
+            ]}
+            onRowClick={(rowIndex) => {
+              const record = visibleExpenseRecords[rowIndex];
+              if (record) {
+                openExpenseModal("edit", record.description, record.id);
+              }
+            }}
+          />
+        )}
       </Panel>
 
       <FormModal
@@ -2250,6 +2317,11 @@ function WorkflowPage({
   const isCreditCardPayment = section === "credit-card-payment";
   const isAlkansya = section === "alkansya";
   const isReceivables = section === "receivables";
+  // Receivables have no fixed category; Alkansya defaults to Savings but the
+  // user may change it to move the record out of the bucket into normal Income.
+  const categoryEditable = isReceivables || isAlkansya;
+  const savingsCategoryId =
+    normalIncomeCategories.find((c) => c.source.toLowerCase() === "savings")?.id ?? "";
   const sourceAccountLabel = isTransfer
     ? "Source Account"
     : isCreditCardPayment
@@ -2290,8 +2362,12 @@ function WorkflowPage({
   // Each workflow is the Incomes data source filtered server-side by its fixed
   // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
   // alkansya→Savings) or, for receivables, by an empty receiving account.
+  // Alkansya and Receivables are month-independent buckets — they show every
+  // matching record so items can be triaged and updated later, so no month is
+  // passed for them.
+  const monthScoped = section === "transfer" || section === "credit-card-payment";
   const { state: workflowState, refetch } = useWorkflowRecords(section, {
-    month: selectedMonth,
+    month: monthScoped ? selectedMonth : undefined,
   });
   const isLoading = workflowState.status === "loading";
   const workflowIncomes: IncomeRecord[] = (
@@ -2305,13 +2381,42 @@ function WorkflowPage({
         : section === "alkansya"
           ? alkansyaApi
           : receivablesApi;
-  const workflowRows = workflowIncomes.map((record) => [
-    record.name,
-    formatDate(record.date),
-    accountNameById.get(record.accountId ?? "") ?? "—",
-    fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
-    formatMoney(record.grossIncome),
-  ]);
+  // Transfer has its own column layout (source + destination account and a
+  // computed "Transferred Amount" = Amount × -1); the other workflows share a
+  // simpler Name/Date/Account/Category/Amount table.
+  const workflowHeaders = isTransfer
+    ? ["Date", "Name", "Source Account", "Amount", "Transfer Account", "Transferred Amount"]
+    : isCreditCardPayment
+      ? ["Date", "Name", "CC Account", "Amount", "Payer Account"]
+      : ["Name", "Date", sourceAccountLabel, "Category", "Amount"];
+  const workflowRows = workflowIncomes.map((record) => {
+    if (isTransfer) {
+      return [
+        formatDate(record.date),
+        record.name,
+        accountNameById.get(record.accountId ?? "") ?? "—",
+        <MoneyValue key={`${record.id}-amount`} value={record.grossIncome} />,
+        accountNameById.get(record.transactedAccountId ?? "") ?? "—",
+        <MoneyValue key={`${record.id}-transferred`} value={-record.grossIncome} />,
+      ];
+    }
+    if (isCreditCardPayment) {
+      return [
+        formatDate(record.date),
+        record.name,
+        accountNameById.get(record.accountId ?? "") ?? "—",
+        <MoneyValue key={`${record.id}-amount`} value={record.grossIncome} />,
+        accountNameById.get(record.transactedAccountId ?? "") ?? "—",
+      ];
+    }
+    return [
+      record.name,
+      formatDate(record.date),
+      accountNameById.get(record.accountId ?? "") ?? "—",
+      fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
+      formatMoney(record.grossIncome),
+    ];
+  });
 
   function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -2322,7 +2427,10 @@ function WorkflowPage({
     setWorkflowDateInput(record?.date ?? "");
     setReceivingAccountId(record?.accountId ?? "");
     setTransactedAccountId(record?.transactedAccountId ?? "");
-    setWorkflowCategoryIdInput(record?.categoryId ?? "");
+    // New Alkansya records default to the Savings category (editable).
+    setWorkflowCategoryIdInput(
+      record?.categoryId ?? (isAlkansya ? savingsCategoryId : ""),
+    );
     setWorkflowAmountInput(record?.grossIncome?.toString() ?? "");
     setWorkflowCapitalExpenditureInput(
       record?.capitalExpenditure?.toString() ?? "",
@@ -2349,9 +2457,10 @@ function WorkflowPage({
     if (secondaryAccountLabel) {
       payload.transactedAccountId = transactedAccountId || null;
     }
-    // Receivables let the user choose the income category; the other workflows
-    // use their fixed category resolved server-side (must NOT send categoryId).
-    if (isReceivables) {
+    // Receivables and Alkansya let the user choose/change the income category
+    // (Alkansya defaults to Savings). Transfer & CC Payment stay locked to
+    // their fixed category server-side (must NOT send categoryId).
+    if (categoryEditable) {
       payload.categoryId = workflowCategoryIdInput;
     }
     setSaving(true);
@@ -2403,7 +2512,7 @@ function WorkflowPage({
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         {workflowRows.length ? (
           <DataTable
-            headers={["Name", "Date", sourceAccountLabel, "Category", "Amount"]}
+            headers={workflowHeaders}
             rows={workflowRows}
             onRowClick={(rowIndex) => {
               const record = workflowIncomes[rowIndex];
@@ -2414,11 +2523,13 @@ function WorkflowPage({
           />
         ) : (
           <EmptyState
-            title={`No ${label.toLowerCase()} records this month`}
+            title={monthScoped ? `No ${label.toLowerCase()} records this month` : `No ${label.toLowerCase()} records`}
             detail={
               isReceivables
                 ? "Receivables are income records that do not yet have a receiving account."
-                : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`
+                : isAlkansya
+                  ? "Alkansya holds income records in the Savings category."
+                  : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`
             }
           />
         )}
@@ -2491,7 +2602,7 @@ function WorkflowPage({
               </select>
             </Field>
           )}
-          {fixedCategory ? (
+          {!categoryEditable && fixedCategory ? (
             <ComputedField label="Categories" value={fixedCategory} />
           ) : (
             <Field label="Categories">
@@ -2527,6 +2638,61 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
+
+  // ── Forecast income (Monitoring-only, local, NOT written to Notion) ──────
+  // Since real income lands mid/end of month, monthly income can read negative
+  // beforehand. A forecast income temporarily props up Monthly Income here.
+  // Persisted per-month in localStorage; removed once the real income is logged.
+  const forecastKey = `nf_forecast_income_${selectedMonth}`;
+  const [forecasts, setForecasts] = useState<ForecastIncome[]>([]);
+  const [forecastModalOpen, setForecastModalOpen] = useState(false);
+  const [forecastLabel, setForecastLabel] = useState("");
+  const [forecastAmount, setForecastAmount] = useState("");
+
+  useEffect(() => {
+    // Load this month's forecasts from the local store when the month changes.
+    let items: ForecastIncome[] = [];
+    try {
+      const raw = localStorage.getItem(forecastKey);
+      if (raw) items = JSON.parse(raw) as ForecastIncome[];
+    } catch {
+      items = [];
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForecasts(items);
+  }, [forecastKey]);
+
+  function persistForecasts(next: ForecastIncome[]) {
+    setForecasts(next);
+    try {
+      localStorage.setItem(forecastKey, JSON.stringify(next));
+    } catch {
+      // ignore storage errors (private mode, quota)
+    }
+  }
+
+  function addForecast() {
+    const amount = parseNumberInput(forecastAmount);
+    if (!amount) return;
+    persistForecasts([
+      ...forecasts,
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        label: forecastLabel.trim() || "Forecast income",
+        amount,
+      },
+    ]);
+    setForecastLabel("");
+    setForecastAmount("");
+    setForecastModalOpen(false);
+  }
+
+  function removeForecast(id: string) {
+    persistForecasts(forecasts.filter((f) => f.id !== id));
+  }
+
+  const forecastTotal = forecasts.reduce((sum, f) => sum + f.amount, 0);
+
   const scopedIncomeRecords: IncomeRecord[] = (
     incomesState.status === "success" ? incomesState.data : []
   ).filter((record) => !record.name?.includes("[Deleted:"));
@@ -2537,7 +2703,8 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const monthlyCapitalExpenditure = getIncomeCapitalExpenditureTotal(
     scopedIncomeRecords,
   );
-  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords);
+  // Forecast income only lifts the Monitoring metrics, never the dashboard.
+  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords) + forecastTotal;
   const monthlyExpense = getExpenseTotal(scopedExpenseRecords);
   const grossMargin = monthlyIncome - monthlyExpense;
   const monitoring = {
@@ -2589,30 +2756,95 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     <div className="page-stack">
       <PageToolbar
         title="Monthly Monitoring"
+        actions={
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => setForecastModalOpen(true)}
+          >
+            <Plus size={16} />
+            Add Forecast Income
+          </button>
+        }
       />
+      {forecasts.length > 0 && (
+        <div className="forecast-banner">
+          <span className="forecast-banner__icon">
+            <TrendingUp size={16} />
+          </span>
+          <div className="forecast-banner__body">
+            <div className="forecast-banner__title">
+              <strong>Forecast income</strong>
+              <span className="forecast-banner__tag">Monitoring only</span>
+            </div>
+            <div className="forecast-banner__items">
+              {forecasts.map((f) => (
+                <span key={f.id} className="forecast-chip">
+                  <span className="forecast-chip__label">{f.label}</span>
+                  <span className="forecast-chip__amount">{formatMoney(f.amount)}</span>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${f.label}`}
+                    onClick={() => removeForecast(f.id)}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="forecast-banner__total">
+            <span>Applied</span>
+            <strong>{formatMoney(forecastTotal)}</strong>
+          </div>
+        </div>
+      )}
       <section className="metric-grid">
-        <MetricCard title="Monthly Income" value={formatMoney(monitoring.monthlyIncome)} detail={getMonthLabel(selectedMonth)} icon={ArrowUpRight} tone="green" />
+        <MetricCard
+          title="Monthly Income"
+          value={formatMoney(monitoring.monthlyIncome)}
+          detail={
+            forecastTotal
+              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastTotal, { compact: true })} forecast`
+              : getMonthLabel(selectedMonth)
+          }
+          icon={ArrowUpRight}
+          tone="green"
+        />
         <MetricCard title="Monthly Expense" value={formatMoney(monitoring.monthlyExpense)} detail={getMonthLabel(selectedMonth)} icon={Receipt} tone="rose" />
         <MetricCard title="Gross Margin" value={formatMoney(monitoring.grossMargin)} detail="Income less expenses" icon={CircleDollarSign} tone="blue" />
         <MetricCard title="For Savings" value={formatMoney(monitoring.forSavings)} detail="30% allocation" icon={PiggyBank} tone="amber" />
       </section>
       <section className="two-column">
         <Panel title="Budget Allocation">
-          <BudgetRow label="Needs" spent={monitoring.forNeeds} budget={monitoring.grossMargin} />
-          <BudgetRow label="Wants" spent={monitoring.forWants} budget={monitoring.grossMargin} />
-          <BudgetRow label="Savings" spent={monitoring.forSavings} budget={monitoring.grossMargin} />
+          <BudgetRow label="Needs" percent={50} amount={monitoring.forNeeds} />
+          <BudgetRow label="Wants" percent={30} amount={monitoring.forWants} />
+          <BudgetRow label="Savings" percent={20} amount={monitoring.forSavings} />
         </Panel>
-        <Panel title="Category Context">
-          <div className="category-grid category-grid--compact">
-            {expenseCategorySummaries.slice(0, 4).map((category) => (
-              <CategoryCard
-                key={category.id}
-                title={category.name}
-                detail={`Spent ${formatMoney(category.spending, { compact: true })}`}
-                value={formatMoney(category.remaining, { compact: true })}
-              />
-            ))}
-          </div>
+        <Panel title="Monthly Insight">
+          {(() => {
+            const setBudget = monitoring.forNeeds + monitoring.forWants;
+            // On track when actual spending stays within the Needs+Wants budget.
+            const onTrack = monitoring.monthlyExpense <= setBudget;
+            const difference = Math.abs(setBudget - monitoring.monthlyExpense);
+            return (
+              <div className={cx("insight", onTrack ? "insight--good" : "insight--bad")}>
+                <span className="insight__icon">
+                  {onTrack ? <Smile size={40} /> : <Frown size={40} />}
+                </span>
+                <div className="insight__body">
+                  <p className="insight__budget">
+                    Total Set Budget: <strong>{formatMoney(setBudget)}</strong>
+                  </p>
+                  <p className="insight__message">
+                    {onTrack
+                      ? `You spent ${formatMoney(difference)} less than your set budget this month — you're on track!`
+                      : `You've exceeded your set budget by ${formatMoney(difference)}.`}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </Panel>
       </section>
 
@@ -2776,6 +3008,69 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           </div>
         )}
       </Panel>
+
+      {forecastModalOpen && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setForecastModalOpen(false);
+          }}
+        >
+          <section
+            aria-labelledby="forecast-modal-title"
+            aria-modal="true"
+            className="modal-panel modal-panel--narrow"
+            role="dialog"
+          >
+            <div className="modal-panel__header">
+              <div>
+                <h2 id="forecast-modal-title">Add Forecast Income</h2>
+                <p>Temporary, Monitoring-only. Not saved to Notion.</p>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label="Close modal"
+                onClick={() => setForecastModalOpen(false)}
+              >
+                <X size={17} />
+              </button>
+            </div>
+            <div className="modal-panel__body">
+              <div className="form-grid form-grid--single">
+                <Field label="Label">
+                  <input
+                    placeholder="e.g. Salary (15th)"
+                    value={forecastLabel}
+                    onChange={(event) => setForecastLabel(event.target.value)}
+                  />
+                </Field>
+                <Field label="Amount">
+                  <input
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={forecastAmount}
+                    onChange={(event) => setForecastAmount(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") addForecast();
+                    }}
+                  />
+                </Field>
+              </div>
+            </div>
+            <div className="modal-panel__footer">
+              <button type="button" className="button" onClick={() => setForecastModalOpen(false)}>
+                Cancel
+              </button>
+              <button type="button" className="button button--primary" onClick={addForecast}>
+                <Plus size={16} />
+                Add Forecast
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
@@ -3393,34 +3688,126 @@ function LoadingBlock({ label }: { label: string }) {
   );
 }
 
+/** Pull a comparable value out of a table cell (string, number, or element). */
+function cellText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(cellText).join("");
+  if (isValidElement(node)) {
+    const props = node.props as { value?: unknown; children?: ReactNode };
+    if (typeof props.value === "number") return String(props.value);
+    return cellText(props.children);
+  }
+  return "";
+}
+
+function cellSortKey(node: ReactNode): { num: number | null; text: string } {
+  // MoneyValue and similar carry a numeric `value` prop — sort numerically.
+  if (isValidElement(node) && typeof (node.props as { value?: unknown }).value === "number") {
+    return { num: (node.props as { value: number }).value, text: "" };
+  }
+  const text = cellText(node).trim();
+  const numeric = text.replace(/[₱,\s]/g, "");
+  if (numeric && /^-?\d*\.?\d+$/.test(numeric)) {
+    return { num: Number(numeric), text };
+  }
+  // Dates like "Jul 5, 2026".
+  if (/\b\d{4}\b/.test(text)) {
+    const parsed = Date.parse(text);
+    if (!Number.isNaN(parsed)) return { num: parsed, text };
+  }
+  return { num: null, text: text.toLowerCase() };
+}
+
 function DataTable({
   headers,
   rows,
   footerRows = [],
   onRowClick,
+  unsortableColumns = [],
 }: {
   headers: string[];
   rows: ReactNode[][];
   footerRows?: ReactNode[][];
   onRowClick?: (rowIndex: number) => void;
+  /** Column indices that should not be clickable/sortable (e.g. icon columns). */
+  unsortableColumns?: number[];
 }) {
+  const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
+  const skip = new Set(unsortableColumns);
+
+  function toggleSort(col: number) {
+    setSort((prev) => {
+      if (!prev || prev.col !== col) return { col, dir: "asc" };
+      if (prev.dir === "asc") return { col, dir: "desc" };
+      return null; // third click restores original order
+    });
+  }
+
+  // Keep original indices so row clicks still map to the right record.
+  const ordered = useMemo(() => {
+    const indexed = rows.map((row, index) => ({ row, index }));
+    if (!sort) return indexed;
+    const { col, dir } = sort;
+    return [...indexed].sort((a, b) => {
+      const ka = cellSortKey(a.row[col]);
+      const kb = cellSortKey(b.row[col]);
+      let cmp: number;
+      if (ka.num !== null && kb.num !== null) cmp = ka.num - kb.num;
+      else cmp = ka.text.localeCompare(kb.text);
+      return dir === "asc" ? cmp : -cmp;
+    });
+  }, [rows, sort]);
+
   return (
     <div className="table-wrap">
       <table>
         <thead>
           <tr>
-            {headers.map((header) => (
-              <th key={header}>{header}</th>
-            ))}
+            {headers.map((header, columnIndex) => {
+              const sortable = !skip.has(columnIndex);
+              const active = sort?.col === columnIndex;
+              return (
+                <th
+                  key={header}
+                  aria-sort={
+                    active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"
+                  }
+                >
+                  {sortable ? (
+                    <button
+                      type="button"
+                      className={cx("th-sort", active && "th-sort--active")}
+                      onClick={() => toggleSort(columnIndex)}
+                    >
+                      {header}
+                      <span className="th-sort__icon">
+                        {active ? (
+                          sort?.dir === "asc" ? (
+                            <ChevronUp size={13} />
+                          ) : (
+                            <ChevronDown size={13} />
+                          )
+                        ) : (
+                          <ChevronsUpDown size={13} />
+                        )}
+                      </span>
+                    </button>
+                  ) : (
+                    header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, rowIndex) => (
+          {ordered.map(({ row, index }) => (
             <tr
-              key={`row-${rowIndex}`}
+              key={`row-${index}`}
               className={cx(onRowClick && "table-row--clickable")}
               tabIndex={onRowClick ? 0 : undefined}
-              onClick={() => onRowClick?.(rowIndex)}
+              onClick={() => onRowClick?.(index)}
               onKeyDown={(event) => {
                 if (!onRowClick) {
                   return;
@@ -3428,12 +3815,12 @@ function DataTable({
 
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
-                  onRowClick(rowIndex);
+                  onRowClick(index);
                 }
               }}
             >
               {row.map((cell, cellIndex) => (
-                <td key={`cell-${rowIndex}-${cellIndex}`}>{cell}</td>
+                <td key={`cell-${index}-${cellIndex}`}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -3575,17 +3962,12 @@ function CategoryDonutChart({
   );
 }
 
-function BudgetRow({ label, spent, budget }: { label: string; spent: number; budget: number }) {
-  const ratio = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+function BudgetRow({ label, percent, amount }: { label: string; percent: number; amount: number }) {
   return (
     <div className="budget-row">
-      <div>
-        <strong>{label}</strong>
-        <span>{formatMoney(spent, { compact: true })} of {formatMoney(budget, { compact: true })}</span>
-      </div>
-      <div className="progress" aria-label={`${label} progress`}>
-        <span style={{ width: `${ratio}%` }} />
-      </div>
+      <strong className="budget-row__label">{label}</strong>
+      <span className="budget-row__percent">{percent}%</span>
+      <span className="budget-row__amount">{formatMoney(amount)}</span>
     </div>
   );
 }

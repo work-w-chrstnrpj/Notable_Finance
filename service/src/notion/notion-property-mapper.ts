@@ -71,6 +71,7 @@ export const NOTION_PROPERTY_NAMES = {
     pasabuyDateOfPayment: 'Pasabuy Date of Payment',
     pasabuyPaidPeriod: 'Pasabuy paid period',
     pasabuyAccountReceiverId: 'Pasabuy Account Receiver',
+    pasabuyBalance: 'Pasabuyer Balance',
   },
 } as const;
 
@@ -304,6 +305,7 @@ export function pageToExpenseRecord(
     pasabuyDateOfPayment: extractDate(props, names.pasabuyDateOfPayment),
     pasabuyPaidPeriod: extractNumber(props, names.pasabuyPaidPeriod),
     pasabuyAccountReceiverId: extractRelationFirst(props, names.pasabuyAccountReceiverId),
+    pasabuyBalance: extractNumberOrFormula(props, names.pasabuyBalance) ?? 0,
   };
 }
 

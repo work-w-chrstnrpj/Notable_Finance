@@ -594,10 +594,18 @@ export class NotionService {
   ): Record<string, unknown> {
     if (this.isIncomeBacked(resource)) {
       const mapping = this.mappingService.get(resource);
-      const categoryOverride =
-        mapping.fixedCategory !== undefined
-          ? this.findIncomeCategoryId(mapping.fixedCategory)
-          : undefined;
+      // Locked-category workflows (transfer, CC payment) always write the fixed
+      // category. Editable-category workflows (Alkansya) honour a provided
+      // categoryId — letting the user move the record out of the bucket — and
+      // fall back to the fixed default when none is given.
+      let categoryOverride: string | undefined;
+      if (mapping.fixedCategory !== undefined) {
+        const useProvided =
+          mapping.categoryEditable && typeof data.categoryId === 'string' && data.categoryId;
+        categoryOverride = useProvided
+          ? undefined
+          : this.findIncomeCategoryId(mapping.fixedCategory);
+      }
       return incomeDtoToProperties(data, { categoryOverride });
     }
 
@@ -756,17 +764,23 @@ export class NotionService {
     // ── View-mode semantics (each is independent of purchase-date range unless
     //    it is one of the calendar views). ─────────────────────────────────
     switch (mode) {
-      case 'unpaidPasabuy':
-        // Any expense still owed to a pasabuyer, regardless of purchase date.
+      case 'unpaidPasabuy': {
+        // Pasabuy-category items still owed to a pasabuyer, regardless of date:
+        // the pasabuy payment is not yet fully received, OR a balance remains.
+        const pasabuyCatId = this.tryFindExpenseCategoryId('Pasabuy', userId);
         filtered = filtered.filter(
           (r) =>
-            r.pasabuyStatus === 'Payment not yet receive' ||
-            r.pasabuyStatus === 'Payment partially received',
+            r.categoryId === pasabuyCatId &&
+            (r.pasabuyStatus !== 'Payment fully received' || r.pasabuyBalance !== 0),
         );
         break;
+      }
       case 'toPay':
         // Not yet paid — Date Paid empty, regardless of purchase date.
-        filtered = filtered.filter((r) => !r.datePaid);
+        // Installments have their own view, so exclude them here.
+        filtered = filtered.filter(
+          (r) => !r.datePaid && r.paymentStatus !== 'Installment',
+        );
         break;
       case 'toBuy':
         // Wishlist/planned — no purchase date (or future) OR missing category/account.
@@ -911,7 +925,7 @@ export class NotionService {
   }
 
   private isCreditLike(type: string): boolean {
-    return type === 'Credit Account' || type === 'BYPL';
+    return type === 'Credit Account' || type === 'e-Credit' || type === 'BNPL';
   }
 
   private requireId(operation: SyncOperation): string {

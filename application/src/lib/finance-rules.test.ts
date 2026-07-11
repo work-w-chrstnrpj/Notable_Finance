@@ -41,10 +41,10 @@ const testIncomeCategories: IncomeCategory[] = [
 
 const testAccounts: Account[] = [
   { id: "acct-bdo-checking", name: "BDO Checking", type: "Cash", icon: null, information: "Daily operating account", startingBalance: 25000, currentBalance: 45230.5, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
-  { id: "acct-bpi-savings", name: "BPI Savings", type: "Savings Account", icon: "https://img.icons8.com/color/48/bank-building.png", information: "Emergency and savings", startingBalance: 80000, currentBalance: 123450, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
+  { id: "acct-bpi-savings", name: "BPI Savings", type: "Savings", icon: "https://img.icons8.com/color/48/bank-building.png", information: "Emergency and savings", startingBalance: 80000, currentBalance: 123450, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
   { id: "acct-metrobank-card", name: "Metrobank Credit Card", type: "Credit Account", icon: "https://img.icons8.com/color/48/credit-card.png", information: "Primary card", startingBalance: 0, currentBalance: -45800, creditLimit: 150000, availableLimit: 104200, creditPoints: 1820, annualFee: 4500, billingDay: 15, dueDay: 10, inactive: false },
   { id: "acct-gcash", name: "GCash Wallet", type: "e-Wallet", icon: "https://img.icons8.com/color/48/wallet.png", information: "Small payments", startingBalance: 5000, currentBalance: 8750.25, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, inactive: false },
-  { id: "acct-bypl", name: "ShopNow BYPL", type: "BYPL", icon: null, information: "Installment purchases", startingBalance: 0, currentBalance: -12800, creditLimit: 40000, availableLimit: 27200, creditPoints: null, annualFee: 0, billingDay: 3, dueDay: 18, inactive: false },
+  { id: "acct-bnpl", name: "ShopNow BNPL", type: "BNPL", icon: null, information: "Installment purchases", startingBalance: 0, currentBalance: -12800, creditLimit: 40000, availableLimit: 27200, creditPoints: null, annualFee: 0, billingDay: 3, dueDay: 18, inactive: false },
 ];
 
 const testIncomeRecords: IncomeRecord[] = [
@@ -54,9 +54,9 @@ const testIncomeRecords: IncomeRecord[] = [
 ];
 
 const testExpenseRecords: ExpenseRecord[] = [
-  { id: "expense-rent", description: "Monthly Rent", purchaseDate: "2026-07-01", datePaid: "2026-07-01", amount: 12500, interest: 0, accountId: "acct-bdo-checking", categoryId: "exp-housing", paymentStatus: "Paid", paymentFrequency: "Monthly", periodCount: null, paidPeriod: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null },
-  { id: "expense-phone", description: "Phone Installment", purchaseDate: "2026-06-20", datePaid: null, amount: 45000, interest: 1200, accountId: "acct-metrobank-card", categoryId: "exp-gadgets", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 12, paidPeriod: 3, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null },
-  { id: "expense-pasabuy", description: "Pasabuy Purchase", purchaseDate: "2026-07-05", datePaid: null, amount: 8000, interest: 0, accountId: "acct-bypl", categoryId: "exp-pasabuy", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 2, paidPeriod: 1, pasabuyer: "Maimai", pasabuyStatus: "Payment partially received (installment)", pasabuyDateOfPayment: "2026-07-12", pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "acct-bdo-checking" },
+  { id: "expense-rent", description: "Monthly Rent", purchaseDate: "2026-07-01", datePaid: "2026-07-01", amount: 12500, interest: 0, accountId: "acct-bdo-checking", categoryId: "exp-housing", paymentStatus: "Paid", paymentFrequency: "Monthly", periodCount: null, paidPeriod: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
+  { id: "expense-phone", description: "Phone Installment", purchaseDate: "2026-06-20", datePaid: null, amount: 45000, interest: 1200, accountId: "acct-metrobank-card", categoryId: "exp-gadgets", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 12, paidPeriod: 3, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
+  { id: "expense-pasabuy", description: "Pasabuy Purchase", purchaseDate: "2026-07-05", datePaid: null, amount: 8000, interest: 0, accountId: "acct-bnpl", categoryId: "exp-pasabuy", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 2, paidPeriod: 1, pasabuyer: "Maimai", pasabuyStatus: "Payment partially received (installment)", pasabuyDateOfPayment: "2026-07-12", pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "acct-bdo-checking", pasabuyBalance: 4000 },
 ];
 
 describe("finance frontend rules", () => {

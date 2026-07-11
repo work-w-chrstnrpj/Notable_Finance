@@ -8,7 +8,14 @@ export interface ResourceMapping {
   writableFields: string[];
   computedFields: string[];
   hiddenFields: string[];
+  /**
+   * Income category this workflow is filtered to (for list) and defaults to
+   * (for create). When `categoryEditable` is also set, the category is a
+   * default that the user may change on write (e.g. Alkansya → move an item
+   * out of Savings and back into normal Income).
+   */
   fixedCategory?: string;
+  categoryEditable?: boolean;
   deletePolicy?: 'incomeSoftDelete' | 'expenseSoftDelete';
 }
 
@@ -144,6 +151,7 @@ export class MappingService {
         computedFields: ['netIncome', 'transactionAmount'],
         hiddenFields: ['transactionAmount'],
         fixedCategory: 'Savings',
+        categoryEditable: true,
         deletePolicy: 'incomeSoftDelete',
       },
     ],

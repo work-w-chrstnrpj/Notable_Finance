@@ -50,7 +50,11 @@ export class ValidationService {
       );
     }
 
-    if (mapping.fixedCategory && data.categoryId !== undefined) {
+    if (
+      mapping.fixedCategory &&
+      !mapping.categoryEditable &&
+      data.categoryId !== undefined
+    ) {
       throw new ApiException(
         HttpStatus.BAD_REQUEST,
         'VALIDATION_ERROR',

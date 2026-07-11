@@ -66,7 +66,7 @@ export const transactionWorkflowCategories: Partial<Record<WorkflowSectionId, st
 };
 
 export function isCreditLikeAccountType(type: AccountType) {
-  return type === "Credit Account" || type === "BYPL";
+  return type === "Credit Account" || type === "e-Credit" || type === "BNPL";
 }
 
 export function calculateTotalCashFlow(accounts: Account[]) {

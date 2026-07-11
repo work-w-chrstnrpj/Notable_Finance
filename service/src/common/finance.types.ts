@@ -16,12 +16,12 @@ export type MutationAction = 'create' | 'update' | 'delete';
 
 export type AccountType =
   | 'Cash'
-  | 'Credit Account'
-  | 'Debit'
-  | 'Savings Account'
+  | 'Savings'
   | 'e-Wallet'
   | 'Digital Bank'
-  | 'BYPL'
+  | 'Credit Account'
+  | 'e-Credit'
+  | 'BNPL'
   | 'Auxiliary';
 
 export type PaymentStatus = 'Paid' | 'Unpaid' | 'Installment' | 'Cancelled';
@@ -108,6 +108,8 @@ export interface ExpenseRecordDto {
   pasabuyDateOfPayment: string | null;
   pasabuyPaidPeriod: number | null;
   pasabuyAccountReceiverId: string | null;
+  /** Notion "Pasabuyer Balance" formula — how much is still owed by the pasabuyer. */
+  pasabuyBalance: number;
   deleted?: boolean;
 }
 

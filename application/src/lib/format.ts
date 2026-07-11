@@ -24,8 +24,15 @@ export function formatMoney(value: number, options?: { compact?: boolean }) {
   return moneyFormatter.format(value);
 }
 
-export function formatDate(value: string) {
-  return dateFormatter.format(new Date(`${value}T00:00:00`));
+export function formatDate(value: string | null | undefined) {
+  if (!value) {
+    return "—";
+  }
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "—";
+  }
+  return dateFormatter.format(parsed);
 }
 
 export function formatPercent(value: number) {

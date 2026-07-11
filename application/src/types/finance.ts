@@ -13,12 +13,12 @@ export type FinanceSectionId =
 
 export type AccountType =
   | "Cash"
-  | "Credit Account"
-  | "Debit"
-  | "Savings Account"
+  | "Savings"
   | "e-Wallet"
   | "Digital Bank"
-  | "BYPL"
+  | "Credit Account"
+  | "e-Credit"
+  | "BNPL"
   | "Auxiliary";
 
 export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually";
@@ -125,6 +125,7 @@ export type ExpenseRecord = {
   pasabuyDateOfPayment: string | null;
   pasabuyPaidPeriod: number | null;
   pasabuyAccountReceiverId: string | null;
+  pasabuyBalance: number;
 };
 
 export type SyncLogEntry = {
