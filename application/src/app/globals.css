@@ -98,12 +98,6 @@ a {
   width: 64px;
 }
 
-.workspace--sidebar-collapsed .sidebar:hover,
-.workspace--sidebar-collapsed .sidebar:focus-within {
-  width: 220px;
-  box-shadow: 14px 0 32px rgba(28, 25, 23, 0.09);
-}
-
 .brand {
   display: flex;
   align-items: center;
@@ -113,7 +107,7 @@ a {
   padding: 14px 16px;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .brand {
+.workspace--sidebar-collapsed .sidebar .brand {
   justify-content: center;
   padding: 14px 8px;
 }
@@ -176,8 +170,14 @@ a {
   border-color: var(--line-strong);
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-toggle {
+/* Collapsed rail: hide the wordmark, keep the toggle centered so the sidebar
+   can always be expanded again. */
+.workspace--sidebar-collapsed .sidebar .brand__mark {
   display: none;
+}
+
+.workspace--sidebar-collapsed .sidebar .sidebar-toggle {
+  margin: 0;
 }
 
 .brand__meta,
@@ -248,29 +248,29 @@ a {
   white-space: nowrap;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .brand__name,
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__title,
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__item span,
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile > div:not(.sidebar-profile__avatar),
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile button {
+.workspace--sidebar-collapsed .sidebar .brand__name,
+.workspace--sidebar-collapsed .sidebar .nav__title,
+.workspace--sidebar-collapsed .sidebar .nav__item span,
+.workspace--sidebar-collapsed .sidebar .sidebar-profile > div:not(.sidebar-profile__avatar),
+.workspace--sidebar-collapsed .sidebar .sidebar-profile button {
   display: none;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav {
+.workspace--sidebar-collapsed .sidebar .nav {
   gap: 8px;
   padding: 10px 8px;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__group {
+.workspace--sidebar-collapsed .sidebar .nav__group {
   gap: 8px;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .nav__item {
+.workspace--sidebar-collapsed .sidebar .nav__item {
   justify-content: center;
   padding: 8px;
 }
 
-.workspace--sidebar-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-profile {
+.workspace--sidebar-collapsed .sidebar .sidebar-profile {
   justify-content: center;
   padding: 10px 8px;
 }
@@ -354,7 +354,30 @@ a {
   gap: 18px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
-  padding: 0 24px;
+  padding: 10px 24px;
+}
+
+/* Hamburger — hidden on desktop, shown on tablet/mobile. */
+.mobile-nav-toggle {
+  display: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0;
+}
+
+.mobile-nav-toggle:hover {
+  border-color: var(--line-strong);
+}
+
+/* Drawer backdrop — only visible when the mobile nav is open. */
+.mobile-nav-backdrop {
+  display: none;
 }
 
 .topbar h1,
@@ -534,6 +557,36 @@ a {
   background: var(--surface-muted);
   color: var(--ink-muted);
   font-size: 13px;
+}
+
+.annual-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.group-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.group-by select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.annual-chart {
+  width: 100%;
+  height: 360px;
 }
 
 .forecast-banner {
@@ -765,10 +818,13 @@ a {
 
 .metric-card strong {
   font-family: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
-  font-size: 24px;
+  /* Scales with viewport so the 4-up row keeps long peso values on one line
+     on narrow laptops without clipping. */
+  font-size: clamp(18px, 1.7vw, 24px);
   font-weight: 500;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .metric-card__icon {
@@ -1430,6 +1486,59 @@ table {
   border-collapse: collapse;
   min-width: 680px;
   font-size: 14px;
+}
+
+/* Wide tables (e.g. CC Transactions, Installments) keep every column on one
+   line and size to their content so the wrapper scrolls horizontally. */
+table.data-table--wide {
+  width: max-content;
+  min-width: 100%;
+}
+
+table.data-table--wide th,
+table.data-table--wide td {
+  white-space: nowrap;
+}
+
+/* Freeze the first two columns (Date & Description) like Excel panes so they
+   stay visible while the rest of the row scrolls horizontally. */
+table.data-table--wide th:nth-child(1),
+table.data-table--wide td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  width: 116px;
+  min-width: 116px;
+  z-index: 1;
+}
+
+table.data-table--wide th:nth-child(2),
+table.data-table--wide td:nth-child(2) {
+  position: sticky;
+  left: 116px;
+  z-index: 1;
+}
+
+/* Opaque backgrounds so scrolling cells don't bleed through the frozen ones,
+   matched to each row state (body, hover, footer). Header sits on top. */
+table.data-table--wide thead th:nth-child(1),
+table.data-table--wide thead th:nth-child(2) {
+  background: var(--surface);
+  z-index: 3;
+}
+
+table.data-table--wide tbody td:nth-child(1),
+table.data-table--wide tbody td:nth-child(2) {
+  background: var(--surface);
+}
+
+table.data-table--wide .table-row--clickable:hover td:nth-child(1),
+table.data-table--wide .table-row--clickable:hover td:nth-child(2) {
+  background: #f8f7f5;
+}
+
+table.data-table--wide tfoot td:nth-child(1),
+table.data-table--wide tfoot td:nth-child(2) {
+  background: #fbfaf9;
 }
 
 th,
@@ -2105,66 +2214,116 @@ tfoot td {
   }
 }
 
-@media (max-width: 1120px) {
-  .workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-    height: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .nav {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .metric-grid,
-  .dashboard-chart-grid,
-  .dashboard-bottom-grid,
-  .two-column,
-  .two-column--wide-left {
+/* ── Small tablets & phones: metrics drop to 2-up. Laptops (11"+) keep
+   the full 4-up row. ───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 760px) {
-  .topbar,
+/* ── Tablet / iPad & below: sidebar becomes an off-canvas drawer ───── */
+@media (max-width: 1023px) {
+  .workspace,
+  .workspace--sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(284px, 84vw);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+    z-index: 60;
+    box-shadow: 18px 0 46px rgba(28, 25, 23, 0.18);
+  }
+
+  /* Drawer always shows full labels, even with the desktop collapse class. */
+  .workspace--sidebar-collapsed .sidebar {
+    width: min(284px, 84vw);
+  }
+  .workspace--sidebar-collapsed .sidebar .brand__name,
+  .workspace--sidebar-collapsed .sidebar .nav__title,
+  .workspace--sidebar-collapsed .sidebar .nav__item span,
+  .workspace--sidebar-collapsed .sidebar .sidebar-profile > div:not(.sidebar-profile__avatar),
+  .workspace--sidebar-collapsed .sidebar .sidebar-profile button {
+    display: revert;
+  }
+  .workspace--sidebar-collapsed .sidebar .nav {
+    padding: 12px;
+  }
+  .workspace--sidebar-collapsed .sidebar .nav__item {
+    justify-content: flex-start;
+  }
+
+  .workspace--mobile-nav-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .workspace--mobile-nav-open .mobile-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 18, 16, 0.45);
+    z-index: 55;
+  }
+
+  .mobile-nav-toggle {
+    display: grid;
+  }
+
+  /* Desktop collapse toggle is not used in drawer mode. */
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .topbar {
+    justify-content: space-between;
+  }
+
+  .dashboard-chart-grid,
+  .dashboard-bottom-grid,
+  .two-column,
+  .two-column--wide-left {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Phones ────────────────────────────────────────────────────────── */
+@media (max-width: 620px) {
   .page-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .topbar__actions,
   .page-toolbar__actions {
     align-items: stretch;
   }
 
   .metric-grid,
-  .dashboard-chart-grid,
-  .dashboard-bottom-grid,
-  .two-column,
-  .two-column--wide-left,
   .form-grid,
   .form-grid--modal,
   .computed-summary,
-  .category-chart,
-  .nav {
+  .category-chart {
     grid-template-columns: 1fr;
   }
 
-  .workspace__content,
-  .topbar {
-    padding: 16px;
+  .workspace__content {
+    padding: 14px;
   }
 
-  .select-label,
-  .filter-select,
-  .select-label select,
-  .filter-select select,
-  .button {
+  .topbar {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .page-toolbar__actions .button,
+  .page-toolbar__actions .select-label,
+  .page-toolbar__actions .filter-select {
     width: 100%;
   }
 
@@ -2177,19 +2336,7 @@ tfoot td {
   }
 
   .dashboard-card {
-    padding: 20px;
-  }
-
-  .dashboard-card__header {
-    display: grid;
-  }
-
-  .chart-legend {
-    gap: 14px;
-  }
-
-  .income-expense-chart {
-    height: 220px;
+    padding: 18px;
   }
 
   .modal-backdrop {
@@ -2197,10 +2344,7 @@ tfoot td {
   }
 
   .modal-panel__header,
-  .modal-panel__footer {
-    padding: 14px;
-  }
-
+  .modal-panel__footer,
   .modal-panel__body {
     padding: 14px;
   }
@@ -2301,6 +2445,31 @@ tfoot td {
   border-radius: 8px;
   font-size: 0.85rem;
   color: var(--text);
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.settings-row p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 13.5px;
+  max-width: 60ch;
+}
+
+.settings-row--danger p {
+  color: var(--danger, #dc2626);
 }
 
 .notion-connect__fieldset {

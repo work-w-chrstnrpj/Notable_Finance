@@ -767,10 +767,12 @@ export class NotionService {
       case 'unpaidPasabuy': {
         // Pasabuy-category items still owed to a pasabuyer, regardless of date:
         // the pasabuy payment is not yet fully received, OR a balance remains.
+        // Installments have their own view, so exclude them here.
         const pasabuyCatId = this.tryFindExpenseCategoryId('Pasabuy', userId);
         filtered = filtered.filter(
           (r) =>
             r.categoryId === pasabuyCatId &&
+            r.paymentStatus !== 'Installment' &&
             (r.pasabuyStatus !== 'Payment fully received' || r.pasabuyBalance !== 0),
         );
         break;
@@ -801,16 +803,19 @@ export class NotionService {
         );
         break;
       case 'ccTransactions':
-        // Outstanding credit-card charges: unpaid or not-yet-paid on a credit account.
+        // Outstanding credit-card charges: unpaid or not-yet-paid on a credit
+        // account. Installments have their own view, so exclude them here.
         filtered = filtered.filter(
           (r) =>
             creditAccountIds.has(r.accountId) &&
+            r.paymentStatus !== 'Installment' &&
             (r.paymentStatus === 'Unpaid' || !r.datePaid),
         );
         break;
       case 'daily':
       case 'weekly':
       case 'monthly':
+      case 'annually':
       default:
         if (query.rangeStart || query.rangeEnd) {
           filtered = this.filterByRange(filtered, 'purchaseDate', query.rangeStart, query.rangeEnd);
@@ -852,6 +857,7 @@ export class NotionService {
       case 'installments':
       case 'installment':
         return 'installments';
+      case 'unpaidcc':
       case 'cctransactions':
       case 'cctransaction':
         return 'ccTransactions';
@@ -861,6 +867,8 @@ export class NotionService {
         return 'weekly';
       case 'monthly':
         return 'monthly';
+      case 'annually':
+        return 'annually';
       default:
         return 'monthly';
     }

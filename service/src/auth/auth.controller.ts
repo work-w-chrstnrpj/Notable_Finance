@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -32,5 +40,40 @@ export class AuthController {
   @Post('logout')
   logout() {
     return { loggedOut: true };
+  }
+
+  @Patch('email')
+  @UseGuards(JwtAuthGuard)
+  changeEmail(
+    @Body() body: { currentPassword: string; newEmail: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.authService.changeEmail(
+      user.id,
+      body.currentPassword,
+      body.newEmail,
+    );
+  }
+
+  @Patch('password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @Body() body: { currentPassword: string; newPassword: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.authService.changePassword(
+      user.id,
+      body.currentPassword,
+      body.newPassword,
+    );
+  }
+
+  @Delete('account')
+  @UseGuards(JwtAuthGuard)
+  deleteAccount(
+    @Body() body: { currentPassword: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.authService.deleteAccount(user.id, body.currentPassword);
   }
 }

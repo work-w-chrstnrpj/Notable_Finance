@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { useMemo, useState, useEffect, startTransition, isValidElement } from "react";
 import type { ReactNode } from "react";
@@ -22,15 +23,19 @@ import {
   ChevronsUpDown,
   CircleDollarSign,
   ClipboardCheck,
+  Copy,
   TrendingUp,
   CreditCard,
   Database,
   FileWarning,
   Gauge,
+  KeyRound,
   Landmark,
   LayoutDashboard,
   LockKeyhole,
   LogOut,
+  Mail,
+  Menu,
   Pencil,
   PiggyBank,
   Plus,
@@ -48,16 +53,20 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import {
   financeSections,
   getActiveSectionLabel,
-  getExpenseCategoryName,
 } from "@/lib/finance-data";
 import {
   useAccounts,
@@ -147,11 +156,12 @@ const expenseViewModes: ExpenseViewMode[] = [
   "Daily",
   "Weekly",
   "Monthly",
-  "Unpaid Pasabuy",
+  "Annually",
   "To pay",
   "To buy",
   "Installments",
-  "CC Transactions",
+  "Unpaid CC",
+  "Unpaid Pasabuy",
 ];
 
 const expenseCategoryFilterWithoutPasabuy = "__without-pasabuy";
@@ -229,8 +239,18 @@ function useLiveCollections() {
   const { state: normalIncomeCategoriesState } = useIncomeCategories(true);
   const { state: expenseCategoriesState } = useExpenseCategories();
 
-  const allAccounts: Account[] =
-    accountsState.status === "success" ? accountsState.data : [];
+  // Sorted alphabetically at the source so every dropdown (filters and the
+  // income/expense log forms) presents options in A→Z order.
+  const byName = (a: { name: string }, b: { name: string }) =>
+    a.name.localeCompare(b.name);
+  const bySource = (a: { source: string }, b: { source: string }) =>
+    a.source.localeCompare(b.source);
+
+  const allAccounts: Account[] = (
+    accountsState.status === "success" ? accountsState.data : []
+  )
+    .slice()
+    .sort(byName);
   const activeAccounts = allAccounts.filter(
     (account) => !account.inactive && account.type !== "Auxiliary",
   );
@@ -241,19 +261,28 @@ function useLiveCollections() {
     isCreditLikeAccountType(account.type),
   );
 
-  const allIncomeCategories: IncomeCategory[] =
+  const allIncomeCategories: IncomeCategory[] = (
     allIncomeCategoriesState.status === "success"
       ? allIncomeCategoriesState.data
-      : [];
-  const normalIncomeCategories: IncomeCategory[] =
+      : []
+  )
+    .slice()
+    .sort(bySource);
+  const normalIncomeCategories: IncomeCategory[] = (
     normalIncomeCategoriesState.status === "success"
       ? normalIncomeCategoriesState.data
-      : [];
+      : []
+  )
+    .slice()
+    .sort(bySource);
 
-  const expenseCategories: ExpenseCategory[] =
+  const expenseCategories: ExpenseCategory[] = (
     expenseCategoriesState.status === "success"
       ? (expenseCategoriesState.data as ExpenseCategory[])
-      : [];
+      : []
+  )
+    .slice()
+    .sort(byName);
 
   const accountNameById = new Map(allAccounts.map((a) => [a.id, a.name]));
   const incomeCategoryNameById = new Map(
@@ -331,6 +360,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
   const [pendingOperations, setPendingOperations] = useState(0);
@@ -383,11 +413,23 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   }
 
   return (
-    <div className={cx("workspace", sidebarCollapsed && "workspace--sidebar-collapsed")}>
+    <div
+      className={cx(
+        "workspace",
+        sidebarCollapsed && "workspace--sidebar-collapsed",
+        mobileNavOpen && "workspace--mobile-nav-open",
+      )}
+    >
       <Sidebar
         activeSection={activeSection}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed((current) => !current)}
+        onNavigate={() => setMobileNavOpen(false)}
+      />
+      <div
+        className="mobile-nav-backdrop"
+        role="presentation"
+        onClick={() => setMobileNavOpen(false)}
       />
       <div className="workspace__main">
         <TopBar
@@ -403,6 +445,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           onDateChange={setSelectedDate}
           onSchemaVerify={verifySchema}
           onSync={runSync}
+          onMobileNavToggle={() => setMobileNavOpen((v) => !v)}
         />
         <main className="workspace__content">
           {activeSection === "dashboard" && (
@@ -523,10 +566,12 @@ function Sidebar({
   activeSection,
   collapsed,
   onToggle,
+  onNavigate,
 }: {
   activeSection: FinanceSectionId;
   collapsed: boolean;
   onToggle: () => void;
+  onNavigate?: () => void;
 }) {
   const { user, logout } = useAuth();
   const groupedSections = useMemo(
@@ -559,9 +604,9 @@ function Sidebar({
         </button>
       </div>
       <nav className="nav" aria-label="Finance sections">
-        <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} />
-        <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} />
-        <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} />
+        <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} />
+        <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} />
+        <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} />
       </nav>
       <div className="sidebar-profile">
         <div className="sidebar-profile__avatar">{initials}</div>
@@ -583,10 +628,12 @@ function NavGroup({
   title,
   sections,
   activeSection,
+  onNavigate,
 }: {
   title: string;
   sections: FinanceSection[];
   activeSection: FinanceSectionId;
+  onNavigate?: () => void;
 }) {
   return (
     <div className="nav__group">
@@ -598,6 +645,7 @@ function NavGroup({
             key={section.id}
             href={`/${section.id}` as Route}
             className={cx("nav__item", activeSection === section.id && "nav__item--active")}
+            onClick={onNavigate}
           >
             <Icon size={17} />
             <span>{section.shortLabel ?? section.label}</span>
@@ -636,6 +684,7 @@ function TopBar({
   onDateChange,
   onSchemaVerify,
   onSync,
+  onMobileNavToggle,
 }: {
   activeSection: FinanceSectionId;
   expenseViewMode: ExpenseViewMode;
@@ -649,6 +698,7 @@ function TopBar({
   onDateChange: (isoDate: string) => void;
   onSchemaVerify: () => void;
   onSync: () => void;
+  onMobileNavToggle: () => void;
 }) {
   const { user } = useAuth();
   const stale = useSyncStale(lastSync);
@@ -658,6 +708,14 @@ function TopBar({
 
   return (
     <header className="topbar">
+      <button
+        type="button"
+        className="mobile-nav-toggle"
+        aria-label="Open navigation"
+        onClick={onMobileNavToggle}
+      >
+        <Menu size={18} />
+      </button>
       <div className="topbar__actions" aria-label="Workspace controls">
         {selectorUnit && (
           <DateRangeSelector
@@ -910,7 +968,15 @@ function DashboardPage({
     (sum, r) => sum + r.grossIncome,
     0,
   );
-  const monthlyExpenses = monthExpenses.reduce(
+  // Pasabuy expenses are paid on behalf of others ("pinasabay lang"), so they
+  // are not part of the user's own monthly expense.
+  const pasabuyCategoryIds = new Set(
+    expenseCategories.filter((c) => /pasabuy/i.test(c.name)).map((c) => c.id),
+  );
+  const ownExpenses = monthExpenses.filter(
+    (r) => !pasabuyCategoryIds.has(r.categoryId),
+  );
+  const monthlyExpenses = ownExpenses.reduce(
     (sum, r) => sum + r.amount + (r.interest ?? 0),
     0,
   );
@@ -1034,7 +1100,7 @@ function DashboardPage({
           tone="blue"
         />
         <MetricCard
-          title="Monthly Income Gross"
+          title="Monthly Income"
           value={formatMoney(display.monthlyGrossIncome)}
           detail={monthLabel}
           icon={Banknote}
@@ -1500,6 +1566,116 @@ function AccountsPage() {
   );
 }
 
+// ── Annually chart (Income + Expense) ─────────────────────────────────
+
+type AnnualGroupBy = "month" | "account" | "category";
+
+const ANNUAL_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+type AnnualRecord = {
+  dateIso: string;
+  accountId: string | null;
+  categoryId: string;
+  value: number;
+};
+
+function buildAnnualGroups(
+  records: AnnualRecord[],
+  groupBy: AnnualGroupBy,
+  accountNameById: Map<string, string>,
+  categoryNameById: Map<string, string>,
+): Array<{ label: string; value: number }> {
+  if (groupBy === "month") {
+    const sums = new Array(12).fill(0) as number[];
+    for (const r of records) {
+      const m = Number((r.dateIso || "").slice(5, 7)) - 1;
+      if (m >= 0 && m < 12) sums[m] += r.value;
+    }
+    return ANNUAL_MONTHS.map((label, i) => ({ label, value: sums[i] }));
+  }
+  const nameById = groupBy === "account" ? accountNameById : categoryNameById;
+  const sums = new Map<string, number>();
+  for (const r of records) {
+    const key = (groupBy === "account" ? r.accountId ?? "" : r.categoryId) || "—";
+    sums.set(key, (sums.get(key) ?? 0) + r.value);
+  }
+  return [...sums.entries()]
+    .map(([key, value]) => ({ label: nameById.get(key) ?? "—", value }))
+    .sort((a, b) => b.value - a.value);
+}
+
+function GroupBySelect({
+  value,
+  onChange,
+}: {
+  value: AnnualGroupBy;
+  onChange: (v: AnnualGroupBy) => void;
+}) {
+  return (
+    <label className="group-by">
+      <span>Group by:</span>
+      <select value={value} onChange={(e) => onChange(e.target.value as AnnualGroupBy)}>
+        <option value="month">Group by Month</option>
+        <option value="account">Group by Account</option>
+        <option value="category">Group by Category</option>
+      </select>
+    </label>
+  );
+}
+
+function AnnualBarChart({
+  data,
+  color,
+}: {
+  data: Array<{ label: string; value: number }>;
+  color: string;
+}) {
+  if (!data.some((d) => d.value !== 0)) {
+    return <EmptyState title="No data" detail="Nothing to chart for this year." />;
+  }
+  const rotated = data.length > 6;
+  return (
+    <div className="annual-chart" aria-label="Annual bar chart">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(28,25,23,0.06)" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 11, fill: "#79716B" }}
+            tickLine={false}
+            axisLine={false}
+            interval={0}
+            angle={rotated ? -35 : 0}
+            textAnchor={rotated ? "end" : "middle"}
+            height={rotated ? 78 : 28}
+          />
+          <YAxis
+            tick={{ fontSize: 11, fill: "#79716B" }}
+            tickLine={false}
+            axisLine={false}
+            width={52}
+            tickFormatter={(v) => `₱${(Number(v) / 1000).toFixed(0)}k`}
+          />
+          <Tooltip
+            cursor={{ fill: "rgba(28,25,23,0.05)" }}
+            formatter={(v) => [formatMoney(Number(v)), ""]}
+            contentStyle={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid rgba(28,25,23,0.09)",
+              borderRadius: 10,
+              fontSize: 12,
+            }}
+          />
+          <Bar dataKey="value" fill={color} radius={[5, 5, 0, 0]} isAnimationActive={false} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 function IncomePage({
   viewMode,
   onViewModeChange,
@@ -1529,6 +1705,9 @@ function IncomePage({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [annualView, setAnnualView] = useState<"table" | "chart">("table");
+  const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
+  const isAnnual = viewMode === "Annually";
   const calculatedNetIncome = calculateNetIncome(
     parseNumberInput(grossIncomeInput),
     parseNumberInput(capitalExpenditureInput),
@@ -1544,6 +1723,17 @@ function IncomePage({
     incomesState.status === "success" ? incomesState.data : [];
   const visibleIncomeRecords: IncomeRecord[] = allIncomeRecords.filter(
     (record) => !record.name?.includes("[Deleted:"),
+  );
+  const annualIncomeGroups = buildAnnualGroups(
+    visibleIncomeRecords.map((r) => ({
+      dateIso: r.date,
+      accountId: r.accountId,
+      categoryId: r.categoryId,
+      value: r.grossIncome,
+    })),
+    groupBy,
+    accountNameById,
+    incomeCategoryNameById,
   );
 
   function openIncomeModal(mode: "new" | "edit", title: string, recordId?: string) {
@@ -1564,8 +1754,8 @@ function IncomePage({
   }
 
   async function handleSaveIncome() {
-    if (!nameInput.trim() || !dateInput || !formAccountId || !formCategoryId) {
-      setSaveError("Name, date, account and category are required.");
+    if (!nameInput.trim() || !dateInput) {
+      setSaveError("Name and date are required.");
       return;
     }
     const payload = {
@@ -1589,6 +1779,15 @@ function IncomePage({
     }
     setModal(null);
     await refetch();
+  }
+
+  function handleDuplicateIncome() {
+    // Keep the currently-loaded field values but detach from the source record
+    // so Save creates a fresh income instead of updating the original.
+    setEditingId(null);
+    setEditing(true);
+    setSaveError(null);
+    setModal({ mode: "new", title: "New Income (Copy)" });
   }
 
   async function handleDeleteIncome() {
@@ -1654,8 +1853,28 @@ function IncomePage({
         onChange={(value) => onViewModeChange(value as IncomeViewMode)}
       />
 
+      {isAnnual && (
+        <div className="annual-controls">
+          <SegmentedControl
+            label="Annual display"
+            options={[
+              { label: "Table", value: "table" },
+              { label: "Chart", value: "chart" },
+            ]}
+            value={annualView}
+            onChange={(v) => setAnnualView(v as "table" | "chart")}
+          />
+          {annualView === "chart" && (
+            <GroupBySelect value={groupBy} onChange={setGroupBy} />
+          )}
+        </div>
+      )}
+
       <Panel title={`${viewMode} Income Records`}>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
+        {isAnnual && annualView === "chart" ? (
+          <AnnualBarChart data={annualIncomeGroups} color="#0D9488" />
+        ) : (
         <DataTable
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
           rows={visibleIncomeRecords.map((record) => {
@@ -1692,6 +1911,7 @@ function IncomePage({
             }
           }}
         />
+        )}
       </Panel>
 
       <FormModal
@@ -1704,6 +1924,7 @@ function IncomePage({
         onEdit={() => setEditing(true)}
         onSave={handleSaveIncome}
         onDelete={handleDeleteIncome}
+        onDuplicate={handleDuplicateIncome}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
@@ -1739,9 +1960,7 @@ function IncomePage({
           </Field>
           <Field label="Accounts">
             <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
-              <option value="" disabled>
-                Select your account
-              </option>
+              <option value="">— None —</option>
               {nonCreditActiveAccounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
@@ -1749,9 +1968,7 @@ function IncomePage({
           </Field>
           <Field label="Categories">
             <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
-              <option value="" disabled>
-                Select your category
-              </option>
+              <option value="">— None —</option>
               {normalIncomeCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.source}</option>
               ))}
@@ -1789,6 +2006,9 @@ function ExpensePage({
   const [accountFilterId, setAccountFilterId] = useState("");
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState("");
   const [pasabuyerFilter, setPasabuyerFilter] = useState("");
+  const [annualView, setAnnualView] = useState<"table" | "chart">("table");
+  const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
+  const isAnnual = viewMode === "Annually";
   const [formAccountId, setFormAccountId] = useState("");
   const [formCategoryId, setFormCategoryId] = useState("");
   const [purchaseDateInput, setPurchaseDateInput] = useState("");
@@ -1809,7 +2029,7 @@ function ExpensePage({
   const pasabuyCategory = expenseCategories.find((c) => /pasabuy/i.test(c.name));
   const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
   const accountType = selectedFormAccount?.type ?? "Cash";
-  const categoryName = getExpenseCategoryName(formCategoryId);
+  const categoryName = expenseCategoryNameById.get(formCategoryId) ?? "";
   const sections = getExpenseConditionalSections({
     accountType,
     viewMode,
@@ -1877,6 +2097,43 @@ function ExpensePage({
       return true;
     },
   );
+  const annualExpenseGroups = buildAnnualGroups(
+    visibleExpenseRecords.map((r) => ({
+      dateIso: r.purchaseDate,
+      accountId: r.accountId,
+      categoryId: r.categoryId,
+      value: r.amount + (r.interest ?? 0),
+    })),
+    groupBy,
+    accountNameById,
+    expenseCategoryNameById,
+  );
+
+  // Derived credit/installment figures per record, mirroring the modal's math,
+  // for the detailed CC Transactions and Installments table columns.
+  const accountById = new Map(activeAccounts.map((a) => [a.id, a]));
+  function deriveExpenseComputed(record: ExpenseRecord) {
+    const gross = calculateGrossPrice(record.amount, record.interest ?? 0);
+    const installment = calculateInstallmentAmount({
+      grossPrice: gross,
+      paymentStatus: record.paymentStatus,
+      periodCount: record.periodCount,
+    });
+    const paid = calculatePaidAmount({
+      grossPrice: gross,
+      paymentStatus: record.paymentStatus,
+      installmentAmount: installment,
+      paidPeriod: record.paidPeriod,
+    });
+    const remaining = calculateRemainingBalance(gross, paid);
+    const account = accountById.get(record.accountId ?? "");
+    const expected = calculateExpectedPaymentDate({
+      purchaseDate: record.purchaseDate,
+      billingDay: account?.billingDay ?? null,
+      dueDay: account?.dueDay ?? null,
+    });
+    return { gross, installment, paid, remaining, expected };
+  }
 
   function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -1911,8 +2168,8 @@ function ExpensePage({
   }
 
   async function handleSaveExpense() {
-    if (!descriptionInput.trim() || !purchaseDateInput || !formAccountId || !formCategoryId) {
-      setSaveError("Description, purchase date, account and category are required.");
+    if (!descriptionInput.trim()) {
+      setSaveError("Description is required.");
       return;
     }
     const payload: Record<string, unknown> = {
@@ -1946,6 +2203,15 @@ function ExpensePage({
     }
     setModal(null);
     await refetch();
+  }
+
+  function handleDuplicateExpense() {
+    // Keep the loaded field values but detach from the source record so Save
+    // creates a fresh expense instead of updating the original.
+    setEditingId(null);
+    setEditing(true);
+    setSaveError(null);
+    setModal({ mode: "new", title: "New Expense (Copy)" });
   }
 
   async function handleDeleteExpense() {
@@ -2030,15 +2296,38 @@ function ExpensePage({
         onChange={(value) => handleExpenseViewModeChange(value as ExpenseViewMode)}
       />
 
+      {isAnnual && (
+        <div className="annual-controls">
+          <SegmentedControl
+            label="Annual display"
+            options={[
+              { label: "Table", value: "table" },
+              { label: "Chart", value: "chart" },
+            ]}
+            value={annualView}
+            onChange={(v) => setAnnualView(v as "table" | "chart")}
+          />
+          {annualView === "chart" && (
+            <GroupBySelect value={groupBy} onChange={setGroupBy} />
+          )}
+        </div>
+      )}
+
       <Panel title={`${viewMode} Expenses`}>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
-        {viewMode === "Unpaid Pasabuy" ? (
+        {isAnnual && annualView === "chart" ? (
+          <AnnualBarChart data={annualExpenseGroups} color="#E11D48" />
+        ) : viewMode === "Unpaid Pasabuy" ? (
           <DataTable
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rows={visibleExpenseRecords.map((record) => [
               formatDate(record.purchaseDate),
-              record.description,
-              formatMoney(record.pasabuyBalance),
+              <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
+                {record.description}
+              </span>,
+              <span className="expense-cell--unpaid" key={`${record.id}-bal`}>
+                {formatMoney(record.pasabuyBalance)}
+              </span>,
               record.pasabuyer ?? "—",
               record.pasabuyStatus ?? "—",
               record.pasabuyDateOfPayment ? formatDate(record.pasabuyDateOfPayment) : "—",
@@ -2052,6 +2341,140 @@ function ExpensePage({
                   visibleExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
                 ),
                 "",
+                "",
+                "",
+                "",
+              ],
+            ]}
+            onRowClick={(rowIndex) => {
+              const record = visibleExpenseRecords[rowIndex];
+              if (record) {
+                openExpenseModal("edit", record.description, record.id);
+              }
+            }}
+          />
+        ) : viewMode === "Unpaid CC" ? (
+          <DataTable
+            wide
+            headers={[
+              "Date",
+              "Description",
+              "Account",
+              "Amount",
+              "Category",
+              "Interest",
+              "Gross Amount",
+              "Remaining Balance",
+              "Payment Status",
+              "Expected payment date",
+              "Date Paid",
+            ]}
+            rows={visibleExpenseRecords.map((record) => {
+              const c = deriveExpenseComputed(record);
+              return [
+                formatDate(record.purchaseDate),
+                <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
+                  {record.description}
+                </span>,
+                accountNameById.get(record.accountId ?? "") ?? "—",
+                <span className="expense-cell--unpaid" key={`${record.id}-amt`}>
+                  {formatMoney(record.amount)}
+                </span>,
+                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                formatMoney(record.interest ?? 0),
+                formatMoney(c.gross),
+                formatMoney(c.remaining),
+                record.paymentStatus ?? "—",
+                c.expected ? formatDate(c.expected) : "-",
+                record.datePaid ? formatDate(record.datePaid) : "-",
+              ];
+            })}
+            footerRows={[
+              [
+                "Total",
+                "",
+                "",
+                formatMoney(visibleExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                "",
+                formatMoney(visibleExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
+                formatMoney(
+                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
+                ),
+                formatMoney(
+                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
+                ),
+                "",
+                "",
+                "",
+              ],
+            ]}
+            onRowClick={(rowIndex) => {
+              const record = visibleExpenseRecords[rowIndex];
+              if (record) {
+                openExpenseModal("edit", record.description, record.id);
+              }
+            }}
+          />
+        ) : viewMode === "Installments" ? (
+          <DataTable
+            wide
+            headers={[
+              "Date",
+              "Description",
+              "Account",
+              "Amount",
+              "Category",
+              "Interest",
+              "Gross Amount",
+              "Period Count",
+              "Installment Amount",
+              "Paid Period",
+              "Paid Amount",
+              "Remaining Balance",
+              "Payment Status",
+              "Expected payment date",
+              "Date Paid",
+            ]}
+            rows={visibleExpenseRecords.map((record) => {
+              const c = deriveExpenseComputed(record);
+              return [
+                formatDate(record.purchaseDate),
+                record.description,
+                accountNameById.get(record.accountId ?? "") ?? "—",
+                formatMoney(record.amount),
+                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                formatMoney(record.interest ?? 0),
+                formatMoney(c.gross),
+                record.periodCount ?? "—",
+                c.installment != null ? formatMoney(c.installment) : "—",
+                record.paidPeriod ?? "—",
+                formatMoney(c.paid),
+                formatMoney(c.remaining),
+                record.paymentStatus ?? "—",
+                c.expected ? formatDate(c.expected) : "-",
+                record.datePaid ? formatDate(record.datePaid) : "-",
+              ];
+            })}
+            footerRows={[
+              [
+                "Total",
+                "",
+                "",
+                formatMoney(visibleExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                "",
+                formatMoney(visibleExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
+                formatMoney(
+                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
+                ),
+                "",
+                "",
+                "",
+                formatMoney(
+                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).paid, 0),
+                ),
+                formatMoney(
+                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
+                ),
                 "",
                 "",
                 "",
@@ -2116,6 +2539,7 @@ function ExpensePage({
         onEdit={() => setEditing(true)}
         onSave={handleSaveExpense}
         onDelete={handleDeleteExpense}
+        onDuplicate={handleDuplicateExpense}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
@@ -2135,9 +2559,7 @@ function ExpensePage({
           </Field>
           <Field label="Accounts">
             <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
-              <option value="" disabled>
-                Select your account
-              </option>
+              <option value="">— None —</option>
               {activeAccounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
@@ -2145,9 +2567,7 @@ function ExpensePage({
           </Field>
           <Field label="Categories">
             <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
-              <option value="" disabled>
-                Select your category
-              </option>
+              <option value="">— None —</option>
               {expenseCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
@@ -2176,9 +2596,7 @@ function ExpensePage({
                   value={paymentStatus}
                   onChange={(event) => setPaymentStatus(event.target.value as PaymentStatus)}
                 >
-                  <option value="" disabled>
-                    Select your payment status
-                  </option>
+                  <option value="">— None —</option>
                   {paymentStatusLabels.map((status) => (
                     <option key={status} value={status}>{status}</option>
                   ))}
@@ -2198,9 +2616,7 @@ function ExpensePage({
                   value={paymentFrequency}
                   onChange={(event) => setPaymentFrequency(event.target.value as PaymentFrequency)}
                 >
-                  <option value="" disabled>
-                    Select your payment frequency
-                  </option>
+                  <option value="">— None —</option>
                   {paymentFrequencyLabels.map((frequency) => (
                     <option key={frequency} value={frequency}>{frequency}</option>
                   ))}
@@ -2238,9 +2654,7 @@ function ExpensePage({
               <FormSectionDivider title="Pasabuy Transaction" />
               <Field label="Pasabuyer">
                 <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
-                  <option value="" disabled>
-                    Select your pasabuyer
-                  </option>
+                  <option value="">— None —</option>
                   {pasabuyerLabels.map((name) => (
                     <option key={name} value={name}>{name}</option>
                   ))}
@@ -2251,9 +2665,7 @@ function ExpensePage({
                   value={pasabuyStatus}
                   onChange={(event) => setPasabuyStatus(event.target.value as PasabuyStatus)}
                 >
-                  <option value="" disabled>
-                    Select your pasabuy status
-                  </option>
+                  <option value="">— None —</option>
                   {pasabuyStatusLabels.map((status) => (
                     <option key={status} value={status}>{status}</option>
                   ))}
@@ -2271,9 +2683,7 @@ function ExpensePage({
                   value={pasabuyAccountReceiverId}
                   onChange={(event) => setPasabuyAccountReceiverId(event.target.value)}
                 >
-                  <option value="" disabled>
-                    Select receiver account
-                  </option>
+                  <option value="">— None —</option>
                   {activeAccounts.map((account) => (
                     <option key={account.id} value={account.id}>{account.name}</option>
                   ))}
@@ -2478,6 +2888,15 @@ function WorkflowPage({
     await refetch();
   }
 
+  function handleDuplicateWorkflow() {
+    // Keep the loaded field values but detach from the source record so Save
+    // creates a fresh record instead of updating the original.
+    setEditingId(null);
+    setEditing(true);
+    setSaveError(null);
+    setModal({ mode: "new", title: `New ${label} Record (Copy)` });
+  }
+
   async function handleDeleteWorkflow() {
     if (!editingId) return;
     if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
@@ -2545,6 +2964,7 @@ function WorkflowPage({
         onEdit={() => setEditing(true)}
         onSave={handleSaveWorkflow}
         onDelete={handleDeleteWorkflow}
+        onDuplicate={handleDuplicateWorkflow}
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
@@ -2582,9 +3002,7 @@ function WorkflowPage({
           )}
           <Field label={sourceAccountLabel}>
             <select value={receivingAccountId} onChange={(event) => setReceivingAccountId(event.target.value)}>
-              <option value="" disabled>
-                Select your account
-              </option>
+              <option value="">— None —</option>
               {sourceAccountOptions.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
@@ -2593,9 +3011,7 @@ function WorkflowPage({
           {secondaryAccountLabel && (
             <Field label={secondaryAccountLabel}>
               <select value={transactedAccountId} onChange={(event) => setTransactedAccountId(event.target.value)}>
-                <option value="" disabled>
-                  Select your account
-                </option>
+                <option value="">— None —</option>
                 {nonCreditActiveAccounts.map((account) => (
                   <option key={account.id} value={account.id}>{account.name}</option>
                 ))}
@@ -2607,9 +3023,7 @@ function WorkflowPage({
           ) : (
             <Field label="Categories">
               <select value={workflowCategoryIdInput} onChange={(event) => setWorkflowCategoryIdInput(event.target.value)}>
-                <option value="" disabled>
-                  Select your category
-                </option>
+                <option value="">— None —</option>
                 {normalIncomeCategories.map((category) => (
                   <option key={category.id} value={category.id}>{category.source}</option>
                 ))}
@@ -2704,8 +3118,16 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     scopedIncomeRecords,
   );
   // Forecast income only lifts the Monitoring metrics, never the dashboard.
-  const monthlyIncome = getIncomeNetTotal(scopedIncomeRecords) + forecastTotal;
-  const monthlyExpense = getExpenseTotal(scopedExpenseRecords);
+  const monthlyIncome = monthlyGrossIncome + forecastTotal;
+  // Pasabuy expenses are fronted for others ("pinasabay lang"), so they are
+  // excluded from the user's own Monthly Expense.
+  const pasabuyCategoryIds = new Set(
+    expenseCategories.filter((c) => /pasabuy/i.test(c.name)).map((c) => c.id),
+  );
+  const ownExpenseRecords = scopedExpenseRecords.filter(
+    (record) => !pasabuyCategoryIds.has(record.categoryId),
+  );
+  const monthlyExpense = getExpenseTotal(ownExpenseRecords);
   const grossMargin = monthlyIncome - monthlyExpense;
   const monitoring = {
     month: selectedMonth,
@@ -3166,6 +3588,8 @@ const KNOWN_DB_ID_KEYS = [
   { key: "monthlyMonitoring", label: "Monthly Monitoring" },
 ] as const;
 
+type SettingsModalKind = "notion" | "email" | "password" | "delete" | null;
+
 function SettingsPage({
   schemaHealth,
   onSchemaVerify,
@@ -3174,50 +3598,7 @@ function SettingsPage({
   onSchemaVerify: () => void;
 }) {
   const { user, loading, logout } = useAuth();
-  const [notionToken, setNotionToken] = useState("");
-  const [dbIds, setDbIds] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    userNotionConfigApi.get().then((res) => {
-      if (cancelled || !res.success || !res.data.configured) return;
-      startTransition(() => {
-        setNotionToken(res.data.tokenConfigured ? "stored" : "");
-        setDbIds(res.data.dbIds);
-      });
-    });
-    return () => { cancelled = true; };
-  }, [user]);
-
-  function setDbId(key: string, value: string) {
-    setDbIds((prev) => ({ ...prev, [key]: value }));
-  }
-
-  async function handleSaveNotionConfig() {
-    setSaving(true);
-    setSaved(false);
-    const token = notionToken === "stored" ? undefined : notionToken;
-    const res = await userNotionConfigApi.save({
-      token: token || undefined,
-      dbIds,
-    });
-    setSaving(false);
-    if (res.success) {
-      setSaved(true);
-      setNotionToken(token ? "stored" : "");
-    }
-  }
-
-  async function handleRemoveNotionConfig() {
-    setSaving(true);
-    await userNotionConfigApi.remove();
-    setSaving(false);
-    setNotionToken("");
-    setDbIds({});
-    setSaved(false);
-  }
+  const [modal, setModal] = useState<SettingsModalKind>(null);
 
   return (
     <div className="page-stack">
@@ -3236,10 +3617,20 @@ function SettingsPage({
             <div className="form-grid form-grid--single">
               <Field label="Name"><input value={user.name} readOnly /></Field>
               <Field label="Email"><input value={user.email} readOnly /></Field>
-              <button type="button" className="button" onClick={logout}>
-                <LogOut size={16} />
-                Sign Out
-              </button>
+              <div className="settings-actions">
+                <button type="button" className="button" onClick={() => setModal("email")}>
+                  <Mail size={16} />
+                  Change Email
+                </button>
+                <button type="button" className="button" onClick={() => setModal("password")}>
+                  <KeyRound size={16} />
+                  Change Password
+                </button>
+                <button type="button" className="button" onClick={logout}>
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
             </div>
           ) : (
             <div className="auth-preview">
@@ -3268,43 +3659,346 @@ function SettingsPage({
           </div>
         </Panel>
       </section>
+
       {user && (
         <Panel title="Notion Configuration">
-          <div className="form-grid form-grid--single">
-            <Field label="Notion Integration Token">
-              <input
-                type="password"
-                value={notionToken}
-                onChange={(e) => setNotionToken(e.target.value)}
-                placeholder={notionToken === "stored" ? "Token is stored (enter new to replace)" : "secret_..."}
-              />
-            </Field>
-            <FormSectionDivider title="Database IDs" />
-            {KNOWN_DB_ID_KEYS.map(({ key, label }) => (
-              <Field key={key} label={`${label} Database ID`}>
-                <input
-                  value={dbIds[key] ?? ""}
-                  onChange={(e) => setDbId(key, e.target.value)}
-                  placeholder={`${key} database ID`}
-                  style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.8rem" }}
-                />
-              </Field>
-            ))}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button type="button" className="button button--primary" onClick={handleSaveNotionConfig} disabled={saving}>
-                <Save size={16} />
-                {saving ? "Saving..." : "Save Configuration"}
-              </button>
-              <button type="button" className="button" onClick={handleRemoveNotionConfig} disabled={saving}>
-                <Trash2 size={16} />
-                Remove
-              </button>
-              {saved && <span style={{ color: "var(--success, #22c55e)", fontSize: "0.85rem", alignSelf: "center" }}>Saved</span>}
-            </div>
+          <div className="settings-row">
+            <p>Your Notion integration token and database IDs are stored encrypted on the backend.</p>
+            <button type="button" className="button button--primary" onClick={() => setModal("notion")}>
+              <Database size={16} />
+              Manage Configuration
+            </button>
           </div>
         </Panel>
       )}
+
+      {user && (
+        <Panel title="Danger Zone">
+          <div className="settings-row settings-row--danger">
+            <p>Permanently delete your account and all associated data. This cannot be undone.</p>
+            <button type="button" className="button button--danger" onClick={() => setModal("delete")}>
+              <Trash2 size={16} />
+              Delete Account
+            </button>
+          </div>
+        </Panel>
+      )}
+
+      {modal === "notion" && <NotionConfigModal onClose={() => setModal(null)} />}
+      {modal === "email" && <ChangeEmailModal onClose={() => setModal(null)} />}
+      {modal === "password" && <ChangePasswordModal onClose={() => setModal(null)} />}
+      {modal === "delete" && <DeleteAccountModal onClose={() => setModal(null)} />}
     </div>
+  );
+}
+
+function SettingsModal({
+  title,
+  subtitle,
+  onClose,
+  children,
+  footer,
+}: {
+  title: string;
+  subtitle?: string;
+  onClose: () => void;
+  children: ReactNode;
+  footer: ReactNode;
+}) {
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="modal-panel" role="dialog" aria-modal="true" aria-label={title}>
+        <div className="modal-panel__header">
+          <div>
+            <h2>{title}</h2>
+            {subtitle && <p>{subtitle}</p>}
+          </div>
+          <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
+            <X size={17} />
+          </button>
+        </div>
+        <div className="modal-panel__body">{children}</div>
+        <div className="modal-panel__footer">{footer}</div>
+      </section>
+    </div>
+  );
+}
+
+function NotionConfigModal({ onClose }: { onClose: () => void }) {
+  const [notionToken, setNotionToken] = useState("");
+  const [dbIds, setDbIds] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    userNotionConfigApi.get().then((res) => {
+      if (cancelled || !res.success || !res.data.configured) return;
+      startTransition(() => {
+        setNotionToken(res.data.tokenConfigured ? "stored" : "");
+        setDbIds(res.data.dbIds);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function setDbId(key: string, value: string) {
+    setDbIds((prev) => ({ ...prev, [key]: value.trim() }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    setNotice(null);
+    const token = notionToken === "stored" ? undefined : notionToken;
+    const res = await userNotionConfigApi.save({ token: token || undefined, dbIds });
+    setSaving(false);
+    if (res.success) {
+      setNotice("Configuration saved.");
+      setNotionToken(token ? "stored" : notionToken === "stored" ? "stored" : "");
+    } else {
+      setError(res.error.message);
+    }
+  }
+
+  async function handleRemove() {
+    if (!window.confirm("Remove your Notion configuration?")) return;
+    setSaving(true);
+    setError(null);
+    const res = await userNotionConfigApi.remove();
+    setSaving(false);
+    if (res.success) {
+      setNotionToken("");
+      setDbIds({});
+      setNotice("Configuration removed.");
+    } else {
+      setError(res.error.message);
+    }
+  }
+
+  return (
+    <SettingsModal
+      title="Notion Configuration"
+      subtitle="View, edit, or remove your Notion token and database IDs."
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="button" onClick={handleRemove} disabled={saving}>
+            <Trash2 size={16} />
+            Remove
+          </button>
+          <button type="button" className="button button--primary" onClick={handleSave} disabled={saving}>
+            <Save size={16} />
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </>
+      }
+    >
+      <div className="form-grid form-grid--single">
+        {error && <div className="auth-form__error">{error}</div>}
+        {notice && <div className="auth-form__notice">{notice}</div>}
+        <Field label="Notion Integration Token">
+          <input
+            type="password"
+            value={notionToken}
+            onChange={(e) => setNotionToken(e.target.value)}
+            placeholder={notionToken === "stored" ? "Stored — enter new to replace" : "ntn_…"}
+            autoComplete="off"
+          />
+        </Field>
+        <FormSectionDivider title="Database IDs" />
+        {KNOWN_DB_ID_KEYS.map(({ key, label }) => (
+          <Field key={key} label={`${label} Database ID`}>
+            <input
+              value={dbIds[key] ?? ""}
+              onChange={(e) => setDbId(key, e.target.value)}
+              placeholder={`${key} database ID`}
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+        ))}
+      </div>
+    </SettingsModal>
+  );
+}
+
+function ChangeEmailModal({ onClose }: { onClose: () => void }) {
+  const { user, changeEmail } = useAuth();
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function submit() {
+    if (!newEmail.trim() || !currentPassword) {
+      setError("New email and current password are required.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const res = await changeEmail(currentPassword, newEmail.trim());
+    setBusy(false);
+    if (res.ok) setDone(true);
+    else setError(res.error ?? "Failed to change email.");
+  }
+
+  return (
+    <SettingsModal
+      title="Change Email"
+      subtitle={`Current: ${user?.email ?? ""}`}
+      onClose={onClose}
+      footer={
+        done ? (
+          <button type="button" className="button button--primary" onClick={onClose}>Done</button>
+        ) : (
+          <button type="button" className="button button--primary" onClick={submit} disabled={busy}>
+            {busy ? "Saving…" : "Update Email"}
+          </button>
+        )
+      }
+    >
+      <div className="form-grid form-grid--single">
+        {error && <div className="auth-form__error">{error}</div>}
+        {done ? (
+          <div className="auth-form__notice">Email updated to {user?.email}.</div>
+        ) : (
+          <>
+            <Field label="New Email">
+              <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} autoComplete="off" />
+            </Field>
+            <Field label="Current Password">
+              <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" />
+            </Field>
+          </>
+        )}
+      </div>
+    </SettingsModal>
+  );
+}
+
+function ChangePasswordModal({ onClose }: { onClose: () => void }) {
+  const { changePassword } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function submit() {
+    if (!currentPassword || !newPassword) {
+      setError("Current and new password are required.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("New password must be at least 6 characters.");
+      return;
+    }
+    if (newPassword !== confirm) {
+      setError("New password and confirmation do not match.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const res = await changePassword(currentPassword, newPassword);
+    setBusy(false);
+    if (res.ok) setDone(true);
+    else setError(res.error ?? "Failed to change password.");
+  }
+
+  return (
+    <SettingsModal
+      title="Change Password"
+      onClose={onClose}
+      footer={
+        done ? (
+          <button type="button" className="button button--primary" onClick={onClose}>Done</button>
+        ) : (
+          <button type="button" className="button button--primary" onClick={submit} disabled={busy}>
+            {busy ? "Saving…" : "Update Password"}
+          </button>
+        )
+      }
+    >
+      <div className="form-grid form-grid--single">
+        {error && <div className="auth-form__error">{error}</div>}
+        {done ? (
+          <div className="auth-form__notice">Your password has been updated.</div>
+        ) : (
+          <>
+            <Field label="Current Password">
+              <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" />
+            </Field>
+            <Field label="New Password">
+              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" minLength={6} />
+            </Field>
+            <Field label="Confirm New Password">
+              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+            </Field>
+          </>
+        )}
+      </div>
+    </SettingsModal>
+  );
+}
+
+function DeleteAccountModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const { deleteAccount } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!currentPassword) {
+      setError("Enter your password to confirm.");
+      return;
+    }
+    if (!window.confirm("Delete your account permanently? This cannot be undone.")) return;
+    setBusy(true);
+    setError(null);
+    const res = await deleteAccount(currentPassword);
+    setBusy(false);
+    if (res.ok) {
+      router.push("/login");
+    } else {
+      setError(res.error ?? "Failed to delete account.");
+    }
+  }
+
+  return (
+    <SettingsModal
+      title="Delete Account"
+      subtitle="This permanently deletes your account and Notion configuration."
+      onClose={onClose}
+      footer={
+        <button type="button" className="button button--danger" onClick={submit} disabled={busy}>
+          <Trash2 size={16} />
+          {busy ? "Deleting…" : "Delete My Account"}
+        </button>
+      }
+    >
+      <div className="form-grid form-grid--single">
+        {error && <div className="auth-form__error">{error}</div>}
+        <div className="auth-form__error">
+          Warning: this action is irreversible. All your data will be removed.
+        </div>
+        <Field label="Confirm Password">
+          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" />
+        </Field>
+      </div>
+    </SettingsModal>
   );
 }
 
@@ -3591,6 +4285,7 @@ function FormModal({
   onEdit,
   onSave,
   onDelete,
+  onDuplicate,
   onClose,
   children,
 }: {
@@ -3604,6 +4299,8 @@ function FormModal({
   onEdit: () => void;
   onSave: () => void;
   onDelete: () => void;
+  /** Turn the current record into a prefilled new-record draft. */
+  onDuplicate?: () => void;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -3647,6 +4344,12 @@ function FormModal({
             <button type="button" className="button" onClick={onDelete} disabled={saving}>
               <Trash2 size={16} />
               {deleteLabel}
+            </button>
+          )}
+          {modal.mode === "edit" && onDuplicate && (
+            <button type="button" className="button" onClick={onDuplicate} disabled={saving}>
+              <Copy size={16} />
+              Duplicate
             </button>
           )}
           {!editing && modal.mode === "edit" ? (
@@ -3725,6 +4428,7 @@ function DataTable({
   footerRows = [],
   onRowClick,
   unsortableColumns = [],
+  wide = false,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -3732,6 +4436,8 @@ function DataTable({
   onRowClick?: (rowIndex: number) => void;
   /** Column indices that should not be clickable/sortable (e.g. icon columns). */
   unsortableColumns?: number[];
+  /** Size the table to its content and let the wrapper scroll horizontally. */
+  wide?: boolean;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const skip = new Set(unsortableColumns);
@@ -3761,7 +4467,7 @@ function DataTable({
 
   return (
     <div className="table-wrap">
-      <table>
+      <table className={cx(wide && "data-table--wide")}>
         <thead>
           <tr>
             {headers.map((header, columnIndex) => {

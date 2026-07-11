@@ -12,6 +12,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sessionExpired] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("session") === "expired",
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +40,11 @@ export default function LoginPage() {
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>Sign In</h1>
         <p className="auth-form__subtitle">Notion Finance</p>
+        {sessionExpired && !error && (
+          <div className="auth-form__notice">
+            Your session expired. Please sign in again.
+          </div>
+        )}
         {error && <div className="auth-form__error">{error}</div>}
         <label>
           Email

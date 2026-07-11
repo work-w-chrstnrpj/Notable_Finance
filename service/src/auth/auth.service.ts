@@ -40,4 +40,31 @@ export class AuthService {
     }
     return { id: user.id, email: user.email, name: user.name };
   }
+
+  async changeEmail(userId: string, currentPassword: string, newEmail: string) {
+    const user = await this.usersService.changeEmail(
+      userId,
+      currentPassword,
+      newEmail,
+    );
+    const payload: JwtPayload = { id: user.id, email: user.email, roles: ['user'] };
+    return {
+      user: { id: user.id, email: user.email, name: user.name },
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    await this.usersService.changePassword(userId, currentPassword, newPassword);
+    return { changed: true };
+  }
+
+  async deleteAccount(userId: string, currentPassword: string) {
+    await this.usersService.deleteAccount(userId, currentPassword);
+    return { deleted: true };
+  }
 }

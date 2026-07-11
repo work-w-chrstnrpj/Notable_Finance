@@ -226,15 +226,29 @@ export function pageToAccount(page: Record<string, unknown>): AccountDto {
   };
 }
 
+/**
+ * Income categories backed by a dedicated app workflow are always auxiliary —
+ * they must never appear as normal income even if the Notion "Auxiliary"
+ * checkbox is left unchecked (e.g. Savings → Alkansya).
+ */
+const WORKFLOW_INCOME_CATEGORIES = new Set([
+  'savings',
+  'transfer',
+  'credit card payment',
+]);
+
 export function pageToIncomeCategory(
   page: Record<string, unknown>,
 ): IncomeCategoryDto {
   const props = page.properties as Record<string, unknown> ?? {};
   const names = NOTION_PROPERTY_NAMES.incomeCategories;
+  const source = extractTitle(props, names.source);
   return {
     id: page.id as string,
-    source: extractTitle(props, names.source),
-    auxiliary: extractCheckbox(props, names.auxiliary),
+    source,
+    auxiliary:
+      extractCheckbox(props, names.auxiliary) ||
+      WORKFLOW_INCOME_CATEGORIES.has(source.trim().toLowerCase()),
     monthlyEarnings: extractNumberOrFormula(props, names.monthlyEarnings) ?? 0,
     monthlyExpenditure:
       extractNumberOrFormula(props, names.monthlyExpenditure) ?? 0,

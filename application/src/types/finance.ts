@@ -27,11 +27,12 @@ export type ExpenseViewMode =
   | "Daily"
   | "Weekly"
   | "Monthly"
+  | "Annually"
   | "Unpaid Pasabuy"
   | "To pay"
   | "To buy"
   | "Installments"
-  | "CC Transactions";
+  | "Unpaid CC";
 
 export type PaymentStatus = "Paid" | "Unpaid" | "Installment" | "Cancelled";
 

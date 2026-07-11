@@ -48,7 +48,7 @@ export function incomeModeToUnit(mode: IncomeViewMode): ViewUnit {
 
 /**
  * Expense calendar modes map to a date unit. The workflow/status modes
- * (Unpaid Pasabuy, To pay, To buy, Installments, CC Transactions) are not
+ * (Unpaid Pasabuy, To pay, To buy, Installments, Unpaid CC) are not
  * date-scoped and return null.
  */
 export function expenseModeToUnit(mode: ExpenseViewMode): ViewUnit | null {
@@ -59,6 +59,8 @@ export function expenseModeToUnit(mode: ExpenseViewMode): ViewUnit | null {
       return "week";
     case "Monthly":
       return "month";
+    case "Annually":
+      return "year";
     default:
       return null;
   }

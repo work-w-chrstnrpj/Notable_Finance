@@ -98,6 +98,101 @@ export class UsersService {
     };
   }
 
+  /** Verify the given plaintext password against the stored hash for a user. */
+  private async verifyPassword(userId: string, password: string): Promise<UserRow> {
+    const rows = await this.db.query<UserRow>(
+      `SELECT id, email, name, password_hash, created_at FROM users WHERE id = $1`,
+      [userId],
+    );
+    if (rows.length === 0) {
+      throw new ApiException(
+        HttpStatus.NOT_FOUND,
+        'USER_NOT_FOUND',
+        'Account not found.',
+      );
+    }
+    const row = rows[0];
+    const [storedHash, salt] = row.password_hash.split(':');
+    const hash = scryptSync(password, salt, 64).toString('hex');
+    const expected = Buffer.from(hash, 'hex');
+    const actual = Buffer.from(storedHash, 'hex');
+    if (
+      expected.length !== actual.length ||
+      !timingSafeEqual(expected, actual)
+    ) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        'INVALID_CREDENTIALS',
+        'Current password is incorrect.',
+      );
+    }
+    return row;
+  }
+
+  private hashPassword(password: string): string {
+    const salt = randomUUID().replace(/-/g, '').slice(0, 16);
+    const hash = scryptSync(password, salt, 64).toString('hex');
+    return `${hash}:${salt}`;
+  }
+
+  async changeEmail(
+    userId: string,
+    currentPassword: string,
+    newEmail: string,
+  ): Promise<User> {
+    await this.verifyPassword(userId, currentPassword);
+    const normalizedEmail = newEmail.toLowerCase().trim();
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'VALIDATION_ERROR',
+        'A valid email address is required.',
+      );
+    }
+    const existing = await this.findByEmail(normalizedEmail);
+    if (existing && existing.id !== userId) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'EMAIL_EXISTS',
+        'An account with this email already exists.',
+      );
+    }
+    await this.db.query(
+      `UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2`,
+      [normalizedEmail, userId],
+    );
+    this.logger.log(`User ${userId} changed email to ${normalizedEmail}`);
+    const updated = await this.findById(userId);
+    return updated!;
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await this.verifyPassword(userId, currentPassword);
+    if (!newPassword || newPassword.length < 6) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'VALIDATION_ERROR',
+        'New password must be at least 6 characters.',
+      );
+    }
+    await this.db.query(
+      `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
+      [this.hashPassword(newPassword), userId],
+    );
+    this.logger.log(`User ${userId} changed password`);
+  }
+
+  async deleteAccount(userId: string, currentPassword: string): Promise<void> {
+    await this.verifyPassword(userId, currentPassword);
+    // user_notion_configs is removed via ON DELETE CASCADE.
+    await this.db.query(`DELETE FROM users WHERE id = $1`, [userId]);
+    this.logger.log(`User ${userId} deleted their account`);
+  }
+
   async findById(id: string): Promise<User | null> {
     const rows = await this.db.query<UserRow>(
       `SELECT id, email, name, password_hash, created_at FROM users WHERE id = $1`,

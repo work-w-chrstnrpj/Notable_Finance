@@ -4,14 +4,17 @@ import { MutationAction, ResourceName } from '../common/finance.types';
 import { MappingService } from '../mapping/mapping.service';
 
 const createRequiredFields: Partial<Record<ResourceName, string[]>> = {
-  incomes: ['name', 'date', 'grossIncome', 'accountId', 'categoryId'],
+  // Account and category are intentionally optional on income/expense logs so
+  // users can save partial items (e.g. "to buy" or receivable-style records)
+  // and fill in the account/category later.
+  incomes: ['name', 'date', 'grossIncome'],
   transactions: ['name', 'date', 'grossIncome', 'categoryId'],
   transfers: ['name', 'date', 'grossIncome', 'accountId', 'transactedAccountId'],
   creditCardPayments: ['name', 'date', 'grossIncome', 'accountId', 'transactedAccountId'],
   alkansya: ['name', 'date', 'grossIncome', 'accountId'],
   receivables: ['name', 'date', 'grossIncome', 'categoryId'],
-  expenses: ['description', 'purchaseDate', 'amount', 'accountId', 'categoryId'],
-  expenseScheduler: ['description', 'purchaseDate', 'amount', 'accountId', 'categoryId'],
+  expenses: ['description', 'purchaseDate', 'amount'],
+  expenseScheduler: ['description', 'purchaseDate', 'amount'],
 };
 
 @Injectable()

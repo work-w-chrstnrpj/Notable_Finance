@@ -68,6 +68,22 @@ export async function requestBackend<TData>(
     headers,
   });
 
+  // A 401 means the session is invalid/expired. Clear it and bounce to login
+  // so a stale token never silently fails a write while GET requests keep
+  // working via the backend's shared fallback.
+  if (response.status === 401 && typeof window !== "undefined") {
+    authToken = null;
+    try {
+      localStorage.removeItem("nf_token");
+    } catch {
+      // ignore
+    }
+    const path = window.location.pathname;
+    if (path !== "/login" && path !== "/register") {
+      window.location.href = "/login?session=expired";
+    }
+  }
+
   const payload = (await response.json()) as ApiResult<TData>;
 
   if (!response.ok && payload.success) {
@@ -367,6 +383,24 @@ export const authApi = {
   },
   me() {
     return requestBackend<AuthUser>("/auth/me");
+  },
+  changeEmail(body: { currentPassword: string; newEmail: string }) {
+    return requestBackend<{ accessToken: string; user: AuthUser }>("/auth/email", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+  changePassword(body: { currentPassword: string; newPassword: string }) {
+    return requestBackend<{ changed: boolean }>("/auth/password", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+  deleteAccount(body: { currentPassword: string }) {
+    return requestBackend<{ deleted: boolean }>("/auth/account", {
+      method: "DELETE",
+      body: JSON.stringify(body),
+    });
   },
 };
 
