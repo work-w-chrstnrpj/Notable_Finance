@@ -1828,6 +1828,7 @@ input {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  padding: 16px;
 }
 .account-qr img {
   max-width: min(480px, 100%);
