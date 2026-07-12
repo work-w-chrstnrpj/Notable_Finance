@@ -26,7 +26,6 @@ import {
 import {
   AlertTriangle,
   ArrowDownLeft,
-  ArrowDownRight,
   ArrowLeft,
   ArrowUpRight,
   ArrowUpDown,
@@ -1059,6 +1058,12 @@ function DashboardPage({
   const { state: alkansyaState } = useWorkflowRecords("alkansya", {
     month: selectedMonth,
   });
+  const { state: transferState } = useWorkflowRecords("transfer", {
+    month: selectedMonth,
+  });
+  const { state: ccPaymentState } = useWorkflowRecords("credit-card-payment", {
+    month: selectedMonth,
+  });
   const monthLabel = getMonthLabel(selectedMonth);
 
   const monthIncomes: IncomeRecord[] = (
@@ -1136,7 +1141,7 @@ function DashboardPage({
     percent: monthlyExpenses > 0 ? (row.value / monthlyExpenses) * 100 : 0,
   }));
 
-  // #2 — Most Expense Purchase of the Month (largest individual expenses).
+  // #2 — Most Expensive Purchase of the Month (largest individual expenses).
   const topExpensePurchases = [...monthExpenses]
     .map((r) => ({
       id: r.id,
@@ -1148,15 +1153,71 @@ function DashboardPage({
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
 
-  const recentTransactions = [...monthIncomes]
-    .sort((a, b) => (b.date > a.date ? 1 : -1))
-    .slice(0, 5)
+  const sectionPriority: Record<string, number> = {
+    income: 0,
+    "credit-card-payment": 1,
+    expense: 2,
+    transfer: 3,
+  };
+
+  const sectionMeta: Record<string, string> = {
+    income: "Income",
+    "credit-card-payment": "CC Payment",
+    expense: "Expense",
+    transfer: "Transfer",
+  };
+
+  const incomeItems = [...monthIncomes].map((r) => ({
+    id: r.id,
+    date: r.date,
+    title: r.name.replace(/\s*\[Deleted:.*\]/, ""),
+    section: "income",
+    value: r.grossIncome - r.capitalExpenditure,
+  }));
+
+  const ccPaymentItems = (ccPaymentState.status === "success" ? ccPaymentState.data : [])
+    .filter((r) => !r.name?.includes("[Deleted:"))
     .map((r) => ({
       id: r.id,
       date: r.date,
       title: r.name.replace(/\s*\[Deleted:.*\]/, ""),
-      meta: "Income",
+      section: "credit-card-payment",
       value: r.grossIncome - r.capitalExpenditure,
+    }));
+
+  const expenseItems = [...monthExpenses].map((r) => ({
+    id: r.id,
+    date: r.purchaseDate,
+    title: r.description.replace(/\s*\[Deleted:.*\]/, ""),
+    section: "expense",
+    value: -(r.amount + (r.interest ?? 0)),
+  }));
+
+  const transferItems = (transferState.status === "success" ? transferState.data : [])
+    .filter((r) => !r.name?.includes("[Deleted:"))
+    .map((r) => ({
+      id: r.id,
+      date: r.date,
+      title: r.name.replace(/\s*\[Deleted:.*\]/, ""),
+      section: "transfer",
+      value: r.grossIncome - r.capitalExpenditure,
+    }));
+
+  const recentTransactions = [...incomeItems, ...ccPaymentItems, ...expenseItems, ...transferItems]
+    .sort((a, b) => {
+      if (b.date > a.date) return 1;
+      if (b.date < a.date) return -1;
+      return (sectionPriority[a.section] ?? 99) - (sectionPriority[b.section] ?? 99);
+    })
+    .slice(0, 5)
+    .map((r) => ({
+      id: r.id,
+      date: r.date,
+      title: r.title,
+      meta: sectionMeta[r.section] ?? r.section,
+      section: r.section,
+      value: r.value,
+      tone: r.value >= 0 ? ("green" as const) : ("rose" as const),
     }));
 
   const display = {
@@ -1191,6 +1252,7 @@ function DashboardPage({
         date: item.date,
         title: item.title,
         meta: item.meta,
+        section: item.section,
         value: item.value,
         tone: toneForValue(item.value),
       }))
@@ -1292,7 +1354,7 @@ function TopExpensePurchasesCard({
   return (
     <section className="dashboard-card">
       <div className="dashboard-card__header dashboard-card__header--stacked">
-        <h2>Most Expense Purchase of the Month</h2>
+        <h2>Most Expensive Purchase of the Month</h2>
         <p>{monthLabel}</p>
       </div>
       {purchases.length === 0 ? (
@@ -1372,19 +1434,26 @@ function RecentTransactionsList({
     id: string;
     title: string;
     meta: string;
+    section: string;
     value: number;
     tone: "green" | "rose";
   }>;
 }) {
+  const iconMap: Record<string, LucideIcon> = {
+    income: ArrowUpRight,
+    expense: ArrowDownLeft,
+    transfer: ArrowUpDown,
+    "credit-card-payment": CreditCard,
+  };
+
   return (
     <section className="dashboard-card recent-list-card">
       <div className="recent-list-card__header">
         <h2>Recent Transactions</h2>
-        <Link href={"/income" as Route}>View all</Link>
       </div>
       <div className="recent-list">
         {records.map((record) => {
-          const Icon = record.tone === "green" ? ArrowDownRight : ArrowUpRight;
+          const Icon = iconMap[record.section] ?? ArrowUpRight;
           const prefix = record.value > 0 ? "+" : "-";
 
           return (
@@ -1393,10 +1462,10 @@ function RecentTransactionsList({
                 <Icon size={16} />
               </span>
               <span className="recent-list__copy">
-                <strong>{record.title}</strong>
+                <span>{record.title}</span>
                 <span>{record.meta}</span>
               </span>
-              <span className={cx("recent-list__amount", `recent-list__amount--${record.tone}`)}>
+              <span className={cx("recent-list__amount", `recent-list__amount--${record.section}`)}>
                 {prefix}
                 {formatMoney(Math.abs(record.value), { compact: true })}
               </span>

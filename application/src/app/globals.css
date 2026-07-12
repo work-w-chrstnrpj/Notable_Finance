@@ -1508,12 +1508,20 @@ a {
   white-space: nowrap;
 }
 
-.recent-list__amount--green {
+.recent-list__amount--income {
   color: #00a854;
 }
 
-.recent-list__amount--rose {
-  color: var(--ink);
+.recent-list__amount--expense {
+  color: #e11d48;
+}
+
+.recent-list__amount--credit-card-payment {
+  color: #d97706;
+}
+
+.recent-list__amount--transfer {
+  color: #ca8a04;
 }
 
 .button,
