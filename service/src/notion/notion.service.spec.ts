@@ -4,6 +4,11 @@ import { MappingService } from '../mapping/mapping.service';
 import { ValidationService } from '../validation/validation.service';
 import { NotionClientFactory } from './notion-client-factory.service';
 import { NotionService } from './notion.service';
+import { LiveCacheManager } from './live-cache-manager';
+import { NotionReportingService } from './notion-reporting.service';
+import { NotionQueryService } from './notion-query.service';
+import { NotionMutationService } from './notion-mutation.service';
+import { NotionSyncService } from './notion-sync.service';
 
 const mockConfig = {
   missingRequiredNotionConfig: ['notion.token'],
@@ -16,7 +21,12 @@ const mockClientFactory = {
 
 function makeService() {
   const mapping = new MappingService();
-  return new NotionService(mockConfig, mapping, new ValidationService(mapping), mockClientFactory);
+  const cache = new LiveCacheManager(mockConfig, mockClientFactory);
+  const queryService = new NotionQueryService(cache, mapping);
+  const reportingService = new NotionReportingService(cache, queryService);
+  const mutationService = new NotionMutationService(cache);
+  const syncService = new NotionSyncService(mockConfig, mapping, mockClientFactory, cache, mutationService, queryService);
+  return new NotionService(mockConfig, mapping, new ValidationService(mapping), mockClientFactory, cache, reportingService, queryService, mutationService, syncService);
 }
 
 describe('NotionService', () => {

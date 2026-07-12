@@ -156,3 +156,34 @@ export interface SyncCommitRequest {
   returnFreshSnapshot?: boolean;
   snapshotMonth?: string;
 }
+
+/** Monthly Monitoring DTO — matches NotionService.MonthlyMonitoringDto */
+export interface MonthlyMonitoringDto {
+  id: string;
+  month: string;
+  monthlyIncome: number;
+  monthlyGrossIncome: number;
+  monthlyExpense: number;
+  grossMargin: number;
+  forNeeds: number;
+  forWants: number;
+  forSavings: number;
+  incomeCategories: Array<{ id: string; source: string; total: number }>;
+  expenseCategories: Array<{
+    id: string;
+    name: string;
+    budget: number;
+    spending: number;
+    remaining: number;
+    totalOverview: number;
+  }>;
+}
+
+/** Union of all finance records — used by NotionService facade */
+export type FinanceRecord =
+  | AccountDto
+  | IncomeCategoryDto
+  | IncomeRecordDto
+  | ExpenseCategoryDto
+  | ExpenseRecordDto
+  | MonthlyMonitoringDto;

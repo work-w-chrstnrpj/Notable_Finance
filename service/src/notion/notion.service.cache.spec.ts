@@ -4,6 +4,11 @@ import { MappingService } from '../mapping/mapping.service';
 import { ValidationService } from '../validation/validation.service';
 import { NotionClientFactory } from './notion-client-factory.service';
 import { NotionService } from './notion.service';
+import { LiveCacheManager } from './live-cache-manager';
+import { NotionReportingService } from './notion-reporting.service';
+import { NotionQueryService } from './notion-query.service';
+import { NotionMutationService } from './notion-mutation.service';
+import { NotionSyncService } from './notion-sync.service';
 
 /**
  * P2 cache behaviour: verifies TTL-driven freshness and single-collection
@@ -44,11 +49,21 @@ function makeService(ttlMs: number) {
     isGloballyConfigured: true,
   } as unknown as NotionClientFactory;
   const mapping = new MappingService();
+  const cache = new LiveCacheManager(mockConfig, mockFactory);
+  const queryService = new NotionQueryService(cache, mapping);
+  const reportingService = new NotionReportingService(cache, queryService);
+  const mutationService = new NotionMutationService(cache);
+  const syncService = new NotionSyncService(mockConfig, mapping, mockFactory, cache, mutationService, queryService);
   const service = new NotionService(
     mockConfig,
     mapping,
     new ValidationService(mapping),
     mockFactory,
+    cache,
+    reportingService,
+    queryService,
+    mutationService,
+    syncService,
   );
   return { service, client };
 }
