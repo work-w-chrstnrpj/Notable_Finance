@@ -1768,8 +1768,8 @@ tfoot td {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-muted);
-  padding: 6px 10px;
-  min-height: 40px;
+  padding: 4px 10px;
+  min-height: 32px;
   font-size: 13px;
   font-weight: 750;
   color: var(--ink-muted);
@@ -2565,7 +2565,10 @@ tfoot td {
   position: fixed;
   inset: 0;
   z-index: 55;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease, background 0.25s ease;
 }
 .fab__toggle {
   display: inline-flex;
@@ -2722,7 +2725,7 @@ tfoot td {
   background: var(--surface-muted);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -2825,6 +2828,8 @@ tfoot td {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: center;
+  text-align: center;
   padding: 18px 22px;
   background: #000000;
   color: #fff;
@@ -2852,7 +2857,7 @@ tfoot td {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 4px;
 }
 
@@ -2882,4 +2887,10 @@ tfoot td {
 }
 @page {
   margin: 12mm;
+}
+
+@media (max-width: 640px) {
+  .modal-panel--export {
+    width: 100%;
+  }
 }

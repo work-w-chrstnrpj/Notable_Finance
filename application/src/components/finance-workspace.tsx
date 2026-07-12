@@ -3451,7 +3451,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       </section>
 
       <Panel
-        title="Income Categories"
+        title="Income Portfolio"
         action={
           <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
             <SegmentedControl
@@ -3761,7 +3761,7 @@ function SyncPage({
 
 const KNOWN_DB_ID_KEYS = [
   { key: "accounts", label: "Accounts" },
-  { key: "incomeCategories", label: "Income Categories" },
+  { key: "incomeCategories", label: "Income Portfolio" },
   { key: "incomes", label: "Incomes" },
   { key: "expenseCategories", label: "Expense Categories" },
   { key: "expenses", label: "Expenses" },
