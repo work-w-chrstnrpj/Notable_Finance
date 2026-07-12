@@ -26,5 +26,11 @@ export default () => ({
   database: {
     url: process.env.DATABASE_URL,
   },
+  cache: {
+    // How long (ms) a cached Notion collection is served from memory before the
+    // next read refetches just that collection. Balances freshness against the
+    // number of Notion API round-trips. Default 45s.
+    liveTtlMs: Number(process.env.LIVE_CACHE_TTL_MS ?? 45000),
+  },
   encryptionKey: process.env.ENCRYPTION_KEY,
 });

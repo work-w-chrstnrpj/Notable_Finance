@@ -91,11 +91,13 @@ export class NotionService {
   private liveCaches = new Map<string, LiveCache | null>();
 
   /**
-   * Per-user set of collections that have been mutated since their last load.
-   * A stale collection is refilled on its next read (single-database query)
-   * instead of forcing a full 5-database reload. See refreshCacheFor().
+   * Per-user, per-collection freshness deadline (epoch ms). A collection is
+   * fresh while `Date.now() < freshUntil` and is served from memory; once it
+   * expires — or is invalidated by a mutation (deadline deleted) — the next
+   * read refills only that collection with a single Notion query. This unifies
+   * TTL expiry and targeted invalidation into one model. See refreshCacheFor().
    */
-  private staleCollections = new Map<string, Set<CollectionName>>();
+  private collectionFreshUntil = new Map<string, Map<CollectionName, number>>();
 
   constructor(
     private readonly appConfig: AppConfigService,
@@ -108,22 +110,58 @@ export class NotionService {
     return userId ?? '__env__';
   }
 
+  private static readonly ALL_COLLECTIONS: CollectionName[] = [
+    'accounts',
+    'incomeCategories',
+    'expenseCategories',
+    'incomes',
+    'expenses',
+  ];
+
+  /** A collection is fresh while its per-user deadline is still in the future. */
+  private isCollectionFresh(key: string, collection: CollectionName): boolean {
+    const until = this.collectionFreshUntil.get(key)?.get(collection);
+    return until !== undefined && Date.now() < until;
+  }
+
+  /** Extend a collection's freshness by one TTL window from now. */
+  private markCollectionFresh(key: string, collection: CollectionName): void {
+    let deadlines = this.collectionFreshUntil.get(key);
+    if (!deadlines) {
+      deadlines = new Map<CollectionName, number>();
+      this.collectionFreshUntil.set(key, deadlines);
+    }
+    deadlines.set(collection, Date.now() + this.appConfig.liveCacheTtlMs);
+  }
+
+  private markAllCollectionsFresh(key: string): void {
+    for (const collection of NotionService.ALL_COLLECTIONS) {
+      this.markCollectionFresh(key, collection);
+    }
+  }
+
+  /** Force a collection stale so its next read refetches it. */
+  private invalidateCollection(key: string, collection: CollectionName): void {
+    this.collectionFreshUntil.get(key)?.delete(collection);
+  }
+
   private async loadLive(userId: string | undefined, resource: ResourceName): Promise<NotionApiClient | null> {
     const key = this.getLiveCacheKey(userId);
 
-    // Warm cache: normally nothing to do, but if this resource's collection was
-    // invalidated by a prior mutation, refill just that one collection with a
-    // single-database query instead of reloading all five.
+    // Warm cache: refill only the requested resource's collection, and only if
+    // it is stale (TTL expired or invalidated by a mutation). Fresh collections
+    // — including the ones this read doesn't touch — stay served from memory.
     if (this.liveCaches.has(key) && resource !== 'monthlyMonitoring') {
       const collection = this.collectionForResource(resource);
-      const stale = this.staleCollections.get(key);
-      if (collection && stale?.has(collection) && this.liveCaches.get(key)) {
+      if (
+        collection &&
+        this.liveCaches.get(key) &&
+        !this.isCollectionFresh(key, collection)
+      ) {
         const client = await this.clientFactory.getClient(userId);
         if (!client) return null;
         try {
           await this.loadLiveCollection(client, key, collection);
-          stale.delete(collection);
-          if (stale.size === 0) this.staleCollections.delete(key);
           return client;
         } catch (error) {
           this.logger.warn(
@@ -139,30 +177,37 @@ export class NotionService {
     if (!client) return null;
 
     try {
-      const [accounts, incomeCategories, incomes, expenseCategories, expenses] =
-        await Promise.all([
-          client.queryDatabase('accounts'),
-          client.queryDatabase('incomeCategories'),
-          client.queryDatabase('incomes'),
-          client.queryDatabase('expenseCategories'),
-          client.queryDatabase('expenses'),
-        ]);
-
-      this.liveCaches.set(key, {
-        accounts: accounts.map(pageToAccount),
-        incomeCategories: incomeCategories.map(pageToIncomeCategory),
-        incomes: incomes.map(pageToIncomeRecord),
-        expenseCategories: expenseCategories.map(pageToExpenseCategory),
-        expenses: expenses.map(pageToExpenseRecord),
-      });
-      this.staleCollections.delete(key);
-
+      await this.loadAllCollections(client, key);
       return client;
     } catch (error) {
       this.logger.warn(`Notion live load failed, falling back to static data: ${error instanceof Error ? error.message : error}`);
       this.liveCaches.set(key, null);
       return null;
     }
+  }
+
+  /**
+   * Cold-start / explicit-sync loader: fetches all five collections in parallel
+   * and marks them fresh. This is the only path that queries all five databases.
+   */
+  private async loadAllCollections(client: NotionApiClient, key: string): Promise<void> {
+    const [accounts, incomeCategories, incomes, expenseCategories, expenses] =
+      await Promise.all([
+        client.queryDatabase('accounts'),
+        client.queryDatabase('incomeCategories'),
+        client.queryDatabase('incomes'),
+        client.queryDatabase('expenseCategories'),
+        client.queryDatabase('expenses'),
+      ]);
+
+    this.liveCaches.set(key, {
+      accounts: accounts.map(pageToAccount),
+      incomeCategories: incomeCategories.map(pageToIncomeCategory),
+      incomes: incomes.map(pageToIncomeRecord),
+      expenseCategories: expenseCategories.map(pageToExpenseCategory),
+      expenses: expenses.map(pageToExpenseRecord),
+    });
+    this.markAllCollectionsFresh(key);
   }
 
   /** Refill a single cached collection with one Notion database query. */
@@ -190,6 +235,7 @@ export class NotionService {
         cache.expenses = (await client.queryDatabase('expenses')).map(pageToExpenseRecord);
         break;
     }
+    this.markCollectionFresh(key, collection);
   }
 
   /** Map a resource to the cached collection that backs it, if any. */
@@ -234,7 +280,7 @@ export class NotionService {
   private refreshCache(userId?: string): void {
     const key = this.getLiveCacheKey(userId);
     this.liveCaches.delete(key);
-    this.staleCollections.delete(key);
+    this.collectionFreshUntil.delete(key);
   }
 
   /**
@@ -245,8 +291,8 @@ export class NotionService {
    * Note: derived figures shown to the user (dashboard, monthly monitoring,
    * account balances) are computed client-side from income/expense records,
    * so refreshing only the mutated income/expense collection keeps them
-   * consistent. If Notion-side rollups are ever surfaced directly, revisit
-   * this in P2 (per-collection TTL).
+   * consistent. If Notion-side rollups are ever surfaced directly, the TTL
+   * (liveCacheTtlMs) bounds how long any collection can be stale.
    */
   private refreshCacheFor(userId: string | undefined, resource: ResourceName): void {
     const key = this.getLiveCacheKey(userId);
@@ -258,9 +304,7 @@ export class NotionService {
       this.refreshCache(userId);
       return;
     }
-    const stale = this.staleCollections.get(key) ?? new Set<CollectionName>();
-    stale.add(collection);
-    this.staleCollections.set(key, stale);
+    this.invalidateCollection(key, collection);
   }
 
   get isGloballyConfigured(): boolean {
