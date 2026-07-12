@@ -4,13 +4,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { useMemo, useState, useEffect, startTransition, isValidElement } from "react";
+import { useMemo, useRef, useState, useEffect, startTransition, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { userNotionConfigApi } from "@/lib/api-client";
+import { userNotionConfigApi, preferencesApi } from "@/lib/api-client";
+import {
+  FabExportProvider,
+  useFabExport,
+  useFabRegister,
+  type ReceiptContext,
+  type ReceiptRow,
+} from "@/lib/fab-export-context";
+import {
+  SHOT_HIDE_CLASS,
+  downloadNodeAsPng,
+  nodeToPngDataUrl,
+  printNode,
+} from "@/lib/export-node";
 import {
   AlertTriangle,
   ArrowDownRight,
+  ArrowLeft,
   ArrowUpRight,
   Banknote,
   Building2,
@@ -24,6 +38,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   Copy,
+  Download,
   TrendingUp,
   CreditCard,
   Database,
@@ -39,6 +54,11 @@ import {
   Pencil,
   PiggyBank,
   Plus,
+  Printer,
+  QrCode,
+  Camera,
+  ImageDown,
+  FileDown,
   Receipt,
   RefreshCw,
   Save,
@@ -116,7 +136,7 @@ import {
   paymentFrequencyLabels,
   paymentStatusLabels,
 } from "@/lib/finance-rules";
-import { formatDate, formatMoney, formatPercent } from "@/lib/format";
+import { formatDate, formatMoney, formatPercent, toYYMMDD } from "@/lib/format";
 import type {
   Account,
   AccountType,
@@ -178,6 +198,48 @@ type ModalState = {
 
 type AccountScope = "all" | "standard" | "credit";
 type ComputedValueTone = "green" | "rose" | "amber" | "ink";
+
+/**
+ * Update the [YYMMDDx] tag in a description string based on a new date.
+ * - If the description has no tag, prepend [YYMMDDx] with default code 'x'.
+ * - If the description already has a [..] tag, replace the date portion
+ *   while preserving the existing transaction code letter.
+ * Preserves any text after the tag.
+ */
+function applyNotionTag(description: string, yyymmdd: string | null): string {
+  if (!yyymmdd) return description;
+  const tagRegex = /^\[(\d{6})([a-zA-Z])\]\s*/;
+  const match = description.match(tagRegex);
+  if (match) {
+    // Preserve existing transaction code letter
+    const code = match[2];
+    const rest = description.slice(match[0].length);
+    return `[${yyymmdd}${code}] ${rest}`;
+  }
+  // No existing tag — prepend with default code 'x'
+  return `[${yyymmdd}x] ${description}`;
+}
+
+/**
+ * Update the [YYMMDD] tag in an income name string based on a new date.
+ * Income uses [YYMMDD] format (no transaction code letter).
+ */
+function applyIncomeTag(name: string, yyymmdd: string | null): string {
+  if (!yyymmdd) return name;
+  const tagRegex = /^\[(\d{6})\]\s*/;
+  const match = name.match(tagRegex);
+  if (match) {
+    const rest = name.slice(match[0].length);
+    return `[${yyymmdd}] ${rest}`;
+  }
+  // No existing tag — prepend
+  return `[${yyymmdd}] ${name}`;
+}
+
+/** Strip Notion's [YYMMDD] or [YYMMDDx] prefix from names/descriptions for display. */
+function stripNotionTag(text: string): string {
+  return text.replace(/^\[.*?\]\s*/, '');
+}
 
 function getMonthLabel(value: string) {
   const [year, month] = value.split("-");
@@ -355,6 +417,7 @@ function getExpenseCategorySummaries(records: ExpenseRecord[], categories: Expen
 }
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
+  const { user, loading: authLoading } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(() => todayIso());
   const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
@@ -365,6 +428,33 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
   const [pendingOperations, setPendingOperations] = useState(0);
   const [lastSync, setLastSync] = useState("—");
+  // FAB visibility preference (per-user, synced via the backend). Defaults on.
+  const [showFab, setShowFab] = useState(true);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    let cancelled = false;
+    preferencesApi
+      .get()
+      .then((res) => {
+        if (!cancelled && res.success) setShowFab(res.data.showFab);
+      })
+      .catch(() => {
+        /* keep default on network/backend error */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user]);
+
+  async function updateShowFab(next: boolean) {
+    setShowFab(next);
+    try {
+      await preferencesApi.save({ showFab: next });
+    } catch {
+      /* optimistic; ignore persistence errors */
+    }
+  }
 
   const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode);
 
@@ -413,6 +503,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   }
 
   return (
+    <FabExportProvider>
     <div
       className={cx(
         "workspace",
@@ -486,11 +577,23 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
             />
           )}
           {activeSection === "settings" && (
-            <SettingsPage schemaHealth={schemaHealth} onSchemaVerify={verifySchema} />
+            <SettingsPage
+              schemaHealth={schemaHealth}
+              onSchemaVerify={verifySchema}
+              showFab={showFab}
+              onShowFabChange={updateShowFab}
+            />
           )}
         </main>
       </div>
+      {showFab && user && (
+        <WorkspaceFab
+          activeSection={activeSection}
+          selectedDate={selectedDate}
+        />
+      )}
     </div>
+    </FabExportProvider>
   );
 }
 
@@ -656,24 +759,6 @@ function NavGroup({
   );
 }
 
-function useSyncStale(lastSync: string): boolean {
-  const [stale, setStale] = useState(false);
-
-  useEffect(() => {
-    function check() {
-      if (!lastSync) return setStale(false);
-      const parsed = new Date(lastSync.replace(" ", "T"));
-      if (isNaN(parsed.getTime())) return setStale(false);
-      setStale(Date.now() - parsed.getTime() > 600_000);
-    }
-    check();
-    const id = setInterval(check, 30_000);
-    return () => clearInterval(id);
-  }, [lastSync]);
-
-  return stale;
-}
-
 function TopBar({
   lastSync,
   pendingOperations,
@@ -701,7 +786,6 @@ function TopBar({
   onMobileNavToggle: () => void;
 }) {
   const { user } = useAuth();
-  const stale = useSyncStale(lastSync);
   const initials = user?.name
     ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
@@ -741,7 +825,6 @@ function TopBar({
             <RefreshCw size={12} className={syncState === "syncing" ? "spin" : undefined} />
             Sync
           </button>
-          {stale && <span className="sync-btn-tooltip">No sync for 10+ min — click to refresh</span>}
         </div>
         <Link href="/settings" className="topbar__avatar">{initials}</Link>
       </div>
@@ -1388,11 +1471,11 @@ function AccountsPage() {
     if (accountScope === "all") return account.type !== "Auxiliary";
     if (accountScope === "credit") return isCreditLikeAccountType(account.type);
     return !isCreditLikeAccountType(account.type) && account.type !== "Auxiliary";
-  });
+  }).sort((a, b) => a.name.localeCompare(b.name));
   const accountTableHeaders =
     accountScope === "credit"
-      ? ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Billing", "Due"]
-      : ["Account", "Type", "Balance", "Total Income", "Total Expense"];
+      ? ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Total Payment Made", "Total Purchase Expenses", "Billing", "Due"]
+      : ["Account", "Type", "Balance", "Total Cash Inflow", "Total Cash Outflow"];
   const accountTableRows = visibleAccounts.map((account) => {
     const accountCell = (
       <span className="account-cell">
@@ -1408,6 +1491,8 @@ function AccountsPage() {
         formatMoney(account.currentBalance),
         account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
         account.availableLimit !== null ? formatMoney(account.availableLimit, { compact: true }) : "-",
+        account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
+        account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
         account.billingDay?.toString() ?? "-",
         account.dueDay?.toString() ?? "-",
       ];
@@ -1417,33 +1502,21 @@ function AccountsPage() {
       accountCell,
       account.type,
       formatMoney(account.currentBalance),
-      formatMoney(getAccountTotalIncome(account.id), { compact: true }),
-      formatMoney(getAccountTotalExpense(account.id), { compact: true }),
+      account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
+      account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
     ];
   });
-
-  // TODO: populate from API data
-  function getAccountTotalIncome(_accountId: string) {
-    void _accountId;
-    return 0;
-  }
-
-  // TODO: populate from API data
-  function getAccountTotalExpense(_accountId: string) {
-    void _accountId;
-    return 0;
-  }
 
   const accountTotalBalance = visibleAccounts.reduce(
     (sum, account) => sum + account.currentBalance,
     0,
   );
   const accountTotalIncome = visibleAccounts.reduce(
-    (sum, account) => sum + getAccountTotalIncome(account.id),
+    (sum, account) => sum + (account.totalIncomes ?? 0),
     0,
   );
   const accountTotalExpense = visibleAccounts.reduce(
-    (sum, account) => sum + getAccountTotalExpense(account.id),
+    (sum, account) => sum + (account.totalExpenses ?? 0),
     0,
   );
   const accountTableFooterRows =
@@ -1539,6 +1612,18 @@ function AccountsPage() {
               {isCreditLikeAccountType(account.type) && account.availableLimit !== null && (
                 <MoneyLine label="Available Limit" value={account.availableLimit} />
               )}
+              {account.totalIncomes !== null && (
+                <MoneyLine
+                  label={isCreditLikeAccountType(account.type) ? "Total Payment Made" : "Total Cash Inflow"}
+                  value={account.totalIncomes}
+                />
+              )}
+              {account.totalExpenses !== null && (
+                <MoneyLine
+                  label={isCreditLikeAccountType(account.type) ? "Total Purchase Expenses" : "Total Cash Outflow"}
+                  value={account.totalExpenses}
+                />
+              )}
             </button>
           ))}
         </section>
@@ -1616,7 +1701,6 @@ function GroupBySelect({
 }) {
   return (
     <label className="group-by">
-      <span>Group by:</span>
       <select value={value} onChange={(e) => onChange(e.target.value as AnnualGroupBy)}>
         <option value="month">Group by Month</option>
         <option value="account">Group by Account</option>
@@ -1718,6 +1802,22 @@ function IncomePage({
     accountId: accountId || undefined,
     categoryId: categoryId || undefined,
   });
+  useEffect(() => {
+    const handler = () => {
+      void refetch();
+    };
+    window.addEventListener(DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
+  }, [refetch]);
+
+  // Auto-update [YYMMDD] tag when date changes (new or edit mode).
+  useEffect(() => {
+    if (modal?.mode !== "new" && modal?.mode !== "edit") return;
+    const yyymmdd = toYYMMDD(dateInput);
+    if (!yyymmdd) return;
+    setNameInput((prev) => applyIncomeTag(prev, yyymmdd));
+  }, [dateInput, modal?.mode]);
+
   const isLoading = incomesState.status === "loading";
   const allIncomeRecords: IncomeRecord[] =
     incomesState.status === "success" ? incomesState.data : [];
@@ -1881,7 +1981,7 @@ function IncomePage({
             const netIncome = calculateNetIncome(record.grossIncome, record.capitalExpenditure);
 
             return [
-              record.name,
+              stripNotionTag(record.name),
               formatDate(record.date),
               accountNameById.get(record.accountId ?? "") ?? "—",
               incomeCategoryNameById.get(record.categoryId) ?? "—",
@@ -2081,6 +2181,13 @@ function ExpensePage({
     pasabuyer: pasabuyerFilter || undefined,
     expenseViewMode: viewMode,
   });
+  useEffect(() => {
+    const handler = () => {
+      void refetch();
+    };
+    window.addEventListener(DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
+  }, [refetch]);
   const isLoading = expensesState.status === "loading";
   const allExpenseRecords: ExpenseRecord[] =
     expensesState.status === "success" ? expensesState.data : [];
@@ -2134,6 +2241,14 @@ function ExpensePage({
     });
     return { gross, installment, paid, remaining, expected };
   }
+
+  // Auto-update [YYMMDDx] tag when purchase date changes (new or edit mode).
+  useEffect(() => {
+    if (modal?.mode !== "new" && modal?.mode !== "edit") return;
+    const yyymmdd = toYYMMDD(purchaseDateInput);
+    if (!yyymmdd) return;
+    setDescriptionInput((prev) => applyNotionTag(prev, yyymmdd));
+  }, [purchaseDateInput, modal?.mode]);
 
   function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -2236,6 +2351,49 @@ function ExpensePage({
     onViewModeChange(nextViewMode);
   }
 
+  // Publish a printable receipt of the current view for the floating button.
+  // The "Amount" column is remapped per view per the receipt spec.
+  const { setReceipt } = useFabRegister();
+  const receiptContext = useMemo<ReceiptContext>(() => {
+    const amountHeader =
+      viewMode === "Installments" ? "Installment Amount" : "Amount";
+    const receiptValue = (record: ExpenseRecord): number => {
+      if (viewMode === "Installments") {
+        return deriveExpenseComputed(record).installment ?? 0;
+      }
+      if (viewMode === "Unpaid CC") {
+        return deriveExpenseComputed(record).remaining;
+      }
+      if (viewMode === "Unpaid Pasabuy") {
+        return record.pasabuyBalance ?? 0;
+      }
+      return record.amount;
+    };
+    const rows: ReceiptRow[] = visibleExpenseRecords.map((record) => ({
+      date: formatDate(record.purchaseDate),
+      description: stripNotionTag(record.description),
+      amount: formatMoney(receiptValue(record)),
+    }));
+    const total = visibleExpenseRecords.reduce(
+      (sum, record) => sum + receiptValue(record),
+      0,
+    );
+    return {
+      viewTitle: `${viewMode} Expenses`,
+      periodLabel: getMonthLabel(anchorMonth(selectedDate)),
+      amountHeader,
+      rows,
+      total: formatMoney(total),
+    };
+    // deriveExpenseComputed is a stable closure over the same render inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, selectedDate, visibleExpenseRecords]);
+
+  useEffect(() => {
+    setReceipt(receiptContext);
+    return () => setReceipt(null);
+  }, [receiptContext, setReceipt]);
+
   return (
     <div className="page-stack">
       <PageToolbar
@@ -2319,11 +2477,12 @@ function ExpensePage({
           <AnnualBarChart data={annualExpenseGroups} color="#E11D48" />
         ) : viewMode === "Unpaid Pasabuy" ? (
           <DataTable
+            wide
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rows={visibleExpenseRecords.map((record) => [
               formatDate(record.purchaseDate),
               <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
-                {record.description}
+                {stripNotionTag(record.description)}
               </span>,
               <span className="expense-cell--unpaid" key={`${record.id}-bal`}>
                 {formatMoney(record.pasabuyBalance)}
@@ -2374,7 +2533,7 @@ function ExpensePage({
               return [
                 formatDate(record.purchaseDate),
                 <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
-                  {record.description}
+                  {stripNotionTag(record.description)}
                 </span>,
                 accountNameById.get(record.accountId ?? "") ?? "—",
                 <span className="expense-cell--unpaid" key={`${record.id}-amt`}>
@@ -2439,7 +2598,7 @@ function ExpensePage({
               const c = deriveExpenseComputed(record);
               return [
                 formatDate(record.purchaseDate),
-                record.description,
+                stripNotionTag(record.description),
                 accountNameById.get(record.accountId ?? "") ?? "—",
                 formatMoney(record.amount),
                 expenseCategoryNameById.get(record.categoryId) ?? "—",
@@ -2489,12 +2648,13 @@ function ExpensePage({
           />
         ) : (
           <DataTable
+            wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rows={visibleExpenseRecords.map((record) => {
               const isUnpaid = !record.datePaid;
               return [
                 formatDate(record.purchaseDate),
-                record.description,
+                stripNotionTag(record.description),
                 formatMoney(record.amount),
                 accountNameById.get(record.accountId ?? "") ?? "—",
                 expenseCategoryNameById.get(record.categoryId) ?? "—",
@@ -2769,6 +2929,14 @@ function WorkflowPage({
     parseNumberInput(workflowCapitalExpenditureInput),
   );
 
+  // Auto-update [YYMMDD] tag when date changes (new or edit mode).
+  useEffect(() => {
+    if (modal?.mode !== "new" && modal?.mode !== "edit") return;
+    const yyymmdd = toYYMMDD(workflowDateInput);
+    if (!yyymmdd) return;
+    setWorkflowNameInput((prev) => applyIncomeTag(prev, yyymmdd));
+  }, [workflowDateInput, modal?.mode]);
+
   // Each workflow is the Incomes data source filtered server-side by its fixed
   // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
   // alkansya→Savings) or, for receivables, by an empty receiving account.
@@ -2803,7 +2971,7 @@ function WorkflowPage({
     if (isTransfer) {
       return [
         formatDate(record.date),
-        record.name,
+        stripNotionTag(record.name),
         accountNameById.get(record.accountId ?? "") ?? "—",
         <MoneyValue key={`${record.id}-amount`} value={record.grossIncome} />,
         accountNameById.get(record.transactedAccountId ?? "") ?? "—",
@@ -2813,14 +2981,14 @@ function WorkflowPage({
     if (isCreditCardPayment) {
       return [
         formatDate(record.date),
-        record.name,
+        stripNotionTag(record.name),
         accountNameById.get(record.accountId ?? "") ?? "—",
         <MoneyValue key={`${record.id}-amount`} value={record.grossIncome} />,
         accountNameById.get(record.transactedAccountId ?? "") ?? "—",
       ];
     }
     return [
-      record.name,
+      stripNotionTag(record.name),
       formatDate(record.date),
       accountNameById.get(record.accountId ?? "") ?? "—",
       fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
@@ -2852,8 +3020,8 @@ function WorkflowPage({
   }
 
   async function handleSaveWorkflow() {
-    if (!workflowNameInput.trim() || !workflowDateInput || !receivingAccountId) {
-      setSaveError("Name, date and account are required.");
+    if (!workflowNameInput.trim() || (!isReceivables && !workflowDateInput) || (!isReceivables && !isTransfer && !isCreditCardPayment && !receivingAccountId)) {
+      setSaveError("Name is required.");
       return;
     }
     const payload: Record<string, unknown> = {
@@ -3047,8 +3215,8 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
   const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
-  const [hideZeroBudget, setHideZeroBudget] = useState(false);
-  const [hideZeroSpending, setHideZeroSpending] = useState(false);
+  type ZeroFilter = "all" | "hide-both" | "hide-spending" | "hide-budget";
+  const [zeroFilter, setZeroFilter] = useState<ZeroFilter>("all");
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
@@ -3153,8 +3321,9 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   );
   const visibleExpenseCategorySummaries = expenseCategorySummaries.filter(
     (category) => {
-      if (hideZeroBudget && category.monthlyBudget === 0) return false;
-      if (hideZeroSpending && category.spending === 0) return false;
+      if (zeroFilter === "hide-both" && category.monthlyBudget === 0 && category.spending === 0) return false;
+      if (zeroFilter === "hide-budget" && category.monthlyBudget === 0) return false;
+      if (zeroFilter === "hide-spending" && category.spending === 0) return false;
       return true;
     },
   );
@@ -3174,14 +3343,25 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     0,
   );
 
+  // Expose this view's DOM to the FAB so it can capture a Monthly Insight Shot.
+  const { setInsight } = useFabRegister();
+  const captureRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    setInsight({
+      monthLabel: getMonthLabel(selectedMonth),
+      getNode: () => captureRef.current,
+    });
+    return () => setInsight(null);
+  }, [selectedMonth, setInsight]);
+
   return (
-    <div className="page-stack">
+    <div className="page-stack" ref={captureRef}>
       <PageToolbar
         title="Monthly Monitoring"
         actions={
           <button
             type="button"
-            className="button button--primary"
+            className={cx("button button--primary", SHOT_HIDE_CLASS)}
             onClick={() => setForecastModalOpen(true)}
           >
             <Plus size={16} />
@@ -3273,7 +3453,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       <Panel
         title="Income Categories"
         action={
-          <div className="panel-header-actions">
+          <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Income category view"
               options={[
@@ -3337,9 +3517,9 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       </Panel>
 
       <Panel
-        title="Expense Categories"
+        title="Monthly Budget"
         action={
-          <div className="panel-header-actions">
+          <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Expense category view"
               options={[
@@ -3351,16 +3531,16 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               value={expenseCategoryView}
               onChange={setExpenseCategoryView}
             />
-            <FilterToggle
-              label="Hide zero budget"
-              checked={hideZeroBudget}
-              onChange={setHideZeroBudget}
-            />
-            <FilterToggle
-              label="Hide zero spending"
-              checked={hideZeroSpending}
-              onChange={setHideZeroSpending}
-            />
+            <FilterSelect
+              placeholder="Show All"
+              placeholderDisabled={false}
+              value={zeroFilter}
+              onChange={(value) => setZeroFilter(value as ZeroFilter)}
+            >
+              <option value="hide-both">Hide Zero Spending &amp; Budget</option>
+              <option value="hide-spending">Hide Zero Spending</option>
+              <option value="hide-budget">Hide Zero Budget</option>
+            </FilterSelect>
           </div>
         }
       >
@@ -3593,15 +3773,41 @@ type SettingsModalKind = "notion" | "email" | "password" | "delete" | null;
 function SettingsPage({
   schemaHealth,
   onSchemaVerify,
+  showFab,
+  onShowFabChange,
 }: {
   schemaHealth: SchemaHealth;
   onSchemaVerify: () => void;
+  showFab: boolean;
+  onShowFabChange: (next: boolean) => void;
 }) {
   const { user, loading, logout } = useAuth();
   const [modal, setModal] = useState<SettingsModalKind>(null);
 
   return (
     <div className="page-stack">
+      <Panel title="Interface">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Quick-action button</p>
+            <p className="settings-toggle__hint">
+              Show a floating button for adding income/expense and printing
+              receipts or monthly insights.
+            </p>
+          </div>
+          <label
+            className={cx("switch", showFab && "switch--on")}
+            aria-label="Toggle quick-action button"
+          >
+            <input
+              type="checkbox"
+              checked={showFab}
+              onChange={(event) => onShowFabChange(event.target.checked)}
+            />
+            <span className="switch__track"><span className="switch__thumb" /></span>
+          </label>
+        </div>
+      </Panel>
       <section className="two-column">
         <Panel
           title="Account"
@@ -4139,9 +4345,7 @@ function AccountDetailModal({
   onClose: () => void;
 }) {
   const isCredit = isCreditLikeAccountType(account.type);
-  // TODO: populate from API data
-  const totalIncome = 0;
-  const totalExpense = 0;
+  const [showQr, setShowQr] = useState(false);
 
   return (
     <div
@@ -4177,13 +4381,42 @@ function AccountDetailModal({
               <p>{account.information}</p>
             </div>
           </div>
-          <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
-            <X size={17} />
-          </button>
+          <div className="account-modal__header-actions">
+            {showQr && account.qrCode && (
+              <a
+                href={account.qrCode}
+                download={`${account.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
+                className="icon-button"
+                aria-label="Download QR code"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download size={17} />
+              </a>
+            )}
+            {account.qrCode && (
+              <button
+                type="button"
+                className="icon-button"
+                aria-label={showQr ? "Show account details" : "Show QR code"}
+                onClick={() => setShowQr((prev) => !prev)}
+              >
+                {showQr ? <ArrowLeft size={17} /> : <QrCode size={17} />}
+              </button>
+            )}
+            <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
+              <X size={17} />
+            </button>
+          </div>
         </div>
-        <div className="modal-panel__body">
-          <div className="account-detail-grid">
-            <div className="account-detail-section">
+        {showQr && account.qrCode ? (
+          <div className="account-qr">
+            <img src={account.qrCode} alt={`${account.name} QR code`} />
+          </div>
+        ) : (
+          <div className="modal-panel__body">
+            <div className="account-detail-grid">
+              <div className="account-detail-section">
               <h3 className="account-detail-section__title">Account Info</h3>
               <div className="account-detail-fields">
                 <div className="account-detail-field">
@@ -4194,12 +4427,7 @@ function AccountDetailModal({
                   <span>Status</span>
                   <strong>{account.inactive ? "Inactive" : "Active"}</strong>
                 </div>
-                {account.information && (
-                  <div className="account-detail-field account-detail-field--span">
-                    <span>Information</span>
-                    <strong>{account.information}</strong>
-                  </div>
-                )}
+
               </div>
             </div>
 
@@ -4215,12 +4443,20 @@ function AccountDetailModal({
                   <MoneyValue value={account.currentBalance} />
                 </div>
                 <div className="account-detail-field">
-                  <span>Total Income</span>
-                  <MoneyValue value={totalIncome} />
+                  <span>{isCredit ? "Total Payment Made" : "Total Cash Inflow"}</span>
+                  {account.totalIncomes !== null ? (
+                    <MoneyValue value={account.totalIncomes} />
+                  ) : (
+                    <span className="money-value">—</span>
+                  )}
                 </div>
                 <div className="account-detail-field">
-                  <span>Total Expense</span>
-                  <MoneyValue value={totalExpense} />
+                  <span>{isCredit ? "Total Purchase Expenses" : "Total Cash Outflow"}</span>
+                  {account.totalExpenses !== null ? (
+                    <MoneyValue value={account.totalExpenses} />
+                  ) : (
+                    <span className="money-value">—</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -4270,6 +4506,7 @@ function AccountDetailModal({
             )}
           </div>
         </div>
+        )}
       </section>
     </div>
   );
@@ -4724,5 +4961,722 @@ function ErrorRow({ code, detail }: { code: string; detail: string }) {
         <span>{detail}</span>
       </div>
     </div>
+  );
+}
+
+// ── Floating action button ────────────────────────────────────────────
+
+/** Broadcast so open Income/Expense lists refetch after a quick add. */
+const DATA_CHANGED_EVENT = "nf:data-changed";
+function emitDataChanged() {
+  window.dispatchEvent(new CustomEvent(DATA_CHANGED_EVENT));
+}
+
+type FabModalKind = "income" | "expense" | "receipt" | "insight" | null;
+
+function WorkspaceFab({
+  activeSection,
+  selectedDate,
+}: {
+  activeSection: FinanceSectionId;
+  selectedDate: string;
+}) {
+  const { receipt, insight } = useFabExport();
+  const [open, setOpen] = useState(false);
+  const [modal, setModal] = useState<FabModalKind>(null);
+
+  const canPrintReceipt = activeSection === "expense" && receipt !== null;
+  const canShotInsight = activeSection === "monthly-monitoring" && insight !== null;
+
+  function choose(kind: Exclude<FabModalKind, null>) {
+    setOpen(false);
+    setModal(kind);
+  }
+
+  return (
+    <>
+      <div className="fab">
+        {open && (
+          <div className="fab__menu" role="menu">
+            <button type="button" className="fab__action" onClick={() => choose("income")}>
+              <span className="fab__action-label">Add New Income</span>
+              <span className="fab__action-icon fab__action-icon--income">
+                <ArrowUpRight size={18} />
+              </span>
+            </button>
+            <button type="button" className="fab__action" onClick={() => choose("expense")}>
+              <span className="fab__action-label">Add New Expense</span>
+              <span className="fab__action-icon fab__action-icon--expense">
+                <Receipt size={18} />
+              </span>
+            </button>
+            {canPrintReceipt && (
+              <button type="button" className="fab__action" onClick={() => choose("receipt")}>
+                <span className="fab__action-label">Print Receipt</span>
+                <span className="fab__action-icon">
+                  <Printer size={18} />
+                </span>
+              </button>
+            )}
+            {canShotInsight && (
+              <button type="button" className="fab__action" onClick={() => choose("insight")}>
+                <span className="fab__action-label">Monthly Insight Shot</span>
+                <span className="fab__action-icon">
+                  <Camera size={18} />
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+        <button
+          type="button"
+          className={cx("fab__toggle", open && "fab__toggle--open")}
+          aria-label={open ? "Close quick actions" : "Open quick actions"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <Plus size={24} />
+        </button>
+      </div>
+
+      {open && (
+        <div
+          className="fab__backdrop"
+          role="presentation"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {modal === "income" && (
+        <QuickAddIncomeModal onClose={() => setModal(null)} />
+      )}
+      {modal === "expense" && (
+        <QuickAddExpenseModal
+          selectedDate={selectedDate}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal === "receipt" && receipt && (
+        <ReceiptModal receipt={receipt} onClose={() => setModal(null)} />
+      )}
+      {modal === "insight" && insight && (
+        <InsightShotModal insight={insight} onClose={() => setModal(null)} />
+      )}
+    </>
+  );
+}
+
+// ── Quick-add modals (mirror the Income/Expense page forms) ────────────
+// These are intentionally self-contained so the working Income/Expense pages
+// stay untouched. All money math is shared via finance-rules — only the form
+// layout is duplicated here.
+
+function QuickAddIncomeModal({ onClose }: { onClose: () => void }) {
+  const { nonCreditActiveAccounts, normalIncomeCategories } = useLiveCollections();
+  const [nameInput, setNameInput] = useState("");
+  const [dateInput, setDateInput] = useState(() => todayIso());
+  const [formAccountId, setFormAccountId] = useState("");
+  const [formCategoryId, setFormCategoryId] = useState("");
+  const [grossIncomeInput, setGrossIncomeInput] = useState("");
+  const [capitalExpenditureInput, setCapitalExpenditureInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Auto-update [YYMMDD] tag when date changes.
+  useEffect(() => {
+    const yyymmdd = toYYMMDD(dateInput);
+    if (!yyymmdd) return;
+    setNameInput((prev) => applyIncomeTag(prev, yyymmdd));
+  }, [dateInput]);
+
+  const calculatedNetIncome = calculateNetIncome(
+    parseNumberInput(grossIncomeInput),
+    parseNumberInput(capitalExpenditureInput),
+  );
+
+  async function handleSave() {
+    if (!nameInput.trim() || !dateInput) {
+      setSaveError("Name and date are required.");
+      return;
+    }
+    setSaving(true);
+    setSaveError(null);
+    const res = await incomesApi.create({
+      name: nameInput.trim(),
+      date: dateInput,
+      grossIncome: parseNumberInput(grossIncomeInput),
+      capitalExpenditure: parseNumberInput(capitalExpenditureInput),
+      accountId: formAccountId,
+      categoryId: formCategoryId,
+    });
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to save to Notion.");
+      return;
+    }
+    emitDataChanged();
+    onClose();
+  }
+
+  return (
+    <FormModal
+      deleteLabel="Soft Delete"
+      modal={{ mode: "new", title: "New Income" }}
+      editing
+      saving={saving}
+      error={saveError}
+      subtitle="Net income updates from gross income less capital expenditure."
+      onEdit={() => {}}
+      onSave={handleSave}
+      onDelete={() => {}}
+      onClose={onClose}
+    >
+      <div className="form-grid form-grid--single">
+        <Field label="Name">
+          <input
+            placeholder="Income title"
+            value={nameInput}
+            onChange={(event) => setNameInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Date">
+          <input
+            type="date"
+            value={dateInput}
+            onChange={(event) => setDateInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Gross Income">
+          <input
+            inputMode="decimal"
+            placeholder="0.00"
+            value={grossIncomeInput}
+            onChange={(event) => setGrossIncomeInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Capital Expenditure">
+          <input
+            inputMode="decimal"
+            placeholder="0.00"
+            value={capitalExpenditureInput}
+            onChange={(event) => setCapitalExpenditureInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Accounts">
+          <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
+            <option value="">— None —</option>
+            {nonCreditActiveAccounts.map((account) => (
+              <option key={account.id} value={account.id}>{account.name}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Categories">
+          <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
+            <option value="">— None —</option>
+            {normalIncomeCategories.map((category) => (
+              <option key={category.id} value={category.id}>{category.source}</option>
+            ))}
+          </select>
+        </Field>
+        <ComputedField
+          label="Net Income"
+          value={formatMoney(calculatedNetIncome)}
+          valueTone={getMoneyValueTone(calculatedNetIncome)}
+        />
+      </div>
+    </FormModal>
+  );
+}
+
+function QuickAddExpenseModal({
+  selectedDate,
+  onClose,
+}: {
+  selectedDate: string;
+  onClose: () => void;
+}) {
+  const { activeAccounts, expenseCategories, expenseCategoryNameById } =
+    useLiveCollections();
+  const [descriptionInput, setDescriptionInput] = useState("");
+  const [formAccountId, setFormAccountId] = useState("");
+  const [formCategoryId, setFormCategoryId] = useState("");
+  const [purchaseDateInput, setPurchaseDateInput] = useState(() =>
+    selectedDate || todayIso(),
+  );
+  const [datePaidInput, setDatePaidInput] = useState("");
+  const [expenseAmountInput, setExpenseAmountInput] = useState("");
+  const [interestInput, setInterestInput] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "">("");
+  const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
+  const [periodCountInput, setPeriodCountInput] = useState("");
+  const [paidPeriodInput, setPaidPeriodInput] = useState("");
+  const [pasabuyer, setPasabuyer] = useState("");
+  const [pasabuyStatus, setPasabuyStatus] = useState<PasabuyStatus | "">("");
+  const [pasabuyDateOfPaymentInput, setPasabuyDateOfPaymentInput] = useState("");
+  const [pasabuyPaidPeriodInput, setPasabuyPaidPeriodInput] = useState("");
+  const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Auto-update [YYMMDDx] tag when purchase date changes.
+  useEffect(() => {
+    const yyymmdd = toYYMMDD(purchaseDateInput);
+    if (!yyymmdd) return;
+    setDescriptionInput((prev) => applyNotionTag(prev, yyymmdd));
+  }, [purchaseDateInput]);
+
+  const selectedFormAccount = activeAccounts.find((a) => a.id === formAccountId);
+  const accountType = selectedFormAccount?.type ?? "Cash";
+  const categoryName = expenseCategoryNameById.get(formCategoryId) ?? "";
+  const sections = getExpenseConditionalSections({
+    accountType,
+    viewMode: "Monthly",
+    categoryName,
+  });
+  const expenseAmount = parseNumberInput(expenseAmountInput);
+  const interestAmount = sections.creditCard ? parseNumberInput(interestInput) : 0;
+  const periodCount = parseOptionalNumberInput(periodCountInput);
+  const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
+  const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
+  const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
+  const installmentAmount = calculateInstallmentAmount({
+    grossPrice,
+    paymentStatus,
+    periodCount,
+  });
+  const paidAmount = calculatePaidAmount({
+    grossPrice,
+    paymentStatus,
+    installmentAmount,
+    paidPeriod,
+  });
+  const remainingBalance = calculateRemainingBalance(grossPrice, paidAmount);
+  const expectedPaymentDate = calculateExpectedPaymentDate({
+    purchaseDate: purchaseDateInput,
+    billingDay: selectedFormAccount?.billingDay ?? null,
+    dueDay: selectedFormAccount?.dueDay ?? null,
+  });
+  const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
+    grossPrice,
+    pasabuyStatus,
+    installmentAmount,
+    pasabuyPaidPeriod,
+    periodCount,
+  });
+  const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
+
+  async function handleSave() {
+    if (!descriptionInput.trim()) {
+      setSaveError("Description is required.");
+      return;
+    }
+    setSaving(true);
+    setSaveError(null);
+    const res = await expensesApi.create({
+      description: descriptionInput.trim(),
+      purchaseDate: purchaseDateInput,
+      datePaid: datePaidInput || null,
+      amount: parseNumberInput(expenseAmountInput),
+      interest: parseNumberInput(interestInput),
+      accountId: formAccountId,
+      categoryId: formCategoryId,
+      paymentStatus: paymentStatus || "Unpaid",
+      paymentFrequency: paymentFrequency || null,
+      periodCount: parseOptionalNumberInput(periodCountInput),
+      paidPeriod: parseOptionalNumberInput(paidPeriodInput),
+      pasabuyer: pasabuyer || null,
+      pasabuyStatus: pasabuyStatus || null,
+      pasabuyDateOfPayment: pasabuyDateOfPaymentInput || null,
+      pasabuyPaidPeriod: parseOptionalNumberInput(pasabuyPaidPeriodInput),
+      pasabuyAccountReceiverId: pasabuyAccountReceiverId || null,
+    });
+    setSaving(false);
+    if (!res.success) {
+      setSaveError(res.error.message || "Failed to save to Notion.");
+      return;
+    }
+    emitDataChanged();
+    onClose();
+  }
+
+  return (
+    <FormModal
+      deleteLabel="Soft Delete"
+      modal={{ mode: "new", title: "New Expense" }}
+      editing
+      saving={saving}
+      error={saveError}
+      subtitle="Context fields change from the selected account and category."
+      onEdit={() => {}}
+      onSave={handleSave}
+      onDelete={() => {}}
+      onClose={onClose}
+    >
+      <div className="form-grid form-grid--single">
+        <Field label="Purchase description">
+          <input
+            placeholder="Purchase description"
+            value={descriptionInput}
+            onChange={(event) => setDescriptionInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Purchase Date">
+          <input
+            type="date"
+            value={purchaseDateInput}
+            onChange={(event) => setPurchaseDateInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Accounts">
+          <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
+            <option value="">— None —</option>
+            {activeAccounts.map((account) => (
+              <option key={account.id} value={account.id}>{account.name}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Categories">
+          <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
+            <option value="">— None —</option>
+            {expenseCategories.map((category) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Expense Amount">
+          <input
+            inputMode="decimal"
+            placeholder="0.00"
+            value={expenseAmountInput}
+            onChange={(event) => setExpenseAmountInput(event.target.value)}
+          />
+        </Field>
+        <Field label="Date Paid">
+          <input
+            type="date"
+            value={datePaidInput}
+            onChange={(event) => setDatePaidInput(event.target.value)}
+          />
+        </Field>
+        {sections.creditCard && (
+          <>
+            <FormSectionDivider title="CC Transaction" />
+            <Field label="Payment Status">
+              <select
+                value={paymentStatus}
+                onChange={(event) => setPaymentStatus(event.target.value as PaymentStatus)}
+              >
+                <option value="">— None —</option>
+                {paymentStatusLabels.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Interest">
+              <input
+                inputMode="decimal"
+                placeholder="0.00"
+                value={interestInput}
+                onChange={(event) => setInterestInput(event.target.value)}
+              />
+            </Field>
+            <ComputedField label="Gross Price" value={formatMoney(grossPrice)} />
+            <Field label="Payment Frequency">
+              <select
+                value={paymentFrequency}
+                onChange={(event) => setPaymentFrequency(event.target.value as PaymentFrequency)}
+              >
+                <option value="">— None —</option>
+                {paymentFrequencyLabels.map((frequency) => (
+                  <option key={frequency} value={frequency}>{frequency}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Period Count">
+              <input
+                inputMode="numeric"
+                placeholder="0"
+                value={periodCountInput}
+                onChange={(event) => setPeriodCountInput(event.target.value)}
+              />
+            </Field>
+            {paymentStatus === "Installment" && installmentAmount !== null && (
+              <ComputedField label="Installment Amount" value={formatMoney(installmentAmount)} />
+            )}
+            <Field label="Paid period">
+              <input
+                inputMode="numeric"
+                placeholder="0"
+                value={paidPeriodInput}
+                onChange={(event) => setPaidPeriodInput(event.target.value)}
+              />
+            </Field>
+            <ComputedField label="Paid Amount" value={formatMoney(paidAmount)} />
+            <ComputedField label="Remaining Balance" value={formatMoney(remainingBalance)} />
+            <ComputedField
+              label="Expected payment date"
+              value={expectedPaymentDate ? formatDate(expectedPaymentDate) : "-"}
+            />
+          </>
+        )}
+        {sections.pasabuy && (
+          <>
+            <FormSectionDivider title="Pasabuy Transaction" />
+            <Field label="Pasabuyer">
+              <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
+                <option value="">— None —</option>
+                {pasabuyerLabels.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Pasabuy Status">
+              <select
+                value={pasabuyStatus}
+                onChange={(event) => setPasabuyStatus(event.target.value as PasabuyStatus)}
+              >
+                <option value="">— None —</option>
+                {pasabuyStatusLabels.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Pasabuy Date of Payment">
+              <input
+                type="date"
+                value={pasabuyDateOfPaymentInput}
+                onChange={(event) => setPasabuyDateOfPaymentInput(event.target.value)}
+              />
+            </Field>
+            <Field label="Pasabuy Account Receiver">
+              <select
+                value={pasabuyAccountReceiverId}
+                onChange={(event) => setPasabuyAccountReceiverId(event.target.value)}
+              >
+                <option value="">— None —</option>
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>{account.name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Pasabuy paid period">
+              <input
+                inputMode="numeric"
+                placeholder="0"
+                value={pasabuyPaidPeriodInput}
+                onChange={(event) => setPasabuyPaidPeriodInput(event.target.value)}
+              />
+            </Field>
+            <ComputedField label="Pasabuy Received Amount" value={formatMoney(pasabuyReceivedAmount)} />
+            <ComputedField label="Pasabuyer Balance" value={formatMoney(pasabuyerBalance)} />
+          </>
+        )}
+      </div>
+    </FormModal>
+  );
+}
+
+// ── Print Receipt ─────────────────────────────────────────────────────
+
+function ExportModalShell({
+  title,
+  subtitle,
+  onClose,
+  onPrint,
+  onSaveImage,
+  busy,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  onClose: () => void;
+  onPrint: () => void;
+  onSaveImage: () => void;
+  busy?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="modal-panel modal-panel--export"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <div className="modal-panel__header fab-shot-hide">
+          <div>
+            <h2>{title}</h2>
+            <p>{subtitle}</p>
+          </div>
+          <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
+            <X size={17} />
+          </button>
+        </div>
+        <div className="modal-panel__body export-preview">{children}</div>
+        <div className="modal-panel__footer fab-shot-hide">
+          <button type="button" className="button" onClick={onSaveImage} disabled={busy}>
+            <ImageDown size={16} />
+            Save as Image
+          </button>
+          <button type="button" className="button button--primary" onClick={onPrint} disabled={busy}>
+            <FileDown size={16} />
+            Print / Save as PDF
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ReceiptModal({
+  receipt,
+  onClose,
+}: {
+  receipt: ReceiptContext;
+  onClose: () => void;
+}) {
+  const surfaceRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <ExportModalShell
+      title="Print Receipt"
+      subtitle="Export the current expense view as a receipt."
+      onClose={onClose}
+      onPrint={() => surfaceRef.current && printNode(surfaceRef.current)}
+      onSaveImage={() =>
+        surfaceRef.current && downloadNodeAsPng(surfaceRef.current, "notable-receipt")
+      }
+    >
+      <div className="receipt" ref={surfaceRef}>
+        <div className="receipt__head">
+          <h1 className="receipt__brand">NOTABLE FINANCE</h1>
+          <p className="receipt__tagline">Official Expense Receipt</p>
+          <p className="receipt__meta">{receipt.viewTitle}</p>
+          <p className="receipt__meta">{receipt.periodLabel}</p>
+        </div>
+        <div className="receipt__rule" />
+        <table className="receipt__table">
+          <colgroup>
+            <col className="receipt__col-date" />
+            <col className="receipt__col-desc" />
+            <col className="receipt__col-amount" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Date of Purchase</th>
+              <th>Description</th>
+              <th className="receipt__amount">{receipt.amountHeader}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {receipt.rows.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="receipt__empty">No items to display.</td>
+              </tr>
+            ) : (
+              receipt.rows.map((row, index) => (
+                <tr key={`${row.date}-${index}`}>
+                  <td className="receipt__date">{row.date}</td>
+                  <td>{row.description}</td>
+                  <td className="receipt__amount">{row.amount}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={2}>Total</td>
+              <td className="receipt__amount">{receipt.total}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div className="receipt__rule" />
+        <p className="receipt__disclaimer">
+          This document is electronically generated and does not require a
+          signature.
+        </p>
+      </div>
+    </ExportModalShell>
+  );
+}
+
+// ── Monthly Insight Shot ──────────────────────────────────────────────
+
+function InsightShotModal({
+  insight,
+  onClose,
+}: {
+  insight: { monthLabel: string; getNode: () => HTMLElement | null };
+  onClose: () => void;
+}) {
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  const [snapshot, setSnapshot] = useState<string | null>(null);
+  const [status, setStatus] = useState<"capturing" | "ready" | "error">(
+    "capturing",
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const node = insight.getNode();
+    if (!node) {
+      queueMicrotask(() => {
+        if (!cancelled) setStatus("error");
+      });
+      return;
+    }
+    nodeToPngDataUrl(node)
+      .then((url) => {
+        if (!cancelled) {
+          setSnapshot(url);
+          setStatus("ready");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [insight]);
+
+  return (
+    <ExportModalShell
+      title="Monthly Insight Shot"
+      subtitle="A clean snapshot of your monthly monitoring."
+      busy={status !== "ready"}
+      onClose={onClose}
+      onPrint={() => surfaceRef.current && printNode(surfaceRef.current)}
+      onSaveImage={() =>
+        surfaceRef.current &&
+        downloadNodeAsPng(surfaceRef.current, `notable-insight-${insight.monthLabel}`)
+      }
+    >
+      {status === "capturing" && <LoadingBlock label="Building snapshot…" />}
+      {status === "error" && (
+        <EmptyState
+          title="Couldn't build the snapshot"
+          detail="Open the Monthly Monitoring view and try again."
+        />
+      )}
+      {status === "ready" && snapshot && (
+        <div className="insight-shot" ref={surfaceRef}>
+          <div className="insight-shot__head">
+            <span className="insight-shot__brand">NOTABLE FINANCE</span>
+            <span className="insight-shot__title">Monthly Monitoring</span>
+            <span className="insight-shot__month">{insight.monthLabel}</span>
+          </div>
+          <div className="insight-shot__body">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="insight-shot__image" src={snapshot} alt="Monthly monitoring snapshot" />
+          </div>
+        </div>
+      )}
+    </ExportModalShell>
   );
 }

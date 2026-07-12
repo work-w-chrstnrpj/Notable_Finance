@@ -4,7 +4,11 @@ import { Pool } from 'pg';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-const MIGRATION_FILES = ['001-initial-schema.sql', '002-users-schema.sql'];
+const MIGRATION_FILES = [
+  '001-initial-schema.sql',
+  '002-users-schema.sql',
+  '003-user-preferences.sql',
+];
 
 function resolveMigrationDir(): string {
   const candidates = [

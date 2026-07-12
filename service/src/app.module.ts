@@ -25,6 +25,7 @@ import { LoggingModule } from './logging/logging.module';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { UserConfigModule } from './user-config/user-config.module';
+import { PreferencesModule } from './preferences/preferences.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import configuration from './config/configuration';
 
@@ -61,6 +62,7 @@ import configuration from './config/configuration';
     DatabaseModule,
     UsersModule,
     UserConfigModule,
+    PreferencesModule,
   ],
   controllers: [AppController],
   providers: [

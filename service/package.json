@@ -4,7 +4,7 @@
   "private": true,
   "description": "NestJS backend service for Notion Finance",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/sql','dist/sql',{recursive:true})\"",
     "dev": "nest start --watch",
     "start": "node dist/main",
     "start:prod": "node dist/main",

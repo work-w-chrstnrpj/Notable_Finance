@@ -177,6 +177,21 @@ The Dashboard should show `Total Cash Flow` as the sum of active non-credit acco
 - Daily, Weekly, and Monthly views do not depend on paid state. Unpaid Pasabuy, To pay, Installments, and CC Transactions show records that are not paid, not fully paid, or have no paid date.
 - For Dashboard, Monthly Monitoring, Income, Expense, and category reporting, calculate display values in application/shared code from scoped records when they can be derived from writable Notion fields. Use Notion formula/rollup values only where they represent current account state that the app deliberately displays as read-only.
 
+### Form Required Fields
+
+The following table documents which fields are required when creating or editing records in each view. All other fields are optional.
+
+| View | Required Fields | Notes |
+|------|----------------|-------|
+| Income (main) | Name, Date | Account, Category, Gross Income, Capital Expenditure are optional |
+| Income (QuickAdd) | Name, Date | Same as main |
+| Expense (main) | Description | Purchase Date, Account, Category, Amount are optional |
+| Expense (QuickAdd) | Description | Purchase Date is optional |
+| Transfer | Name, Date | Source Account is optional; Transfer Account is optional |
+| CC Payment | Name, Date | CC Account is optional; Payer Account is optional |
+| Receivables | Name | Date and Account are optional |
+| Alkansya | Name, Date, Account | Category is optional |
+
 ### Transactions
 
 - Support transfer, credit card payment, debt payment, receivable, Alkansya, and related transaction flows shown in the Notion Transaction views.

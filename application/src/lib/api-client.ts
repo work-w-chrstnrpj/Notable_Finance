@@ -404,6 +404,22 @@ export const authApi = {
   },
 };
 
+export interface UserPreferences {
+  showFab: boolean;
+}
+
+export const preferencesApi = {
+  get() {
+    return requestBackend<UserPreferences>("/user/preferences");
+  },
+  save(body: Partial<UserPreferences>) {
+    return requestBackend<UserPreferences>("/user/preferences", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  },
+};
+
 export const userNotionConfigApi = {
   get() {
     return requestBackend<UserNotionConfig>("/user/notion-config");

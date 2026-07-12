@@ -69,6 +69,9 @@ export type Account = {
   annualFee: number | null;
   billingDay: number | null;
   dueDay: number | null;
+  totalIncomes: number | null;
+  totalExpenses: number | null;
+  qrCode: string | null;
   inactive: boolean;
 };
 

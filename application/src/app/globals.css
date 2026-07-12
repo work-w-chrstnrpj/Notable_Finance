@@ -1468,6 +1468,19 @@ input {
   gap: 4px;
 }
 
+.account-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.account-qr img {
+  max-width: min(480px, 100%);
+  max-height: 480px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .money-line {
   border-top: 1px solid var(--line);
   padding-top: 10px;
@@ -2535,4 +2548,338 @@ tfoot td {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateX(-50%) translateY(4px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Floating action button ────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.fab__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: transparent;
+}
+.fab__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(91, 108, 249, 0.4);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.fab__toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(91, 108, 249, 0.46);
+}
+.fab__toggle svg {
+  transition: transform 0.2s ease;
+}
+.fab__toggle--open svg {
+  transform: rotate(45deg);
+}
+.fab__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  animation: fab-menu-in 0.16s ease;
+}
+@keyframes fab-menu-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fab__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.fab__action-label {
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
+.fab__action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.14);
+  transition: transform 0.14s ease;
+}
+.fab__action:hover .fab__action-icon {
+  transform: scale(1.06);
+}
+.fab__action-icon--income {
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: transparent;
+}
+.fab__action-icon--expense {
+  background: var(--rose-soft);
+  color: var(--rose);
+  border-color: transparent;
+}
+
+@media (max-width: 640px) {
+  .fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+/* ── Account modal header actions ──────────────────────────────────── */
+.account-modal__header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ── Settings: interface toggle switch ─────────────────────────────── */
+.settings-toggle__title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.settings-toggle__hint {
+  margin: 4px 0 0;
+  max-width: 46ch;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch__track {
+  display: inline-flex;
+  align-items: center;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line-strong);
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.switch__thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.28);
+  transform: translateX(0);
+  transition: transform 0.16s ease;
+}
+.switch--on .switch__track {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.switch--on .switch__thumb {
+  transform: translateX(20px);
+}
+
+/* ── Export modal (receipt / insight) ──────────────────────────────── */
+.modal-panel--export {
+  width: min(680px, 100%);
+}
+.export-preview {
+  background: var(--surface-muted);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ── Receipt ───────────────────────────────────────────────────────── */
+.receipt {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  color: #1c1917;
+  padding: 26px 24px;
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(28, 25, 23, 0.12);
+  font-family: "DM Mono", ui-monospace, monospace;
+}
+.receipt__head {
+  text-align: center;
+}
+.receipt__brand {
+  margin: 0;
+  font-family: "Instrument Serif", serif;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+.receipt__tagline {
+  margin: 2px 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #79716b;
+}
+.receipt__meta {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #44403c;
+}
+.receipt__rule {
+  height: 0;
+  border-top: 1px dashed #d6d3d1;
+  margin: 14px 0;
+}
+.receipt__table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+.receipt__col-date { width: 104px; }
+.receipt__col-amount { width: 92px; }
+.receipt__col-desc { }
+.receipt__table th {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #1c1917;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.receipt__table td {
+  padding: 5px 6px;
+  border-bottom: 1px dotted #e7e5e4;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.receipt__date {
+  white-space: nowrap;
+}
+.receipt__amount {
+  text-align: right;
+  white-space: nowrap;
+}
+.receipt__table tfoot td {
+  border-top: 1px solid #1c1917;
+  border-bottom: none;
+  font-weight: 600;
+  padding-top: 8px;
+}
+.receipt__empty {
+  text-align: center;
+  color: #79716b;
+  padding: 14px 0;
+}
+.receipt__disclaimer {
+  margin: 0;
+  text-align: center;
+  font-size: 10.5px;
+  color: #79716b;
+  line-height: 1.5;
+}
+
+/* ── Monthly insight shot ──────────────────────────────────────────── */
+.insight-shot {
+  width: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(28, 25, 23, 0.12);
+}
+.insight-shot__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 22px;
+  background: #000000;
+  color: #fff;
+}
+.insight-shot__brand {
+  font-family: "Instrument Serif", serif;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+}
+.insight-shot__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+}
+.insight-shot__month {
+  font-size: 14px;
+  font-weight: 600;
+}
+.insight-shot__body {
+  padding: 18px 22px 22px;
+  background: #ffffff;
+}
+.insight-shot__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+/* ── FAB shot hide (export-node strips these from snapshots) ──────── */
+.fab-shot-hide {}
+
+/* ── Scoped printing (receipt / insight → Chrome print → Save as PDF) ── */
+.print-root {
+  display: none;
+}
+@media print {
+  body.is-printing > *:not(.print-root) {
+    display: none !important;
+  }
+  body.is-printing .print-root {
+    display: block;
+    padding: 0;
+    margin: 0;
+  }
+  .print-root .receipt,
+  .print-root .insight-shot {
+    max-width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0 auto;
+  }
+}
+@page {
+  margin: 12mm;
 }

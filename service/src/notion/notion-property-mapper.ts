@@ -23,6 +23,9 @@ export const NOTION_PROPERTY_NAMES = {
     billingDay: 'Billing Day',
     dueDay: 'Due Day',
     inactive: 'Inactive',
+    totalIncomes: 'Total Incomes',
+    totalExpenses: 'Total Expenses',
+    qrCode: 'QR Code',
   },
   incomeCategories: {
     source: 'Source of Income',
@@ -203,11 +206,73 @@ function extractIcon(page: Record<string, unknown>): string | null {
   return null;
 }
 
+function extractFileUrl(
+  props: Record<string, unknown>,
+  name: string,
+): string | null {
+  // Direct lookup first.
+  let p = getProp(props, name) as Record<string, unknown> | undefined;
+
+  // Fallback: case-insensitive scan of property keys.
+  // Notion property names are case-sensitive in the API; this guard handles
+  // mismatches such as "QR code" vs "QR Code" vs "qr code".
+  if (!p) {
+    const lower = name.toLowerCase();
+    const key = Object.keys(props).find((k) => k.toLowerCase() === lower);
+    if (key) {
+      p = props[key] as Record<string, unknown> | undefined;
+    }
+  }
+
+  if (!p) return null;
+
+  const propType = p.type as string | undefined;
+
+  // Handle "files" property type (array of file objects).
+  if (propType === 'files') {
+    const files = p.files as Array<Record<string, unknown>> | undefined;
+    if (!files || files.length === 0) return null;
+    const first = files[0];
+    const fileType = first.type as string;
+    if (fileType === 'file') {
+      const file = first.file as Record<string, unknown> | undefined;
+      return (file?.url as string) ?? null;
+    }
+    if (fileType === 'external') {
+      const ext = first.external as Record<string, unknown> | undefined;
+      return (ext?.url as string) ?? null;
+    }
+  }
+
+  // Handle "url" property type (single URL string).
+  if (propType === 'url') {
+    const url = p.url as string | null | undefined;
+    return url ?? null;
+  }
+
+  // Handle "rich_text" property type (may contain a URL).
+  if (propType === 'rich_text') {
+    const richText = p.rich_text as Array<Record<string, unknown>> | undefined;
+    const text = richText?.[0]?.plain_text as string | undefined;
+    return text ?? null;
+  }
+
+  // Handle "title" property type (may contain a URL).
+  if (propType === 'title') {
+    const title = p.title as Array<Record<string, unknown>> | undefined;
+    const text = title?.[0]?.plain_text as string | undefined;
+    return text ?? null;
+  }
+
+  return null;
+}
+
 // ── Page → DTO converters ───────────────────────────────────────
 
 export function pageToAccount(page: Record<string, unknown>): AccountDto {
   const props = page.properties as Record<string, unknown> ?? {};
   const names = NOTION_PROPERTY_NAMES.accounts;
+
   return {
     id: page.id as string,
     name: extractTitle(props, names.name),
@@ -222,6 +287,9 @@ export function pageToAccount(page: Record<string, unknown>): AccountDto {
     annualFee: extractNumber(props, names.annualFee),
     billingDay: extractNumber(props, names.billingDay),
     dueDay: extractNumber(props, names.dueDay),
+    totalIncomes: extractRollupValue(props, names.totalIncomes),
+    totalExpenses: extractRollupValue(props, names.totalExpenses),
+    qrCode: extractFileUrl(props, names.qrCode),
     inactive: extractCheckbox(props, names.inactive),
   };
 }
