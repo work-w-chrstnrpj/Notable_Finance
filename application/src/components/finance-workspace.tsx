@@ -5541,6 +5541,7 @@ function ReceiptModal({
   receipt: ReceiptContext;
   onClose: () => void;
 }) {
+  const { user } = useAuth();
   const surfaceRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -5555,8 +5556,8 @@ function ReceiptModal({
     >
       <div className="receipt" ref={surfaceRef}>
         <div className="receipt__head">
-          <h1 className="receipt__brand">NOTABLE FINANCE</h1>
-          <p className="receipt__tagline">Official Expense Receipt</p>
+          <h1 className="receipt__brand">Notable Finance Receipt</h1>
+          <p className="receipt__tagline">by {user?.name ?? user?.email ?? "Guest"}</p>
           <p className="receipt__meta">{receipt.viewTitle}</p>
           <p className="receipt__meta">{receipt.periodLabel}</p>
         </div>
