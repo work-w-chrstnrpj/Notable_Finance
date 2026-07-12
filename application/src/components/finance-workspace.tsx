@@ -101,6 +101,20 @@ import {
 } from "@/lib/use-data";
 import { useFinanceData } from "@/lib/finance-data-context";
 import {
+  applyIncomeTag,
+  applyNotionTag,
+  cx,
+  getExpenseTotal,
+  getIncomeCapitalExpenditureTotal,
+  getIncomeGrossTotal,
+  getIncomeNetTotal,
+  getMonthLabel,
+  parseNumberInput,
+  parseOptionalNumberInput,
+  stripNotionTag,
+} from "@/lib/finance-helpers";
+import { DATA_CHANGED_EVENT, emitDataChanged } from "@/lib/finance-events";
+import {
   alkansyaApi,
   creditCardPaymentsApi,
   expensesApi,
@@ -202,97 +216,8 @@ type ModalState = {
 type AccountScope = "all" | "standard" | "credit";
 type ComputedValueTone = "green" | "rose" | "amber" | "ink";
 
-/**
- * Update the [YYMMDDx] tag in a description string based on a new date.
- * - If the description has no tag, prepend [YYMMDDx] with default code 'x'.
- * - If the description already has a [..] tag, replace the date portion
- *   while preserving the existing transaction code letter.
- * Preserves any text after the tag.
- */
-function applyNotionTag(description: string, yyymmdd: string | null): string {
-  if (!yyymmdd) return description;
-  const tagRegex = /^\[(\d{6})([a-zA-Z])\]\s*/;
-  const match = description.match(tagRegex);
-  if (match) {
-    // Preserve existing transaction code letter
-    const code = match[2];
-    const rest = description.slice(match[0].length);
-    return `[${yyymmdd}${code}] ${rest}`;
-  }
-  // No existing tag — prepend with default code 'x'
-  return `[${yyymmdd}x] ${description}`;
-}
-
-/**
- * Update the [YYMMDD] tag in an income name string based on a new date.
- * Income uses [YYMMDD] format (no transaction code letter).
- */
-function applyIncomeTag(name: string, yyymmdd: string | null): string {
-  if (!yyymmdd) return name;
-  const tagRegex = /^\[(\d{6})\]\s*/;
-  const match = name.match(tagRegex);
-  if (match) {
-    const rest = name.slice(match[0].length);
-    return `[${yyymmdd}] ${rest}`;
-  }
-  // No existing tag — prepend
-  return `[${yyymmdd}] ${name}`;
-}
-
-/** Strip Notion's [YYMMDD] or [YYMMDDx] prefix from names/descriptions for display. */
-function stripNotionTag(text: string): string {
-  return text.replace(/^\[.*?\]\s*/, '');
-}
-
-function getMonthLabel(value: string) {
-  const [year, month] = value.split("-");
-  const date = new Date(Number(year), Number(month) - 1, 1);
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function parseNumberInput(value: string) {
-  const parsed = Number(value.replace(/,/g, ""));
-
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function parseOptionalNumberInput(value: string) {
-  if (value.trim() === "") {
-    return null;
-  }
-
-  return parseNumberInput(value);
-}
-
 function isSpecificExpenseCategoryFilter(value: string) {
   return value !== "" && value !== expenseCategoryFilterWithoutPasabuy;
-}
-
-function getIncomeGrossTotal(records: IncomeRecord[]) {
-  return records.reduce((sum, record) => sum + record.grossIncome, 0);
-}
-
-function getIncomeCapitalExpenditureTotal(records: IncomeRecord[]) {
-  return records.reduce((sum, record) => sum + record.capitalExpenditure, 0);
-}
-
-function getIncomeNetTotal(records: IncomeRecord[]) {
-  return records.reduce(
-    (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
-    0,
-  );
-}
-
-function getExpenseTotal(records: ExpenseRecord[]) {
-  return records.reduce((sum, record) => sum + record.amount, 0);
 }
 
 // Reference data (accounts + categories) is fetched once by FinanceDataProvider
@@ -5120,11 +5045,6 @@ function ErrorRow({ code, detail }: { code: string; detail: string }) {
 
 // ── Floating action button ────────────────────────────────────────────
 
-/** Broadcast so open Income/Expense lists refetch after a quick add. */
-const DATA_CHANGED_EVENT = "nf:data-changed";
-function emitDataChanged() {
-  window.dispatchEvent(new CustomEvent(DATA_CHANGED_EVENT));
-}
 
 type FabModalKind = "income" | "expense" | "receipt" | "insight" | null;
 
