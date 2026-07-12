@@ -7,6 +7,8 @@ import type { Route } from "next";
 import { useMemo, useRef, useState, useEffect, startTransition, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
+import { ColorPicker } from "@/components/color-picker";
 import { userNotionConfigApi, preferencesApi } from "@/lib/api-client";
 import {
   FabExportProvider,
@@ -51,6 +53,7 @@ import {
   LogOut,
   Mail,
   Menu,
+  Palette,
   Pencil,
   PiggyBank,
   Plus,
@@ -429,7 +432,16 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [pendingOperations, setPendingOperations] = useState(0);
   const [lastSync, setLastSync] = useState("—");
   // FAB visibility preference (per-user, synced via the backend). Defaults on.
-  const [showFab, setShowFab] = useState(true);
+  // localStorage cache prevents flash on remount while API is in flight.
+  const [showFab, setShowFab] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const cached = localStorage.getItem("nf_show_fab");
+      return cached !== null ? cached === "true" : true;
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -437,7 +449,13 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     preferencesApi
       .get()
       .then((res) => {
-        if (!cancelled && res.success) setShowFab(res.data.showFab);
+        if (!cancelled && res.success) {
+          setShowFab(res.data.showFab);
+          // Sync localStorage cache
+          try {
+            localStorage.setItem("nf_show_fab", String(res.data.showFab));
+          } catch { /* ignore */ }
+        }
       })
       .catch(() => {
         /* keep default on network/backend error */
@@ -449,6 +467,10 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
 
   async function updateShowFab(next: boolean) {
     setShowFab(next);
+    // Persist to localStorage immediately
+    try {
+      localStorage.setItem("nf_show_fab", String(next));
+    } catch { /* ignore */ }
     try {
       await preferencesApi.save({ showFab: next });
     } catch {
@@ -3768,7 +3790,7 @@ const KNOWN_DB_ID_KEYS = [
   { key: "monthlyMonitoring", label: "Monthly Monitoring" },
 ] as const;
 
-type SettingsModalKind = "notion" | "email" | "password" | "delete" | null;
+type SettingsModalKind = "notion" | "email" | "password" | "delete" | "theme" | null;
 
 function SettingsPage({
   schemaHealth,
@@ -3783,6 +3805,7 @@ function SettingsPage({
 }) {
   const { user, loading, logout } = useAuth();
   const [modal, setModal] = useState<SettingsModalKind>(null);
+  const { mode, primaryColor, secondaryColor, setMode, setPrimaryColor, setSecondaryColor } = useTheme();
 
   return (
     <div className="page-stack">
@@ -3806,6 +3829,32 @@ function SettingsPage({
             />
             <span className="switch__track"><span className="switch__thumb" /></span>
           </label>
+        </div>
+      </Panel>
+      <Panel title="Theme">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Appearance &amp; Colors</p>
+            <p className="settings-toggle__hint">
+              Click here to{" "}
+              <button
+                type="button"
+                className="settings-inline-link"
+                onClick={() => setModal("theme")}
+              >
+                customize
+              </button>{" "}
+              your appearance settings.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="button"
+            onClick={() => setModal("theme")}
+          >
+            <Palette size={16} />
+            Customize
+          </button>
         </div>
       </Panel>
       <section className="two-column">
@@ -3894,7 +3943,60 @@ function SettingsPage({
       {modal === "email" && <ChangeEmailModal onClose={() => setModal(null)} />}
       {modal === "password" && <ChangePasswordModal onClose={() => setModal(null)} />}
       {modal === "delete" && <DeleteAccountModal onClose={() => setModal(null)} />}
+      {modal === "theme" && <ThemeCustomizeModal onClose={() => setModal(null)} />}
     </div>
+  );
+}
+
+function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
+  const { mode, primaryColor, secondaryColor, setMode, setPrimaryColor, setSecondaryColor } =
+    useTheme();
+
+  return (
+    <SettingsModal
+      title="Customize Theme"
+      subtitle="Personalize your appearance and accent colors."
+      onClose={onClose}
+      footer={
+        <button type="button" className="button button--primary" onClick={onClose}>
+          Done
+        </button>
+      }
+    >
+      <div className="theme-modal-grid">
+        <div className="theme-modal-section">
+          <p className="settings-toggle__title">Appearance</p>
+          <p className="settings-toggle__hint">
+            Choose light, dark, or follow your system setting.
+          </p>
+          <select
+            className="settings-select"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as "light" | "dark" | "system")}
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+        <div className="theme-modal-section">
+          <p className="settings-toggle__title">Colors</p>
+          <p className="settings-toggle__hint">
+            Customize accent colors applied globally.
+          </p>
+          <div className="theme-color-pickers">
+            <div className="theme-color-picker-group">
+              <span className="settings-color-label">Primary</span>
+              <ColorPicker value={primaryColor} onChange={setPrimaryColor} />
+            </div>
+            <div className="theme-color-picker-group">
+              <span className="settings-color-label">Secondary</span>
+              <ColorPicker value={secondaryColor} onChange={setSecondaryColor} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </SettingsModal>
   );
 }
 
