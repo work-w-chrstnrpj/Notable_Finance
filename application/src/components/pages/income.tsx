@@ -130,28 +130,32 @@ function IncomePage({
     };
     setSaving(true);
     setSaveError(null);
-    const res =
-      modal?.mode === "edit" && editingId
-        ? await incomesApi.update(editingId, payload)
-        : await incomesApi.create(payload);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to save to Notion.");
-      return;
+    try {
+      const res =
+        modal?.mode === "edit" && editingId
+          ? await incomesApi.update(editingId, payload)
+          : await incomesApi.create(payload);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to save to Notion.");
+        return;
+      }
+      setModal(null);
+      const saved = res.data;
+      applyLocal((rows) => {
+        const idx = rows.findIndex((r) => r.id === saved.id);
+        if (idx === -1) return [saved, ...rows];
+        const next = rows.slice();
+        next[idx] = saved;
+        return next;
+      });
+      invalidateIncomeFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: splice the returned record into the visible list immediately,
-    // then invalidate the income family so this list AND cross-section views
-    // (Dashboard, Monthly Monitoring) reconcile from the server.
-    const saved = res.data;
-    applyLocal((rows) => {
-      const idx = rows.findIndex((r) => r.id === saved.id);
-      if (idx === -1) return [saved, ...rows];
-      const next = rows.slice();
-      next[idx] = saved;
-      return next;
-    });
-    invalidateIncomeFamily();
   }
 
   function handleDuplicateIncome() {
@@ -168,17 +172,22 @@ function IncomePage({
     if (!window.confirm("Soft-delete this income in Notion?")) return;
     const deletedId = editingId;
     setSaving(true);
-    const res = await incomesApi.delete(deletedId);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to delete.");
-      return;
+    try {
+      const res = await incomesApi.delete(deletedId);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to delete.");
+        return;
+      }
+      setModal(null);
+      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+      invalidateIncomeFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: drop the row immediately, then invalidate the income family so
-    // this list and cross-section views reconcile.
-    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    invalidateIncomeFamily();
   }
 
   return (
@@ -305,21 +314,21 @@ function IncomePage({
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Name">
+          <Field label="Name" required>
             <input
               placeholder="Income title"
               value={nameInput}
               onChange={(event) => setNameInput(event.target.value)}
             />
           </Field>
-          <Field label="Date">
+          <Field label="Date" required>
             <input
               type="date"
               value={dateInput}
               onChange={(event) => setDateInput(event.target.value)}
             />
           </Field>
-          <Field label="Gross Income">
+          <Field label="Gross Income" required>
             <input
               inputMode="decimal"
               placeholder="0.00"

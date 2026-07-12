@@ -88,16 +88,21 @@ export function MoneyLine({ label, value }: { label: string; value: number }) {
 
 export function Field({
   label,
+  required,
   className,
   children,
 }: {
   label: string;
+  required?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <label className={cx("field", className)}>
-      <span>{label}</span>
+    <label className={cx("field", className)} aria-required={required || undefined}>
+      <span>
+        {label}
+        {required && <span className="field__required" aria-hidden="true"> *</span>}
+      </span>
       {children}
     </label>
   );

@@ -247,16 +247,16 @@ export class NotionQueryService {
   }
 
   tryFindExpenseCategoryId(name: string, userId?: string): string | undefined {
-    const target = name.toLowerCase();
+    const target = name.toLowerCase().trim();
     return this.cache.getCollectedExpenseCategories(userId).find(
-      (item) => item.name.toLowerCase() === target,
+      (item) => item.name.toLowerCase().trim() === target,
     )?.id;
   }
 
   tryFindIncomeCategoryId(source: string, userId?: string): string | undefined {
-    const target = source.toLowerCase();
+    const target = source.toLowerCase().trim();
     return this.cache.getCollectedIncomeCategories(userId).find(
-      (item) => item.source.toLowerCase() === target,
+      (item) => item.source.toLowerCase().trim() === target,
     )?.id;
   }
 
@@ -268,16 +268,22 @@ export class NotionQueryService {
     );
   }
 
-  findIncomeCategoryId(source: string): string {
-    const category = this.cache.getCollectedIncomeCategories().find((item) => item.source === source);
+  findIncomeCategoryId(source: string, userId?: string): string {
+    const target = source.toLowerCase().trim();
+    const category = this.cache.getCollectedIncomeCategories(userId).find(
+      (item) => item.source.toLowerCase().trim() === target,
+    );
     if (!category) {
       throw new Error(`Required income category is not configured: ${source}`);
     }
     return category.id;
   }
 
-  findExpenseCategoryId(name: string): string {
-    const category = this.cache.getCollectedExpenseCategories().find((item) => item.name === name);
+  findExpenseCategoryId(name: string, userId?: string): string {
+    const target = name.toLowerCase().trim();
+    const category = this.cache.getCollectedExpenseCategories(userId).find(
+      (item) => item.name.toLowerCase().trim() === target,
+    );
     if (!category) {
       throw new Error(`Required expense category is not configured: ${name}`);
     }

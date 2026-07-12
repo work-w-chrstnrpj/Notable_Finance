@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ApiException } from '../common/api-exception';
+import { NotionApiError } from '../common/errors/notion-errors';
 import {
   AccountDto,
   ExpenseCategoryDto,
@@ -60,7 +61,13 @@ export class NotionMutationService {
       this.cache.refreshCacheFor(userId, resource);
       return page;
     } catch (error) {
-      throw error;
+      const err = error instanceof Error ? error : new Error(String(error));
+      const status = (err as any).status ?? (err as any).statusCode ?? 502;
+      throw new NotionApiError(
+        err.message || 'Notion API request failed',
+        typeof status === 'number' ? status : 502,
+        { resource, operation: 'create', body: (err as any).body },
+      );
     }
   }
 
@@ -83,7 +90,13 @@ export class NotionMutationService {
       this.cache.refreshCacheFor(userId, resource);
       return page;
     } catch (error) {
-      throw error;
+      const err = error instanceof Error ? error : new Error(String(error));
+      const status = (err as any).status ?? (err as any).statusCode ?? 502;
+      throw new NotionApiError(
+        err.message || 'Notion API request failed',
+        typeof status === 'number' ? status : 502,
+        { resource, id, operation: 'update', body: (err as any).body },
+      );
     }
   }
 
@@ -106,7 +119,13 @@ export class NotionMutationService {
       this.cache.refreshCacheFor(userId, resource);
       return page;
     } catch (error) {
-      throw error;
+      const err = error instanceof Error ? error : new Error(String(error));
+      const status = (err as any).status ?? (err as any).statusCode ?? 502;
+      throw new NotionApiError(
+        err.message || 'Notion API request failed',
+        typeof status === 'number' ? status : 502,
+        { resource, id, operation: 'soft-delete', body: (err as any).body },
+      );
     }
   }
 }

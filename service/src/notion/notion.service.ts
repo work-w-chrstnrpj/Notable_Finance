@@ -105,7 +105,8 @@ export class NotionService {
   async create(resource: ResourceName, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
     this.validationService.validateMutation(resource, 'create', data);
 
-    const properties = this.buildNotionProperties(resource, data);
+    await this.cache.loadLive(userId, resource);
+    const properties = this.buildNotionProperties(resource, data, userId);
     const page = await this.mutationService.createPage(resource, properties, userId);
 
     const createdRecord = isIncomeBacked(resource)
@@ -118,7 +119,8 @@ export class NotionService {
   async update(resource: ResourceName, id: string, data: Record<string, unknown>, userId?: string): Promise<FinanceRecord> {
     this.validationService.validateMutation(resource, 'update', data);
 
-    const properties = this.buildNotionProperties(resource, data);
+    await this.cache.loadLive(userId, resource);
+    const properties = this.buildNotionProperties(resource, data, userId);
     const page = await this.mutationService.updatePage(resource, id, properties, userId);
 
     const updatedRecord = isIncomeBacked(resource)
@@ -133,6 +135,7 @@ export class NotionService {
     this.validationService.validateMutation(resource, 'delete');
     const mapping = this.mappingService.get(resource);
 
+    await this.cache.loadLive(userId, resource);
     const record = await this.detail(resource, id, userId);
     const softDeleteData =
       mapping.deletePolicy === 'incomeSoftDelete' && 'grossIncome' in record
@@ -147,7 +150,7 @@ export class NotionService {
             }
           : {};
 
-    const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>);
+    const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>, userId);
     const page = await this.mutationService.deletePage(resource, id, properties, userId);
 
     const deletedRecord = isIncomeBacked(resource)
@@ -222,6 +225,7 @@ export class NotionService {
   private buildNotionProperties(
     resource: ResourceName,
     data: Record<string, unknown>,
+    userId?: string,
   ): Record<string, unknown> {
     if (isIncomeBacked(resource)) {
       const mapping = this.mappingService.get(resource);
@@ -231,7 +235,7 @@ export class NotionService {
           mapping.categoryEditable && typeof data.categoryId === 'string' && data.categoryId;
         categoryOverride = useProvided
           ? undefined
-          : this.queryService.findIncomeCategoryId(mapping.fixedCategory);
+          : this.queryService.findIncomeCategoryId(mapping.fixedCategory, userId);
       }
       return incomeDtoToProperties(data, { categoryOverride });
     }

@@ -2003,6 +2003,12 @@ tfoot td {
   font-weight: 700;
 }
 
+.field__required {
+  color: var(--color-danger, #ef4444);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
 .field--full {
   grid-column: 1 / -1;
 }

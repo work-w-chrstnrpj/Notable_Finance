@@ -286,28 +286,32 @@ function ExpensePage({
     };
     setSaving(true);
     setSaveError(null);
-    const res =
-      modal?.mode === "edit" && editingId
-        ? await expensesApi.update(editingId, payload)
-        : await expensesApi.create(payload);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to save to Notion.");
-      return;
+    try {
+      const res =
+        modal?.mode === "edit" && editingId
+          ? await expensesApi.update(editingId, payload)
+          : await expensesApi.create(payload);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to save to Notion.");
+        return;
+      }
+      setModal(null);
+      const saved = res.data;
+      applyLocal((rows) => {
+        const idx = rows.findIndex((r) => r.id === saved.id);
+        if (idx === -1) return [saved, ...rows];
+        const next = rows.slice();
+        next[idx] = saved;
+        return next;
+      });
+      invalidateExpenseFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: splice the returned record into the visible list immediately,
-    // then invalidate the expense family so this list AND cross-section views
-    // (Dashboard, Monthly Monitoring) reconcile from the server.
-    const saved = res.data;
-    applyLocal((rows) => {
-      const idx = rows.findIndex((r) => r.id === saved.id);
-      if (idx === -1) return [saved, ...rows];
-      const next = rows.slice();
-      next[idx] = saved;
-      return next;
-    });
-    invalidateExpenseFamily();
   }
 
   function handleDuplicateExpense() {
@@ -324,17 +328,22 @@ function ExpensePage({
     if (!window.confirm("Soft-delete this expense in Notion?")) return;
     const deletedId = editingId;
     setSaving(true);
-    const res = await expensesApi.delete(deletedId);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to delete.");
-      return;
+    try {
+      const res = await expensesApi.delete(deletedId);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to delete.");
+        return;
+      }
+      setModal(null);
+      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+      invalidateExpenseFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: drop the row immediately, then invalidate the expense family
-    // so this list and cross-section views reconcile.
-    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    invalidateExpenseFamily();
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
@@ -697,14 +706,14 @@ function ExpensePage({
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Purchase description">
+          <Field label="Purchase description" required>
             <input
               placeholder="Purchase description"
               value={descriptionInput}
               onChange={(event) => setDescriptionInput(event.target.value)}
             />
           </Field>
-          <Field label="Purchase Date">
+          <Field label="Purchase Date" required>
             <input
               type="date"
               value={purchaseDateInput}
@@ -727,7 +736,7 @@ function ExpensePage({
               ))}
             </select>
           </Field>
-          <Field label="Expense Amount">
+          <Field label="Expense Amount" required>
             <input
               inputMode="decimal"
               placeholder="0.00"

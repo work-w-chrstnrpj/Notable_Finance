@@ -174,8 +174,29 @@ function WorkflowPage({
   }
 
   async function handleSaveWorkflow() {
-    if (!workflowNameInput.trim() || (!isReceivables && !workflowDateInput) || (!isReceivables && !isTransfer && !isCreditCardPayment && !receivingAccountId)) {
+    // Validate required fields per section
+    if (!workflowNameInput.trim()) {
       setSaveError("Name is required.");
+      return;
+    }
+    if (!isReceivables && !workflowDateInput) {
+      setSaveError("Date is required.");
+      return;
+    }
+    if (isTransfer && !receivingAccountId) {
+      setSaveError("Source Account is required.");
+      return;
+    }
+    if (isTransfer && !transactedAccountId) {
+      setSaveError("Transfer Account is required.");
+      return;
+    }
+    if (isCreditCardPayment && !receivingAccountId) {
+      setSaveError("CC Account is required.");
+      return;
+    }
+    if (!isReceivables && !isTransfer && !isCreditCardPayment && !receivingAccountId) {
+      setSaveError("Account is required.");
       return;
     }
     const payload: Record<string, unknown> = {
@@ -197,28 +218,32 @@ function WorkflowPage({
     }
     setSaving(true);
     setSaveError(null);
-    const res =
-      modal?.mode === "edit" && editingId
-        ? await workflowApi.update(editingId, payload)
-        : await workflowApi.create(payload);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to save to Notion.");
-      return;
+    try {
+      const res =
+        modal?.mode === "edit" && editingId
+          ? await workflowApi.update(editingId, payload)
+          : await workflowApi.create(payload);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to save to Notion.");
+        return;
+      }
+      setModal(null);
+      const saved = res.data;
+      applyLocal((rows) => {
+        const idx = rows.findIndex((r) => r.id === saved.id);
+        if (idx === -1) return [saved, ...rows];
+        const next = rows.slice();
+        next[idx] = saved;
+        return next;
+      });
+      invalidateIncomeFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: splice the returned record into the visible list immediately,
-    // then invalidate the income family (workflows are income-backed) so this
-    // list AND cross-section views reconcile from the server.
-    const saved = res.data;
-    applyLocal((rows) => {
-      const idx = rows.findIndex((r) => r.id === saved.id);
-      if (idx === -1) return [saved, ...rows];
-      const next = rows.slice();
-      next[idx] = saved;
-      return next;
-    });
-    invalidateIncomeFamily();
   }
 
   function handleDuplicateWorkflow() {
@@ -235,17 +260,22 @@ function WorkflowPage({
     if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
     const deletedId = editingId;
     setSaving(true);
-    const res = await workflowApi.delete(deletedId);
-    setSaving(false);
-    if (!res.success) {
-      setSaveError(res.error.message || "Failed to delete.");
-      return;
+    try {
+      const res = await workflowApi.delete(deletedId);
+      if (!res.success) {
+        setSaveError(res.error.message || "Failed to delete.");
+        return;
+      }
+      setModal(null);
+      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+      invalidateIncomeFamily();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Network error. Please try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setModal(null);
-    // Optimistic: drop the row immediately, then invalidate the income family
-    // (workflows are income-backed) so this list and cross-section views reconcile.
-    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    invalidateIncomeFamily();
   }
 
   return (
@@ -305,14 +335,14 @@ function WorkflowPage({
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Name">
+          <Field label="Name" required>
             <input
               placeholder={`${label} title`}
               value={workflowNameInput}
               onChange={(event) => setWorkflowNameInput(event.target.value)}
             />
           </Field>
-          <Field label="Date">
+          <Field label="Date" required={!isReceivables}>
             <input
               type="date"
               value={workflowDateInput}
@@ -337,7 +367,7 @@ function WorkflowPage({
               />
             </Field>
           )}
-          <Field label={sourceAccountLabel}>
+          <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || isReceivables}>
             <select value={receivingAccountId} onChange={(event) => setReceivingAccountId(event.target.value)}>
               <option value="">— None —</option>
               {sourceAccountOptions.map((account) => (
@@ -346,7 +376,7 @@ function WorkflowPage({
             </select>
           </Field>
           {secondaryAccountLabel && (
-            <Field label={secondaryAccountLabel}>
+            <Field label={secondaryAccountLabel} required={isTransfer}>
               <select value={transactedAccountId} onChange={(event) => setTransactedAccountId(event.target.value)}>
                 <option value="">— None —</option>
                 {nonCreditActiveAccounts.map((account) => (
