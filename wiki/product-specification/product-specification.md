@@ -2,7 +2,7 @@
 
 ## Product Summary
 
-Notion Finance is a finance UI application for an existing Notion financial workspace. Notion remains the source of truth. The app provides a focused encoding and viewing experience over multiple Notion databases so the user can manage finance records without working directly inside complex Notion tables and formula-heavy views.
+Notable Finance is a finance UI application for an existing Notion financial workspace. Notion remains the source of truth. The app provides a focused encoding and viewing experience over multiple Notion databases so the user can manage finance records without working directly inside complex Notion tables and formula-heavy views.
 
 The app must support view and sync workflows for:
 

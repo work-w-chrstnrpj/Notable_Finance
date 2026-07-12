@@ -2,7 +2,7 @@
   "name": "notion-finance-service",
   "version": "0.1.0",
   "private": true,
-  "description": "NestJS backend service for Notion Finance",
+  "description": "NestJS backend service for Notable Finance",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/sql','dist/sql',{recursive:true})\"",
     "dev": "nest start --watch",

@@ -2,7 +2,7 @@
 
 **Date:** July 2026
 **Reviewer:** System Architect / Senior Full Stack Engineer
-**Scope:** Read-only architectural review of the Notion Finance project
+**Scope:** Read-only architectural review of the Notable Finance project
 **Focus:** UX performance complaint — constant API calls, slow saves, UI blocking during sync
 
 ---

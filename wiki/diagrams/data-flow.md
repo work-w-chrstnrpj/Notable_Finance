@@ -12,7 +12,7 @@ flowchart LR
     App[Finance App]
     Backend[Backend API]
     Notion[Notion API]
-    Workspace[(Notion Finance Databases)]
+    Workspace[(Notable Finance Databases)]
 
     User -->|View reference data; create/edit/delete supported records; sync| App
     App -->|API requests| Backend
@@ -68,7 +68,7 @@ flowchart TD
 
 | Store | Canonical? | Purpose |
 | --- | --- | --- |
-| Notion finance databases | Yes | Accounts and categories as reference/configuration data; incomes, transactions through income views, expenses, and expense scheduler through expense views |
+| Notable finance databases | Yes | Accounts and categories as reference/configuration data; incomes, transactions through income views, expenses, and expense scheduler through expense views |
 | Temporary read cache | No | Faster UI rendering and post-sync refresh |
 | Pending changes | No | Holds user changes until commit |
 | Sync logs/audit logs | No | Operational troubleshooting and user feedback |

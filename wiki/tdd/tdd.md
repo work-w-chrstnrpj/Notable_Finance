@@ -36,7 +36,7 @@ flowchart LR
     API --> Sync[Sync Service]
     Sync --> Adapter[Notion Adapter]
     Adapter --> Notion[Notion API]
-    Notion --> Workspace[(Notion Finance Databases)]
+    Notion --> Workspace[(Notable Finance Databases)]
     API --> Metadata[(App Metadata Store)]
 ```
 

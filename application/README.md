@@ -1,6 +1,6 @@
 # Application
 
-This folder now contains the first Next.js frontend foundation for Notion Finance.
+This folder now contains the first Next.js frontend foundation for Notable Finance.
 
 Current responsibilities:
 

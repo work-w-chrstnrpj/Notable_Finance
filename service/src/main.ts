@@ -30,7 +30,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  loggingService.log(`Notion Finance API running on port ${port}`, 'Bootstrap');
+  loggingService.log(`Notable Finance API running on port ${port}`, 'Bootstrap');
 }
 
 bootstrap().catch((err) => {

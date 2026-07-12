@@ -1,6 +1,6 @@
 # Development Plan
 
-This folder contains the project development tracker for Notion Finance.
+This folder contains the project development tracker for Notable Finance.
 
 Primary tracker:
 

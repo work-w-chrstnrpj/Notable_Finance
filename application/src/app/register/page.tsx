@@ -35,7 +35,7 @@ export default function RegisterPage() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>Create Account</h1>
-        <p className="auth-form__subtitle">Notion Finance</p>
+        <p className="auth-form__subtitle">Notable Finance</p>
         {error && <div className="auth-form__error">{error}</div>}
         <label>
           Name (optional)

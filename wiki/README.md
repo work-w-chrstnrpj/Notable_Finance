@@ -1,6 +1,6 @@
 # Wiki Index
 
-This folder is the project intent and operating record for Notion Finance.
+This folder is the project intent and operating record for Notable Finance.
 
 ## Read First
 

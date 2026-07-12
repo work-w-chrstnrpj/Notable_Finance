@@ -96,7 +96,7 @@ Use **`pwsh`**, not **`powershell`**. The `powershell` command is Windows PowerS
 
 ### Adoption lifecycle
 
-This repository has been adopted for the Notion Finance project. Keep `AGENTS.md`, wiki pages, context maps, and verification notes aligned with the finance app goal. Keep portable role and skill prompts reusable unless the project intentionally customizes them.
+This repository has been adopted for the Notable Finance project. Keep `AGENTS.md`, wiki pages, context maps, and verification notes aligned with the finance app goal. Keep portable role and skill prompts reusable unless the project intentionally customizes them.
 
 When adoption details change, use the `update-docs` skill to:
 
@@ -117,7 +117,7 @@ When adoption details change, use the `update-docs` skill to:
 
 ### 2. Adapt code folders
 
-Use `application/`, `service/`, `shared/`, and `tests/` for the planned Notion Finance architecture. Remove or rename unused template folders only after an implementation decision confirms they do not apply.
+Use `application/`, `service/`, `shared/`, and `tests/` for the planned Notable Finance architecture. Remove or rename unused template folders only after an implementation decision confirms they do not apply.
 
 ### 3. Keep project-specific AI routing current
 

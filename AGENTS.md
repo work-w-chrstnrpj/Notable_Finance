@@ -10,7 +10,7 @@ Build a finance UI application where Notion remains the source of truth. The app
 
 ## Project Overview
 
-Notion Finance is a personal finance application planned around an existing Notion workspace. Notion remains the canonical store for financial records. The app provides a cleaner UI for day-to-day encoding, viewing, validation, and synchronization across these database groups:
+Notable Finance is a personal finance application planned around an existing Notion workspace. Notion remains the canonical store for financial records. The app provides a cleaner UI for day-to-day encoding, viewing, validation, and synchronization across these database groups:
 
 - Accounts
 - Income Categories

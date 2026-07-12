@@ -25,9 +25,11 @@ import {
 } from "@/lib/export-node";
 import {
   AlertTriangle,
+  ArrowDownLeft,
   ArrowDownRight,
   ArrowLeft,
   ArrowUpRight,
+  ArrowUpDown,
   Banknote,
   Building2,
   CalendarDays,
@@ -164,9 +166,9 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
   dashboard: LayoutDashboard,
   accounts: WalletCards,
   income: ArrowUpRight,
-  expense: Receipt,
+  expense: ArrowDownLeft,
   "monthly-monitoring": CalendarDays,
-  transfer: ArrowDownRight,
+  transfer: ArrowUpDown,
   "credit-card-payment": CreditCard,
   alkansya: PiggyBank,
   receivables: Banknote,
@@ -716,7 +718,7 @@ function Sidebar({
       <div className="brand">
         <div className="brand__mark">N</div>
         <div>
-          <p className="brand__name">Notion Finance</p>
+          <p className="brand__name">Notable Finance</p>
         </div>
         <button
           type="button"

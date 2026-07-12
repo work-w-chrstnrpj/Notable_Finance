@@ -1,4 +1,4 @@
-# Notion Finance Service
+# Notable Finance Service
 
 NestJS backend service for the Notable Finance app.
 

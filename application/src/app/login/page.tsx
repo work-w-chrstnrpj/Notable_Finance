@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>Sign In</h1>
-        <p className="auth-form__subtitle">Notion Finance</p>
+        <p className="auth-form__subtitle">Notable Finance</p>
         {sessionExpired && !error && (
           <div className="auth-form__notice">
             Your session expired. Please sign in again.

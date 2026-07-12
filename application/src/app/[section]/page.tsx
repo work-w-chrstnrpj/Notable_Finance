@@ -24,12 +24,12 @@ export async function generateMetadata({
 
   if (!match) {
     return {
-      title: "Notion Finance",
+      title: "Notable Finance",
     };
   }
 
   return {
-    title: `${match.label} | Notion Finance`,
+    title: `${match.label} | Notable Finance`,
   };
 }
 

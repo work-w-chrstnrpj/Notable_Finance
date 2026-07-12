@@ -229,7 +229,7 @@
 }
 
 [data-theme="dark"] .fab__action-label {
-  background: var(--ink);
+  background: var(--surface);
   color: #fff;
 }
 

@@ -4,7 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 
 export const metadata: Metadata = {
-  title: "Notion Finance",
+  title: "Notable Finance",
   description: "A Notion-backed finance encoding and viewing workspace.",
 };
 
