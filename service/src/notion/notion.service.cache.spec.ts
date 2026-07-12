@@ -109,4 +109,41 @@ describe('NotionService cache (P2)', () => {
     expect(client.calls.incomes).toBe(1);
     expect(client.calls.accounts ?? 0).toBe(0);
   });
+
+  it('coalesces a concurrent cold-start burst into one query per database', async () => {
+    const { service, client } = makeService(60_000);
+    // A dashboard mount fires many reads at once before the cache exists.
+    await Promise.all([
+      service.list('incomes'),
+      service.list('expenses'),
+      service.list('alkansya'),
+      service.list('transfers'),
+      service.list('accounts'),
+    ]);
+    // Without single-flight this would be ~25 queries (5 reads × 5 DBs).
+    expect(client.calls).toEqual({
+      accounts: 1,
+      incomeCategories: 1,
+      incomes: 1,
+      expenseCategories: 1,
+      expenses: 1,
+    });
+  });
+
+  it('coalesces a concurrent stale income-backed burst into one query', async () => {
+    const { service, client } = makeService(0); // collections immediately stale
+    await service.list('incomes'); // cold load
+    client.reset();
+
+    // incomes/alkansya/transfers/creditCardPayments all back `incomes`; a single
+    // dashboard mount must not fan out into four concurrent Notion queries.
+    await Promise.all([
+      service.list('incomes'),
+      service.list('alkansya'),
+      service.list('transfers'),
+      service.list('creditCardPayments'),
+    ]);
+    expect(client.calls.incomes).toBe(1);
+    expect(client.calls.accounts ?? 0).toBe(0);
+  });
 });

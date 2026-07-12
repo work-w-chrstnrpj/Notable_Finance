@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
+import {
+  useQuery,
+  useQueryClient,
+  type QueryKey,
+} from "@tanstack/react-query";
 import type { ApiResult } from "./api-client";
 import { useAuth } from "./auth-context";
 import {
@@ -29,116 +34,77 @@ import type {
   SyncStatus,
 } from "@/types/finance";
 
-// ── Generic data hook ─────────────────────────────────────────────────
+// Reference data changes rarely (P1); cache it longer than transactional data.
+const REFERENCE_STALE_TIME = 5 * 60_000;
+
+// ── Generic read hook (React Query backed) ────────────────────────────
+//
+// Reads go through React Query (ADR-001) but keep the { state, refetch,
+// applyLocal } shape the workspace already consumes, so migrating the data
+// layer did not require touching the ~15 read sites in finance-workspace.tsx.
+// React Query provides caching, request deduplication, stale-while-revalidate,
+// and background refetch for free.
 
 export type AsyncState<T> =
   | { status: "loading" }
   | { status: "success"; data: T }
   | { status: "error"; error: string };
 
-export function useApiData<T>(
+interface ApiQueryOptions<T> {
+  fallback?: T;
+  staleTime?: number;
+  /** Extra gate on top of the auth-ready gate (e.g. an id must be present). */
+  enabled?: boolean;
+}
+
+function useApiQuery<T>(
+  queryKey: QueryKey,
   fetcher: () => Promise<ApiResult<T>>,
-  fallback?: T,
-  /**
-   * Serialized query key. When it changes the data is refetched — this is what
-   * makes month/view-mode switches issue a fresh query instead of showing the
-   * initial (stale) result forever.
-   */
-  key?: string,
+  options: ApiQueryOptions<T> = {},
 ) {
-  const { user, loading: authLoading } = useAuth();
-  const [state, setState] = useState<AsyncState<T>>({ status: "loading" });
+  const { loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const { fallback, staleTime, enabled = true } = options;
 
-  const fetcherRef = useRef(fetcher);
-  // eslint-disable-next-line react-hooks/refs
-  fetcherRef.current = fetcher;
-  const fallbackRef = useRef(fallback);
-  // eslint-disable-next-line react-hooks/refs
-  fallbackRef.current = fallback;
-
-  useEffect(() => {
-    // Wait for AuthProvider to finish deciding whether the caller is
-    // authenticated. If we fire the fetch before AuthProvider's own useEffect
-    // populates api-client's module-level authToken, the Bearer header is
-    // missing and every backend read returns empty (the per-user Notion
-    // config never gets loaded server-side).
-    if (authLoading) return;
-
-    let cancelled = false;
-
-    queueMicrotask(() => {
-      if (!cancelled) {
-        setState({ status: "loading" });
+  const query = useQuery<T, Error>({
+    queryKey,
+    enabled: !authLoading && enabled,
+    staleTime,
+    queryFn: async () => {
+      try {
+        const res = await fetcher();
+        if (res.success) return res.data;
+        if (fallback !== undefined) return fallback;
+        throw new Error(res.error?.message ?? "Request failed");
+      } catch (err) {
+        // Preserve the old fallback-on-any-failure behaviour.
+        if (fallback !== undefined) return fallback;
+        throw err instanceof Error ? err : new Error("Network error");
       }
-    });
+    },
+  });
 
-    fetcherRef.current()
-      .then((result) => {
-        if (cancelled) return;
-        if (result.success) {
-          setState({ status: "success", data: result.data });
-        } else if (fallbackRef.current !== undefined) {
-          setState({ status: "success", data: fallbackRef.current });
-        } else {
-          setState({ status: "error", error: result.error?.message ?? "Request failed" });
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        if (fallbackRef.current !== undefined) {
-          setState({ status: "success", data: fallbackRef.current });
-        } else {
-          setState({ status: "error", error: err instanceof Error ? err.message : "Network error" });
-        }
-      });
+  const state: AsyncState<T> = query.isError
+    ? { status: "error", error: query.error?.message ?? "Request failed" }
+    : query.data !== undefined
+      ? { status: "success", data: query.data }
+      : { status: "loading" };
 
-    return () => {
-      cancelled = true;
-    };
-  }, [key, authLoading, user?.id]);
+  // Stable refetch. React Query refetch is inherently stale-while-revalidate
+  // (keeps prior data on screen), so it never blanks the current view.
+  const rqRefetch = query.refetch;
+  const refetch = useCallback(async () => {
+    await rqRefetch();
+  }, [rqRefetch]);
 
-  const refetch = useCallback(async (opts?: { silent?: boolean }) => {
-    // Silent (stale-while-revalidate) refetch keeps the currently displayed
-    // data on screen instead of blanking it with a loading spinner. Used after
-    // an optimistic mutation to reconcile computed/server-side fields quietly.
-    const silent = opts?.silent ?? false;
-    if (!silent) {
-      setState({ status: "loading" });
-    }
-
-    try {
-      const result = await fetcherRef.current();
-
-      if (result.success) {
-        setState({ status: "success", data: result.data });
-      } else if (fallbackRef.current !== undefined) {
-        setState({ status: "success", data: fallbackRef.current });
-      } else if (!silent) {
-        setState({ status: "error", error: result.error?.message ?? "Request failed" });
-      }
-      // silent + no fallback + failure: keep the prior data rather than error out
-    } catch (err: unknown) {
-      if (fallbackRef.current !== undefined) {
-        setState({ status: "success", data: fallbackRef.current });
-      } else if (!silent) {
-        setState({ status: "error", error: err instanceof Error ? err.message : "Network error" });
-      }
-    }
-  }, []);
-
-  /**
-   * Synchronously merge a change into the currently displayed data without a
-   * network round-trip. Enables optimistic create/update/delete: the returned
-   * record is spliced into the list immediately, then a silent refetch
-   * reconciles any server-computed fields. No-op unless data is already loaded.
-   */
-  const applyLocal = useCallback((updater: (prev: T) => T) => {
-    setState((prev) =>
-      prev.status === "success"
-        ? { status: "success", data: updater(prev.data) }
-        : prev,
+  // Optimistic local merge → writes straight into the query cache. Called only
+  // from event handlers, so a plain (non-memoized) function is fine. No-op
+  // until the query has data.
+  const applyLocal = (updater: (prev: T) => T) => {
+    queryClient.setQueryData<T>(queryKey, (prev) =>
+      prev === undefined ? prev : updater(prev),
     );
-  }, []);
+  };
 
   return { state, refetch, applyLocal };
 }
@@ -146,98 +112,102 @@ export function useApiData<T>(
 // ── Dashboard ─────────────────────────────────────────────────────────
 
 export function useDashboardData(month: string) {
-  return useApiData<DashboardSummary>(
-    () => dashboardApi.summary(month),
+  return useApiQuery<DashboardSummary>(["dashboard", month], () =>
+    dashboardApi.summary(month),
   );
 }
 
 // ── Account hooks ─────────────────────────────────────────────────────
 
 export function useAccounts(includeInactive = false) {
-  return useApiData<Account[]>(
+  return useApiQuery<Account[]>(
+    ["accounts", { includeInactive }],
     () => accountsApi.list({ includeInactive }),
+    { staleTime: REFERENCE_STALE_TIME },
   );
 }
 
 export function useAccount(id: string | null) {
-  return useApiData<Account>(
-    () => accountsApi.detail(id!),
-  );
+  return useApiQuery<Account>(["account", id], () => accountsApi.detail(id!), {
+    enabled: id != null,
+  });
 }
 
 // ── Income Category hooks ─────────────────────────────────────────────
 
 export function useIncomeCategories(normalOnly = false) {
-  return useApiData<IncomeCategory[]>(
+  return useApiQuery<IncomeCategory[]>(
+    ["incomeCategories", { normalOnly }],
     () => incomeCategoriesApi.list({ normalOnly }),
+    { staleTime: REFERENCE_STALE_TIME },
   );
 }
 
 // ── Expense Category hooks ────────────────────────────────────────────
 
 export function useExpenseCategories() {
-  return useApiData(
-    () => expenseCategoriesApi.list(),
-  );
+  return useApiQuery(["expenseCategories"], () => expenseCategoriesApi.list(), {
+    staleTime: REFERENCE_STALE_TIME,
+  });
 }
 
 // ── Income hooks ──────────────────────────────────────────────────────
 
-export function useIncomes(
-  params?: {
-    month?: string;
-    rangeStart?: string;
-    rangeEnd?: string;
-    categoryId?: string;
-    accountId?: string;
-  },
-) {
-  const key = JSON.stringify(params ?? {});
-  return useApiData<IncomeRecord[]>(
-    () => incomesApi.list(params),
-    undefined,
-    key,
+export function useIncomes(params?: {
+  month?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
+  categoryId?: string;
+  accountId?: string;
+}) {
+  return useApiQuery<IncomeRecord[]>(["incomes", params ?? {}], () =>
+    incomesApi.list(params),
   );
 }
 
 // ── Expense hooks ─────────────────────────────────────────────────────
 
-export function useExpenses(
-  params?: {
-    month?: string;
-    rangeStart?: string;
-    rangeEnd?: string;
-    categoryId?: string;
-    accountId?: string;
-    paymentStatus?: string;
-    expenseViewMode?: string;
-    pasabuyer?: string;
-  },
-) {
-  const key = JSON.stringify(params ?? {});
-  return useApiData<ExpenseRecord[]>(
-    () => expensesApi.list(params),
-    undefined,
-    key,
+export function useExpenses(params?: {
+  month?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
+  categoryId?: string;
+  accountId?: string;
+  paymentStatus?: string;
+  expenseViewMode?: string;
+  pasabuyer?: string;
+}) {
+  return useApiQuery<ExpenseRecord[]>(["expenses", params ?? {}], () =>
+    expensesApi.list(params),
   );
 }
 
 // ── Workflow hooks (income-backed views) ──────────────────────────────
 
 export function useTransfers(params?: WorkflowListParams) {
-  return useApiData<IncomeRecord[]>(() => transfersApi.list(params));
+  return useApiQuery<IncomeRecord[]>(["workflow", "transfer", params ?? {}], () =>
+    transfersApi.list(params),
+  );
 }
 
 export function useCreditCardPayments(params?: WorkflowListParams) {
-  return useApiData<IncomeRecord[]>(() => creditCardPaymentsApi.list(params));
+  return useApiQuery<IncomeRecord[]>(
+    ["workflow", "credit-card-payment", params ?? {}],
+    () => creditCardPaymentsApi.list(params),
+  );
 }
 
 export function useAlkansya(params?: WorkflowListParams) {
-  return useApiData<IncomeRecord[]>(() => alkansyaApi.list(params));
+  return useApiQuery<IncomeRecord[]>(["workflow", "alkansya", params ?? {}], () =>
+    alkansyaApi.list(params),
+  );
 }
 
 export function useReceivables(params?: WorkflowListParams) {
-  return useApiData<IncomeRecord[]>(() => receivablesApi.list(params));
+  return useApiQuery<IncomeRecord[]>(
+    ["workflow", "receivables", params ?? {}],
+    () => receivablesApi.list(params),
+  );
 }
 
 export type WorkflowSection =
@@ -258,46 +228,66 @@ export function useWorkflowRecords(
   params?: WorkflowListParams,
 ) {
   const api = workflowApiBySection[section];
-  const key = JSON.stringify({ section, ...(params ?? {}) });
-  return useApiData<IncomeRecord[]>(
-    () => api.list(params),
-    undefined,
-    key,
+  return useApiQuery<IncomeRecord[]>(["workflow", section, params ?? {}], () =>
+    api.list(params),
   );
 }
 
 // ── Sync hooks ────────────────────────────────────────────────────────
 
 export function useSyncStatus() {
-  return useApiData<SyncStatus>(
-    () => syncApi.status(),
-    {
+  return useApiQuery<SyncStatus>(["syncStatus"], () => syncApi.status(), {
+    fallback: {
       lastSyncAt: null,
       state: "idle",
       pendingOperations: 0,
       failedOperations: 0,
     },
-  );
+  });
 }
 
 export function useSchemaStatus() {
-  return useApiData(
-    () => syncApi.schemaStatus(),
-  );
+  return useApiQuery(["schemaStatus"], () => syncApi.schemaStatus());
 }
 
 // ── Monthly Monitoring hook ───────────────────────────────────────────
 
 export function useMonthlyMonitoring(month: string) {
-  return useApiData(
-    () => monthlyMonitoringApi.list(month),
+  return useApiQuery(["monthlyMonitoring", month], () =>
+    monthlyMonitoringApi.list(month),
   );
 }
 
 // ── Expense Scheduler hook ────────────────────────────────────────────
 
 export function useExpenseScheduler() {
-  return useApiData<ExpenseSchedulerRecord[]>(
-    () => expenseSchedulerApi.list(),
+  return useApiQuery<ExpenseSchedulerRecord[]>(["expenseScheduler"], () =>
+    expenseSchedulerApi.list(),
   );
+}
+
+// ── Cross-section invalidation (ADR-001 invalidation map) ─────────────
+//
+// After a mutation, invalidate the affected query families so every consumer —
+// including Dashboard and Monthly Monitoring, which compute from income/expense
+// reads — refreshes. Prefix keys cover every filtered/month variant. React
+// Query refetches active queries immediately and marks inactive ones stale for
+// their next mount.
+
+export function useFinanceInvalidation() {
+  const queryClient = useQueryClient();
+
+  const invalidateIncomeFamily = useCallback(() => {
+    for (const key of [["incomes"], ["workflow"], ["dashboard"], ["monthlyMonitoring"]]) {
+      void queryClient.invalidateQueries({ queryKey: key });
+    }
+  }, [queryClient]);
+
+  const invalidateExpenseFamily = useCallback(() => {
+    for (const key of [["expenses"], ["expenseScheduler"], ["dashboard"], ["monthlyMonitoring"]]) {
+      void queryClient.invalidateQueries({ queryKey: key });
+    }
+  }, [queryClient]);
+
+  return { invalidateIncomeFamily, invalidateExpenseFamily };
 }

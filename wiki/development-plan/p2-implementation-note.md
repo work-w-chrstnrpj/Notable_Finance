@@ -5,6 +5,12 @@
 **Scope:** P2-1 … P2-3 of `performance-optimization-plan.xlsx`
 **Result:** Implemented and verified with deterministic unit tests.
 
+> **Addendum (during P3):** the TTL model introduced here lacked in-flight coalescing. Under real
+> concurrent load (a dashboard mount, where `incomes`/`alkansya`/`transfers`/`credit-card-payments` all
+> back the same `incomes` collection) this caused a thundering herd against Notion → rate-limit hangs and
+> 5xx. Fixed by adding `singleFlight()` to `notion.service.ts` and 2 concurrency tests. Details in
+> `p3-implementation-note.md`.
+
 ---
 
 ## What changed (backend only)

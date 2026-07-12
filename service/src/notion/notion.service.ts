@@ -99,6 +99,16 @@ export class NotionService {
    */
   private collectionFreshUntil = new Map<string, Map<CollectionName, number>>();
 
+  /**
+   * In-flight loads keyed by `${cacheKey}:${collection}` (or `:__all__` for a
+   * cold load). Concurrent readers of the same stale collection await the same
+   * promise instead of each firing their own Notion query — without this, a
+   * single dashboard mount fans out into a thundering herd against Notion
+   * (incomes/alkansya/transfers/creditCardPayments all back the same collection)
+   * once the TTL expires, tripping rate limits and 5xx responses.
+   */
+  private inFlightLoads = new Map<string, Promise<void>>();
+
   constructor(
     private readonly appConfig: AppConfigService,
     private readonly mappingService: MappingService,
@@ -145,6 +155,21 @@ export class NotionService {
     this.collectionFreshUntil.get(key)?.delete(collection);
   }
 
+  /**
+   * Coalesce concurrent loads under the same flight key: the first caller runs
+   * `fn`, everyone else awaits its promise. Prevents duplicate Notion queries
+   * (and the resulting rate-limit storms) when many requests arrive at once.
+   */
+  private singleFlight(flightKey: string, fn: () => Promise<void>): Promise<void> {
+    const existing = this.inFlightLoads.get(flightKey);
+    if (existing) return existing;
+    const promise = fn().finally(() => {
+      this.inFlightLoads.delete(flightKey);
+    });
+    this.inFlightLoads.set(flightKey, promise);
+    return promise;
+  }
+
   private async loadLive(userId: string | undefined, resource: ResourceName): Promise<NotionApiClient | null> {
     const key = this.getLiveCacheKey(userId);
 
@@ -161,7 +186,9 @@ export class NotionService {
         const client = await this.clientFactory.getClient(userId);
         if (!client) return null;
         try {
-          await this.loadLiveCollection(client, key, collection);
+          await this.singleFlight(`${key}:${collection}`, () =>
+            this.loadLiveCollection(client, key, collection),
+          );
           return client;
         } catch (error) {
           this.logger.warn(
@@ -177,7 +204,9 @@ export class NotionService {
     if (!client) return null;
 
     try {
-      await this.loadAllCollections(client, key);
+      await this.singleFlight(`${key}:__all__`, () =>
+        this.loadAllCollections(client, key),
+      );
       return client;
     } catch (error) {
       this.logger.warn(`Notion live load failed, falling back to static data: ${error instanceof Error ? error.message : error}`);

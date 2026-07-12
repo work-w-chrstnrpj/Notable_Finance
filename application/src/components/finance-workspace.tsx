@@ -94,6 +94,7 @@ import {
 } from "@/lib/finance-data";
 import {
   useExpenses,
+  useFinanceInvalidation,
   useIncomes,
   useSyncStatus,
   useWorkflowRecords,
@@ -1826,6 +1827,7 @@ function IncomePage({
     accountId: accountId || undefined,
     categoryId: categoryId || undefined,
   });
+  const { invalidateIncomeFamily } = useFinanceInvalidation();
   useEffect(() => {
     const handler = () => {
       void refetch();
@@ -1903,7 +1905,8 @@ function IncomePage({
     }
     setModal(null);
     // Optimistic: splice the returned record into the visible list immediately,
-    // then reconcile server-computed fields with a silent background refetch.
+    // then invalidate the income family so this list AND cross-section views
+    // (Dashboard, Monthly Monitoring) reconcile from the server.
     const saved = res.data;
     applyLocal((rows) => {
       const idx = rows.findIndex((r) => r.id === saved.id);
@@ -1912,7 +1915,7 @@ function IncomePage({
       next[idx] = saved;
       return next;
     });
-    void refetch({ silent: true });
+    invalidateIncomeFamily();
   }
 
   function handleDuplicateIncome() {
@@ -1936,9 +1939,10 @@ function IncomePage({
       return;
     }
     setModal(null);
-    // Optimistic: drop the row immediately, reconcile silently in the background.
+    // Optimistic: drop the row immediately, then invalidate the income family so
+    // this list and cross-section views reconcile.
     applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    void refetch({ silent: true });
+    invalidateIncomeFamily();
   }
 
   return (
@@ -2218,6 +2222,7 @@ function ExpensePage({
     pasabuyer: pasabuyerFilter || undefined,
     expenseViewMode: viewMode,
   });
+  const { invalidateExpenseFamily } = useFinanceInvalidation();
   useEffect(() => {
     const handler = () => {
       void refetch();
@@ -2355,7 +2360,8 @@ function ExpensePage({
     }
     setModal(null);
     // Optimistic: splice the returned record into the visible list immediately,
-    // then reconcile server-computed fields with a silent background refetch.
+    // then invalidate the expense family so this list AND cross-section views
+    // (Dashboard, Monthly Monitoring) reconcile from the server.
     const saved = res.data;
     applyLocal((rows) => {
       const idx = rows.findIndex((r) => r.id === saved.id);
@@ -2364,7 +2370,7 @@ function ExpensePage({
       next[idx] = saved;
       return next;
     });
-    void refetch({ silent: true });
+    invalidateExpenseFamily();
   }
 
   function handleDuplicateExpense() {
@@ -2388,9 +2394,10 @@ function ExpensePage({
       return;
     }
     setModal(null);
-    // Optimistic: drop the row immediately, reconcile silently in the background.
+    // Optimistic: drop the row immediately, then invalidate the expense family
+    // so this list and cross-section views reconcile.
     applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    void refetch({ silent: true });
+    invalidateExpenseFamily();
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
@@ -2997,6 +3004,8 @@ function WorkflowPage({
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
     month: monthScoped ? selectedMonth : undefined,
   });
+  // Workflows are income-backed views, so they share the income invalidation.
+  const { invalidateIncomeFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
   const workflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
@@ -3104,7 +3113,8 @@ function WorkflowPage({
     }
     setModal(null);
     // Optimistic: splice the returned record into the visible list immediately,
-    // then reconcile server-computed fields with a silent background refetch.
+    // then invalidate the income family (workflows are income-backed) so this
+    // list AND cross-section views reconcile from the server.
     const saved = res.data;
     applyLocal((rows) => {
       const idx = rows.findIndex((r) => r.id === saved.id);
@@ -3113,7 +3123,7 @@ function WorkflowPage({
       next[idx] = saved;
       return next;
     });
-    void refetch({ silent: true });
+    invalidateIncomeFamily();
   }
 
   function handleDuplicateWorkflow() {
@@ -3137,9 +3147,10 @@ function WorkflowPage({
       return;
     }
     setModal(null);
-    // Optimistic: drop the row immediately, reconcile silently in the background.
+    // Optimistic: drop the row immediately, then invalidate the income family
+    // (workflows are income-backed) so this list and cross-section views reconcile.
     applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-    void refetch({ silent: true });
+    invalidateIncomeFamily();
   }
 
   return (
@@ -5216,6 +5227,7 @@ function WorkspaceFab({
 
 function QuickAddIncomeModal({ onClose }: { onClose: () => void }) {
   const { nonCreditActiveAccounts, normalIncomeCategories } = useLiveCollections();
+  const { invalidateIncomeFamily } = useFinanceInvalidation();
   const [nameInput, setNameInput] = useState("");
   const [dateInput, setDateInput] = useState(() => todayIso());
   const [formAccountId, setFormAccountId] = useState("");
@@ -5258,6 +5270,7 @@ function QuickAddIncomeModal({ onClose }: { onClose: () => void }) {
       return;
     }
     emitDataChanged();
+    invalidateIncomeFamily();
     onClose();
   }
 
@@ -5340,6 +5353,7 @@ function QuickAddExpenseModal({
 }) {
   const { activeAccounts, expenseCategories, expenseCategoryNameById } =
     useLiveCollections();
+  const { invalidateExpenseFamily } = useFinanceInvalidation();
   const [descriptionInput, setDescriptionInput] = useState("");
   const [formAccountId, setFormAccountId] = useState("");
   const [formCategoryId, setFormCategoryId] = useState("");
@@ -5439,6 +5453,7 @@ function QuickAddExpenseModal({
       return;
     }
     emitDataChanged();
+    invalidateExpenseFamily();
     onClose();
   }
 

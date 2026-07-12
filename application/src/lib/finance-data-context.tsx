@@ -106,12 +106,13 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
   const { state: expenseCategoriesState, refetch: refetchExpenseCategories } =
     useExpenseCategories();
 
-  // refetch() from useApiData is stable, so this callback is stable too.
+  // refetch() from the read hooks is stable (and stale-while-revalidate under
+  // React Query), so this callback is stable and never blanks the dropdowns.
   const refreshReferenceData = useCallback(() => {
-    void refetchAccounts({ silent: true });
-    void refetchAllIncomeCategories({ silent: true });
-    void refetchNormalIncomeCategories({ silent: true });
-    void refetchExpenseCategories({ silent: true });
+    void refetchAccounts();
+    void refetchAllIncomeCategories();
+    void refetchNormalIncomeCategories();
+    void refetchExpenseCategories();
   }, [
     refetchAccounts,
     refetchAllIncomeCategories,
