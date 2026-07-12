@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowDownLeft, ArrowUpRight, ArrowUpDown, Banknote, Cred
 import type { LucideIcon } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { EmptyState } from "@/components/ui";
+import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { MetricCard } from "@/components/ui";
 import { categoryPalette, prototypeAccent } from "@/components/constants";
 import { useExpenses, useIncomes, useWorkflowRecords } from "@/lib/use-data";
@@ -37,6 +38,24 @@ function DashboardPage({
   const { state: ccPaymentState } = useWorkflowRecords("credit-card-payment", {
     month: selectedMonth,
   });
+
+  // P5: Show skeleton while primary data is loading
+  const isLoading = incomesState.status === "loading" && expensesState.status === "loading";
+  if (isLoading) {
+    return (
+      <div className="page-stack">
+        <section className="metric-grid metric-grid--prototype">
+          <MetricCardGridSkeleton count={4} />
+        </section>
+        <section className="metric-grid metric-grid--prototype">
+          <MetricCardGridSkeleton count={4} />
+        </section>
+        <PanelSkeleton rows={5} />
+        <PanelSkeleton rows={3} />
+      </div>
+    );
+  }
+
   const monthLabel = getMonthLabel(selectedMonth);
 
   const monthIncomes: IncomeRecord[] = (

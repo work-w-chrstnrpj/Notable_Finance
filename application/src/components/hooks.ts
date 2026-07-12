@@ -76,3 +76,29 @@ function isWorkflowSection(section: FinanceSectionId): section is WorkflowSectio
 }
 
 export { useLiveCollections, getIncomeCategorySummaries, getExpenseCategorySummaries, isWorkflowSection, isSpecificExpenseCategoryFilter };
+
+import { useState, useEffect } from "react";
+
+/**
+ * Debounce a rapidly changing value (e.g. text input) so downstream consumers
+ * (API queries, expensive filtering) only fire after `delayMs` of inactivity.
+ *
+ * Usage:
+ * ```tsx
+ * const [query, setQuery] = useState("");
+ * const debouncedQuery = useDebounce(query, 300);
+ * // debouncedQuery updates 300ms after the user stops typing
+ * ```
+ */
+function useDebounce<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState<T>(value);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(id);
+  }, [value, delayMs]);
+
+  return debounced;
+}
+
+export { useDebounce };

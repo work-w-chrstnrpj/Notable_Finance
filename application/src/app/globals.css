@@ -3556,3 +3556,172 @@ tfoot td {
     width: 100%;
   }
 }
+
+/* ── P5: Skeleton loading ────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-bar {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 50%, var(--surface-muted) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-metric-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--surface);
+}
+
+.skeleton-table {
+  display: grid;
+  gap: 0;
+}
+
+.skeleton-table__row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.skeleton-table__row:last-child {
+  border-bottom: 0;
+}
+
+/* ── P5: Error boundary ──────────────────────────────────────────────── */
+
+.error-boundary {
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--rose);
+  border-radius: var(--radius);
+  background: var(--rose-soft);
+  padding: 16px;
+}
+
+.error-boundary__icon {
+  flex: 0 0 auto;
+  color: var(--rose);
+  padding-top: 2px;
+}
+
+.error-boundary__body {
+  display: grid;
+  gap: 4px;
+}
+
+.error-boundary__body strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.error-boundary__message {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.error-boundary__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 12px;
+  width: fit-content;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.error-boundary__retry:hover {
+  background: var(--surface-muted);
+  border-color: var(--ink-muted);
+}
+
+/* ── P5: Table pagination ────────────────────────────────────────────── */
+
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.table-pagination__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.table-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.table-pagination__btn:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--ink-muted);
+}
+
+.table-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.table-pagination__btn--active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.table-pagination__btn--active:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.table-pagination select {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}

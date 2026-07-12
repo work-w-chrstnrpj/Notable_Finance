@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   AccountDto,
   ExpenseCategoryDto,
@@ -50,6 +50,7 @@ export type CachedRecord =
  * policy lives in one cohesive place. Constructed by NotionService with the
  * same injected dependencies, so it stays a singleton per service instance.
  */
+@Injectable()
 export class LiveCacheManager {
   private readonly logger = new Logger(LiveCacheManager.name);
 

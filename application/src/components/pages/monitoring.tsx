@@ -7,6 +7,7 @@ import { CategoryDonutChart } from "@/components/charts";
 import { categoryPalette, type ForecastIncome } from "@/components/constants";
 import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue, FormSectionDivider } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
+import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { useIncomes, useExpenses } from "@/lib/use-data";
 import { useFabRegister } from "@/lib/fab-export-context";
@@ -80,9 +81,11 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
 
   const forecastTotal = forecasts.reduce((sum, f) => sum + f.amount, 0);
 
+
   const scopedIncomeRecords: IncomeRecord[] = (
     incomesState.status === "success" ? incomesState.data : []
   ).filter((record) => !record.name?.includes("[Deleted:"));
+
   const scopedExpenseRecords: ExpenseRecord[] = (
     expensesState.status === "success" ? expensesState.data : []
   ).filter((record) => !record.description?.includes("[Deleted:"));
@@ -158,6 +161,21 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     });
     return () => setInsight(null);
   }, [selectedMonth, setInsight]);
+
+
+  // P5: Show skeleton while primary data is loading
+  const isLoading = incomesState.status === "loading" && expensesState.status === "loading";
+  if (isLoading) {
+    return (
+      <div className="page-stack">
+        <section className="metric-grid metric-grid--prototype">
+          <MetricCardGridSkeleton count={4} />
+        </section>
+        <PanelSkeleton rows={5} />
+        <PanelSkeleton rows={3} />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack" ref={captureRef}>

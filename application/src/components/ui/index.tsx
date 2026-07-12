@@ -287,3 +287,52 @@ export function ErrorRow({ code, detail }: { code: string; detail: string }) {
     </div>
   );
 }
+
+// ── Skeleton loading primitives ─────────────────────────────────────────
+
+/** Single animated bar used as the base primitive for skeleton layouts. */
+export function SkeletonBar({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={`skeleton-bar ${className ?? ""}`} style={style} aria-hidden="true" />;
+}
+
+/** Metric-card-shaped skeleton (used on Dashboard, Monitoring). */
+export function MetricCardSkeleton() {
+  return (
+    <article className="skeleton-metric-card" aria-busy="true" aria-label="Loading metric">
+      <SkeletonBar className="skeleton-bar--title" style={{ width: "45%", height: 12 }} />
+      <SkeletonBar className="skeleton-bar--value" style={{ width: "70%", height: 22 }} />
+      <SkeletonBar className="skeleton-bar--detail" style={{ width: "55%", height: 11 }} />
+    </article>
+  );
+}
+
+/** Panel-shaped skeleton wrapping a title + N table rows. */
+export function PanelSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <section className="panel" aria-busy="true" aria-label="Loading">
+      <div className="panel__header">
+        <SkeletonBar style={{ width: 120, height: 16 }} />
+      </div>
+      <div className="skeleton-table">
+        {Array.from({ length: rows }, (_, i) => (
+          <div className="skeleton-table__row" key={i}>
+            <SkeletonBar style={{ flex: 2, height: 13 }} />
+            <SkeletonBar style={{ flex: 1, height: 13 }} />
+            <SkeletonBar style={{ flex: 1, height: 13 }} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Grid of skeleton metric cards. */
+export function MetricCardGridSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="metric-grid" aria-busy="true" aria-label="Loading metrics">
+      {Array.from({ length: count }, (_, i) => (
+        <MetricCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}

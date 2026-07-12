@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageToolbar, FilterSelect, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
+import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
 import { useFinanceData } from "@/lib/finance-data-context";
@@ -17,7 +18,19 @@ function AccountsPage() {
   const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   // Reference accounts come from the shared provider (fetched once per session).
-  const { allAccounts: sourceAccounts } = useFinanceData();
+  const { allAccounts: sourceAccounts, referenceLoading } = useFinanceData();
+
+  // P5: Show skeleton while reference data is loading
+  if (referenceLoading) {
+    return (
+      <div className="page-stack">
+        <section className="metric-grid metric-grid--prototype">
+          <MetricCardGridSkeleton count={3} />
+        </section>
+        <PanelSkeleton rows={6} />
+      </div>
+    );
+  }
 
   // Distinct account (card) types present, for the Card Type filter dropdown.
   const cardTypeOptions = Array.from(

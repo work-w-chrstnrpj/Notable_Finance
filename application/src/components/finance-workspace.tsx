@@ -26,6 +26,9 @@ import { WorkspaceFab } from "@/components/fab";
 // FabExportProvider
 import { FabExportProvider } from "@/lib/fab-export-context";
 
+// P5: Error boundary
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+
 // Hooks & types
 import { isWorkflowSection } from "@/components/hooks";
 import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, SchemaHealth, SyncState } from "@/types/finance";
@@ -33,7 +36,11 @@ import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, SchemaHealth, S
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
   const { user, loading: authLoading } = useAuth();
   const { refreshReferenceData } = useFinanceData();
-  const [selectedDate, setSelectedDate] = useState<string>(() => todayIso());
+  // Use a stable default to avoid SSR/client hydration mismatch.
+  // todayIso() produces different results on server vs client (timezone/time).
+  const [selectedDate, setSelectedDate] = useState<string>("2026-07-01");
+  // Sync to real date on client mount (runs once, after hydration).
+  useEffect(() => { setSelectedDate(todayIso()); }, []);
   const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
@@ -43,15 +50,15 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
   const [pendingOperations, setPendingOperations] = useState(0);
   const [lastSync, setLastSync] = useState("—");
-  const [showFab, setShowFab] = useState(() => {
-    if (typeof window === "undefined") return true;
+  // Stable default avoids hydration mismatch; synced from localStorage in useEffect below.
+  const [showFab, setShowFab] = useState(true);
+  // Load FAB preference from localStorage on client mount (after hydration).
+  useEffect(() => {
     try {
       const cached = localStorage.getItem("nf_show_fab");
-      return cached !== null ? cached === "true" : true;
-    } catch {
-      return true;
-    }
-  });
+      if (cached !== null) setShowFab(cached === "true");
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -165,49 +172,67 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         />
         <main className="workspace__content">
           {activeSection === "dashboard" && (
-            <DashboardPage
-              lastSync={lastSync}
-              selectedMonth={selectedMonth}
-            />
+            <ErrorBoundary sectionLabel="Dashboard">
+              <DashboardPage
+                lastSync={lastSync}
+                selectedMonth={selectedMonth}
+              />
+            </ErrorBoundary>
           )}
-          {activeSection === "accounts" && <AccountsPage />}
+          {activeSection === "accounts" && (
+            <ErrorBoundary sectionLabel="Accounts">
+              <AccountsPage />
+            </ErrorBoundary>
+          )}
           {activeSection === "income" && (
-            <IncomePage
-              viewMode={incomeViewMode}
-              onViewModeChange={setIncomeViewMode}
-              selectedDate={selectedDate}
-            />
+            <ErrorBoundary sectionLabel="Income">
+              <IncomePage
+                viewMode={incomeViewMode}
+                onViewModeChange={setIncomeViewMode}
+                selectedDate={selectedDate}
+              />
+            </ErrorBoundary>
           )}
           {activeSection === "expense" && (
-            <ExpensePage
-              viewMode={expenseViewMode}
-              onViewModeChange={setExpenseViewMode}
-              selectedDate={selectedDate}
-            />
+            <ErrorBoundary sectionLabel="Expense">
+              <ExpensePage
+                viewMode={expenseViewMode}
+                onViewModeChange={setExpenseViewMode}
+                selectedDate={selectedDate}
+              />
+            </ErrorBoundary>
           )}
           {activeSection === "monthly-monitoring" && (
-            <MonthlyMonitoringPage selectedMonth={selectedMonth} />
+            <ErrorBoundary sectionLabel="Monthly Monitoring">
+              <MonthlyMonitoringPage selectedMonth={selectedMonth} />
+            </ErrorBoundary>
           )}
           {isWorkflowSection(activeSection) && (
-            <WorkflowPage section={activeSection} selectedMonth={selectedMonth} />
+            <ErrorBoundary sectionLabel={activeSection}>
+              <WorkflowPage section={activeSection} selectedMonth={selectedMonth} />
+            </ErrorBoundary>
           )}
           {activeSection === "sync" && (
-            <SyncPage
-              lastSync={lastSync}
-              pendingOperations={pendingOperations}
-              schemaHealth={schemaHealth}
-              syncState={syncState}
-              onSchemaVerify={verifySchema}
-              onSync={runSync}
-            />
+            <ErrorBoundary sectionLabel="Sync">
+              <SyncPage
+                lastSync={lastSync}
+                pendingOperations={pendingOperations}
+                schemaHealth={schemaHealth}
+                syncState={syncState}
+                onSchemaVerify={verifySchema}
+                onSync={runSync}
+              />
+            </ErrorBoundary>
           )}
           {activeSection === "settings" && (
-            <SettingsPage
-              schemaHealth={schemaHealth}
-              onSchemaVerify={verifySchema}
-              showFab={showFab}
-              onShowFabChange={updateShowFab}
-            />
+            <ErrorBoundary sectionLabel="Settings">
+              <SettingsPage
+                schemaHealth={schemaHealth}
+                onSchemaVerify={verifySchema}
+                showFab={showFab}
+                onShowFabChange={updateShowFab}
+              />
+            </ErrorBoundary>
           )}
         </main>
       </div>
