@@ -93,14 +93,12 @@ import {
   getActiveSectionLabel,
 } from "@/lib/finance-data";
 import {
-  useAccounts,
-  useExpenseCategories,
   useExpenses,
-  useIncomeCategories,
   useIncomes,
   useSyncStatus,
   useWorkflowRecords,
 } from "@/lib/use-data";
+import { useFinanceData } from "@/lib/finance-data-context";
 import {
   alkansyaApi,
   creditCardPaymentsApi,
@@ -296,80 +294,11 @@ function getExpenseTotal(records: ExpenseRecord[]) {
   return records.reduce((sum, record) => sum + record.amount, 0);
 }
 
+// Reference data (accounts + categories) is fetched once by FinanceDataProvider
+// and shared via context. This thin alias keeps existing call sites unchanged.
+// See src/lib/finance-data-context.tsx.
 function useLiveCollections() {
-  const { state: accountsState } = useAccounts(true);
-  // All categories power the id→name lookup maps; the normal-only set (filtered
-  // server-side, excluding Transfer / Credit Card Payment / Savings / IOU / etc.)
-  // powers the pickers in the normal Income form.
-  const { state: allIncomeCategoriesState } = useIncomeCategories(false);
-  const { state: normalIncomeCategoriesState } = useIncomeCategories(true);
-  const { state: expenseCategoriesState } = useExpenseCategories();
-
-  // Sorted alphabetically at the source so every dropdown (filters and the
-  // income/expense log forms) presents options in A→Z order.
-  const byName = (a: { name: string }, b: { name: string }) =>
-    a.name.localeCompare(b.name);
-  const bySource = (a: { source: string }, b: { source: string }) =>
-    a.source.localeCompare(b.source);
-
-  const allAccounts: Account[] = (
-    accountsState.status === "success" ? accountsState.data : []
-  )
-    .slice()
-    .sort(byName);
-  const activeAccounts = allAccounts.filter(
-    (account) => !account.inactive && account.type !== "Auxiliary",
-  );
-  const nonCreditActiveAccounts = activeAccounts.filter(
-    (account) => !isCreditLikeAccountType(account.type),
-  );
-  const creditActiveAccounts = activeAccounts.filter((account) =>
-    isCreditLikeAccountType(account.type),
-  );
-
-  const allIncomeCategories: IncomeCategory[] = (
-    allIncomeCategoriesState.status === "success"
-      ? allIncomeCategoriesState.data
-      : []
-  )
-    .slice()
-    .sort(bySource);
-  const normalIncomeCategories: IncomeCategory[] = (
-    normalIncomeCategoriesState.status === "success"
-      ? normalIncomeCategoriesState.data
-      : []
-  )
-    .slice()
-    .sort(bySource);
-
-  const expenseCategories: ExpenseCategory[] = (
-    expenseCategoriesState.status === "success"
-      ? (expenseCategoriesState.data as ExpenseCategory[])
-      : []
-  )
-    .slice()
-    .sort(byName);
-
-  const accountNameById = new Map(allAccounts.map((a) => [a.id, a.name]));
-  const incomeCategoryNameById = new Map(
-    allIncomeCategories.map((c) => [c.id, c.source]),
-  );
-  const expenseCategoryNameById = new Map(
-    expenseCategories.map((c) => [c.id, c.name]),
-  );
-
-  return {
-    allAccounts,
-    activeAccounts,
-    nonCreditActiveAccounts,
-    creditActiveAccounts,
-    allIncomeCategories,
-    normalIncomeCategories,
-    expenseCategories,
-    accountNameById,
-    incomeCategoryNameById,
-    expenseCategoryNameById,
-  };
+  return useFinanceData();
 }
 
 function getIncomeCategorySummaries(
@@ -422,6 +351,7 @@ function getExpenseCategorySummaries(records: ExpenseRecord[], categories: Expen
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
   const { user, loading: authLoading } = useAuth();
+  const { refreshReferenceData } = useFinanceData();
   const [selectedDate, setSelectedDate] = useState<string>(() => todayIso());
   const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
@@ -502,6 +432,9 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         setSyncState("fresh");
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
+        // A pull may have brought in new/changed accounts or categories —
+        // refresh the shared reference data (silently) so dropdowns update.
+        refreshReferenceData();
       } else {
         setSyncState("error");
       }
@@ -1543,10 +1476,8 @@ function AccountsPage() {
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const { state: accountsState } = useAccounts(true);
-
-  const sourceAccounts =
-    accountsState.status === "success" ? accountsState.data : ([] as Account[]);
+  // Reference accounts come from the shared provider (fetched once per session).
+  const { allAccounts: sourceAccounts } = useFinanceData();
 
   // Distinct account (card) types present, for the Card Type filter dropdown.
   const cardTypeOptions = Array.from(
