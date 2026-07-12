@@ -1889,7 +1889,7 @@ function IncomePage({
     parseNumberInput(grossIncomeInput),
     parseNumberInput(capitalExpenditureInput),
   );
-  const { state: incomesState, refetch } = useIncomes({
+  const { state: incomesState, refetch, applyLocal } = useIncomes({
     rangeStart: range.start,
     rangeEnd: range.end,
     accountId: accountId || undefined,
@@ -1971,7 +1971,17 @@ function IncomePage({
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: splice the returned record into the visible list immediately,
+    // then reconcile server-computed fields with a silent background refetch.
+    const saved = res.data;
+    applyLocal((rows) => {
+      const idx = rows.findIndex((r) => r.id === saved.id);
+      if (idx === -1) return [saved, ...rows];
+      const next = rows.slice();
+      next[idx] = saved;
+      return next;
+    });
+    void refetch({ silent: true });
   }
 
   function handleDuplicateIncome() {
@@ -1986,15 +1996,18 @@ function IncomePage({
   async function handleDeleteIncome() {
     if (!editingId) return;
     if (!window.confirm("Soft-delete this income in Notion?")) return;
+    const deletedId = editingId;
     setSaving(true);
-    const res = await incomesApi.delete(editingId);
+    const res = await incomesApi.delete(deletedId);
     setSaving(false);
     if (!res.success) {
       setSaveError(res.error.message || "Failed to delete.");
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: drop the row immediately, reconcile silently in the background.
+    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+    void refetch({ silent: true });
   }
 
   return (
@@ -2263,7 +2276,7 @@ function ExpensePage({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { state: expensesState, refetch } = useExpenses({
+  const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
     rangeEnd: expenseRange?.end,
     accountId: accountFilterId || undefined,
@@ -2410,7 +2423,17 @@ function ExpensePage({
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: splice the returned record into the visible list immediately,
+    // then reconcile server-computed fields with a silent background refetch.
+    const saved = res.data;
+    applyLocal((rows) => {
+      const idx = rows.findIndex((r) => r.id === saved.id);
+      if (idx === -1) return [saved, ...rows];
+      const next = rows.slice();
+      next[idx] = saved;
+      return next;
+    });
+    void refetch({ silent: true });
   }
 
   function handleDuplicateExpense() {
@@ -2425,15 +2448,18 @@ function ExpensePage({
   async function handleDeleteExpense() {
     if (!editingId) return;
     if (!window.confirm("Soft-delete this expense in Notion?")) return;
+    const deletedId = editingId;
     setSaving(true);
-    const res = await expensesApi.delete(editingId);
+    const res = await expensesApi.delete(deletedId);
     setSaving(false);
     if (!res.success) {
       setSaveError(res.error.message || "Failed to delete.");
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: drop the row immediately, reconcile silently in the background.
+    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+    void refetch({ silent: true });
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
@@ -3037,7 +3063,7 @@ function WorkflowPage({
   // matching record so items can be triaged and updated later, so no month is
   // passed for them.
   const monthScoped = section === "transfer" || section === "credit-card-payment";
-  const { state: workflowState, refetch } = useWorkflowRecords(section, {
+  const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
     month: monthScoped ? selectedMonth : undefined,
   });
   const isLoading = workflowState.status === "loading";
@@ -3146,7 +3172,17 @@ function WorkflowPage({
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: splice the returned record into the visible list immediately,
+    // then reconcile server-computed fields with a silent background refetch.
+    const saved = res.data;
+    applyLocal((rows) => {
+      const idx = rows.findIndex((r) => r.id === saved.id);
+      if (idx === -1) return [saved, ...rows];
+      const next = rows.slice();
+      next[idx] = saved;
+      return next;
+    });
+    void refetch({ silent: true });
   }
 
   function handleDuplicateWorkflow() {
@@ -3161,15 +3197,18 @@ function WorkflowPage({
   async function handleDeleteWorkflow() {
     if (!editingId) return;
     if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
+    const deletedId = editingId;
     setSaving(true);
-    const res = await workflowApi.delete(editingId);
+    const res = await workflowApi.delete(deletedId);
     setSaving(false);
     if (!res.success) {
       setSaveError(res.error.message || "Failed to delete.");
       return;
     }
     setModal(null);
-    await refetch();
+    // Optimistic: drop the row immediately, reconcile silently in the background.
+    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+    void refetch({ silent: true });
   }
 
   return (

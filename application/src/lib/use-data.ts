@@ -97,8 +97,14 @@ export function useApiData<T>(
     };
   }, [key, authLoading, user?.id]);
 
-  const refetch = useCallback(async () => {
-    setState({ status: "loading" });
+  const refetch = useCallback(async (opts?: { silent?: boolean }) => {
+    // Silent (stale-while-revalidate) refetch keeps the currently displayed
+    // data on screen instead of blanking it with a loading spinner. Used after
+    // an optimistic mutation to reconcile computed/server-side fields quietly.
+    const silent = opts?.silent ?? false;
+    if (!silent) {
+      setState({ status: "loading" });
+    }
 
     try {
       const result = await fetcherRef.current();
@@ -107,19 +113,34 @@ export function useApiData<T>(
         setState({ status: "success", data: result.data });
       } else if (fallbackRef.current !== undefined) {
         setState({ status: "success", data: fallbackRef.current });
-      } else {
+      } else if (!silent) {
         setState({ status: "error", error: result.error?.message ?? "Request failed" });
       }
+      // silent + no fallback + failure: keep the prior data rather than error out
     } catch (err: unknown) {
       if (fallbackRef.current !== undefined) {
         setState({ status: "success", data: fallbackRef.current });
-      } else {
+      } else if (!silent) {
         setState({ status: "error", error: err instanceof Error ? err.message : "Network error" });
       }
     }
   }, []);
 
-  return { state, refetch };
+  /**
+   * Synchronously merge a change into the currently displayed data without a
+   * network round-trip. Enables optimistic create/update/delete: the returned
+   * record is spliced into the list immediately, then a silent refetch
+   * reconciles any server-computed fields. No-op unless data is already loaded.
+   */
+  const applyLocal = useCallback((updater: (prev: T) => T) => {
+    setState((prev) =>
+      prev.status === "success"
+        ? { status: "success", data: updater(prev.data) }
+        : prev,
+    );
+  }, []);
+
+  return { state, refetch, applyLocal };
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────

@@ -69,6 +69,14 @@ interface LiveCache {
   expenses: ExpenseRecordDto[];
 }
 
+/** The five in-memory collections that back a LiveCache. */
+type CollectionName =
+  | 'accounts'
+  | 'incomeCategories'
+  | 'expenseCategories'
+  | 'incomes'
+  | 'expenses';
+
 @Injectable()
 export class NotionService {
   private readonly logger = new Logger(NotionService.name);
@@ -81,6 +89,13 @@ export class NotionService {
   }> = [];
 
   private liveCaches = new Map<string, LiveCache | null>();
+
+  /**
+   * Per-user set of collections that have been mutated since their last load.
+   * A stale collection is refilled on its next read (single-database query)
+   * instead of forcing a full 5-database reload. See refreshCacheFor().
+   */
+  private staleCollections = new Map<string, Set<CollectionName>>();
 
   constructor(
     private readonly appConfig: AppConfigService,
@@ -96,7 +111,27 @@ export class NotionService {
   private async loadLive(userId: string | undefined, resource: ResourceName): Promise<NotionApiClient | null> {
     const key = this.getLiveCacheKey(userId);
 
+    // Warm cache: normally nothing to do, but if this resource's collection was
+    // invalidated by a prior mutation, refill just that one collection with a
+    // single-database query instead of reloading all five.
     if (this.liveCaches.has(key) && resource !== 'monthlyMonitoring') {
+      const collection = this.collectionForResource(resource);
+      const stale = this.staleCollections.get(key);
+      if (collection && stale?.has(collection) && this.liveCaches.get(key)) {
+        const client = await this.clientFactory.getClient(userId);
+        if (!client) return null;
+        try {
+          await this.loadLiveCollection(client, key, collection);
+          stale.delete(collection);
+          if (stale.size === 0) this.staleCollections.delete(key);
+          return client;
+        } catch (error) {
+          this.logger.warn(
+            `Notion collection refresh failed for '${collection}', keeping prior data: ${error instanceof Error ? error.message : error}`,
+          );
+          return null;
+        }
+      }
       return null;
     }
 
@@ -120,6 +155,7 @@ export class NotionService {
         expenseCategories: expenseCategories.map(pageToExpenseCategory),
         expenses: expenses.map(pageToExpenseRecord),
       });
+      this.staleCollections.delete(key);
 
       return client;
     } catch (error) {
@@ -127,6 +163,43 @@ export class NotionService {
       this.liveCaches.set(key, null);
       return null;
     }
+  }
+
+  /** Refill a single cached collection with one Notion database query. */
+  private async loadLiveCollection(
+    client: NotionApiClient,
+    key: string,
+    collection: CollectionName,
+  ): Promise<void> {
+    const cache = this.liveCaches.get(key);
+    if (!cache) return;
+    switch (collection) {
+      case 'accounts':
+        cache.accounts = (await client.queryDatabase('accounts')).map(pageToAccount);
+        break;
+      case 'incomeCategories':
+        cache.incomeCategories = (await client.queryDatabase('incomeCategories')).map(pageToIncomeCategory);
+        break;
+      case 'incomes':
+        cache.incomes = (await client.queryDatabase('incomes')).map(pageToIncomeRecord);
+        break;
+      case 'expenseCategories':
+        cache.expenseCategories = (await client.queryDatabase('expenseCategories')).map(pageToExpenseCategory);
+        break;
+      case 'expenses':
+        cache.expenses = (await client.queryDatabase('expenses')).map(pageToExpenseRecord);
+        break;
+    }
+  }
+
+  /** Map a resource to the cached collection that backs it, if any. */
+  private collectionForResource(resource: ResourceName): CollectionName | null {
+    if (resource === 'accounts') return 'accounts';
+    if (resource === 'incomeCategories') return 'incomeCategories';
+    if (resource === 'expenseCategories') return 'expenseCategories';
+    if (this.isIncomeBacked(resource)) return 'incomes';
+    if (this.isExpenseBacked(resource)) return 'expenses';
+    return null;
   }
 
   private async getLiveClient(userId?: string): Promise<NotionApiClient | null> {
@@ -161,6 +234,33 @@ export class NotionService {
   private refreshCache(userId?: string): void {
     const key = this.getLiveCacheKey(userId);
     this.liveCaches.delete(key);
+    this.staleCollections.delete(key);
+  }
+
+  /**
+   * Targeted cache invalidation after a mutation. Marks only the mutated
+   * resource's collection stale so the next read refills that one collection,
+   * leaving the other four (e.g. accounts, categories) served from memory.
+   *
+   * Note: derived figures shown to the user (dashboard, monthly monitoring,
+   * account balances) are computed client-side from income/expense records,
+   * so refreshing only the mutated income/expense collection keeps them
+   * consistent. If Notion-side rollups are ever surfaced directly, revisit
+   * this in P2 (per-collection TTL).
+   */
+  private refreshCacheFor(userId: string | undefined, resource: ResourceName): void {
+    const key = this.getLiveCacheKey(userId);
+    const cache = this.liveCaches.get(key);
+    const collection = this.collectionForResource(resource);
+    // No warm cache to preserve, or a resource we don't cache granularly:
+    // fall back to a full clear so the next read cold-loads correctly.
+    if (!cache || !collection) {
+      this.refreshCache(userId);
+      return;
+    }
+    const stale = this.staleCollections.get(key) ?? new Set<CollectionName>();
+    stale.add(collection);
+    this.staleCollections.set(key, stale);
   }
 
   get isGloballyConfigured(): boolean {
@@ -238,7 +338,7 @@ export class NotionService {
     try {
       const properties = this.buildNotionProperties(resource, data);
       const page = await client.createPage(resource, properties);
-      this.refreshCache(userId);
+      this.refreshCacheFor(userId, resource);
       const createdRecord = this.isIncomeBacked(resource)
         ? (pageToIncomeRecord(page) as FinanceRecord)
         : (pageToExpenseRecord(page) as FinanceRecord);
@@ -260,7 +360,7 @@ export class NotionService {
     try {
       const properties = this.buildNotionProperties(resource, data);
       const page = await client.updatePage(id, properties);
-      this.refreshCache(userId);
+      this.refreshCacheFor(userId, resource);
 
       const updatedRecord = this.isIncomeBacked(resource)
         ? (pageToIncomeRecord(page) as FinanceRecord)
@@ -299,7 +399,7 @@ export class NotionService {
 
       const properties = this.buildNotionProperties(resource, softDeleteData as Record<string, unknown>);
       const page = await client.updatePage(id, properties);
-      this.refreshCache(userId);
+      this.refreshCacheFor(userId, resource);
 
       const deletedRecord = this.isIncomeBacked(resource)
         ? (pageToIncomeRecord(page) as FinanceRecord)
