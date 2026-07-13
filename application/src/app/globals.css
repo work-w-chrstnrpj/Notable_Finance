@@ -1979,6 +1979,76 @@ th:last-child .th-sort {
   background: #f8f7f5;
 }
 
+/* ── Row selection checkbox (Notion-style) ── */
+.td-checkbox {
+  position: relative;
+  padding-left: 36px !important;
+}
+
+.th-checkbox {
+  position: relative;
+  padding-left: 36px !important;
+  width: 32px;
+  min-width: 32px;
+}
+
+/* Header checkbox is always visible, not hidden like row checkboxes */
+.row-checkbox--header {
+  opacity: 1;
+}
+
+.row-checkbox {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1.5px solid var(--line-strong, #d3d1cb);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.row-checkbox__box {
+  display: none;
+}
+
+.row-checkbox--checked {
+  opacity: 1;
+  border-color: var(--accent, #2383e2);
+  background: var(--accent, #2383e2);
+}
+
+.row-checkbox--checked .row-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Show checkbox on row hover */
+.table-row--clickable:hover .row-checkbox,
+.table-row--selected .row-checkbox {
+  opacity: 1;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .row-checkbox {
+  border-color: var(--line-strong, #3f3f3f);
+}
+
+[data-theme="dark"] .row-checkbox--checked {
+  border-color: var(--accent, #4a9eed);
+  background: var(--accent, #4a9eed);
+}
+
 tfoot td {
   border-top: 1px solid var(--line-strong);
   background: #fbfaf9;

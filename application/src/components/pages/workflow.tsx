@@ -76,6 +76,7 @@ function WorkflowPage({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
@@ -255,6 +256,15 @@ function WorkflowPage({
     setModal({ mode: "new", title: `New ${label} Record (Copy)` });
   }
 
+  function toggleRowSelect(rowIndex: number, selected: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (selected) next.add(rowIndex);
+      else next.delete(rowIndex);
+      return next;
+    });
+  }
+
   async function handleDeleteWorkflow() {
     if (!editingId) return;
     if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
@@ -298,6 +308,9 @@ function WorkflowPage({
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         {workflowRows.length ? (
           <DataTable
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleRowSelect}
             headers={workflowHeaders}
             rows={workflowRows}
             onRowClick={(rowIndex) => {

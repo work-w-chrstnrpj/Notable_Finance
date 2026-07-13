@@ -50,6 +50,7 @@ function IncomePage({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
@@ -214,6 +215,15 @@ function IncomePage({
     setModal({ mode: "new", title: "New Income (Copy)" });
   }
 
+  function toggleRowSelect(rowIndex: number, selected: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (selected) next.add(rowIndex);
+      else next.delete(rowIndex);
+      return next;
+    });
+  }
+
   async function handleDeleteIncome() {
     if (!editingId) return;
     if (!window.confirm("Soft-delete this income in Notion?")) return;
@@ -332,6 +342,9 @@ function IncomePage({
           <AnnualBarChart data={annualIncomeGroups} color="#0D9488" />
         ) : (
         <DataTable
+          selectable
+          selectedIds={selectedIds}
+          onToggleSelect={toggleRowSelect}
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
           rowClassName={(rowIndex) => {
             const record = visibleIncomeRecords[rowIndex];

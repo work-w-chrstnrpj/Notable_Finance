@@ -148,6 +148,7 @@ function ExpensePage({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
@@ -441,6 +442,15 @@ function ExpensePage({
     onViewModeChange(nextViewMode);
   }
 
+  function toggleRowSelect(rowIndex: number, selected: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (selected) next.add(rowIndex);
+      else next.delete(rowIndex);
+      return next;
+    });
+  }
+
   // Publish a printable receipt of the current view for the floating button.
   // The "Amount" column is remapped per view per the receipt spec.
   const { setReceipt } = useFabRegister();
@@ -567,6 +577,9 @@ function ExpensePage({
           <AnnualBarChart data={annualExpenseGroups} color="#E11D48" />
         ) : viewMode === "Unpaid Pasabuy" ? (
           <DataTable
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleRowSelect}
             wide
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
@@ -605,6 +618,9 @@ function ExpensePage({
           />
         ) : viewMode === "Unpaid CC" ? (
           <DataTable
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleRowSelect}
             wide
             headers={[
               "Date",
@@ -668,6 +684,9 @@ function ExpensePage({
           />
         ) : viewMode === "Installments" ? (
           <DataTable
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleRowSelect}
             wide
             headers={[
               "Date",
@@ -741,6 +760,9 @@ function ExpensePage({
           />
         ) : (
           <DataTable
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleRowSelect}
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rowClassName={expenseRowClassName}

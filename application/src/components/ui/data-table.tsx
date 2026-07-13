@@ -2,7 +2,7 @@
 
 import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
@@ -47,6 +47,9 @@ function DataTable({
   pageSizeOptions = [10, 25, 50, 100],
   pageSummary,
   rowClassName,
+  selectable = false,
+  selectedIds,
+  onToggleSelect,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -64,6 +67,12 @@ function DataTable({
   pageSummary?: string;
   /** Optional callback to apply a className to each row based on its index or content. */
   rowClassName?: (rowIndex: number, row: ReactNode[]) => string | undefined;
+  /** Enable Notion-style row selection checkboxes. */
+  selectable?: boolean;
+  /** Set of original row indices that are currently selected. */
+  selectedIds?: Set<number>;
+  /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
+  onToggleSelect?: (rowIndex: number, selected: boolean) => void;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -108,6 +117,12 @@ function DataTable({
     setCurrentPage(0);
   }
 
+  // Check if all visible (paginated) rows are selected
+  const allVisibleSelected =
+    selectable &&
+    paginated.length > 0 &&
+    paginated.every(({ index }) => selectedIds?.has(index));
+
   return (
     <div className="table-wrap">
       <table className={cx(wide && "data-table--wide")}>
@@ -116,13 +131,42 @@ function DataTable({
             {headers.map((header, columnIndex) => {
               const sortable = !skip.has(columnIndex);
               const active = sort?.col === columnIndex;
+              const isFirstColumn = selectable && columnIndex === 0;
               return (
                 <th
                   key={header}
+                  className={cx(isFirstColumn && "th-checkbox")}
                   aria-sort={
                     active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"
                   }
                 >
+                  {isFirstColumn && (
+                    <button
+                      type="button"
+                      className={cx(
+                        "row-checkbox row-checkbox--header",
+                        allVisibleSelected && "row-checkbox--checked",
+                      )}
+                      aria-label="Select all rows"
+                      onClick={() => {
+                        if (!onToggleSelect) return;
+                        const visibleIndices = paginated.map(({ index }) => index);
+                        if (allVisibleSelected) {
+                          for (const idx of visibleIndices) {
+                            onToggleSelect(idx, false);
+                          }
+                        } else {
+                          for (const idx of visibleIndices) {
+                            onToggleSelect(idx, true);
+                          }
+                        }
+                      }}
+                    >
+                      <span className="row-checkbox__box">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                    </button>
+                  )}
                   {sortable ? (
                     <button
                       type="button"
@@ -151,28 +195,55 @@ function DataTable({
           </tr>
         </thead>
         <tbody>
-          {paginated.map(({ row, index }) => (
-            <tr
-              key={`row-${index}`}
-              className={cx(onRowClick && "table-row--clickable", rowClassName?.(index, row))}
-              tabIndex={onRowClick ? 0 : undefined}
-              onClick={() => onRowClick?.(index)}
-              onKeyDown={(event) => {
-                if (!onRowClick) {
-                  return;
-                }
+          {paginated.map(({ row, index }) => {
+            const isSelected = selectedIds?.has(index) ?? false;
+            return (
+              <tr
+                key={`row-${index}`}
+                className={cx(
+                  onRowClick && "table-row--clickable",
+                  selectable && isSelected && "table-row--selected",
+                  rowClassName?.(index, row),
+                )}
+                tabIndex={onRowClick ? 0 : undefined}
+                onClick={() => onRowClick?.(index)}
+                onKeyDown={(event) => {
+                  if (!onRowClick) {
+                    return;
+                  }
 
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onRowClick(index);
-                }
-              }}
-            >
-              {row.map((cell, cellIndex) => (
-                <td key={`cell-${index}-${cellIndex}`}>{cell}</td>
-              ))}
-            </tr>
-          ))}
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onRowClick(index);
+                  }
+                }}
+              >
+                {row.map((cell, cellIndex) => (
+                  <td
+                    key={`cell-${index}-${cellIndex}`}
+                    className={cx(selectable && cellIndex === 0 && "td-checkbox")}
+                  >
+                    {selectable && cellIndex === 0 && (
+                      <button
+                        type="button"
+                        className={cx("row-checkbox", isSelected && "row-checkbox--checked")}
+                        aria-label="Select row"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onToggleSelect?.(index, !isSelected);
+                        }}
+                      >
+                        <span className="row-checkbox__box">
+                          <Check size={12} strokeWidth={3} />
+                        </span>
+                      </button>
+                    )}
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
         {footerRows.length > 0 && (
           <tfoot>
