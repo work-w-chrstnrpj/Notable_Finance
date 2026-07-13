@@ -2217,6 +2217,23 @@ tfoot td {
   color: var(--rose);
 }
 
+/* ── Optimistic pending record rows ──────────────────────────────── */
+.record-pending {
+  opacity: 0.45;
+  pointer-events: none;
+  position: relative;
+}
+.record-pending td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--color-accent, #0d9488);
+}
+.record-pending-appear {
+  animation: record-pending-pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes record-pending-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 0.65; }
+}
+
 .budget-list,
 .error-list,
 .activity-list,

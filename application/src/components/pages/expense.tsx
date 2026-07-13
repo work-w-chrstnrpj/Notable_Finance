@@ -145,9 +145,10 @@ function ExpensePage({
   });
   const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
     rangeEnd: expenseRange?.end,
@@ -221,6 +222,14 @@ function ExpensePage({
     return { gross, installment, paid, remaining, expected };
   }
 
+  function expenseRowClassName(rowIndex: number): string | undefined {
+    const record = visibleExpenseRecords[rowIndex];
+    if (record && pendingIds.has(record.id)) {
+      return "record-pending record-pending-appear";
+    }
+    return undefined;
+  }
+
   // Auto-update [YYMMDDx] tag when purchase date changes (new or edit mode).
   useEffect(() => {
     if (modal?.mode !== "new" && modal?.mode !== "edit") return;
@@ -284,33 +293,89 @@ function ExpensePage({
       pasabuyPaidPeriod: parseOptionalNumberInput(pasabuyPaidPeriodInput),
       pasabuyAccountReceiverId: pasabuyAccountReceiverId || null,
     };
-    setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
+
+    // Capture modal state before closing
+    const isEdit = modal?.mode === "edit" && editingId;
+    const tempId = isEdit ? editingId! : `pending-${Date.now()}`;
+
+    // Close modal immediately — no blocking "Saving..." state
+    setModal(null);
+
+    // Build the optimistic record for the table
+    const optimisticRecord = {
+      id: tempId,
+      description: payload.description as string,
+      purchaseDate: payload.purchaseDate as string,
+      datePaid: payload.datePaid as string | null,
+      amount: payload.amount as number,
+      interest: payload.interest as number,
+      accountId: payload.accountId as string,
+      categoryId: payload.categoryId as string,
+      paymentStatus: payload.paymentStatus as string,
+      paymentFrequency: payload.paymentFrequency as string | null,
+      periodCount: payload.periodCount as number | undefined,
+      paidPeriod: payload.paidPeriod as number | undefined,
+      pasabuyer: payload.pasabuyer as string | null,
+      pasabuyStatus: payload.pasabuyStatus as string | null,
+      pasabuyDateOfPayment: payload.pasabuyDateOfPayment as string | null,
+      pasabuyPaidPeriod: payload.pasabuyPaidPeriod as number | undefined,
+      pasabuyAccountReceiverId: payload.pasabuyAccountReceiverId as string | null,
+    } as ExpenseRecord;
+
+    // Show the row as dimmed/pending
+    setPendingIds((prev) => new Set(prev).add(tempId));
+
+    // Inject into the query cache so the table renders immediately
+    applyLocal((rows) => {
+      if (isEdit) {
+        const idx = rows.findIndex((r) => r.id === tempId);
+        if (idx === -1) return rows;
+        const next = rows.slice();
+        next[idx] = optimisticRecord;
+        return next;
+      }
+      return [optimisticRecord, ...rows];
+    });
+
     try {
-      const res =
-        modal?.mode === "edit" && editingId
-          ? await expensesApi.update(editingId, payload)
-          : await expensesApi.create(payload);
+      const res = isEdit
+        ? await expensesApi.update(editingId!, payload)
+        : await expensesApi.create(payload);
       if (!res.success) {
-        setSaveError(res.error.message || "Failed to save to Notion.");
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(tempId);
+          return next;
+        });
+        applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+        setSaveNotice(`Save failed: ${res.error.message}`);
         return;
       }
-      setModal(null);
+      // Replace optimistic item with the real saved record
       const saved = res.data;
       applyLocal((rows) => {
-        const idx = rows.findIndex((r) => r.id === saved.id);
+        const idx = rows.findIndex((r) => r.id === tempId);
         if (idx === -1) return [saved, ...rows];
         const next = rows.slice();
         next[idx] = saved;
         return next;
       });
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
       invalidateExpenseFamily();
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "Network error. Please try again.",
-      );
-    } finally {
-      setSaving(false);
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
+      applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
 
@@ -327,22 +392,44 @@ function ExpensePage({
     if (!editingId) return;
     if (!window.confirm("Soft-delete this expense in Notion?")) return;
     const deletedId = editingId;
-    setSaving(true);
+    setSaveError(null);
+    setSaveNotice(null);
+
+    // Close modal immediately
+    setModal(null);
+
+    // Show the row as dimmed/pending
+    setPendingIds((prev) => new Set(prev).add(deletedId));
+
+    // Remove from the visible list optimistically
+    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+
     try {
       const res = await expensesApi.delete(deletedId);
       if (!res.success) {
-        setSaveError(res.error.message || "Failed to delete.");
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(deletedId);
+          return next;
+        });
+        void refetch();
+        setSaveNotice(`Delete failed: ${res.error.message}`);
         return;
       }
-      setModal(null);
-      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deletedId);
+        return next;
+      });
       invalidateExpenseFamily();
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "Network error. Please try again.",
-      );
-    } finally {
-      setSaving(false);
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deletedId);
+        return next;
+      });
+      void refetch();
+      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
 
@@ -482,6 +569,7 @@ function ExpensePage({
           <DataTable
             wide
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
+            rowClassName={expenseRowClassName}
             rows={visibleExpenseRecords.map((record) => [
               formatDate(record.purchaseDate),
               <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
@@ -531,6 +619,7 @@ function ExpensePage({
               "Expected payment date",
               "Date Paid",
             ]}
+            rowClassName={expenseRowClassName}
             rows={visibleExpenseRecords.map((record) => {
               const c = deriveExpenseComputed(record);
               return [
@@ -597,6 +686,7 @@ function ExpensePage({
               "Expected payment date",
               "Date Paid",
             ]}
+            rowClassName={expenseRowClassName}
             rows={visibleExpenseRecords.map((record) => {
               const c = deriveExpenseComputed(record);
               return [
@@ -653,6 +743,7 @@ function ExpensePage({
           <DataTable
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
+            rowClassName={expenseRowClassName}
             rows={visibleExpenseRecords.map((record) => {
               const isUnpaid = !record.datePaid;
               return [
@@ -692,11 +783,17 @@ function ExpensePage({
         )}
       </Panel>
 
+      {saveNotice && (
+        <div className="save-notice" style={{ padding: "0.75rem 1rem", borderRadius: 8, background: "var(--color-warning-bg, #fef3c7)", color: "var(--color-warning-text, #92400e)", marginBottom: "0.5rem", fontSize: "0.875rem", cursor: "pointer" }} onClick={() => setSaveNotice(null)}>
+          {saveNotice}
+        </div>
+      )}
+
       <FormModal
         deleteLabel="Soft Delete"
         modal={modal}
         editing={editing}
-        saving={saving}
+        saving={false}
         error={saveError}
         subtitle="Context fields change from the selected account and category."
         onEdit={() => setEditing(true)}

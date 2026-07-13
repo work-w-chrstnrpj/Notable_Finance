@@ -47,9 +47,10 @@ function IncomePage({
   const [dateInput, setDateInput] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
   const isAnnual = viewMode === "Annually";
@@ -128,33 +129,79 @@ function IncomePage({
       accountId: formAccountId,
       categoryId: formCategoryId,
     };
-    setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
+
+    // Capture modal state before closing
+    const isEdit = modal?.mode === "edit" && editingId;
+    const tempId = isEdit ? editingId! : `pending-${Date.now()}`;
+
+    // Close modal immediately — no blocking "Saving..." state
+    setModal(null);
+
+    // Build the optimistic record for the table
+    const optimisticRecord: IncomeRecord = {
+      id: tempId,
+      name: payload.name,
+      date: payload.date,
+      grossIncome: payload.grossIncome,
+      capitalExpenditure: payload.capitalExpenditure,
+      accountId: payload.accountId,
+      categoryId: payload.categoryId,
+    } as IncomeRecord;
+
+    // Show the row as dimmed/pending
+    setPendingIds((prev) => new Set(prev).add(tempId));
+
+    // Inject into the query cache so the table renders immediately
+    applyLocal((rows) => {
+      if (isEdit) {
+        const idx = rows.findIndex((r) => r.id === tempId);
+        if (idx === -1) return rows;
+        const next = rows.slice();
+        next[idx] = optimisticRecord;
+        return next;
+      }
+      return [optimisticRecord, ...rows];
+    });
+
     try {
-      const res =
-        modal?.mode === "edit" && editingId
-          ? await incomesApi.update(editingId, payload)
-          : await incomesApi.create(payload);
+      const res = isEdit
+        ? await incomesApi.update(editingId!, payload)
+        : await incomesApi.create(payload);
       if (!res.success) {
-        setSaveError(res.error.message || "Failed to save to Notion.");
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(tempId);
+          return next;
+        });
+        applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+        setSaveNotice(`Save failed: ${res.error.message}`);
         return;
       }
-      setModal(null);
+      // Replace optimistic item with the real saved record
       const saved = res.data;
       applyLocal((rows) => {
-        const idx = rows.findIndex((r) => r.id === saved.id);
+        const idx = rows.findIndex((r) => r.id === tempId);
         if (idx === -1) return [saved, ...rows];
         const next = rows.slice();
         next[idx] = saved;
         return next;
       });
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
       invalidateIncomeFamily();
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "Network error. Please try again.",
-      );
-    } finally {
-      setSaving(false);
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
+      applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
 
@@ -171,22 +218,45 @@ function IncomePage({
     if (!editingId) return;
     if (!window.confirm("Soft-delete this income in Notion?")) return;
     const deletedId = editingId;
-    setSaving(true);
+    setSaveError(null);
+    setSaveNotice(null);
+
+    // Close modal immediately
+    setModal(null);
+
+    // Show the row as dimmed/pending
+    setPendingIds((prev) => new Set(prev).add(deletedId));
+
+    // Remove from the visible list optimistically
+    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+
     try {
       const res = await incomesApi.delete(deletedId);
       if (!res.success) {
-        setSaveError(res.error.message || "Failed to delete.");
+        // Restore the item since delete failed — refetch from server
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(deletedId);
+          return next;
+        });
+        void refetch();
+        setSaveNotice(`Delete failed: ${res.error.message}`);
         return;
       }
-      setModal(null);
-      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deletedId);
+        return next;
+      });
       invalidateIncomeFamily();
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "Network error. Please try again.",
-      );
-    } finally {
-      setSaving(false);
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deletedId);
+        return next;
+      });
+      void refetch();
+      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
 
@@ -263,6 +333,13 @@ function IncomePage({
         ) : (
         <DataTable
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
+          rowClassName={(rowIndex) => {
+            const record = visibleIncomeRecords[rowIndex];
+            if (record && pendingIds.has(record.id)) {
+              return "record-pending record-pending-appear";
+            }
+            return undefined;
+          }}
           rows={visibleIncomeRecords.map((record) => {
             const netIncome = calculateNetIncome(record.grossIncome, record.capitalExpenditure);
 
@@ -300,11 +377,17 @@ function IncomePage({
         )}
       </Panel>
 
+      {saveNotice && (
+        <div className="save-notice" style={{ padding: "0.75rem 1rem", borderRadius: 8, background: "var(--color-warning-bg, #fef3c7)", color: "var(--color-warning-text, #92400e)", marginBottom: "0.5rem", fontSize: "0.875rem", cursor: "pointer" }} onClick={() => setSaveNotice(null)}>
+          {saveNotice}
+        </div>
+      )}
+
       <FormModal
         deleteLabel="Soft Delete"
         modal={modal}
         editing={editing}
-        saving={saving}
+        saving={false}
         error={saveError}
         subtitle="Net income updates from gross income less capital expenditure."
         onEdit={() => setEditing(true)}

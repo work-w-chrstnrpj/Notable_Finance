@@ -46,6 +46,7 @@ function DataTable({
   pageSize = 0,
   pageSizeOptions = [10, 25, 50, 100],
   pageSummary,
+  rowClassName,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -61,6 +62,8 @@ function DataTable({
   pageSizeOptions?: number[];
   /** Optional summary text shown beside the pagination controls (e.g. "325 records"). */
   pageSummary?: string;
+  /** Optional callback to apply a className to each row based on its index or content. */
+  rowClassName?: (rowIndex: number, row: ReactNode[]) => string | undefined;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -151,7 +154,7 @@ function DataTable({
           {paginated.map(({ row, index }) => (
             <tr
               key={`row-${index}`}
-              className={cx(onRowClick && "table-row--clickable")}
+              className={cx(onRowClick && "table-row--clickable", rowClassName?.(index, row))}
               tabIndex={onRowClick ? 0 : undefined}
               onClick={() => onRowClick?.(index)}
               onKeyDown={(event) => {
