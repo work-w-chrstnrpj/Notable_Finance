@@ -86,8 +86,18 @@ export class UserConfigService {
     token: string,
     dbIds: Record<string, string>,
   ): Promise<void> {
-    const encryptedToken =
-      token && this.encryptionKey ? this.encrypt(token) : '';
+    let encryptedToken: string;
+
+    if (token) {
+      // New token provided — encrypt and store it
+      encryptedToken = this.encryptionKey ? this.encrypt(token) : token;
+    } else {
+      // No new token — preserve the existing one
+      const existing = await this.getConfig(userId);
+      encryptedToken = existing?.token
+        ? (this.encryptionKey ? this.encrypt(existing.token) : existing.token)
+        : '';
+    }
 
     await this.db.query(
       `INSERT INTO user_notion_configs (user_id, encrypted_token, db_ids)

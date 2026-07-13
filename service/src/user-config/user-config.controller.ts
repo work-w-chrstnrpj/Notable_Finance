@@ -30,6 +30,21 @@ export class UserConfigController {
     };
   }
 
+  @Get('debug')
+  async debugConfig(@CurrentUser() user: JwtPayload) {
+    const config = await this.userConfigService.getConfig(user.id);
+    if (!config) {
+      return { configured: false, tokenPreview: 'none', dbIds: {} };
+    }
+    return {
+      configured: true,
+      tokenPreview: config.token ? `${config.token.substring(0, 10)}...` : 'empty',
+      tokenLength: config.token.length,
+      dbIds: config.dbIds,
+      dbIdKeys: Object.keys(config.dbIds),
+    };
+  }
+
   @Put()
   async saveConfig(
     @CurrentUser() user: JwtPayload,
@@ -40,7 +55,8 @@ export class UserConfigController {
       body.token ?? '',
       body.dbIds ?? {},
     );
-    return { configured: true, tokenConfigured: !!body.token };
+    const config = await this.userConfigService.getConfig(user.id);
+    return { configured: true, tokenConfigured: !!config?.token };
   }
 
   @Delete()
