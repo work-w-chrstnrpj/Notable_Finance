@@ -84,11 +84,14 @@ function useApiQuery<T>(
     },
   });
 
-  const state: AsyncState<T> = query.isError
-    ? { status: "error", error: query.error?.message ?? "Request failed" }
-    : query.data !== undefined
+  // Stale-while-revalidate: keep showing data even if the background refetch
+  // failed. Consumers see stale data instead of a blank screen.
+  const state: AsyncState<T> =
+    query.data !== undefined
       ? { status: "success", data: query.data }
-      : { status: "loading" };
+      : query.isError
+        ? { status: "error", error: query.error?.message ?? "Request failed" }
+        : { status: "loading" };
 
   // Stable refetch. React Query refetch is inherently stale-while-revalidate
   // (keeps prior data on screen), so it never blanks the current view.
