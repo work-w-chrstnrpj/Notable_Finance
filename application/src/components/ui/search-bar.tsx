@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 
 export function SearchToggle({
   active,
@@ -52,5 +52,24 @@ export function SearchInput({
         </button>
       )}
     </div>
+  );
+}
+
+export function FilterToggle({
+  active,
+  onToggle,
+}: {
+  active: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`icon-button filter-toggle${active ? " filter-toggle--active" : ""}`}
+      onClick={onToggle}
+      aria-label={active ? "Close filters" : "Filters"}
+    >
+      <SlidersHorizontal size={16} />
+    </button>
   );
 }

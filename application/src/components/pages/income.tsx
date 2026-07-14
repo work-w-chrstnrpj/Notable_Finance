@@ -7,7 +7,7 @@ import { buildAnnualGroups, GroupBySelect } from "@/components/charts";
 import { AnnualBarChart } from "@/components/charts";
 import { Panel, Field, ComputedField, MoneyValue, FilterSelect, LoadingBlock, SegmentedControl } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
-import { SearchToggle, SearchInput } from "@/components/ui/search-bar";
+import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
 import { Toast } from "@/components/ui/toast";
@@ -59,6 +59,7 @@ function IncomePage({
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterActive, setFilterActive] = useState(false);
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
   const isAnnual = viewMode === "Annually";
@@ -463,6 +464,10 @@ function IncomePage({
         title="Income"
         actions={
           <>
+            <FilterToggle
+              active={filterActive}
+              onToggle={() => setFilterActive((prev) => !prev)}
+            />
             <SearchToggle
               active={searchActive}
               onToggle={() => {
@@ -470,30 +475,6 @@ function IncomePage({
                 if (searchActive) setSearchQuery("");
               }}
             />
-            <FilterSelect
-              placeholder="All Accounts"
-              placeholderDisabled={false}
-              value={accountId}
-              onChange={setAccountId}
-            >
-              {nonCreditActiveAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </FilterSelect>
-            <FilterSelect
-              placeholder="All Categories"
-              placeholderDisabled={false}
-              value={categoryId}
-              onChange={setCategoryId}
-            >
-              {normalIncomeCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.source}
-                </option>
-              ))}
-            </FilterSelect>
             <button
               type="button"
               className="button button--primary"
@@ -506,12 +487,44 @@ function IncomePage({
         }
       />
 
-      {searchActive && (
-        <SearchInput
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          placeholder="Search income..."
-        />
+      {(searchActive || filterActive) && (
+        <div className="toolbar-row">
+          {filterActive && (
+            <>
+              <FilterSelect
+                placeholder="All Accounts"
+                placeholderDisabled={false}
+                value={accountId}
+                onChange={setAccountId}
+              >
+                {nonCreditActiveAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                placeholder="All Categories"
+                placeholderDisabled={false}
+                value={categoryId}
+                onChange={setCategoryId}
+              >
+                {normalIncomeCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.source}
+                  </option>
+                ))}
+              </FilterSelect>
+            </>
+          )}
+          {searchActive && (
+            <SearchInput
+              query={searchQuery}
+              onQueryChange={setSearchQuery}
+              placeholder="Search income..."
+            />
+          )}
+        </div>
       )}
 
       <SegmentedControl

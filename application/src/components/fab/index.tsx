@@ -33,7 +33,8 @@ function WorkspaceFab({
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState<FabModalKind>(null);
 
-  const canPrintReceipt = activeSection === "expense" && receipt !== null;
+  const canPrintReceipt =
+    (activeSection === "expense" || activeSection === "receivables") && receipt !== null;
   const canShotInsight = activeSection === "monthly-monitoring" && insight !== null;
 
   function choose(kind: Exclude<FabModalKind, null>) {
@@ -543,7 +544,7 @@ function ReceiptModal({
   return (
     <ExportModalShell
       title="Print Receipt"
-      subtitle="Export the current expense view as a receipt."
+      subtitle="Export the current view as a receipt."
       onClose={onClose}
       onPrint={() => surfaceRef.current && printNode(surfaceRef.current)}
       onSaveImage={() =>

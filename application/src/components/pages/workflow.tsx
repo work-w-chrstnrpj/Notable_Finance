@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { Panel, Field, ComputedField, MoneyValue, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
@@ -17,6 +17,7 @@ import { getActiveSectionLabel } from "@/lib/finance-data";
 import { calculateNetIncome, getMoneyValueTone, getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
+import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
 
 function WorkflowPage({
@@ -107,6 +108,36 @@ function WorkflowPage({
   const workflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
+  // ── Publish printable receipt for Receivables ──────────────────────
+  const { setReceipt } = useFabRegister();
+  const receiptContext = useMemo<ReceiptContext>(() => {
+    const enabledRecords = workflowIncomes.filter(
+      (_, idx) => !disabledIds.has(idx),
+    );
+    const rows: ReceiptRow[] = enabledRecords.map((record) => ({
+      date: record.date ? formatDate(record.date) : "—",
+      description: stripNotionTag(record.name),
+      amount: formatMoney(record.grossIncome),
+    }));
+    const total = enabledRecords.reduce(
+      (sum, record) => sum + (record.grossIncome ?? 0),
+      0,
+    );
+    return {
+      viewTitle: "Receivables",
+      periodLabel: "All Time",
+      amountHeader: "Amount",
+      rows,
+      total: formatMoney(total),
+    };
+  }, [workflowIncomes, disabledIds]);
+
+  useEffect(() => {
+    if (isReceivables) {
+      setReceipt(receiptContext);
+      return () => setReceipt(null);
+    }
+  }, [isReceivables, receiptContext, setReceipt]);
   const workflowApi =
     section === "transfer"
       ? transfersApi

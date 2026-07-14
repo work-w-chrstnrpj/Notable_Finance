@@ -19,7 +19,6 @@ import {
   incomeTransactionOnlyFields,
   isExpenseRecordInViewScope,
   isIncomeRecordInViewScope,
-  isOutstandingExpense,
   isUnpaidPasabuyExpense,
   isMonthlyMonitoringEditable,
   normalIncomeFields,
@@ -239,15 +238,25 @@ describe("finance frontend rules", () => {
   it("treats unpaid pasabuy records as not fully received", () => {
     const pasabuyRecord = testExpenseRecords.find((record) => record.id === "expense-pasabuy");
 
-    expect(pasabuyRecord).toBeDefined();
-    expect(isOutstandingExpense(pasabuyRecord!)).toBe(true);
-    expect(isUnpaidPasabuyExpense(pasabuyRecord!, "Pasabuy")).toBe(true);
+    // Pasabuy category + Installment + balance > 0.1 = unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 50 }, "Pasabuy")).toBe(true);
 
-    // A fully-received pasabuy (balance 0) should NOT appear in Unpaid Pasabuy
-    const fullyReceived = { ...pasabuyRecord!, pasabuyBalance: 0 };
-    expect(isUnpaidPasabuyExpense(fullyReceived, "Pasabuy")).toBe(false);
+    // Pasabuy + Installment + "Payment not yet receive" status = unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 0, pasabuyStatus: "Payment not yet receive" }, "Pasabuy")).toBe(true);
 
-    // Non-pasabuy category should never match
-    expect(isUnpaidPasabuyExpense(pasabuyRecord!, "Food & Dining")).toBe(false);
+    // Pasabuy + Installment + "Payment partially received" status = unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 0, pasabuyStatus: "Payment partially received" }, "Pasabuy")).toBe(true);
+
+    // Pasabuy + Installment + paidPeriod != 1 = unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 0, pasabuyPaidPeriod: 0 }, "Pasabuy")).toBe(true);
+
+    // Not Installment = NOT unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Paid", pasabuyBalance: 50 }, "Pasabuy")).toBe(false);
+
+    // balance 0, no status match, paidPeriod=1 = NOT unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 0, pasabuyPaidPeriod: 1 }, "Pasabuy")).toBe(false);
+
+    // Wrong category = NOT unpaid pasabuy
+    expect(isUnpaidPasabuyExpense({ ...pasabuyRecord!, paymentStatus: "Installment", pasabuyBalance: 50 }, "Food & Dining")).toBe(false);
   });
 });

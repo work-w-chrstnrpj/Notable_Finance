@@ -1590,6 +1590,33 @@ a {
   background: var(--blue-soft);
   border-color: var(--blue);
 }
+/* ── Filter toggle & toolbar row ──────────────────────────────────── */
+.filter-toggle {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+.filter-toggle:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.filter-toggle--active {
+  color: var(--blue);
+  background: var(--surface);
+  border-color: var(--blue);
+}
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar-row .filter-select {
+  flex: 0 1 auto;
+}
+.toolbar-row .search-bar {
+  flex: 1 1 200px;
+}
 .search-bar {
   display: flex;
   align-items: center;

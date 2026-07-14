@@ -128,13 +128,18 @@ export class NotionQueryService {
     //    it is one of the calendar views). ─────────────────────────────────
     switch (mode) {
       case 'unpaidPasabuy': {
-        // Pasabuy items where the pasabuyer is still owed money (balance > 0).
-        const pasabuyCatId = this.tryFindExpenseCategoryId('Pasabuy', userId);
+        // Pasabuy items with pending payment status or outstanding balance.
+        const pasabuyCatIds = this.getExpenseCategoryIdsContaining('Pasabuy', userId);
         filtered = filtered.filter(
           (r) =>
-            r.categoryId === pasabuyCatId &&
-            r.paymentStatus !== 'Installment' &&
-            (r.pasabuyBalance ?? 0) > 0,
+            pasabuyCatIds.has(r.categoryId) &&
+            r.paymentStatus === 'Installment' &&
+            (
+              (r.pasabuyBalance ?? 0) > 0.1 ||
+              r.pasabuyStatus === 'Payment not yet receive' ||
+              r.pasabuyStatus === 'Payment partially received' ||
+              (r.pasabuyPaidPeriod ?? 0) !== 1
+            ),
         );
         break;
       }
@@ -152,18 +157,34 @@ export class NotionQueryService {
         filtered = filtered.filter((r) => r.description.includes('Buy: '));
         break;
       case 'installments':
-        // All installment records regardless of account type.
-        filtered = filtered.filter((r) => r.paymentStatus === 'Installment');
-        break;
-      case 'ccTransactions':
-        // Unpaid CC: To Pay items on a credit-like account.
+        // Installment records on credit-like accounts only.
         filtered = filtered.filter(
           (r) =>
-            !r.datePaid &&
-            r.paymentStatus !== 'Installment' &&
-            !r.description.includes('Buy: ') &&
+            r.paymentStatus === 'Installment' &&
             creditAccountIds.has(r.accountId),
         );
+        break;
+      case 'ccTransactions':
+        // Unpaid CC: outstanding credit-like account items (excluding installments).
+        filtered = filtered.filter((r) => {
+          if (r.paymentStatus === 'Installment') return false;
+          if (!creditAccountIds.has(r.accountId)) return false;
+          // Compute remaining balance from available DTO fields.
+          const grossPrice = r.amount + r.interest;
+          const paidFraction =
+            r.periodCount && r.periodCount > 0 && r.paidPeriod != null
+              ? r.paidPeriod / r.periodCount
+              : r.datePaid
+                ? 1
+                : 0;
+          const remainingBalance = grossPrice * (1 - paidFraction);
+          return (
+            !r.datePaid ||
+            r.paymentStatus === 'Unpaid' ||
+            r.paidPeriod == null ||
+            remainingBalance > 0.1
+          );
+        });
         break;
       case 'daily':
       case 'weekly':
@@ -240,6 +261,17 @@ export class NotionQueryService {
     return this.cache.getCollectedExpenseCategories(userId).find(
       (item) => item.name.toLowerCase().trim() === target,
     )?.id;
+  }
+
+  /** Returns IDs of expense categories whose name contains `substring` (case-insensitive). */
+  getExpenseCategoryIdsContaining(substring: string, userId?: string): Set<string> {
+    const needle = substring.toLowerCase();
+    return new Set(
+      this.cache
+        .getCollectedExpenseCategories(userId)
+        .filter((item) => item.name.toLowerCase().includes(needle))
+        .map((item) => item.id),
+    );
   }
 
   tryFindIncomeCategoryId(source: string, userId?: string): string | undefined {

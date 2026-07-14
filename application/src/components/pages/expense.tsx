@@ -14,7 +14,7 @@ import {
   SegmentedControl,
   PageToolbar,
 } from "@/components/ui";
-import { SearchToggle, SearchInput } from "@/components/ui/search-bar";
+import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
 import { Toast } from "@/components/ui/toast";
@@ -107,6 +107,7 @@ function ExpensePage({
   const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterActive, setFilterActive] = useState(false);
   const [modal, setModal] = useState<ModalState>(null);
 
   const pasabuyCategory = expenseCategories.find((c) => /pasabuy/i.test(c.name));
@@ -711,6 +712,10 @@ function ExpensePage({
         title="Expense"
         actions={
           <>
+            <FilterToggle
+              active={filterActive}
+              onToggle={() => setFilterActive((prev) => !prev)}
+            />
             <SearchToggle
               active={searchActive}
               onToggle={() => {
@@ -718,41 +723,6 @@ function ExpensePage({
                 if (searchActive) setSearchQuery("");
               }}
             />
-            <FilterSelect
-              placeholder="All accounts"
-              placeholderDisabled={false}
-              value={accountFilterId}
-              onChange={setAccountFilterId}
-            >
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </FilterSelect>
-            {viewMode !== "Unpaid Pasabuy" && (
-              <FilterSelect
-                placeholder="All Categories"
-                placeholderDisabled={false}
-                value={expenseCategoryFilter}
-                onChange={setExpenseCategoryFilter}
-              >
-                <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
-                {expenseCategories.map((category) => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
-                ))}
-              </FilterSelect>
-            )}
-            {viewMode === "Unpaid Pasabuy" && (
-              <FilterSelect
-                placeholder="All pasabuyers"
-                placeholderDisabled={false}
-                value={pasabuyerFilter}
-                onChange={setPasabuyerFilter}
-              >
-                {pasabuyerLabels.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </FilterSelect>
-            )}
             <button
               type="button"
               className="button button--primary"
@@ -765,12 +735,55 @@ function ExpensePage({
         }
       />
 
-      {searchActive && (
-        <SearchInput
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          placeholder="Search expenses..."
-        />
+      {(searchActive || filterActive) && (
+        <div className="toolbar-row">
+          {filterActive && (
+            <>
+              <FilterSelect
+                placeholder="All accounts"
+                placeholderDisabled={false}
+                value={accountFilterId}
+                onChange={setAccountFilterId}
+              >
+                {activeAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>{account.name}</option>
+                ))}
+              </FilterSelect>
+              {viewMode !== "Unpaid Pasabuy" && (
+                <FilterSelect
+                  placeholder="All Categories"
+                  placeholderDisabled={false}
+                  value={expenseCategoryFilter}
+                  onChange={setExpenseCategoryFilter}
+                >
+                  <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
+                  {expenseCategories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </FilterSelect>
+              )}
+              {viewMode === "Unpaid Pasabuy" && (
+                <FilterSelect
+                  placeholder="All pasabuyers"
+                  placeholderDisabled={false}
+                  value={pasabuyerFilter}
+                  onChange={setPasabuyerFilter}
+                >
+                  {pasabuyerLabels.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </FilterSelect>
+              )}
+            </>
+          )}
+          {searchActive && (
+            <SearchInput
+              query={searchQuery}
+              onQueryChange={setSearchQuery}
+              placeholder="Search expenses..."
+            />
+          )}
+        </div>
       )}
 
       <SegmentedControl
