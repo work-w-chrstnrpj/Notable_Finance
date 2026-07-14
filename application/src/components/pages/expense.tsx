@@ -14,8 +14,10 @@ import {
   SegmentedControl,
   PageToolbar,
 } from "@/components/ui";
+import { SearchToggle, SearchInput } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { Toast } from "@/components/ui/toast";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
 import { applyNotionTag, getMonthLabel, stripNotionTag } from "@/lib/finance-helpers";
@@ -35,6 +37,7 @@ import {
   paymentStatusLabels,
 } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
+import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 import { expensesApi } from "@/lib/api-client";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { parseNumberInput, parseOptionalNumberInput, getExpenseTotal } from "@/lib/finance-helpers";
@@ -102,6 +105,8 @@ function ExpensePage({
   const [pasabuyDateOfPaymentInput, setPasabuyDateOfPaymentInput] = useState("");
   const [pasabuyPaidPeriodInput, setPasabuyPaidPeriodInput] = useState("");
   const [pasabuyAccountReceiverId, setPasabuyAccountReceiverId] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
 
   const pasabuyCategory = expenseCategories.find((c) => /pasabuy/i.test(c.name));
@@ -146,6 +151,7 @@ function ExpensePage({
   const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
   const [editing, setEditing] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -193,6 +199,27 @@ function ExpensePage({
       return true;
     },
   );
+
+  // Fuzzy search: filter visible records by search query (client-side only)
+  const fuzzyMatchedIndices = useMemo(
+    () =>
+      searchActive && searchQuery.trim()
+        ? fuzzyFilterIndices(visibleExpenseRecords, searchQuery, (r) => [
+            r.description,
+            r.purchaseDate,
+            r.datePaid ?? "",
+            accountNameById.get(r.accountId) ?? "",
+            expenseCategoryNameById.get(r.categoryId) ?? "",
+            r.pasabuyer ?? "",
+          ])
+        : visibleExpenseRecords.map((_, i) => i),
+    [visibleExpenseRecords, searchActive, searchQuery, accountNameById, expenseCategoryNameById],
+  );
+  const searchFilteredRecords = useMemo(
+    () => fuzzyMatchedIndices.map((i) => visibleExpenseRecords[i]),
+    [fuzzyMatchedIndices, visibleExpenseRecords],
+  );
+
   const annualExpenseGroups = buildAnnualGroups(
     visibleExpenseRecords.map((r) => ({
       dateIso: r.purchaseDate,
@@ -280,8 +307,13 @@ function ExpensePage({
   }
 
   async function handleSaveExpense() {
-    if (!descriptionInput.trim()) {
-      setSaveError("Description is required.");
+    const invalid = new Set<string>();
+    if (!descriptionInput.trim()) invalid.add("description");
+    if (invalid.size > 0) {
+      setShakeFields(invalid);
+      setSaveError("Please fill in all required fields.");
+      // Auto-clear shake after animation
+      setTimeout(() => setShakeFields(new Set()), 600);
       return;
     }
     const payload: Record<string, unknown> = {
@@ -608,7 +640,7 @@ function ExpensePage({
     }
   }
 
-  const enabledExpenseRecords = visibleExpenseRecords.filter(
+  const enabledExpenseRecords = searchFilteredRecords.filter(
     (_, idx) => !disabledIds.has(idx),
   );
 
@@ -616,10 +648,10 @@ function ExpensePage({
   // The "Amount" column is remapped per view per the receipt spec.
   const { setReceipt } = useFabRegister();
   const receiptContext = useMemo<ReceiptContext>(() => {
-    const amountHeader =
-      viewMode === "Installments" ? "Installment Amount" : "Amount";
+    const isInstallment = viewMode === "Installments";
+    const amountHeader = isInstallment ? "Installment Amount" : "Amount";
     const receiptValue = (record: ExpenseRecord): number => {
-      if (viewMode === "Installments") {
+      if (isInstallment) {
         return deriveExpenseComputed(record).installment ?? 0;
       }
       if (viewMode === "Unpaid CC") {
@@ -633,11 +665,25 @@ function ExpensePage({
     const enabledRecords = visibleExpenseRecords.filter(
       (_, idx) => !disabledIds.has(idx),
     );
-    const rows: ReceiptRow[] = enabledRecords.map((record) => ({
-      date: formatDate(record.purchaseDate),
-      description: stripNotionTag(record.description),
-      amount: formatMoney(receiptValue(record)),
-    }));
+    const rows: ReceiptRow[] = enabledRecords.map((record) => {
+      const base = {
+        date: formatDate(record.purchaseDate),
+        description: stripNotionTag(record.description),
+        amount: formatMoney(receiptValue(record)),
+      };
+      if (isInstallment) {
+        const c = deriveExpenseComputed(record);
+        return {
+          ...base,
+          grossAmount: formatMoney(c.gross),
+          paidAmount: formatMoney(c.paid),
+          remainingBalance: formatMoney(c.remaining),
+          installmentAmount: c.installment != null ? formatMoney(c.installment) : "—",
+          expectedPaymentDate: c.expected ? formatDate(c.expected) : "—",
+        };
+      }
+      return base;
+    });
     const total = enabledRecords.reduce(
       (sum, record) => sum + receiptValue(record),
       0,
@@ -648,6 +694,7 @@ function ExpensePage({
       amountHeader,
       rows,
       total: formatMoney(total),
+      installmentLayout: isInstallment || undefined,
     };
     // deriveExpenseComputed is a stable closure over the same render inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -664,6 +711,13 @@ function ExpensePage({
         title="Expense"
         actions={
           <>
+            <SearchToggle
+              active={searchActive}
+              onToggle={() => {
+                setSearchActive((prev) => !prev);
+                if (searchActive) setSearchQuery("");
+              }}
+            />
             <FilterSelect
               placeholder="All accounts"
               placeholderDisabled={false}
@@ -711,6 +765,14 @@ function ExpensePage({
         }
       />
 
+      {searchActive && (
+        <SearchInput
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          placeholder="Search expenses..."
+        />
+      )}
+
       <SegmentedControl
         label="Expense view"
         options={expenseViewModes.map((mode) => ({ label: mode, value: mode }))}
@@ -749,7 +811,7 @@ function ExpensePage({
             wide
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
-            rows={visibleExpenseRecords.map((record) => [
+            rows={searchFilteredRecords.map((record) => [
               formatDate(record.purchaseDate),
               <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
                 {stripNotionTag(record.description)}
@@ -804,7 +866,7 @@ function ExpensePage({
               "Date Paid",
             ]}
             rowClassName={expenseRowClassName}
-            rows={visibleExpenseRecords.map((record) => {
+            rows={searchFilteredRecords.map((record) => {
               const c = deriveExpenseComputed(record);
               return [
                 formatDate(record.purchaseDate),
@@ -876,7 +938,7 @@ function ExpensePage({
               "Date Paid",
             ]}
             rowClassName={expenseRowClassName}
-            rows={visibleExpenseRecords.map((record) => {
+            rows={searchFilteredRecords.map((record) => {
               const c = deriveExpenseComputed(record);
               return [
                 formatDate(record.purchaseDate),
@@ -938,7 +1000,7 @@ function ExpensePage({
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rowClassName={expenseRowClassName}
-            rows={visibleExpenseRecords.map((record) => {
+            rows={searchFilteredRecords.map((record) => {
               const isUnpaid = !record.datePaid;
               return [
                 formatDate(record.purchaseDate),
@@ -997,8 +1059,9 @@ function ExpensePage({
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Purchase description" required>
+          <Field label="Purchase description" required error={shakeFields.has("description")}>
             <input
+              className={shakeFields.has("description") ? "field__input--shake" : undefined}
               placeholder="Purchase description"
               value={descriptionInput}
               onChange={(event) => setDescriptionInput(event.target.value)}
@@ -1157,6 +1220,9 @@ function ExpensePage({
           )}
         </div>
       </FormModal>
+      {saveError && (
+        <Toast message={saveError} onDismiss={() => setSaveError(null)} />
+      )}
     </div>
   );
 }

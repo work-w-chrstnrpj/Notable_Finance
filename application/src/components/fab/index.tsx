@@ -550,7 +550,10 @@ function ReceiptModal({
         surfaceRef.current && downloadNodeAsPng(surfaceRef.current, "notable-receipt")
       }
     >
-      <div className="receipt" ref={surfaceRef}>
+      <div
+        className={`receipt${receipt.installmentLayout ? " receipt--installment" : ""}`}
+        ref={surfaceRef}
+      >
         <div className="receipt__head">
           <h1 className="receipt__brand">Notable Finance Receipt</h1>
           <p className="receipt__tagline">by {user?.name ?? user?.email ?? "Guest"}</p>
@@ -558,46 +561,103 @@ function ReceiptModal({
           <p className="receipt__meta">{receipt.periodLabel}</p>
         </div>
         <div className="receipt__rule" />
-        <table className="receipt__table">
-          <colgroup>
-            <col className="receipt__col-date" />
-            <col className="receipt__col-desc" />
-            <col className="receipt__col-amount" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Date of Purchase</th>
-              <th>Description</th>
-              <th className="receipt__amount">{receipt.amountHeader}</th>
-            </tr>
-          </thead>
-          <tbody>
+        {receipt.installmentLayout ? (
+          <div className="receipt__breakdowns">
             {receipt.rows.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="receipt__empty">No items to display.</td>
-              </tr>
+              <p className="receipt__empty">No items to display.</p>
             ) : (
               receipt.rows.map((row, index) => (
-                <tr key={`${row.date}-${index}`}>
-                  <td className="receipt__date">{row.date}</td>
-                  <td>{row.description}</td>
-                  <td className="receipt__amount">{row.amount}</td>
-                </tr>
+                <div className="receipt__breakdown" key={`${row.date}-${index}`}>
+                  <span className="receipt__breakdown-label">Item name:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value">{row.description}</span>
+
+                  <span className="receipt__breakdown-label">Date of Purchase:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value">{row.date}</span>
+
+                  <span className="receipt__breakdown-label">Gross Amount:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value">{row.grossAmount ?? row.amount}</span>
+
+                  <span className="receipt__breakdown-label receipt__breakdown-label--indent">Paid Amount:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value receipt__breakdown-value--green">{row.paidAmount ?? "—"}</span>
+
+                  <span className="receipt__breakdown-label receipt__breakdown-label--indent">Remaining Balance:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value receipt__breakdown-value--red">{row.remainingBalance ?? "—"}</span>
+
+                  <span className="receipt__breakdown-label">Installment Amount:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value">{row.installmentAmount ?? "—"}</span>
+
+                  <span className="receipt__breakdown-label">Expected Date of Payment:</span>
+                  <span className="receipt__breakdown-dots" />
+                  <span className="receipt__breakdown-value">{row.expectedPaymentDate ?? "—"}</span>
+
+                  {index < receipt.rows.length - 1 && <div className="receipt__breakdown-divider" />}
+                </div>
               ))
             )}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={2}>Total</td>
-              <td className="receipt__amount">{receipt.total}</td>
-            </tr>
-          </tfoot>
-        </table>
-        <div className="receipt__rule" />
-        <p className="receipt__disclaimer">
-          This document is electronically generated and does not require a
-          signature.
-        </p>
+          </div>
+        ) : (
+          <>
+            <table className="receipt__table">
+              <colgroup>
+                <col className="receipt__col-date" />
+                <col className="receipt__col-desc" />
+                <col className="receipt__col-amount" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Date of Purchase</th>
+                  <th>Description</th>
+                  <th className="receipt__amount">{receipt.amountHeader}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receipt.rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="receipt__empty">No items to display.</td>
+                  </tr>
+                ) : (
+                  receipt.rows.map((row, index) => (
+                    <tr key={`${row.date}-${index}`}>
+                      <td className="receipt__date">{row.date}</td>
+                      <td>{row.description}</td>
+                      <td className="receipt__amount">{row.amount}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={2}>Total</td>
+                  <td className="receipt__amount">{receipt.total}</td>
+                </tr>
+              </tfoot>
+            </table>
+            <div className="receipt__rule" />
+            <p className="receipt__disclaimer">
+              This document is electronically generated and does not require a
+              signature.
+            </p>
+          </>
+        )}
+        {receipt.installmentLayout && (
+          <>
+            <div className="receipt__rule" />
+            <div className="receipt__breakdown-total">
+              <span>Total Installment Amount:</span>
+              <span>{receipt.total}</span>
+            </div>
+            <p className="receipt__disclaimer">
+              This document is electronically generated and does not require a
+              signature.
+            </p>
+          </>
+        )}
       </div>
     </ExportModalShell>
   );

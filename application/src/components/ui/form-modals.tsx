@@ -67,7 +67,6 @@ function FormModal({
           </button>
         </div>
         <div className="modal-panel__body">
-          {error && <div className="auth-form__error">{error}</div>}
           <fieldset className="modal-fieldset" disabled={!editing || saving}>
             {children}
           </fieldset>

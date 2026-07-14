@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { buildAnnualGroups, GroupBySelect } from "@/components/charts";
 import { AnnualBarChart } from "@/components/charts";
 import { Panel, Field, ComputedField, MoneyValue, FilterSelect, LoadingBlock, SegmentedControl } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
+import { SearchToggle, SearchInput } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
 import { applyIncomeTag, stripNotionTag, parseNumberInput, getIncomeGrossTotal, getIncomeCapitalExpenditureTotal, getIncomeNetTotal } from "@/lib/finance-helpers";
 import { computeRange, incomeModeToUnit } from "@/lib/date-range";
 import { calculateNetIncome, getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
+import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 import { incomesApi } from "@/lib/api-client";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import type { AnnualGroupBy } from "@/components/constants";
@@ -48,11 +51,14 @@ function IncomePage({
   const [modal, setModal] = useState<ModalState>(null);
   const [editing, setEditing] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
   const isAnnual = viewMode === "Annually";
@@ -95,6 +101,24 @@ function IncomePage({
   const visibleIncomeRecords: IncomeRecord[] = allIncomeRecords.filter(
     (record) => !record.name?.includes("[Deleted:"),
   );
+
+  const fuzzyMatchedIndices = useMemo(
+    () =>
+      searchActive && searchQuery.trim()
+        ? fuzzyFilterIndices(visibleIncomeRecords, searchQuery, (r) => [
+            r.name,
+            r.date,
+            accountNameById.get(r.accountId ?? "") ?? "",
+            incomeCategoryNameById.get(r.categoryId) ?? "",
+          ])
+        : visibleIncomeRecords.map((_, i) => i),
+    [visibleIncomeRecords, searchActive, searchQuery, accountNameById, incomeCategoryNameById],
+  );
+  const searchFilteredRecords = useMemo(
+    () => fuzzyMatchedIndices.map((i) => visibleIncomeRecords[i]),
+    [fuzzyMatchedIndices, visibleIncomeRecords],
+  );
+
   const annualIncomeGroups = buildAnnualGroups(
     visibleIncomeRecords.map((r) => ({
       dateIso: r.date,
@@ -125,8 +149,13 @@ function IncomePage({
   }
 
   async function handleSaveIncome() {
-    if (!nameInput.trim() || !dateInput) {
-      setSaveError("Name and date are required.");
+    const invalid = new Set<string>();
+    if (!nameInput.trim()) invalid.add("name");
+    if (!dateInput) invalid.add("date");
+    if (invalid.size > 0) {
+      setShakeFields(invalid);
+      setSaveError("Please fill in all required fields.");
+      setTimeout(() => setShakeFields(new Set()), 600);
       return;
     }
     const payload = {
@@ -424,7 +453,7 @@ function IncomePage({
     }
   }
 
-  const enabledIncomeRecords = visibleIncomeRecords.filter(
+  const enabledIncomeRecords = searchFilteredRecords.filter(
     (_, idx) => !disabledIds.has(idx),
   );
 
@@ -434,6 +463,13 @@ function IncomePage({
         title="Income"
         actions={
           <>
+            <SearchToggle
+              active={searchActive}
+              onToggle={() => {
+                setSearchActive((prev) => !prev);
+                if (searchActive) setSearchQuery("");
+              }}
+            />
             <FilterSelect
               placeholder="All Accounts"
               placeholderDisabled={false}
@@ -469,6 +505,14 @@ function IncomePage({
           </>
         }
       />
+
+      {searchActive && (
+        <SearchInput
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          placeholder="Search income..."
+        />
+      )}
 
       <SegmentedControl
         label="Income view"
@@ -513,7 +557,7 @@ function IncomePage({
             }
             return undefined;
           }}
-          rows={visibleIncomeRecords.map((record) => {
+          rows={searchFilteredRecords.map((record) => {
             const netIncome = calculateNetIncome(record.grossIncome, record.capitalExpenditure);
 
             return [
@@ -570,15 +614,17 @@ function IncomePage({
         onClose={() => setModal(null)}
       >
         <div className="form-grid form-grid--single">
-          <Field label="Name" required>
+          <Field label="Name" required error={shakeFields.has("name")}>
             <input
+              className={shakeFields.has("name") ? "field__input--shake" : undefined}
               placeholder="Income title"
               value={nameInput}
               onChange={(event) => setNameInput(event.target.value)}
             />
           </Field>
-          <Field label="Date" required>
+          <Field label="Date" required error={shakeFields.has("date")}>
             <input
+              className={shakeFields.has("date") ? "field__input--shake" : undefined}
               type="date"
               value={dateInput}
               onChange={(event) => setDateInput(event.target.value)}
@@ -623,6 +669,9 @@ function IncomePage({
           />
         </div>
       </FormModal>
+      {saveError && (
+        <Toast message={saveError} onDismiss={() => setSaveError(null)} />
+      )}
     </div>
   );
 }
