@@ -558,7 +558,6 @@ function ReceiptModal({
         <div className="receipt__head">
           <h1 className="receipt__brand">Notable Finance Receipt</h1>
           <p className="receipt__tagline">by {user?.name ?? user?.email ?? "Guest"}</p>
-          <p className="receipt__meta">{receipt.viewTitle}</p>
           <p className="receipt__meta">{receipt.periodLabel}</p>
         </div>
         <div className="receipt__rule" />
@@ -641,8 +640,7 @@ function ReceiptModal({
             </table>
             <div className="receipt__rule" />
             <p className="receipt__disclaimer">
-              This document is electronically generated and does not require a
-              signature.
+              This document is electronically generated.
             </p>
           </>
         )}
@@ -654,8 +652,7 @@ function ReceiptModal({
               <span>{receipt.total}</span>
             </div>
             <p className="receipt__disclaimer">
-              This document is electronically generated and does not require a
-              signature.
+              This document is electronically generated.
             </p>
           </>
         )}

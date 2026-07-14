@@ -663,7 +663,7 @@ function ExpensePage({
       }
       return record.amount;
     };
-    const enabledRecords = visibleExpenseRecords.filter(
+    const enabledRecords = searchFilteredRecords.filter(
       (_, idx) => !disabledIds.has(idx),
     );
     const rows: ReceiptRow[] = enabledRecords.map((record) => {
@@ -699,7 +699,7 @@ function ExpensePage({
     };
     // deriveExpenseComputed is a stable closure over the same render inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, selectedDate, visibleExpenseRecords, disabledIds]);
+  }, [viewMode, selectedDate, searchFilteredRecords, disabledIds]);
 
   useEffect(() => {
     setReceipt(receiptContext);

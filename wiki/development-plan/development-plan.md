@@ -47,7 +47,7 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-09, frontend and backend implementation have advanced. On the backend, startup configuration validation, Passport JWT strategy, PostgreSQL metadata repository design, error normalization classes, and Winston structured logging were completed. The Next.js frontend foundation exists under `application/`. The NestJS backend foundation exists under `service/`, with `/api/v1` route modules, server-side configuration loading, field mapping, mutation validation, read-only reference endpoints, app-calculated dashboard/monthly monitoring responses, sync orchestration over a development Notion-shaped repository, and automated backend tests. Live Notion API writes, live schema verification, PostgreSQL metadata persistence, and production auth hardening remain in progress or blocked on external configuration/access.
+As of 2026-07-14, frontend and backend implementation have advanced. On the backend, startup configuration validation, Passport JWT strategy, PostgreSQL metadata repository design, error normalization classes, and Winston structured logging were completed. The Next.js frontend foundation exists under `application/`. The NestJS backend foundation exists under `service/`, with `/api/v1` route modules, server-side configuration loading, field mapping, mutation validation, read-only reference endpoints, app-calculated dashboard/monthly monitoring responses, sync orchestration over a development Notion-shaped repository, and automated backend tests. Live Notion API writes, live schema verification, PostgreSQL metadata persistence, and production auth hardening remain in progress or blocked on external configuration/access. Recent frontend changes include expense view filter validation updates, filter UI refactoring to collapsible toolbar rows, print receipt support for Receivables, useApiQuery stale-while-revalidate fix, and toast notification position move to top-right.
 
 | Workstream | Total Rows | Not Started | In Progress | Implemented | Blocked | Needs Decision | Deferred |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -98,6 +98,8 @@ Backend status detail: 11 `Implemented`, 8 `In Progress`, 2 `Blocked`.
 - Expand Playwright and manual QA coverage after backend contracts are available.
 
 Use the workbook as a gate tracker. A row should move to `Implemented` only when its acceptance criteria are verified and evidence is listed. Do not start implementation rows while required upstream decisions or access are blocked.
+
+> Last updated: 2026-07-14 — reflects current codebase state
 
 Documentation-only verification for this update:
 

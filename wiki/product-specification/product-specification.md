@@ -163,7 +163,7 @@ The Dashboard should show `Total Cash Flow` as the sum of active non-credit acco
 ### Expenses
 
 - View expense records by date, description, amount, account, category, date paid, and a local expense status indicator derived only from `Date Paid`.
-- Support Daily, Weekly, Monthly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions view modes. Annually is intentionally not in Expense scope.
+- Support Daily, Weekly, Monthly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, and Unpaid CC view modes.
 - Use `Purchase Date` as the month anchor for monthly Expense reporting.
 - Show the global month selector only for Monthly view. Other Expense views are scoped to their own current-period or outstanding-workflow logic and should not show the month selector.
 - Query only the records needed for the active Expense view. The default Monthly query should use the current month; selected historical months should be queried only when the month selector is used.
@@ -174,7 +174,7 @@ The Dashboard should show `Total Cash Flow` as the sum of active non-credit acco
 - Adjust expense form fields based on selected category and account.
 - Show credit-card related fields only when the selected account is `Credit Account` or `BYPL`; these include payment status, interest, payment frequency, period count, paid period, and app-calculated gross price, installment amount, paid amount, remaining balance, and expected payment date.
 - Show Pasabuy related fields only when the Unpaid Pasabuy workflow/view is active or the selected category is Pasabuy; these include pasabuyer, pasabuy status, pasabuy date of payment, pasabuy account receiver, pasabuy paid period, and app-calculated received amount and balance.
-- Daily, Weekly, and Monthly views do not depend on paid state. Unpaid Pasabuy, To pay, Installments, and CC Transactions show records that are not paid, not fully paid, or have no paid date.
+- Daily, Weekly, Monthly, and Annually views do not depend on paid state. Unpaid Pasabuy, To pay, To buy, Installments, and Unpaid CC show records that are not paid, not fully paid, or have no paid date.
 - For Dashboard, Monthly Monitoring, Income, Expense, and category reporting, calculate display values in application/shared code from scoped records when they can be derived from writable Notion fields. Use Notion formula/rollup values only where they represent current account state that the app deliberately displays as read-only.
 
 ### Form Required Fields
@@ -301,3 +301,5 @@ The following table documents which fields are required when creating or editing
 
 - Which exact fields should appear in compact list views versus detail views after the first UI wireframe pass?
 - Confirm live Notion category IDs and relation mappings when backend integration starts.
+
+> Last updated: 2026-07-14 — reflects current codebase state

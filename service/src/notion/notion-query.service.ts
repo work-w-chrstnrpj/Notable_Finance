@@ -133,7 +133,7 @@ export class NotionQueryService {
         filtered = filtered.filter(
           (r) =>
             pasabuyCatIds.has(r.categoryId) &&
-            r.paymentStatus === 'Installment' &&
+            r.paymentStatus !== 'Installment' &&
             (
               (r.pasabuyBalance ?? 0) > 0.1 ||
               r.pasabuyStatus === 'Payment not yet receive' ||

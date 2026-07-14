@@ -301,7 +301,7 @@ export function getExpenseStatusFromDatePaid(datePaid: string | null) {
 
 export function isUnpaidPasabuyExpense(record: ExpenseRecord, categoryName: string) {
   if (!isPasabuyCategoryName(categoryName)) return false;
-  if (record.paymentStatus !== "Installment") return false;
+  if (record.paymentStatus === "Installment") return false;
   return (
     (record.pasabuyBalance ?? 0) > 0.1 ||
     record.pasabuyStatus === "Payment not yet receive" ||

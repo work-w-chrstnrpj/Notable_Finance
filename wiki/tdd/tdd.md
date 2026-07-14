@@ -19,7 +19,7 @@ Users can create, edit, delete, view, and sync supported transactional records t
 
 Frontend and backend implementation have started after explicit implementation requests. The `application/` folder contains the first Next.js workspace foundation. The `service/` folder contains the first NestJS backend foundation with route modules, field mapping, mutation validation, a Notion adapter boundary, sync orchestration over a development repository, schema-status reporting, and backend tests.
 
-The official stack is Next.js for the frontend and NestJS for the backend.
+The official stack is Next.js for the frontend and NestJS for the backend. The frontend uses React Query for data fetching with stale-while-revalidate behavior to keep the UI responsive during background refetches.
 
 Create or expand real Next.js and NestJS application code only when the user explicitly asks to implement that scope. Backend live Notion writes and PostgreSQL persistence still require integration credentials, live schema confirmation, and implementation hardening.
 
@@ -152,7 +152,7 @@ Writable fields: `Purchase description`, `Purchase Date`, `Date Paid`, `Custom e
 
 Computed/read-only examples: `Gross Price`, `Installment Amount`, `Paid Amount`, `Remaining Balance`, `Monthly Total`, `Expected payment date`, `Extracted Billing Day`, `Extracted Due Day`, `Pasabuy Received Amount`, `Pasabuyer Balance`.
 
-Expense supports Daily, Weekly, Monthly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions views. Annually is intentionally out of Expense scope. Monthly Expense reporting uses `Purchase Date` as the month anchor. The month selector appears only for Monthly view; other Expense views use their own current-period or outstanding-workflow scopes. Account and Categories filters apply to the scoped result set in general Expense views. Category filtering should support All, W/out Pasabuy, and specific-category options. The Unpaid Pasabuy view is already scoped to Pasabuy category records, so the category filter should be hidden/ignored; it includes Pasabuy records where `Date Paid` is empty or `Pasabuy Status` is not `Payment fully received`, and it can be narrowed by `Pasabuyer`.
+Expense supports Daily, Weekly, Monthly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, and Unpaid CC views. Monthly Expense reporting uses `Purchase Date` as the month anchor. The month selector appears only for Monthly view; other Expense views use their own current-period or outstanding-workflow scopes. Account and Categories filters apply to the scoped result set in general Expense views. Category filtering should support All, W/out Pasabuy, and specific-category options. The Unpaid Pasabuy view is already scoped to Pasabuy category records, so the category filter should be hidden/ignored; it includes Pasabuy records where `Date Paid` is empty or `Pasabuy Status` is not `Payment fully received`, and it can be narrowed by `Pasabuyer`.
 
 Expense queries should load only the records needed for the active view. Monthly view defaults to the current month and queries another `YYYY-MM` only when the month selector is used.
 
@@ -260,3 +260,5 @@ Recommended test tooling after scaffolding:
 ## Open Questions
 
 - How should the app handle Notion records created outside the app while a local draft is pending?
+
+> Last updated: 2026-07-14 — reflects current codebase state
