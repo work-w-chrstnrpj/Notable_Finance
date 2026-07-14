@@ -33,6 +33,18 @@ export class IncomesController {
     return this.notionService.update('incomes', id, body, user.id);
   }
 
+  @Post('bulk-create')
+  @UseGuards(JwtAuthGuard)
+  bulkCreate(@Body() body: { items: Record<string, unknown>[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkCreate('incomes', body.items ?? [], user.id);
+  }
+
+  @Post('bulk-delete')
+  @UseGuards(JwtAuthGuard)
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkDelete('incomes', body.ids ?? [], user.id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {

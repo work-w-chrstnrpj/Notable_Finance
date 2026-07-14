@@ -242,5 +242,12 @@ describe("finance frontend rules", () => {
     expect(pasabuyRecord).toBeDefined();
     expect(isOutstandingExpense(pasabuyRecord!)).toBe(true);
     expect(isUnpaidPasabuyExpense(pasabuyRecord!, "Pasabuy")).toBe(true);
+
+    // A fully-received pasabuy (balance 0) should NOT appear in Unpaid Pasabuy
+    const fullyReceived = { ...pasabuyRecord!, pasabuyBalance: 0 };
+    expect(isUnpaidPasabuyExpense(fullyReceived, "Pasabuy")).toBe(false);
+
+    // Non-pasabuy category should never match
+    expect(isUnpaidPasabuyExpense(pasabuyRecord!, "Food & Dining")).toBe(false);
   });
 });

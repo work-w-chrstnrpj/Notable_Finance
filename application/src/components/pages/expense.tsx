@@ -149,6 +149,7 @@ function ExpensePage({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
@@ -169,6 +170,13 @@ function ExpensePage({
     window.addEventListener(DATA_CHANGED_EVENT, handler);
     return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
   }, [refetch]);
+
+  // Clear selection when view mode changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+    setDisabledIds(new Set());
+  }, [viewMode]);
+
   const isLoading = expensesState.status === "loading";
   const allExpenseRecords: ExpenseRecord[] =
     expensesState.status === "success" ? expensesState.data : [];
@@ -451,6 +459,159 @@ function ExpensePage({
     });
   }
 
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+    if (action === "enable" || action === "disable") {
+      const shouldDisable = action === "disable";
+      setDisabledIds((prev) => {
+        const next = new Set(prev);
+        for (const idx of selectedIds) {
+          if (shouldDisable) next.add(idx);
+          else next.delete(idx);
+        }
+        return next;
+      });
+      setSelectedIds(new Set());
+      return;
+    }
+
+    if (action === "duplicate") {
+      const recordsToDuplicate = Array.from(selectedIds)
+        .map((idx) => visibleExpenseRecords[idx])
+        .filter((r): r is ExpenseRecord => r != null);
+
+      if (recordsToDuplicate.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      setSelectedIds(new Set());
+
+      const items = recordsToDuplicate.map((record) => ({
+        description: `${record.description} (Copy)`,
+        purchaseDate: record.purchaseDate,
+        datePaid: record.datePaid || null,
+        amount: record.amount,
+        interest: record.interest ?? 0,
+        accountId: record.accountId,
+        categoryId: record.categoryId,
+        paymentStatus: record.paymentStatus || "Unpaid",
+        paymentFrequency: record.paymentFrequency || null,
+        periodCount: record.periodCount ?? null,
+        paidPeriod: record.paidPeriod ?? null,
+        pasabuyer: record.pasabuyer || null,
+        pasabuyStatus: record.pasabuyStatus || null,
+        pasabuyDateOfPayment: record.pasabuyDateOfPayment || null,
+        pasabuyPaidPeriod: record.pasabuyPaidPeriod ?? null,
+        pasabuyAccountReceiverId: record.pasabuyAccountReceiverId || null,
+      }));
+
+      const tempIds: string[] = [];
+      for (const record of recordsToDuplicate) {
+        const tempId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        tempIds.push(tempId);
+        setPendingIds((prev) => new Set(prev).add(tempId));
+        applyLocal((rows) => [
+          { ...record, id: tempId, description: `${record.description} (Copy)` } as ExpenseRecord,
+          ...rows,
+        ]);
+      }
+
+      try {
+        const res = await expensesApi.bulkCreate(items);
+        if (!res.success) {
+          for (const tempId of tempIds) {
+            applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+          }
+          void refetch();
+          setSaveNotice(`Bulk duplicate failed: ${res.error.message}`);
+        } else {
+          const { created, failed } = res.data;
+          for (let i = 0; i < tempIds.length; i++) {
+            const tempId = tempIds[i];
+            const match = created.find((_, ci) => ci === i);
+            if (match) {
+              applyLocal((rows) => {
+                const idx = rows.findIndex((r) => r.id === tempId);
+                if (idx === -1) return [match, ...rows];
+                const next = rows.slice();
+                next[idx] = match;
+                return next;
+              });
+            } else {
+              applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+            }
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+          }
+          if (failed.length > 0) {
+            setSaveNotice(`${failed.length} of ${items.length} items failed to duplicate.`);
+          }
+          invalidateExpenseFamily();
+        }
+      } catch (err) {
+        for (const tempId of tempIds) {
+          applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+          setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+        }
+        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
+      }
+    }
+
+    if (action === "delete") {
+      const idsToDelete = Array.from(selectedIds)
+        .map((idx) => visibleExpenseRecords[idx]?.id)
+        .filter((id): id is string => id != null);
+
+      if (idsToDelete.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      // Clear selection FIRST so indices don't shift onto wrong rows
+      setSelectedIds(new Set());
+
+      for (const idx of selectedIds) {
+        const record = visibleExpenseRecords[idx];
+        if (record) setPendingIds((prev) => new Set(prev).add(record.id));
+      }
+      applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
+
+      try {
+        const res = await expensesApi.bulkDelete(idsToDelete);
+        if (!res.success) {
+          for (const id of idsToDelete) {
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+          }
+          void refetch();
+          setSaveNotice(`Bulk delete failed: ${res.error.message}`);
+        } else {
+          const { deleted, failed } = res.data;
+          for (const id of deleted) {
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+          }
+          if (failed.length > 0) {
+            for (const f of failed) {
+              setPendingIds((prev) => { const n = new Set(prev); n.delete(f.id); return n; });
+            }
+            void refetch();
+            setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
+          }
+          invalidateExpenseFamily();
+        }
+      } catch (err) {
+        for (const id of idsToDelete) {
+          setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+        }
+        void refetch();
+        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
+      }
+    }
+  }
+
+  const enabledExpenseRecords = visibleExpenseRecords.filter(
+    (_, idx) => !disabledIds.has(idx),
+  );
+
   // Publish a printable receipt of the current view for the floating button.
   // The "Amount" column is remapped per view per the receipt spec.
   const { setReceipt } = useFabRegister();
@@ -469,12 +630,15 @@ function ExpensePage({
       }
       return record.amount;
     };
-    const rows: ReceiptRow[] = visibleExpenseRecords.map((record) => ({
+    const enabledRecords = visibleExpenseRecords.filter(
+      (_, idx) => !disabledIds.has(idx),
+    );
+    const rows: ReceiptRow[] = enabledRecords.map((record) => ({
       date: formatDate(record.purchaseDate),
       description: stripNotionTag(record.description),
       amount: formatMoney(receiptValue(record)),
     }));
-    const total = visibleExpenseRecords.reduce(
+    const total = enabledRecords.reduce(
       (sum, record) => sum + receiptValue(record),
       0,
     );
@@ -487,7 +651,7 @@ function ExpensePage({
     };
     // deriveExpenseComputed is a stable closure over the same render inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, selectedDate, visibleExpenseRecords]);
+  }, [viewMode, selectedDate, visibleExpenseRecords, disabledIds]);
 
   useEffect(() => {
     setReceipt(receiptContext);
@@ -579,7 +743,9 @@ function ExpensePage({
           <DataTable
             selectable
             selectedIds={selectedIds}
+            disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
+            onBulkAction={handleBulkAction}
             wide
             headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
@@ -601,7 +767,7 @@ function ExpensePage({
                 "Total",
                 "",
                 formatMoney(
-                  visibleExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
+                  enabledExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
                 ),
                 "",
                 "",
@@ -620,7 +786,9 @@ function ExpensePage({
           <DataTable
             selectable
             selectedIds={selectedIds}
+            disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
+            onBulkAction={handleBulkAction}
             wide
             headers={[
               "Date",
@@ -661,14 +829,14 @@ function ExpensePage({
                 "Total",
                 "",
                 "",
-                formatMoney(visibleExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0)),
                 "",
-                formatMoney(visibleExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
+                formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
                 formatMoney(
-                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
+                  enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
                 ),
                 formatMoney(
-                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
+                  enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
                 ),
                 "",
                 "",
@@ -686,7 +854,9 @@ function ExpensePage({
           <DataTable
             selectable
             selectedIds={selectedIds}
+            disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
+            onBulkAction={handleBulkAction}
             wide
             headers={[
               "Date",
@@ -731,20 +901,20 @@ function ExpensePage({
                 "Total",
                 "",
                 "",
-                formatMoney(visibleExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0)),
                 "",
-                formatMoney(visibleExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
+                formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
                 formatMoney(
-                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
+                  enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
                 ),
                 "",
                 "",
                 "",
                 formatMoney(
-                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).paid, 0),
+                  enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).paid, 0),
                 ),
                 formatMoney(
-                  visibleExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
+                  enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
                 ),
                 "",
                 "",
@@ -762,7 +932,9 @@ function ExpensePage({
           <DataTable
             selectable
             selectedIds={selectedIds}
+            disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
+            onBulkAction={handleBulkAction}
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rowClassName={expenseRowClassName}
@@ -789,7 +961,7 @@ function ExpensePage({
               [
                 "Total",
                 "",
-                formatMoney(getExpenseTotal(visibleExpenseRecords)),
+                formatMoney(getExpenseTotal(enabledExpenseRecords)),
                 "",
                 "",
                 "",

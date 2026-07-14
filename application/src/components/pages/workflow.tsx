@@ -77,6 +77,7 @@ function WorkflowPage({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
@@ -265,6 +266,83 @@ function WorkflowPage({
     });
   }
 
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+    if (action === "enable" || action === "disable") {
+      const shouldDisable = action === "disable";
+      setDisabledIds((prev) => {
+        const next = new Set(prev);
+        for (const idx of selectedIds) {
+          if (shouldDisable) next.add(idx);
+          else next.delete(idx);
+        }
+        return next;
+      });
+      setSelectedIds(new Set());
+      return;
+    }
+
+    if (action === "duplicate") {
+      const recordsToDuplicate = Array.from(selectedIds)
+        .map((idx) => workflowIncomes[idx])
+        .filter((r): r is IncomeRecord => r != null);
+
+      if (recordsToDuplicate.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      setSelectedIds(new Set());
+
+      const items = recordsToDuplicate.map((record) => ({
+        name: `${record.name} (Copy)`,
+        date: record.date,
+        grossIncome: record.grossIncome,
+        capitalExpenditure: record.capitalExpenditure,
+        accountId: record.accountId,
+        ...(categoryEditable ? { categoryId: record.categoryId } : {}),
+        ...(record.transactedAccountId ? { transactedAccountId: record.transactedAccountId } : {}),
+      }));
+
+      try {
+        const res = await workflowApi.bulkCreate(items);
+        if (res.success && res.data.created.length > 0) {
+          applyLocal((rows) => [...res.data.created, ...rows]);
+          invalidateIncomeFamily();
+        }
+        if (res.success && res.data.failed.length > 0) {
+          void refetch();
+        }
+      } catch {
+        void refetch();
+      }
+    }
+
+    if (action === "delete") {
+      const idsToDelete = Array.from(selectedIds)
+        .map((idx) => workflowIncomes[idx]?.id)
+        .filter((id): id is string => id != null);
+
+      if (idsToDelete.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      // Clear selection FIRST so indices don't shift onto wrong rows
+      setSelectedIds(new Set());
+
+      try {
+        const res = await workflowApi.bulkDelete(idsToDelete);
+        if (res.success) {
+          const { deleted } = res.data;
+          applyLocal((rows) => rows.filter((r) => !deleted.includes(r.id)));
+          invalidateIncomeFamily();
+        }
+      } catch {
+        // Silently fail for workflow — no pendingIds pattern here
+      }
+    }
+  }
+
   async function handleDeleteWorkflow() {
     if (!editingId) return;
     if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
@@ -310,7 +388,9 @@ function WorkflowPage({
           <DataTable
             selectable
             selectedIds={selectedIds}
+            disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
+            onBulkAction={handleBulkAction}
             headers={workflowHeaders}
             rows={workflowRows}
             onRowClick={(rowIndex) => {

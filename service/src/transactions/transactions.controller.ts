@@ -36,6 +36,18 @@ abstract class WorkflowController {
     return this.notionService.update(this.resource, id, body, user.id);
   }
 
+  @Post('bulk-create')
+  @UseGuards(JwtAuthGuard)
+  bulkCreate(@Body() body: { items: Record<string, unknown>[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkCreate(this.resource, body.items ?? [], user.id);
+  }
+
+  @Post('bulk-delete')
+  @UseGuards(JwtAuthGuard)
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkDelete(this.resource, body.ids ?? [], user.id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {

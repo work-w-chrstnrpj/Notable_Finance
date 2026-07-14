@@ -302,7 +302,7 @@ export function getExpenseStatusFromDatePaid(datePaid: string | null) {
 export function isUnpaidPasabuyExpense(record: ExpenseRecord, categoryName: string) {
   return (
     isPasabuyCategoryName(categoryName) &&
-    (record.datePaid === null || record.pasabuyStatus !== "Payment fully received")
+    (record.pasabuyBalance ?? 0) > 0
   );
 }
 

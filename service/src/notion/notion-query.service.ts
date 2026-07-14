@@ -123,57 +123,46 @@ export class NotionQueryService {
     let filtered = records;
     const mode = this.normalizeExpenseViewMode(query.expenseViewMode ?? query.viewMode);
     const creditAccountIds = this.getCreditAccountIds(userId);
-    const today = new Date().toISOString().slice(0, 10);
 
     // ── View-mode semantics (each is independent of purchase-date range unless
     //    it is one of the calendar views). ─────────────────────────────────
     switch (mode) {
       case 'unpaidPasabuy': {
-        // Pasabuy-category items still owed to a pasabuyer, regardless of date:
-        // the pasabuy payment is not yet fully received, OR a balance remains.
-        // Installments have their own view, so exclude them here.
+        // Pasabuy items where the pasabuyer is still owed money (balance > 0).
         const pasabuyCatId = this.tryFindExpenseCategoryId('Pasabuy', userId);
         filtered = filtered.filter(
           (r) =>
             r.categoryId === pasabuyCatId &&
             r.paymentStatus !== 'Installment' &&
-            (r.pasabuyStatus !== 'Payment fully received' || r.pasabuyBalance !== 0),
+            (r.pasabuyBalance ?? 0) > 0,
         );
         break;
       }
       case 'toPay':
-        // Not yet paid — Date Paid empty, regardless of purchase date.
-        // Installments have their own view, so exclude them here.
+        // Not yet paid, not installment, and not a "To buy" item.
         filtered = filtered.filter(
-          (r) => !r.datePaid && r.paymentStatus !== 'Installment',
+          (r) =>
+            !r.datePaid &&
+            r.paymentStatus !== 'Installment' &&
+            !r.description.includes('Buy: '),
         );
         break;
       case 'toBuy':
-        // Wishlist/planned — no purchase date (or future) OR missing category/account.
-        filtered = filtered.filter(
-          (r) =>
-            !r.purchaseDate ||
-            r.purchaseDate > today ||
-            !r.categoryId ||
-            !r.accountId,
-        );
+        // Items marked for future purchase — identified by "Buy: " prefix in description.
+        filtered = filtered.filter((r) => r.description.includes('Buy: '));
         break;
       case 'installments':
-        // Installment plans on a credit account, regardless of purchase date.
-        filtered = filtered.filter(
-          (r) =>
-            r.paymentStatus === 'Installment' &&
-            creditAccountIds.has(r.accountId),
-        );
+        // All installment records regardless of account type.
+        filtered = filtered.filter((r) => r.paymentStatus === 'Installment');
         break;
       case 'ccTransactions':
-        // Outstanding credit-card charges: unpaid or not-yet-paid on a credit
-        // account. Installments have their own view, so exclude them here.
+        // Unpaid CC: To Pay items on a credit-like account.
         filtered = filtered.filter(
           (r) =>
-            creditAccountIds.has(r.accountId) &&
+            !r.datePaid &&
             r.paymentStatus !== 'Installment' &&
-            (r.paymentStatus === 'Unpaid' || !r.datePaid),
+            !r.description.includes('Buy: ') &&
+            creditAccountIds.has(r.accountId),
         );
         break;
       case 'daily':

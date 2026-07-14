@@ -51,6 +51,7 @@ function IncomePage({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
@@ -73,6 +74,12 @@ function IncomePage({
     window.addEventListener(DATA_CHANGED_EVENT, handler);
     return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
   }, [refetch]);
+
+  // Clear selection when view mode changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+    setDisabledIds(new Set());
+  }, [viewMode]);
 
   // Auto-update [YYMMDD] tag when date changes (new or edit mode).
   useEffect(() => {
@@ -224,6 +231,153 @@ function IncomePage({
     });
   }
 
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+    if (action === "enable" || action === "disable") {
+      const shouldDisable = action === "disable";
+      setDisabledIds((prev) => {
+        const next = new Set(prev);
+        for (const idx of selectedIds) {
+          if (shouldDisable) next.add(idx);
+          else next.delete(idx);
+        }
+        return next;
+      });
+      setSelectedIds(new Set());
+      return;
+    }
+
+    if (action === "duplicate") {
+      const recordsToDuplicate = Array.from(selectedIds)
+        .map((idx) => visibleIncomeRecords[idx])
+        .filter((r): r is IncomeRecord => r != null);
+
+      if (recordsToDuplicate.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      setSelectedIds(new Set());
+
+      // Build create payloads
+      const items = recordsToDuplicate.map((record) => ({
+        name: `${record.name} (Copy)`,
+        date: record.date,
+        grossIncome: record.grossIncome,
+        capitalExpenditure: record.capitalExpenditure,
+        accountId: record.accountId,
+        categoryId: record.categoryId,
+      }));
+
+      // Optimistically add temp rows
+      const tempIds: string[] = [];
+      for (const record of recordsToDuplicate) {
+        const tempId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        tempIds.push(tempId);
+        setPendingIds((prev) => new Set(prev).add(tempId));
+        applyLocal((rows) => [
+          { ...record, id: tempId, name: `${record.name} (Copy)` } as IncomeRecord,
+          ...rows,
+        ]);
+      }
+
+      try {
+        const res = await incomesApi.bulkCreate(items);
+        if (!res.success) {
+          // Remove all temp rows on total failure
+          for (const tempId of tempIds) {
+            applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+          }
+          void refetch();
+          setSaveNotice(`Bulk duplicate failed: ${res.error.message}`);
+        } else {
+          const { created, failed } = res.data;
+          // Replace temp rows with real records
+          for (let i = 0; i < tempIds.length; i++) {
+            const tempId = tempIds[i];
+            const match = created.find((_, ci) => ci === i);
+            if (match) {
+              applyLocal((rows) => {
+                const idx = rows.findIndex((r) => r.id === tempId);
+                if (idx === -1) return [match, ...rows];
+                const next = rows.slice();
+                next[idx] = match;
+                return next;
+              });
+            } else {
+              applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+            }
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+          }
+          if (failed.length > 0) {
+            setSaveNotice(`${failed.length} of ${items.length} items failed to duplicate.`);
+          }
+          invalidateIncomeFamily();
+        }
+      } catch (err) {
+        for (const tempId of tempIds) {
+          applyLocal((rows) => rows.filter((r) => r.id !== tempId));
+          setPendingIds((prev) => { const n = new Set(prev); n.delete(tempId); return n; });
+        }
+        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
+      }
+    }
+
+    if (action === "delete") {
+      const idsToDelete = Array.from(selectedIds)
+        .map((idx) => visibleIncomeRecords[idx]?.id)
+        .filter((id): id is string => id != null);
+
+      if (idsToDelete.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      // Clear selection FIRST so indices don't shift onto wrong rows
+      setSelectedIds(new Set());
+
+      // Optimistic: remove all selected from the visible list
+      for (const idx of selectedIds) {
+        const record = visibleIncomeRecords[idx];
+        if (record) setPendingIds((prev) => new Set(prev).add(record.id));
+      }
+      applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
+
+      try {
+        const res = await incomesApi.bulkDelete(idsToDelete);
+        if (!res.success) {
+          // Restore all on total failure
+          for (const id of idsToDelete) {
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+          }
+          void refetch();
+          setSaveNotice(`Bulk delete failed: ${res.error.message}`);
+        } else {
+          const { deleted, failed } = res.data;
+          // Clear pending for successfully deleted
+          for (const id of deleted) {
+            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+          }
+          // Restore failed ones
+          if (failed.length > 0) {
+            for (const f of failed) {
+              setPendingIds((prev) => { const n = new Set(prev); n.delete(f.id); return n; });
+            }
+            void refetch();
+            setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
+          }
+          invalidateIncomeFamily();
+        }
+      } catch (err) {
+        for (const id of idsToDelete) {
+          setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+        }
+        void refetch();
+        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
+      }
+    }
+  }
+
   async function handleDeleteIncome() {
     if (!editingId) return;
     if (!window.confirm("Soft-delete this income in Notion?")) return;
@@ -269,6 +423,10 @@ function IncomePage({
       setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
+
+  const enabledIncomeRecords = visibleIncomeRecords.filter(
+    (_, idx) => !disabledIds.has(idx),
+  );
 
   return (
     <div className="page-stack">
@@ -344,7 +502,9 @@ function IncomePage({
         <DataTable
           selectable
           selectedIds={selectedIds}
+          disabledIds={disabledIds}
           onToggleSelect={toggleRowSelect}
+          onBulkAction={handleBulkAction}
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
           rowClassName={(rowIndex) => {
             const record = visibleIncomeRecords[rowIndex];
@@ -372,11 +532,11 @@ function IncomePage({
               "",
               "",
               "",
-              formatMoney(getIncomeGrossTotal(visibleIncomeRecords)),
-              formatMoney(getIncomeCapitalExpenditureTotal(visibleIncomeRecords)),
+              formatMoney(getIncomeGrossTotal(enabledIncomeRecords)),
+              formatMoney(getIncomeCapitalExpenditureTotal(enabledIncomeRecords)),
               <MoneyValue
                 key="income-total-net"
-                value={getIncomeNetTotal(visibleIncomeRecords)}
+                value={getIncomeNetTotal(enabledIncomeRecords)}
               />,
             ],
           ]}

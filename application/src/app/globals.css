@@ -1846,6 +1846,10 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
+.table-container {
+  position: relative;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -2033,6 +2037,19 @@ th:last-child .th-sort {
   color: white;
 }
 
+.row-checkbox--indeterminate {
+  opacity: 1;
+  border-color: var(--accent, #2383e2);
+  background: var(--accent, #2383e2);
+}
+
+.row-checkbox--indeterminate .row-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
 /* Show checkbox on row hover */
 .table-row--clickable:hover .row-checkbox,
 .table-row--selected .row-checkbox {
@@ -2047,6 +2064,150 @@ th:last-child .th-sort {
 [data-theme="dark"] .row-checkbox--checked {
   border-color: var(--accent, #4a9eed);
   background: var(--accent, #4a9eed);
+}
+
+[data-theme="dark"] .row-checkbox--indeterminate {
+  border-color: var(--accent, #4a9eed);
+  background: var(--accent, #4a9eed);
+}
+
+/* ── Bulk action floating toolbar ── */
+.bulk-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line-strong, #e3e2e0);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 13px;
+  white-space: nowrap;
+  animation: bulk-toolbar-enter 0.15s ease-out;
+}
+
+@keyframes bulk-toolbar-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.bulk-toolbar__count {
+  padding: 0 8px;
+  color: var(--ink-muted, #6b6b6b);
+  font-weight: 500;
+  font-size: 12px;
+  user-select: none;
+}
+
+.bulk-toolbar__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line-strong, #e3e2e0);
+  margin: 0 4px;
+}
+
+.bulk-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink, #37352f);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  white-space: nowrap;
+}
+
+.bulk-toolbar__btn:hover {
+  background: var(--surface-muted, #f1f1ef);
+}
+
+.bulk-toolbar__btn:active {
+  background: var(--line, #e3e2e0);
+}
+
+.bulk-toolbar__btn--danger {
+  color: #e03e3e;
+}
+
+.bulk-toolbar__btn--danger:hover {
+  background: #fbe4e4;
+}
+
+.bulk-toolbar__btn--danger:active {
+  background: #f5d0d0;
+}
+
+/* Dark theme */
+[data-theme="dark"] .bulk-toolbar {
+  background: var(--surface, #191919);
+  border-color: var(--line-strong, #3f3f3f);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .bulk-toolbar__count {
+  color: var(--ink-muted, #9b9a97);
+}
+
+[data-theme="dark"] .bulk-toolbar__divider {
+  background: var(--line-strong, #3f3f3f);
+}
+
+[data-theme="dark"] .bulk-toolbar__btn {
+  color: var(--ink, #e3e2e0);
+}
+
+[data-theme="dark"] .bulk-toolbar__btn:hover {
+  background: var(--surface-muted, #2f2f2f);
+}
+
+[data-theme="dark"] .bulk-toolbar__btn:active {
+  background: var(--line, #3f3f3f);
+}
+
+[data-theme="dark"] .bulk-toolbar__btn--danger {
+  color: #ff6b6b;
+}
+
+[data-theme="dark"] .bulk-toolbar__btn--danger:hover {
+  background: #3d2020;
+}
+
+[data-theme="dark"] .bulk-toolbar__btn--danger:active {
+  background: #4d2a2a;
+}
+
+/* Disabled (dimmed) rows — temporary, not persistent */
+.record-disabled td {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Keep the checkbox clickable even when row is disabled */
+.record-disabled .row-checkbox {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Dark theme */
+[data-theme="dark"] .record-disabled td {
+  opacity: 0.3;
 }
 
 tfoot td {

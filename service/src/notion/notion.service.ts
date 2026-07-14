@@ -162,6 +162,61 @@ export class NotionService {
     return clone(deletedRecord);
   }
 
+  async bulkDelete(
+    resource: ResourceName,
+    ids: string[],
+    userId?: string,
+  ): Promise<{ deleted: string[]; failed: { id: string; error: string }[] }> {
+    this.validationService.validateMutation(resource, 'delete');
+    const deleted: string[] = [];
+    const failed: { id: string; error: string }[] = [];
+
+    for (const id of ids) {
+      try {
+        await this.delete(resource, id, userId);
+        deleted.push(id);
+      } catch (err) {
+        failed.push({
+          id,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+      // Small delay between calls to respect Notion rate limits (3 req/s)
+      if (ids.length > 1) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+    }
+
+    return { deleted, failed };
+  }
+
+  async bulkCreate(
+    resource: ResourceName,
+    items: Record<string, unknown>[],
+    userId?: string,
+  ): Promise<{ created: FinanceRecord[]; failed: { index: number; error: string }[] }> {
+    const created: FinanceRecord[] = [];
+    const failed: { index: number; error: string }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      try {
+        const record = await this.create(resource, items[i], userId);
+        created.push(record);
+      } catch (err) {
+        failed.push({
+          index: i,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+      // Delay between calls to respect Notion rate limits (3 req/s)
+      if (items.length > 1) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+    }
+
+    return { created, failed };
+  }
+
   async pull(
     resources: ResourceName[],
     scope?: { month?: string; viewMode?: string },

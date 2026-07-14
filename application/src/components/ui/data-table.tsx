@@ -2,7 +2,7 @@
 
 import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Trash2, Minus } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
@@ -49,7 +49,9 @@ function DataTable({
   rowClassName,
   selectable = false,
   selectedIds,
+  disabledIds,
   onToggleSelect,
+  onBulkAction,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -71,8 +73,12 @@ function DataTable({
   selectable?: boolean;
   /** Set of original row indices that are currently selected. */
   selectedIds?: Set<number>;
+  /** Set of original row indices that are temporarily disabled (dimmed, excluded from totals). */
+  disabledIds?: Set<number>;
   /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
   onToggleSelect?: (rowIndex: number, selected: boolean) => void;
+  /** Callback when a bulk action is triggered from the floating toolbar. */
+  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete") => void;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -117,15 +123,63 @@ function DataTable({
     setCurrentPage(0);
   }
 
+  // Check if any rows are selected (for bulk toolbar visibility)
+  const hasSelection = selectable && (selectedIds?.size ?? 0) > 0;
+
   // Check if all visible (paginated) rows are selected
   const allVisibleSelected =
     selectable &&
     paginated.length > 0 &&
     paginated.every(({ index }) => selectedIds?.has(index));
 
+  // Indeterminate: some but not all visible rows are selected
+  const someVisibleSelected =
+    selectable &&
+    !allVisibleSelected &&
+    paginated.some(({ index }) => selectedIds?.has(index));
+
+  // Determine if we should show "Enable" or "Disable" in the toolbar
+  const selectedHasDisabled =
+    selectable &&
+    (selectedIds?.size ?? 0) > 0 &&
+    Array.from(selectedIds!).some((idx) => disabledIds?.has(idx));
+
   return (
-    <div className="table-wrap">
-      <table className={cx(wide && "data-table--wide")}>
+    <div className="table-container">
+      {hasSelection && (
+        <div className="bulk-toolbar">
+          <span className="bulk-toolbar__count">
+            {selectedIds!.size} selected
+          </span>
+          <div className="bulk-toolbar__divider" />
+          <button
+            type="button"
+            className="bulk-toolbar__btn"
+            onClick={() => onBulkAction?.(selectedHasDisabled ? "enable" : "disable")}
+          >
+            <Ban size={14} />
+            <span>{selectedHasDisabled ? "Enable" : "Disable"}</span>
+          </button>
+          <button
+            type="button"
+            className="bulk-toolbar__btn"
+            onClick={() => onBulkAction?.("duplicate")}
+          >
+            <Copy size={14} />
+            <span>Duplicate</span>
+          </button>
+          <button
+            type="button"
+            className="bulk-toolbar__btn bulk-toolbar__btn--danger"
+            onClick={() => onBulkAction?.("delete")}
+          >
+            <Trash2 size={14} />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
+      <div className="table-wrap">
+        <table className={cx(wide && "data-table--wide")}>
         <thead>
           <tr>
             {headers.map((header, columnIndex) => {
@@ -146,6 +200,7 @@ function DataTable({
                       className={cx(
                         "row-checkbox row-checkbox--header",
                         allVisibleSelected && "row-checkbox--checked",
+                        someVisibleSelected && "row-checkbox--indeterminate",
                       )}
                       aria-label="Select all rows"
                       onClick={() => {
@@ -163,7 +218,11 @@ function DataTable({
                       }}
                     >
                       <span className="row-checkbox__box">
-                        <Check size={12} strokeWidth={3} />
+                        {someVisibleSelected ? (
+                          <Minus size={12} strokeWidth={3} />
+                        ) : (
+                          <Check size={12} strokeWidth={3} />
+                        )}
                       </span>
                     </button>
                   )}
@@ -203,6 +262,7 @@ function DataTable({
                 className={cx(
                   onRowClick && "table-row--clickable",
                   selectable && isSelected && "table-row--selected",
+                  selectable && disabledIds?.has(index) && "record-disabled",
                   rowClassName?.(index, row),
                 )}
                 tabIndex={onRowClick ? 0 : undefined}
@@ -298,6 +358,7 @@ function DataTable({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
