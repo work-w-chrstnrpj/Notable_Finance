@@ -142,6 +142,8 @@ Get-ChildItem -Recurse wiki -Filter *-draft.md
 
 ## Known Gaps
 
-- Frontend rule tests exist, but component, integration, contract, and Playwright coverage are still pending.
+- Frontend rule tests exist (including `finance-rules.test.ts` for business logic), but component, integration, contract, and Playwright coverage are still pending.
 - A duplicated Notion space is planned for destructive testing, but its access details are not documented yet.
 - No CI workflow defined yet.
+
+> Last updated: 2026-07-14 — reflects current codebase state

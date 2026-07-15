@@ -81,6 +81,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception instanceof Error ? exception.name : 'UnknownError';
       const errorMessage =
         exception instanceof Error ? exception.message : 'Non-error thrown';
+      code = 'INTERNAL_SERVER_ERROR';
+      message = errorMessage;
       this.loggingService.error(
         `Unhandled exception: ${errorName} — ${errorMessage}`,
         'AllExceptionsFilter',

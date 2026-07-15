@@ -33,6 +33,18 @@ export class ExpensesController {
     return this.notionService.update('expenses', id, body, user.id);
   }
 
+  @Post('bulk-create')
+  @UseGuards(JwtAuthGuard)
+  bulkCreate(@Body() body: { items: Record<string, unknown>[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkCreate('expenses', body.items ?? [], user.id);
+  }
+
+  @Post('bulk-delete')
+  @UseGuards(JwtAuthGuard)
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentUser() user: JwtPayload) {
+    return this.notionService.bulkDelete('expenses', body.ids ?? [], user.id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {

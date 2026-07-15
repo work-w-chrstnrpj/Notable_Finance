@@ -10,9 +10,9 @@ const createRequiredFields: Partial<Record<ResourceName, string[]>> = {
   incomes: ['name', 'date', 'grossIncome'],
   transactions: ['name', 'date', 'grossIncome', 'categoryId'],
   transfers: ['name', 'date', 'grossIncome', 'accountId', 'transactedAccountId'],
-  creditCardPayments: ['name', 'date', 'grossIncome', 'accountId', 'transactedAccountId'],
+  creditCardPayments: ['name', 'date', 'accountId'],
   alkansya: ['name', 'date', 'grossIncome', 'accountId'],
-  receivables: ['name', 'date', 'grossIncome', 'categoryId'],
+  receivables: ['name', 'accountId'],
   expenses: ['description', 'purchaseDate', 'amount'],
   expenseScheduler: ['description', 'purchaseDate', 'amount'],
 };

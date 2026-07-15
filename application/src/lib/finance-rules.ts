@@ -300,9 +300,13 @@ export function getExpenseStatusFromDatePaid(datePaid: string | null) {
 }
 
 export function isUnpaidPasabuyExpense(record: ExpenseRecord, categoryName: string) {
+  if (!isPasabuyCategoryName(categoryName)) return false;
+  if (record.paymentStatus === "Installment") return false;
   return (
-    isPasabuyCategoryName(categoryName) &&
-    (record.datePaid === null || record.pasabuyStatus !== "Payment fully received")
+    (record.pasabuyBalance ?? 0) > 0.1 ||
+    record.pasabuyStatus === "Payment not yet receive" ||
+    record.pasabuyStatus === "Payment partially received" ||
+    (record.pasabuyPaidPeriod ?? 0) !== 1
   );
 }
 

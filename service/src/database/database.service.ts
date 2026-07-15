@@ -33,7 +33,22 @@ export class DatabaseService implements OnApplicationBootstrap {
   constructor(private readonly configService: ConfigService) {
     const dbUrl = this.configService.get<string>('database.url');
     if (dbUrl) {
-      this.pool = new Pool({ connectionString: dbUrl });
+      this.pool = new Pool({
+        connectionString: dbUrl,
+        // Neon free tier: allow longer idle timeout before pool kills connections
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      });
+
+      // Prevent unhandled pool errors from crashing Node.
+      // Idle-client connection failures (ETIMEDOUT, ECONNREFUSED, etc.)
+      // emit 'error' on the Pool; log it and let the pool replace the dead client.
+      this.pool.on('error', (err) => {
+        this.logger.error(
+          `PostgreSQL pool idle-client error: ${err.message}`,
+          err.stack,
+        );
+      });
     }
   }
 

@@ -166,6 +166,15 @@ export const incomesApi = {
       body: JSON.stringify(body),
     });
   },
+  bulkCreate(items: Record<string, unknown>[]) {
+    return requestBackend<{ created: IncomeRecord[]; failed: { index: number; error: string }[] }>(
+      "/incomes/bulk-create",
+      {
+        method: "POST",
+        body: JSON.stringify({ items }),
+      },
+    );
+  },
   update(id: string, body: Record<string, unknown>) {
     return requestBackend<IncomeRecord>(`/incomes/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -176,6 +185,15 @@ export const incomesApi = {
     return requestBackend<void>(`/incomes/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+  },
+  bulkDelete(ids: string[]) {
+    return requestBackend<{ deleted: string[]; failed: { id: string; error: string }[] }>(
+      "/incomes/bulk-delete",
+      {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      },
+    );
   },
 };
 
@@ -206,6 +224,15 @@ export const expensesApi = {
       body: JSON.stringify(body),
     });
   },
+  bulkCreate(items: Record<string, unknown>[]) {
+    return requestBackend<{ created: ExpenseRecord[]; failed: { index: number; error: string }[] }>(
+      "/expenses/bulk-create",
+      {
+        method: "POST",
+        body: JSON.stringify({ items }),
+      },
+    );
+  },
   update(id: string, body: Record<string, unknown>) {
     return requestBackend<ExpenseRecord>(`/expenses/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -216,6 +243,15 @@ export const expensesApi = {
     return requestBackend<void>(`/expenses/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+  },
+  bulkDelete(ids: string[]) {
+    return requestBackend<{ deleted: string[]; failed: { id: string; error: string }[] }>(
+      "/expenses/bulk-delete",
+      {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      },
+    );
   },
 };
 
@@ -242,6 +278,15 @@ function workflowApi(path: string) {
         body: JSON.stringify(body),
       });
     },
+    bulkCreate(items: Record<string, unknown>[]) {
+      return requestBackend<{ created: IncomeRecord[]; failed: { index: number; error: string }[] }>(
+        `${path}/bulk-create`,
+        {
+          method: "POST",
+          body: JSON.stringify({ items }),
+        },
+      );
+    },
     update(id: string, body: Record<string, unknown>) {
       return requestBackend<IncomeRecord>(`${path}/${encodeURIComponent(id)}`, {
         method: "PATCH",
@@ -252,6 +297,15 @@ function workflowApi(path: string) {
       return requestBackend<void>(`${path}/${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
+    },
+    bulkDelete(ids: string[]) {
+      return requestBackend<{ deleted: string[]; failed: { id: string; error: string }[] }>(
+        `${path}/bulk-delete`,
+        {
+          method: "POST",
+          body: JSON.stringify({ ids }),
+        },
+      );
     },
   };
 }

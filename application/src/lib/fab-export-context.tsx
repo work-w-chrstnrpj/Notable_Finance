@@ -13,6 +13,12 @@ export type ReceiptRow = {
   date: string;
   description: string;
   amount: string;
+  /** Installment breakdown fields (optional — present only in installment layout). */
+  grossAmount?: string;
+  paidAmount?: string;
+  remainingBalance?: string;
+  installmentAmount?: string;
+  expectedPaymentDate?: string;
 };
 
 /**
@@ -29,6 +35,8 @@ export type ReceiptContext = {
   amountHeader: string;
   rows: ReceiptRow[];
   total: string;
+  /** When true, render as breakdown cards instead of table rows. */
+  installmentLayout?: boolean;
 };
 
 /**

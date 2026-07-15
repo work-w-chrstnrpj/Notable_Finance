@@ -7,6 +7,11 @@ import { AppConfigService } from './config/config.service';
 import { MappingService } from './mapping/mapping.service';
 import { ValidationService } from './validation/validation.service';
 import { NotionClientFactory } from './notion/notion-client-factory.service';
+import { LiveCacheManager } from './notion/live-cache-manager';
+import { NotionReportingService } from './notion/notion-reporting.service';
+import { NotionQueryService } from './notion/notion-query.service';
+import { NotionMutationService } from './notion/notion-mutation.service';
+import { NotionSyncService } from './notion/notion-sync.service';
 
 const mockConfig = {
   missingRequiredNotionConfig: ['notion.token'],
@@ -19,7 +24,15 @@ const mockClientFactory = {
 
 function makeNotionService() {
   const mapping = new MappingService();
-  return new NotionService(mockConfig, mapping, new ValidationService(mapping), mockClientFactory);
+  const cache = new LiveCacheManager(mockConfig, mockClientFactory);
+  const queryService = new NotionQueryService(cache, mapping);
+  const reportingService = new NotionReportingService(cache, queryService);
+  const mutationService = new NotionMutationService(cache);
+  const syncService = new NotionSyncService(mockConfig, mapping, mockClientFactory, cache, mutationService, queryService);
+  const service = new NotionService(mockConfig, mapping, new ValidationService(mapping), mockClientFactory, cache, reportingService, queryService, mutationService, syncService);
+  // Resolve circular dependency for tests
+  syncService.setNotionService(service);
+  return service;
 }
 
 describe('controller contracts', () => {

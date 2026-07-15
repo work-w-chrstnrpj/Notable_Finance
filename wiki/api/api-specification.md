@@ -122,7 +122,7 @@ List endpoints may support:
 
 ```text
 viewMode=daily|weekly|monthly|annually
-expenseViewMode=daily|weekly|monthly|unpaidPasabuy|toPay|toBuy|installments|ccTransactions
+expenseViewMode=daily|weekly|monthly|annually|unpaidPasabuy|toPay|toBuy|installments|unpaidCC
 month=YYYY-MM
 accountId=...
 categoryId=...|withoutPasabuy|all
@@ -138,7 +138,7 @@ Income and Expense endpoints should query only the records needed for the active
 
 - Accounts are fetched as current read-only reference data and do not use `month`.
 - Income Monthly view uses Income `Date` and `month=YYYY-MM`; Daily, Weekly, and Annually use the current date/current period unless a later contract explicitly adds another period selector.
-- Expense Monthly view uses Expense `Purchase Date` and `month=YYYY-MM`; Daily, Weekly, Unpaid Pasabuy, To pay, To buy, Installments, and CC Transactions use their own current-period or outstanding-workflow scopes.
+- Expense Monthly view uses Expense `Purchase Date` and `month=YYYY-MM`; Daily, Weekly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, and Unpaid CC use their own current-period or outstanding-workflow scopes.
 - Account/category/pasabuyer filters narrow the scoped query or scoped result set.
 
 The final parameter set should be confirmed per resource during implementation.
@@ -308,3 +308,5 @@ When implementation starts, add contract tests for:
 - Sync commit success and partial failure.
 - Schema drift response shape.
 - Conflict response shape.
+
+> Last updated: 2026-07-14 — reflects current codebase state

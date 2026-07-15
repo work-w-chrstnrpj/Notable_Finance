@@ -30,12 +30,31 @@ export class NotionClientFactory {
     if (userId) {
       const config = await this.userConfigService.getConfig(userId);
       if (config && config.token) {
+        this.logger.log(
+          `Using per-user Notion config for user ${userId}. ` +
+          `DB IDs: ${JSON.stringify(config.dbIds)}`,
+        );
         const client = new Client({ auth: config.token });
         return new NotionApiClient(client, config.dbIds as Partial<Record<ResourceName, string>>);
       }
+      if (config && !config.token) {
+        this.logger.warn(
+          `User ${userId} has a Notion config saved but the token is empty. ` +
+          `Re-enter your Notion token in Settings to fix this.`,
+        );
+      }
+      if (!config) {
+        this.logger.warn(
+          `No Notion config found for user ${userId}. ` +
+          `Configure your Notion token and database IDs in Settings.`,
+        );
+      }
     }
 
-    if (this.envToken) {
+    if (!userId && this.envToken) {
+      this.logger.log(
+        `Using env Notion config (no user context). DB IDs: ${JSON.stringify(this.envDbIds)}`,
+      );
       const client = new Client({ auth: this.envToken });
       return new NotionApiClient(client, this.envDbIds);
     }

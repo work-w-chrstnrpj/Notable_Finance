@@ -21,6 +21,16 @@ export class AppConfigService implements OnApplicationBootstrap {
     return Boolean(this.configService.get<string>('database.url'));
   }
 
+  /**
+   * TTL (ms) for in-memory Notion collections. A cached collection is served
+   * from memory until this elapses, after which its next read refetches only
+   * that collection. Clamped to a sane floor to avoid pathological refetching.
+   */
+  get liveCacheTtlMs() {
+    const value = this.configService.get<number>('cache.liveTtlMs', 45000);
+    return Number.isFinite(value) && value >= 0 ? value : 45000;
+  }
+
   get missingRequiredNotionConfig() {
     const requiredPaths = [
       'notion.token',

@@ -53,9 +53,24 @@ export class UserConfigService {
     if (row.encrypted_token && this.encryptionKey) {
       try {
         token = this.decrypt(row.encrypted_token);
-      } catch {
-        this.logger.warn(`Failed to decrypt Notion token for user ${userId}`);
+      } catch (err) {
+        this.logger.warn(
+          `Failed to decrypt Notion token for user ${userId}: ${err instanceof Error ? err.message : String(err)}. ` +
+          'Re-save your Notion token in Settings to fix this.',
+        );
+        // Check if it's actually encrypted (hex:hex:hex format) or plaintext
+        const parts = row.encrypted_token.split(':');
+        const isEncryptedFormat =
+          parts.length === 3 &&
+          parts.every((p) => /^[0-9a-f]+$/i.test(p));
+        if (!isEncryptedFormat) {
+          token = row.encrypted_token;
+          this.logger.log(`Using plaintext Notion token fallback for user ${userId}`);
+        }
       }
+    } else if (row.encrypted_token && !this.encryptionKey) {
+      // No encryption key configured — treat as plaintext
+      token = row.encrypted_token;
     }
 
     return {
@@ -71,8 +86,18 @@ export class UserConfigService {
     token: string,
     dbIds: Record<string, string>,
   ): Promise<void> {
-    const encryptedToken =
-      token && this.encryptionKey ? this.encrypt(token) : '';
+    let encryptedToken: string;
+
+    if (token) {
+      // New token provided — encrypt and store it
+      encryptedToken = this.encryptionKey ? this.encrypt(token) : token;
+    } else {
+      // No new token — preserve the existing one
+      const existing = await this.getConfig(userId);
+      encryptedToken = existing?.token
+        ? (this.encryptionKey ? this.encrypt(existing.token) : existing.token)
+        : '';
+    }
 
     await this.db.query(
       `INSERT INTO user_notion_configs (user_id, encrypted_token, db_ids)
