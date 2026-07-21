@@ -278,6 +278,70 @@ export interface ExpenseCategoryOption {
   auxiliary: boolean
 }
 
+// ── Phase 2: Notion connect + sync contract ─────────────────────────────────
+
+/** Resources that map to a Notion database during onboarding. */
+export type MappableResource =
+  | 'accounts'
+  | 'incomeCategories'
+  | 'expenseCategories'
+  | 'incomes'
+  | 'expenses'
+
+export type NotionMapping = Partial<Record<MappableResource, string>>
+
+export interface DiscoveredDb {
+  id: string
+  title: string
+  /** Property names present on the database (for mapping hints). */
+  propertyCount: number
+}
+
+export interface ConnectResult {
+  connected: boolean
+  workspaceUser: string | null
+}
+
+export interface SchemaFieldIssue {
+  property: string
+  expectedType: string
+  actualType: string | null // null = missing
+}
+
+export interface SchemaResourceReport {
+  resource: MappableResource
+  databaseId: string | null // null = not mapped
+  ok: boolean
+  /** Missing/mismatched writable properties — block push. */
+  errors: SchemaFieldIssue[]
+  /** Missing/mismatched computed properties — informational. */
+  warnings: SchemaFieldIssue[]
+}
+
+export interface SchemaReport {
+  ok: boolean
+  resources: SchemaResourceReport[]
+}
+
+export interface SyncStatus {
+  connected: boolean
+  mapped: boolean
+  running: boolean
+  dirtyCount: number
+  conflictCount: number
+  lastPushAt: number | null
+  lastError: string | null
+}
+
+export interface PushResult {
+  pushed: number
+  created: number
+  updated: number
+  failed: number
+  skipped: number
+  errors: string[]
+}
+
 // ── Events (main → renderer), per ipc-contract.md ───────────────────────────
 
 export interface RecordsChangedEvent {
@@ -285,4 +349,4 @@ export interface RecordsChangedEvent {
   ids: string[]
 }
 
-export type EventChannel = 'records:changed' | 'derived:updated'
+export type EventChannel = 'records:changed' | 'derived:updated' | 'sync:status'

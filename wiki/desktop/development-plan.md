@@ -30,9 +30,9 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 2 — Onboarding + Push
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 2.1 | Notion Connect: token via safeStorage; discover + map databases | Token stored in keychain, never in renderer | Not Started |
-| 2.2 | Schema verification (drift report) | Verify passes on the mapped workspace | Not Started |
-| 2.3 | Push: create/update/soft-delete to Notion (writable fields only) | Dirty records reach Notion; ids stored; idempotent | Not Started |
+| 2.1 | Notion Connect: token via safeStorage; discover + map databases | Token stored in keychain, never in renderer | Done |
+| 2.2 | Schema verification (drift report) | Verify passes on the mapped workspace | Done |
+| 2.3 | Push: create/update/soft-delete to Notion (writable fields only) | Dirty records reach Notion; ids stored; idempotent | Done |
 
 ### Phase 3 — Pull
 | # | Work item | Acceptance | Status |

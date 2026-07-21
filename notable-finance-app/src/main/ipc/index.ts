@@ -14,8 +14,12 @@ import type {
 import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
+import * as notion from '../notion/service'
+import { getMapping, saveMapping } from '../notion/mapping-store'
+import { pushAll, syncStatus } from '../sync/push'
 import { broadcast, createWindow } from '../windows'
 import { ValidationError } from '../domain/validation'
+import type { NotionMapping } from '../../shared/finance.types'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
@@ -155,4 +159,27 @@ export function registerIpc(): void {
       return true as const
     })
   )
+
+  // notion onboarding (Phase 2.1/2.2) — the token goes IN once; nothing returns it.
+  ipcMain.handle('notion:connect', (_e, token: string) => result(() => notion.connect(token)))
+  ipcMain.handle('notion:isConnected', () => result(() => notion.isConnected()))
+  ipcMain.handle('notion:disconnect', () =>
+    result(() => {
+      notion.disconnect()
+      return true as const
+    })
+  )
+  ipcMain.handle('notion:discoverDatabases', () => result(() => notion.discoverDatabases()))
+  ipcMain.handle('notion:getMapping', () => result(() => getMapping()))
+  ipcMain.handle('notion:saveMapping', (_e, mapping: NotionMapping) =>
+    result(() => {
+      saveMapping(mapping)
+      return true as const
+    })
+  )
+  ipcMain.handle('notion:verifySchema', () => result(() => notion.verifySchema()))
+
+  // sync (Phase 2.3: push; pull joins in Phase 3)
+  ipcMain.handle('sync:status', () => result(() => syncStatus()))
+  ipcMain.handle('sync:now', () => result(() => pushAll()))
 }

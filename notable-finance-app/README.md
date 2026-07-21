@@ -37,8 +37,22 @@ app remains the on-the-go, cloud-backed client.
 - **1.5** — multi-window (File → New Window, Cmd/Ctrl+N): every data change broadcasts
   `records:changed` / `derived:updated` to all windows, which refetch — windows stay consistent.
 
-Next: Phase 2 (Notion onboarding + push). See
-[`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
+**Phase 2 complete** (2026-07-21) — Notion onboarding + push, in the new **Sync** section:
+
+- **2.1** — Connect with your integration token (validated, then encrypted via `safeStorage`
+  into the OS keychain; never in SQLite, never returned to the renderer). Discover databases
+  and map each resource; mapping persists in `app_settings`.
+- **2.2** — Schema verification produces a drift report per resource: missing/mismatched
+  writable properties are errors, computed ones warnings.
+- **2.3** — Push sends dirty records (writable fields only): create stores the returned page
+  id, update patches it (idempotent), soft-deletes travel as title rewrites; ~3 req/s throttle
+  with 429 backoff; local→Notion relation ids translated, unlinked ones skipped until pull.
+
+Phase 2 was verified end-to-end against a mock Notion API (connect → discover → map → verify
+→ push with injected 429). First run against a real workspace happens when you connect your
+own integration token in the Sync section. Next: Phase 3 (pull).
+
+See [`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
 tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).
 
 ## Run it

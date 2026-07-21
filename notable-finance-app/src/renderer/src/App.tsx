@@ -5,6 +5,7 @@ import { AccountsPage } from './pages/Accounts'
 import { IncomeRecordsPage } from './pages/IncomeRecords'
 import { ExpensePage } from './pages/Expense'
 import { MonitoringPage } from './pages/Monitoring'
+import { SyncPage } from './pages/Sync'
 
 // App shell: the nine sections from the shared product scope
 // (Dashboard, Accounts, Income, Expense, Monitoring, Transfer, CC Payment, Alkansya,
@@ -19,7 +20,8 @@ const SECTIONS = [
   { id: 'transfer', label: 'Transfer' },
   { id: 'ccPayment', label: 'CC Payment' },
   { id: 'alkansya', label: 'Alkansya' },
-  { id: 'receivables', label: 'Receivables' }
+  { id: 'receivables', label: 'Receivables' },
+  { id: 'sync', label: 'Sync' }
 ] as const
 
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -74,6 +76,8 @@ function Page({ section }: { section: SectionId }) {
           subtitle="Incomes with no receiving account yet"
         />
       )
+    case 'sync':
+      return <SyncPage />
   }
 }
 

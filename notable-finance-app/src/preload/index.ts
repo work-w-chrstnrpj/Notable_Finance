@@ -2,10 +2,12 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   AccountDto,
   ApiResult,
+  ConnectResult,
   CreateExpenseInput,
   CreateIncomeInput,
   CreateSchedulerInput,
   DashboardSummary,
+  DiscoveredDb,
   EventChannel,
   ExpenseCategoryOption,
   ExpenseRecordDto,
@@ -15,8 +17,11 @@ import type {
   IncomeRecordDto,
   ListRecordsParams,
   MonthlyMonitoringDto,
-  RecordsChangedEvent,
+  NotionMapping,
+  PushResult,
   SchedulerRecordDto,
+  SchemaReport,
+  SyncStatus,
   UpdateExpenseInput,
   UpdateIncomeInput,
   UpdateSchedulerInput
@@ -26,7 +31,7 @@ import type {
 // explicitly allow-listed here; the renderer cannot invoke arbitrary channels.
 // Mirrors wiki/desktop/ipc-contract.md.
 
-const EVENT_CHANNELS: EventChannel[] = ['records:changed', 'derived:updated']
+const EVENT_CHANNELS: EventChannel[] = ['records:changed', 'derived:updated', 'sync:status']
 
 const api = {
   versions: {
@@ -94,19 +99,36 @@ const api = {
     new: (): Promise<ApiResult<true>> => ipcRenderer.invoke('windows:new')
   },
 
+  notion: {
+    /** Sends the token INTO main (encrypted there). Nothing ever returns it. */
+    connect: (token: string): Promise<ApiResult<ConnectResult>> =>
+      ipcRenderer.invoke('notion:connect', token),
+    isConnected: (): Promise<ApiResult<boolean>> => ipcRenderer.invoke('notion:isConnected'),
+    disconnect: (): Promise<ApiResult<true>> => ipcRenderer.invoke('notion:disconnect'),
+    discoverDatabases: (): Promise<ApiResult<DiscoveredDb[]>> =>
+      ipcRenderer.invoke('notion:discoverDatabases'),
+    getMapping: (): Promise<ApiResult<NotionMapping>> => ipcRenderer.invoke('notion:getMapping'),
+    saveMapping: (mapping: NotionMapping): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('notion:saveMapping', mapping),
+    verifySchema: (): Promise<ApiResult<SchemaReport>> => ipcRenderer.invoke('notion:verifySchema')
+  },
+
+  sync: {
+    status: (): Promise<ApiResult<SyncStatus>> => ipcRenderer.invoke('sync:status'),
+    now: (): Promise<ApiResult<PushResult>> => ipcRenderer.invoke('sync:now')
+  },
+
   /**
    * Subscribe to a main→renderer event. Returns an unsubscribe function
    * (call it on unmount). Only the allow-listed event channels work.
+   * Payload shape per channel: records:changed → RecordsChangedEvent,
+   * sync:status → SyncStatus, derived:updated → {}.
    */
-  on: (
-    channel: EventChannel,
-    handler: (payload: RecordsChangedEvent | Record<string, never>) => void
-  ): (() => void) => {
+  on: (channel: EventChannel, handler: (payload: unknown) => void): (() => void) => {
     if (!EVENT_CHANNELS.includes(channel)) {
       throw new Error(`Unknown event channel: ${channel}`)
     }
-    const listener = (_e: IpcRendererEvent, payload: RecordsChangedEvent): void =>
-      handler(payload)
+    const listener = (_e: IpcRendererEvent, payload: unknown): void => handler(payload)
     ipcRenderer.on(channel, listener)
     return () => ipcRenderer.removeListener(channel, listener)
   }
