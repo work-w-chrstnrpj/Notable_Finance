@@ -3,8 +3,9 @@ import type {
   DiscoveredDb,
   MappableResource,
   NotionMapping,
-  PushResult,
+  PullResult,
   SchemaReport,
+  SyncNowResult,
   SyncStatus
 } from '../../../shared/finance.types'
 import { runMutation, useApiData } from '../lib/hooks'
@@ -29,7 +30,8 @@ export function SyncPage() {
   const [databases, setDatabases] = useState<DiscoveredDb[] | null>(null)
   const [mapping, setMapping] = useState<NotionMapping>({})
   const [report, setReport] = useState<SchemaReport | null>(null)
-  const [pushResult, setPushResult] = useState<PushResult | null>(null)
+  const [pullResult, setPullResult] = useState<PullResult | null>(null)
+  const [syncResult, setSyncResult] = useState<SyncNowResult | null>(null)
 
   const savedMapping = useApiData(() => window.api.notion.getMapping(), [])
 
@@ -87,11 +89,21 @@ export function SyncPage() {
       return { ok: false, error: res.error.message }
     })
 
-  const pushNow = (): Promise<void> =>
-    run('push', async () => {
+  const initialPull = (): Promise<void> =>
+    run('initialPull', async () => {
+      const res = await window.api.sync.initialPull()
+      if (res.ok) {
+        setPullResult(res.data)
+        return { ok: true }
+      }
+      return { ok: false, error: res.error.message }
+    })
+
+  const syncNow = (): Promise<void> =>
+    run('sync', async () => {
       const res = await window.api.sync.now()
       if (res.ok) {
-        setPushResult(res.data)
+        setSyncResult(res.data)
         return { ok: true }
       }
       return { ok: false, error: res.error.message }
@@ -216,37 +228,62 @@ export function SyncPage() {
         )}
       </div>
 
-      {/* push */}
+      {/* initial pull */}
       <div className="panel">
-        <h3>4 · Push local changes</h3>
+        <h3>4 · Initial pull</h3>
+        <div className="push-row">
+          <span className="dirty-count">Populate the local store from Notion (accounts, categories, incomes, expenses).</span>
+          <button
+            type="button"
+            disabled={!status?.connected || !status?.mapped || status?.running || busy !== null}
+            onClick={() => void initialPull()}
+          >
+            {busy === 'initialPull' ? 'Pulling…' : 'Pull from Notion'}
+          </button>
+        </div>
+        {pullResult && (
+          <p className="hint">
+            Pulled: {pullResult.referenceUpserted} reference rows, {pullResult.inserted} new records,{' '}
+            {pullResult.updated} updated, {pullResult.skippedDirty} local edits preserved.
+            {pullResult.errors.length > 0 && ` Error: ${pullResult.errors[0]}`}
+          </p>
+        )}
+      </div>
+
+      {/* sync now (push + pull) */}
+      <div className="panel">
+        <h3>5 · Sync (push + pull)</h3>
         <div className="push-row">
           <span className="dirty-count">
-            {status ? `${status.dirtyCount} record(s) waiting to sync` : '…'}
+            {status ? `${status.dirtyCount} local change(s) to push` : '…'}
+            {status && status.conflictCount > 0 && ` · ${status.conflictCount} conflict(s)`}
             {status?.running && ' · syncing…'}
           </span>
           <button
             type="button"
             className="primary"
             disabled={!status?.connected || !status?.mapped || status?.running || busy !== null}
-            onClick={() => void pushNow()}
+            onClick={() => void syncNow()}
           >
-            {busy === 'push' || status?.running ? 'Pushing…' : 'Sync now'}
+            {busy === 'sync' || status?.running ? 'Syncing…' : 'Sync now'}
           </button>
         </div>
-        {status?.lastPushAt && (
-          <p className="hint">Last push: {new Date(status.lastPushAt).toLocaleString()}</p>
-        )}
+        <div className="sync-times">
+          {status?.lastPushAt && <span className="hint">Last push: {new Date(status.lastPushAt).toLocaleString()}</span>}
+          {status?.lastPullAt && <span className="hint">Last pull: {new Date(status.lastPullAt).toLocaleString()}</span>}
+        </div>
         {status?.lastError && <ErrorNote error={status.lastError} />}
-        {pushResult && (
+        {syncResult && (
           <p className="hint">
-            Result: {pushResult.pushed} pushed ({pushResult.created} created, {pushResult.updated}{' '}
-            updated), {pushResult.skipped} skipped, {pushResult.failed} failed.
-            {pushResult.errors.length > 0 && ` First error: ${pushResult.errors[0]}`}
+            Push: {syncResult.push.created} created, {syncResult.push.updated} updated,{' '}
+            {syncResult.push.skipped} skipped, {syncResult.push.failed} failed. · Pull:{' '}
+            {syncResult.pull.inserted} new, {syncResult.pull.updated} updated,{' '}
+            {syncResult.pull.skippedDirty} local edits preserved.
           </p>
         )}
         <p className="hint">
-          Push sends writable fields only. Records referencing accounts/categories that have no
-          Notion page id yet are skipped until the initial pull (Phase 3) links them.
+          Push sends writable fields only; pull applies remote changes to clean records and leaves
+          your unpushed local edits untouched (full three-way merge is Phase 4).
         </p>
       </div>
     </section>

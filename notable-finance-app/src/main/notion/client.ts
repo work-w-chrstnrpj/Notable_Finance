@@ -88,6 +88,36 @@ export class NotionClient {
     return this.request('GET', `/v1/databases/${id}`)
   }
 
+  /**
+   * Query all pages in a database, oldest-edited first. When `since` is given, only pages
+   * edited on/after that ISO time are fetched (incremental pull). Follows pagination.
+   */
+  async queryDatabase(
+    databaseId: string,
+    opts: { since?: string } = {}
+  ): Promise<Array<Record<string, unknown>>> {
+    const results: Array<Record<string, unknown>> = []
+    let cursor: string | undefined
+    do {
+      const body: Record<string, unknown> = {
+        page_size: 100,
+        sorts: [{ timestamp: 'last_edited_time', direction: 'ascending' }],
+        ...(opts.since
+          ? { filter: { timestamp: 'last_edited_time', last_edited_time: { on_or_after: opts.since } } }
+          : {}),
+        ...(cursor ? { start_cursor: cursor } : {})
+      }
+      const page = await this.request<{
+        results: Array<Record<string, unknown>>
+        has_more: boolean
+        next_cursor: string | null
+      }>('POST', `/v1/databases/${databaseId}/query`, body)
+      results.push(...page.results)
+      cursor = page.has_more && page.next_cursor ? page.next_cursor : undefined
+    } while (cursor)
+    return results
+  }
+
   async createPage(
     databaseId: string,
     properties: Record<string, unknown>

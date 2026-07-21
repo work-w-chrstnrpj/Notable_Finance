@@ -330,6 +330,7 @@ export interface SyncStatus {
   dirtyCount: number
   conflictCount: number
   lastPushAt: number | null
+  lastPullAt: number | null
   lastError: string | null
 }
 
@@ -340,6 +341,25 @@ export interface PushResult {
   failed: number
   skipped: number
   errors: string[]
+}
+
+export interface PullResult {
+  /** Reference rows (accounts/categories) inserted or updated. */
+  referenceUpserted: number
+  /** New income/expense records inserted from Notion. */
+  inserted: number
+  /** Existing clean records updated from Notion. */
+  updated: number
+  /** Local dirty records left untouched (Phase 4 reconcile owns those). */
+  skippedDirty: number
+  errors: string[]
+  /** The last_edited_time cursor after this pass (ISO). */
+  cursor: string | null
+}
+
+export interface SyncNowResult {
+  push: PushResult
+  pull: PullResult
 }
 
 // ── Events (main → renderer), per ipc-contract.md ───────────────────────────

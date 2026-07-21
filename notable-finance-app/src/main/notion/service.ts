@@ -69,10 +69,28 @@ export async function verifySchema(): Promise<SchemaReport> {
       })
       continue
     }
-    const db = await c.getDatabase(databaseId)
-    const actual = (db.properties as Record<string, { type: string }>) ?? {}
-    const { errors, warnings } = compareSchema(EXPECTED_SCHEMA[resource], actual)
-    resources.push({ resource, databaseId, ok: errors.length === 0, errors, warnings })
+    try {
+      const db = await c.getDatabase(databaseId)
+      const actual = (db.properties as Record<string, { type: string }>) ?? {}
+      const { errors, warnings } = compareSchema(EXPECTED_SCHEMA[resource], actual)
+      resources.push({ resource, databaseId, ok: errors.length === 0, errors, warnings })
+    } catch (error) {
+      // A single inaccessible database (bad id, revoked access, network) must not sink
+      // the whole report — flag just this resource and keep verifying the rest.
+      resources.push({
+        resource,
+        databaseId,
+        ok: false,
+        errors: [
+          {
+            property: '(database)',
+            expectedType: 'accessible',
+            actualType: error instanceof Error ? error.message : 'unreachable'
+          }
+        ],
+        warnings: []
+      })
+    }
   }
 
   return { ok: resources.every((r) => r.ok), resources }

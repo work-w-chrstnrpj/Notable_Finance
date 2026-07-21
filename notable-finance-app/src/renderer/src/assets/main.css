@@ -545,3 +545,9 @@ select:focus {
 .panel h3 .status {
   margin-left: 8px;
 }
+
+.sync-times {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}

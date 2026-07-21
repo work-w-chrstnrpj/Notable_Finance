@@ -5,6 +5,7 @@ import {
   NOTION_PROPERTY_NAMES
 } from '../src/main/notion/property-mapper'
 import { compareSchema, EXPECTED_SCHEMA } from '../src/main/notion/schema-spec'
+import { isPhantomDelete } from '../src/main/sync/push'
 
 describe('incomeDtoToProperties', () => {
   it('builds writable properties only for present fields', () => {
@@ -108,5 +109,19 @@ describe('compareSchema', () => {
     const { errors, warnings } = compareSchema(accountsExpected, actual)
     expect(errors).toEqual([])
     expect(warnings.length).toBe(accountsExpected.filter((p) => p.kind === 'computed').length)
+  })
+})
+
+describe('isPhantomDelete', () => {
+  it('is true only for a soft-delete that never reached Notion', () => {
+    expect(isPhantomDelete({ notion_page_id: null, deleted: 1 })).toBe(true)
+  })
+
+  it('is false once the record has a Notion page (real delete must be mirrored)', () => {
+    expect(isPhantomDelete({ notion_page_id: 'npage-1', deleted: 1 })).toBe(false)
+  })
+
+  it('is false for a live, never-synced record (must be created)', () => {
+    expect(isPhantomDelete({ notion_page_id: null, deleted: 0 })).toBe(false)
   })
 })

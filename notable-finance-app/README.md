@@ -50,7 +50,22 @@ app remains the on-the-go, cloud-backed client.
 
 Phase 2 was verified end-to-end against a mock Notion API (connect → discover → map → verify
 → push with injected 429). First run against a real workspace happens when you connect your
-own integration token in the Sync section. Next: Phase 3 (pull).
+own integration token in the Sync section.
+
+**Phase 3 complete** (2026-07-21) — Pull, completing bidirectional sync (Milestone M2):
+
+- **3.1** — Initial pull populates an empty local store from Notion: reference caches
+  (accounts/categories) first, then records; Notion relation ids are translated to local
+  ids; new records get a local UUID + `notion_page_id` + `base_snapshot`.
+- **3.2** — Incremental pull filters `last_edited_time on_or_after last_pull_cursor` (cursor
+  persisted in `sync_meta`), fetching only changed pages. Clean records take the remote
+  value; **dirty local records are left untouched** (the full three-way merge is Phase 4).
+- **3.3** — Reference caches refresh on every pull, so selectors and derived balances reflect
+  Notion.
+
+`Sync now` is now push + incremental pull; onboarding runs a full initial pull. Verified
+end-to-end against the mock (initial pull, relation translation, cursor, remote-edit
+detection, dirty preservation). Next: Phase 4 (three-way merge + conflict resolver).
 
 See [`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
 tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).

@@ -37,9 +37,9 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 3 — Pull
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 3.1 | Initial pull populates SQLite | Local store matches Notion after onboarding | Not Started |
-| 3.2 | Incremental pull via Search since `last_pull_cursor` | Only changed pages fetched; cursor persists | Not Started |
-| 3.3 | Reference cache (accounts/categories) refresh on pull | Selectors reflect Notion | Not Started |
+| 3.1 | Initial pull populates SQLite | Local store matches Notion after onboarding | Done |
+| 3.2 | Incremental pull via cursor since `last_pull_cursor` | Only changed pages fetched; cursor persists | Done |
+| 3.3 | Reference cache (accounts/categories) refresh on pull | Selectors reflect Notion | Done |
 
 ### Phase 4 — Reconcile + Conflict
 | # | Work item | Acceptance | Status |

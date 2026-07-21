@@ -16,7 +16,7 @@ import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
-import { pushAll, syncStatus } from '../sync/push'
+import { pullAll, syncNow, syncStatus } from '../sync'
 import { broadcast, createWindow } from '../windows'
 import { ValidationError } from '../domain/validation'
 import type { NotionMapping } from '../../shared/finance.types'
@@ -179,7 +179,8 @@ export function registerIpc(): void {
   )
   ipcMain.handle('notion:verifySchema', () => result(() => notion.verifySchema()))
 
-  // sync (Phase 2.3: push; pull joins in Phase 3)
+  // sync (Phase 2.3 push + Phase 3 pull)
   ipcMain.handle('sync:status', () => result(() => syncStatus()))
-  ipcMain.handle('sync:now', () => result(() => pushAll()))
+  ipcMain.handle('sync:now', () => result(() => syncNow())) // push then incremental pull
+  ipcMain.handle('sync:initialPull', () => result(() => pullAll(true))) // full pull (onboarding)
 }

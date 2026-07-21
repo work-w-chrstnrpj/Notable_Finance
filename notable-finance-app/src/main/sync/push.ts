@@ -11,59 +11,17 @@
 // updates rather than re-creates, so a retried push cannot duplicate.
 import { getSqlite } from '../db'
 import { client } from '../notion/service'
-import { getMapping, isMapped } from '../notion/mapping-store'
-import { isConnected } from '../notion/service'
+import { getMapping } from '../notion/mapping-store'
 import { NotionApiError } from '../notion/client'
 import { expenseDtoToProperties, incomeDtoToProperties } from '../notion/property-mapper'
-import { broadcast } from '../windows'
-import type { PushResult, SyncStatus } from '../../shared/finance.types'
+import { metaSet, META_KEYS } from './meta'
+import { emitStatus, isRunning, setRunning, syncStatus } from './status'
+import type { PushResult } from '../../shared/finance.types'
 
 const THROTTLE_MS = 340
 const MAX_RETRIES = 3
 
-let running = false
-
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
-
-// ── status ──────────────────────────────────────────────────────────────────
-
-function metaGet(key: string): string | null {
-  const row = getSqlite().prepare('SELECT value FROM sync_meta WHERE key = ?').get(key) as
-    | { value: string | null }
-    | undefined
-  return row?.value ?? null
-}
-
-function metaSet(key: string, value: string | null): void {
-  getSqlite()
-    .prepare(
-      `INSERT INTO sync_meta (key, value) VALUES (?, ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value`
-    )
-    .run(key, value)
-}
-
-export function syncStatus(): SyncStatus {
-  const db = getSqlite()
-  const dirty = (table: string): number =>
-    (db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE sync_state = 'dirty'`).get() as {
-      n: number
-    }).n
-  const lastPushAt = metaGet('last_push_at')
-  return {
-    connected: isConnected(),
-    mapped: isMapped(),
-    running,
-    dirtyCount: dirty('incomes') + dirty('expenses'),
-    conflictCount: 0, // conflicts arrive with pull/reconcile (Phases 3–4)
-    lastPushAt: lastPushAt ? Number(lastPushAt) : null,
-    lastError: metaGet('last_push_error')
-  }
-}
-
-function emitStatus(): void {
-  broadcast('sync:status', syncStatus())
-}
 
 // ── relation translation: local UUID → Notion page id ───────────────────────
 
@@ -138,6 +96,15 @@ function expenseWritable(row: DirtyRow): Record<string, unknown> {
   }
 }
 
+/**
+ * A record soft-deleted before it was ever pushed has no Notion page to mirror, so
+ * pushing it would create a junk "[Deleted: …]" page. Such rows are resolved locally
+ * (marked clean) instead of sent.
+ */
+export function isPhantomDelete(row: { notion_page_id: string | null; deleted: number }): boolean {
+  return !row.notion_page_id && row.deleted === 1
+}
+
 // ── the push pass ───────────────────────────────────────────────────────────
 
 async function sendWithBackoff(
@@ -162,12 +129,12 @@ async function sendWithBackoff(
 }
 
 export async function pushAll(): Promise<PushResult> {
-  if (running) return { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: ['push already running'] }
+  if (isRunning()) return { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: ['sync already running'] }
   const status = syncStatus()
   if (!status.connected) throw new Error('Notion is not connected')
   if (!status.mapped) throw new Error('Databases are not mapped yet')
 
-  running = true
+  setRunning(true)
   emitStatus()
   const result: PushResult = { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: [] }
   const db = getSqlite()
@@ -222,7 +189,20 @@ export async function pushAll(): Promise<PushResult> {
         .prepare(`SELECT * FROM ${t.table} WHERE sync_state = 'dirty' ORDER BY local_updated_at`)
         .all() as DirtyRow[]
 
+      const resourceName = t.table === 'incomes' ? 'incomes' : 'expenses'
+
       for (const row of dirtyRows) {
+        // Soft-deleted before it ever reached Notion → nothing to mirror; resolve locally.
+        if (isPhantomDelete({ notion_page_id: row.notion_page_id, deleted: Number(row.deleted) })) {
+          db.prepare(`UPDATE ${t.table} SET sync_state = 'clean' WHERE id = ?`).run(row.id)
+          db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run(
+            resourceName,
+            row.id
+          )
+          result.skipped++
+          continue
+        }
+
         const localDto = t.writable(row)
         let translated: Record<string, unknown>
         try {
@@ -253,7 +233,7 @@ export async function pushAll(): Promise<PushResult> {
             `UPDATE ${t.table} SET notion_page_id = ?, base_snapshot = ?, sync_state = 'clean' WHERE id = ?`
           ).run(pageId, JSON.stringify(localDto), row.id)
           db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run(
-            t.table === 'incomes' ? 'incomes' : 'expenses',
+            resourceName,
             row.id
           )
           result.pushed++
@@ -268,11 +248,11 @@ export async function pushAll(): Promise<PushResult> {
       }
     }
 
-    metaSet('last_push_at', String(Date.now()))
-    metaSet('last_push_error', result.errors.length ? result.errors.join(' | ') : null)
+    metaSet(META_KEYS.lastPushAt, String(Date.now()))
+    metaSet(META_KEYS.lastPushError, result.errors.length ? result.errors.join(' | ') : null)
     return result
   } finally {
-    running = false
+    setRunning(false)
     emitStatus()
   }
 }

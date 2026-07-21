@@ -18,9 +18,10 @@ import type {
   ListRecordsParams,
   MonthlyMonitoringDto,
   NotionMapping,
-  PushResult,
+  PullResult,
   SchedulerRecordDto,
   SchemaReport,
+  SyncNowResult,
   SyncStatus,
   UpdateExpenseInput,
   UpdateIncomeInput,
@@ -115,7 +116,10 @@ const api = {
 
   sync: {
     status: (): Promise<ApiResult<SyncStatus>> => ipcRenderer.invoke('sync:status'),
-    now: (): Promise<ApiResult<PushResult>> => ipcRenderer.invoke('sync:now')
+    /** Push local changes, then pull remote (incremental). */
+    now: (): Promise<ApiResult<SyncNowResult>> => ipcRenderer.invoke('sync:now'),
+    /** Full pull from Notion (onboarding / first sync). */
+    initialPull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:initialPull')
   },
 
   /**
