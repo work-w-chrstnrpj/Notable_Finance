@@ -17,7 +17,7 @@ import type {
   IncomeCategoryOption,
   IncomeListParams,
   IncomeRecordDto,
-  ListRecordsParams,
+  ExpenseListParams,
   MonthlyMonitoringDto,
   NotionMapping,
   PullResult,
@@ -70,7 +70,7 @@ const api = {
   },
 
   expenses: {
-    list: (params?: ListRecordsParams): Promise<ApiResult<ExpenseRecordDto[]>> =>
+    list: (params?: ExpenseListParams): Promise<ApiResult<ExpenseRecordDto[]>> =>
       ipcRenderer.invoke('expenses:list', params),
     create: (input: CreateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
       ipcRenderer.invoke('expenses:create', input),

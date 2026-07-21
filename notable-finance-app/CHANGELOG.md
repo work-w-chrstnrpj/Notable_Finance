@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+
+- **Renderer aligned 1:1 with the web app.** The desktop UI is now the web renderer ported
+  verbatim (workspace shell with Sidebar + TopBar, date-range selector and view modes,
+  Dashboard with charts/trends/breakdowns, Accounts card/table views, full Income/Expense
+  pages, Workflow pages, Monthly Monitoring, **Settings** with theme customization and FAB
+  toggle, quick-action FAB, light/dark theme, toasts, error boundaries) over an IPC-backed
+  `api-client` with the same interface as the web's HTTP client. Backend list filtering
+  (Daily/Weekly/Annual ranges; Unpaid Pasabuy / To pay / To buy / Installments / Unpaid CC
+  expense views) is copied from the web query service, so outputs match view-for-view.
+- Desktop-only additions are isolated: a "Local-First Sync" panel on the Sync page (initial
+  pull, auto-sync interval, three-way-merge conflict resolver) and a hash router + local-user
+  auth stub replacing Next.js routing/login (the desktop is single-user; account management
+  is intentionally dropped).
 
 ## [0.1.0] - 2026-07-21
 

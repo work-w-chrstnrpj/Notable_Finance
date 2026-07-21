@@ -6,7 +6,7 @@ import type {
   CreateSchedulerInput,
   HealthData,
   IncomeListParams,
-  ListRecordsParams,
+  ExpenseListParams,
   UpdateExpenseInput,
   UpdateIncomeInput,
   UpdateSchedulerInput
@@ -100,7 +100,7 @@ export function registerIpc(): void {
   )
 
   // expenses
-  ipcMain.handle('expenses:list', (_e, params?: ListRecordsParams) =>
+  ipcMain.handle('expenses:list', (_e, params?: ExpenseListParams) =>
     result(() => repo.listExpenses(params))
   )
   ipcMain.handle('expenses:create', (_e, input: CreateExpenseInput) =>

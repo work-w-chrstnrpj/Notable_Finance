@@ -197,6 +197,9 @@ export const INCOME_VIEW_FIXED_CATEGORY: Partial<Record<IncomeView, string>> = {
 export interface ListRecordsParams {
   /** YYYY-MM month scope; omitted = all time. */
   month?: string
+  /** Explicit inclusive ISO-date range (Daily/Weekly/Annual views); wins over month. */
+  rangeStart?: string
+  rangeEnd?: string
   accountId?: string
   categoryId?: string
   includeDeleted?: boolean
@@ -204,6 +207,14 @@ export interface ListRecordsParams {
 
 export interface IncomeListParams extends ListRecordsParams {
   view?: IncomeView
+}
+
+/** Expense list filters — mirrors the web ExpensesListParams / ListQuery semantics. */
+export interface ExpenseListParams extends ListRecordsParams {
+  paymentStatus?: string
+  /** Daily/Weekly/Monthly/Annually or a workflow view (Unpaid Pasabuy, To pay, …). */
+  expenseViewMode?: string
+  pasabuyer?: string
 }
 
 export interface CreateIncomeInput {

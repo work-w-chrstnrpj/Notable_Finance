@@ -8,12 +8,15 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // Relaxed for the renderer: pages/components are copied verbatim from the web app
+    // (which lint-gates unused symbols upstream); keeping them pristine minimizes drift.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["vite/client"],
     "paths": {
+      "@/*": ["./src/renderer/src/*"],
       "@renderer/*": ["./src/renderer/src/*"],
       "@shared/*": ["./src/shared/*"]
     }

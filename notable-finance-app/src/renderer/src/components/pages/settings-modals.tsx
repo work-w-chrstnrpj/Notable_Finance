@@ -1,0 +1,176 @@
+
+import { startTransition, useState, useEffect } from "react";
+import { useTheme } from "@/lib/theme-context";
+import { ColorPicker } from "@/components/color-picker";
+import { userNotionConfigApi } from "@/lib/api-client";
+import { Field, FormSectionDivider } from "@/components/ui";
+import { SettingsModal } from "@/components/ui/form-modals";
+import { Database, Save, Trash2 } from "lucide-react";
+
+const KNOWN_DB_ID_KEYS = [
+  { key: "accounts", label: "Accounts" },
+  { key: "incomeCategories", label: "Income Portfolio" },
+  { key: "incomes", label: "Incomes" },
+  { key: "expenseCategories", label: "Expense Categories" },
+  { key: "expenses", label: "Expenses" },
+  { key: "monthlyMonitoring", label: "Monthly Monitoring" },
+] as const;
+
+type SettingsModalKind = "notion" | "theme" | null;
+
+function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
+  const { mode, primaryColor, secondaryColor, setMode, setPrimaryColor, setSecondaryColor } =
+    useTheme();
+
+  return (
+    <SettingsModal
+      title="Customize Theme"
+      subtitle="Personalize your appearance and accent colors."
+      onClose={onClose}
+      footer={
+        <button type="button" className="button button--primary" onClick={onClose}>
+          Done
+        </button>
+      }
+    >
+      <div className="theme-modal-grid">
+        <div className="theme-modal-section">
+          <p className="settings-toggle__title">Appearance</p>
+          <p className="settings-toggle__hint">
+            Choose light, dark, or follow your system setting.
+          </p>
+          <select
+            className="settings-select"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as "light" | "dark" | "system")}
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+        <div className="theme-modal-section">
+          <p className="settings-toggle__title">Colors</p>
+          <p className="settings-toggle__hint">
+            Customize accent colors applied globally.
+          </p>
+          <div className="theme-color-pickers">
+            <div className="theme-color-picker-group">
+              <span className="settings-color-label">Primary</span>
+              <ColorPicker value={primaryColor} onChange={setPrimaryColor} />
+            </div>
+            <div className="theme-color-picker-group">
+              <span className="settings-color-label">Secondary</span>
+              <ColorPicker value={secondaryColor} onChange={setSecondaryColor} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </SettingsModal>
+  );
+}
+
+function NotionConfigModal({ onClose }: { onClose: () => void }) {
+  const [notionToken, setNotionToken] = useState("");
+  const [dbIds, setDbIds] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    userNotionConfigApi.get().then((res) => {
+      if (cancelled || !res.success || !res.data.configured) return;
+      startTransition(() => {
+        setNotionToken(res.data.tokenConfigured ? "stored" : "");
+        setDbIds(res.data.dbIds);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function setDbId(key: string, value: string) {
+    setDbIds((prev) => ({ ...prev, [key]: value.trim() }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    setNotice(null);
+    const token = notionToken === "stored" ? undefined : notionToken;
+    const res = await userNotionConfigApi.save({ token: token || undefined, dbIds });
+    setSaving(false);
+    if (res.success) {
+      setNotice("Configuration saved.");
+      setNotionToken(token ? "stored" : notionToken === "stored" ? "stored" : "");
+    } else {
+      setError(res.error.message);
+    }
+  }
+
+  async function handleRemove() {
+    if (!window.confirm("Remove your Notion configuration?")) return;
+    setSaving(true);
+    setError(null);
+    const res = await userNotionConfigApi.remove();
+    setSaving(false);
+    if (res.success) {
+      setNotionToken("");
+      setDbIds({});
+      setNotice("Configuration removed.");
+    } else {
+      setError(res.error.message);
+    }
+  }
+
+  return (
+    <SettingsModal
+      title="Notion Configuration"
+      subtitle="View, edit, or remove your Notion token and database IDs."
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="button" onClick={handleRemove} disabled={saving}>
+            <Trash2 size={16} />
+            Remove
+          </button>
+          <button type="button" className="button button--primary" onClick={handleSave} disabled={saving}>
+            <Save size={16} />
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </>
+      }
+    >
+      <div className="form-grid form-grid--single">
+        {error && <div className="auth-form__error">{error}</div>}
+        {notice && <div className="auth-form__notice">{notice}</div>}
+        <Field label="Notion Integration Token">
+          <input
+            type="password"
+            value={notionToken}
+            onChange={(e) => setNotionToken(e.target.value)}
+            placeholder={notionToken === "stored" ? "Stored — enter new to replace" : "ntn_…"}
+            autoComplete="off"
+          />
+        </Field>
+        <FormSectionDivider title="Database IDs" />
+        {KNOWN_DB_ID_KEYS.map(({ key, label }) => (
+          <Field key={key} label={`${label} Database ID`}>
+            <input
+              value={dbIds[key] ?? ""}
+              onChange={(e) => setDbId(key, e.target.value)}
+              placeholder={`${key} database ID`}
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+        ))}
+      </div>
+    </SettingsModal>
+  );
+}
+
+export { KNOWN_DB_ID_KEYS, ThemeCustomizeModal, NotionConfigModal };
+export type { SettingsModalKind };

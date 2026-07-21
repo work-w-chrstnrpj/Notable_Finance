@@ -30,10 +30,10 @@ app remains the on-the-go, cloud-backed client.
   mutation-queue journal, soft-delete via title rewrite, validation in main.
 - **1.3** — balances/budgets/net/monthly computed live from SQLite on every edit
   (golden-checked at runtime; 27 unit tests).
-- **1.4** — all nine sections render from local data: Dashboard, Accounts, Income, Expense
-  (+ scheduler panel), Monitoring, Transfer, CC Payment, Alkansya, Receivables — using the
-  web app's view semantics (fixed workflow categories; receivables = no receiving account;
-  Income view excludes auxiliary categories).
+- **1.4** — the renderer is the **web app's UI ported verbatim** (workspace shell, all pages
+  incl. Settings, charts, FAB, themes) over an IPC-backed `api-client` with the same
+  interface as the web's HTTP client — look and behavior match the web app; only the data
+  transport and local-first sync differ.
 - **1.5** — multi-window (File → New Window, Cmd/Ctrl+N): every data change broadcasts
   `records:changed` / `derived:updated` to all windows, which refetch — windows stay consistent.
 

@@ -16,6 +16,8 @@ export default defineConfig({
     root: 'src/renderer',
     resolve: {
       alias: {
+        // '@/…' mirrors the web app's path alias so ported components import unchanged.
+        '@': resolve('src/renderer/src'),
         '@renderer': resolve('src/renderer/src'),
         '@shared': resolve('src/shared')
       }

@@ -20,6 +20,8 @@ import {
 } from './mappers'
 import { computeAccountBalances } from '../domain/derivations'
 import { advanceDate } from '../domain/schedule'
+import { isCreditLike } from '../domain/resource-utils'
+import { filterExpensesByQuery, filterIncomeByQuery } from '../domain/query-filters'
 import {
   INCOME_VIEW_FIXED_CATEGORY,
   type AccountDto,
@@ -31,7 +33,7 @@ import {
   type IncomeCategoryOption,
   type IncomeListParams,
   type IncomeRecordDto,
-  type ListRecordsParams,
+  type ExpenseListParams,
   type SchedulerRecordDto,
   type UpdateExpenseInput,
   type UpdateIncomeInput,
@@ -102,8 +104,8 @@ function allIncomeRows(includeDeleted = false): IncomeRow[] {
 
 /**
  * List incomes for a view, applying the web app's filterIncomeBacked semantics:
- * fixed category for workflow views, no-account for receivables, and auxiliary-category
- * exclusion for the plain income view.
+ * fixed category for workflow views, no-account for receivables, auxiliary-category
+ * exclusion for the plain income view, and range/month date scoping.
  */
 export function listIncomes(params: IncomeListParams = {}): IncomeRecordDto[] {
   const view = params.view ?? 'incomes'
@@ -122,7 +124,7 @@ export function listIncomes(params: IncomeListParams = {}): IncomeRecordDto[] {
     records = records.filter((r) => !auxiliary.has(r.categoryId))
   }
 
-  if (params.month) records = records.filter((r) => r.date.startsWith(params.month as string))
+  records = filterIncomeByQuery(records, params)
   if (params.accountId) records = records.filter((r) => r.accountId === params.accountId)
   if (params.categoryId) records = records.filter((r) => r.categoryId === params.categoryId)
   return records
@@ -204,17 +206,33 @@ const EXPENSE_COLS = `id, title, purchase_date, date_paid, amount, interest, acc
   pasabuyer, pasabuy_status, pasabuy_date_of_payment, pasabuy_paid_period,
   pasabuy_account_receiver_id, cc_link_payment_receipt_id, deleted, sync_state`
 
-export function listExpenses(params: ListRecordsParams = {}): ExpenseRecordDto[] {
+export function listExpenses(params: ExpenseListParams = {}): ExpenseRecordDto[] {
   const where = params.includeDeleted ? '' : 'WHERE deleted = 0'
-  let records = (
+  const records = (
     getSqlite()
       .prepare(`SELECT ${EXPENSE_COLS} FROM expenses ${where} ORDER BY purchase_date DESC, created_at DESC`)
       .all() as ExpenseRow[]
   ).map(mapExpense)
-  if (params.month) records = records.filter((r) => r.purchaseDate.startsWith(params.month as string))
-  if (params.accountId) records = records.filter((r) => r.accountId === params.accountId)
-  if (params.categoryId) records = records.filter((r) => r.categoryId === params.categoryId)
-  return records
+
+  // View-mode + range + secondary filters, copied from the web query service so
+  // desktop list outputs match the web app view-for-view.
+  const creditAccountIds = new Set(
+    (
+      getSqlite()
+        .prepare('SELECT id, account_type FROM accounts')
+        .all() as Array<{ id: string; account_type: string }>
+    )
+      .filter((a) => isCreditLike(a.account_type))
+      .map((a) => a.id)
+  )
+  const pasabuyCategories = getSqlite()
+    .prepare("SELECT id, name FROM expense_categories WHERE name LIKE '%Pasabuy%'")
+    .all() as Array<{ id: string; name: string }>
+  return filterExpensesByQuery(records, params, {
+    creditAccountIds,
+    pasabuyCategoryIds: new Set(pasabuyCategories.map((c) => c.id)),
+    pasabuyCategoryId: pasabuyCategories.find((c) => c.name === 'Pasabuy')?.id
+  })
 }
 
 export function getExpense(id: string): ExpenseRecordDto {
