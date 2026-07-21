@@ -1,25 +1,25 @@
 # Service Map
 
-Use this map for backend service work. Service source code now exists under `service/`.
+Use this map for backend service work. Service source code now exists under `notable-finance-web/service/`.
 
 ## Read First
 
-- `wiki/tdd/tdd.md`
-- `wiki/api/api-specification.md`
-- `wiki/database/data-model.md`
-- `service/README.md`
-- `service/src/app.module.ts`
-- `service/src/notion/notion.service.ts`
-- `service/src/mapping/mapping.service.ts`
-- `service/src/validation/validation.service.ts`
+- `wiki/web/tdd/tdd.md`
+- `wiki/web/api/api-specification.md`
+- `wiki/web/database/data-model.md`
+- `notable-finance-web/service/README.md`
+- `notable-finance-web/service/src/app.module.ts`
+- `notable-finance-web/service/src/notion/notion.service.ts`
+- `notable-finance-web/service/src/mapping/mapping.service.ts`
+- `notable-finance-web/service/src/validation/validation.service.ts`
 
 ## Planned Service Areas
 
-- API routing and controllers under `service/src/*`.
-- Notion adapter boundary in `service/src/notion/`.
-- Property/resource mappers in `service/src/mapping/`.
-- Field access and mutation validation in `service/src/validation/`.
-- Sync orchestration in `service/src/sync/`.
+- API routing and controllers under `notable-finance-web/service/src/*`.
+- Notion adapter boundary in `notable-finance-web/service/src/notion/`.
+- Property/resource mappers in `notable-finance-web/service/src/mapping/`.
+- Field access and mutation validation in `notable-finance-web/service/src/validation/`.
+- Sync orchestration in `notable-finance-web/service/src/sync/`.
 - Direct-save form submission and queued Sync button handling.
 - Schema drift checks.
 - Conflict handling.

@@ -4,8 +4,8 @@ Use this map for future deployment, operations, and runtime configuration work.
 
 ## Read First
 
-- `wiki/deployment/deployment.md`
-- `wiki/tdd/tdd.md`
+- `wiki/web/deployment/deployment.md`
+- `wiki/web/tdd/tdd.md`
 - `AGENTS.md`
 
 ## Planned Deployment Concerns

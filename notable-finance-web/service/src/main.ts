@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { LoggingInterceptor } from './common/logging.interceptor';
 import { LoggingService } from './logging/logging.service';
 
 // Safety net: prevent unhandled errors from silently crashing the process
@@ -38,6 +39,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

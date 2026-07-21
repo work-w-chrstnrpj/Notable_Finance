@@ -4,8 +4,8 @@ Use this map for future test planning and implementation.
 
 ## Read First
 
-- `wiki/testing/test-specification.md`
-- `wiki/commands/commands.md`
+- `wiki/web/testing/test-specification.md`
+- `wiki/web/commands/commands.md`
 - `tests/README.md`
 
 ## Planned Test Areas

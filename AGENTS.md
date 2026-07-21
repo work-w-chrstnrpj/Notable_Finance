@@ -1,6 +1,6 @@
 # Project Agent Rules
 
-Source of product and technical intent: `wiki/tdd/tdd.md` and `wiki/product-specification/product-specification.md`. Source files remain the final implementation truth once application code exists.
+Source of product and technical intent: `wiki/web/tdd/tdd.md` and `wiki/shared/product-specification.md` (full web feature detail in `wiki/web/product-specification/product-specification.md`). The local-first desktop app's intent lives under `wiki/desktop/`. Source files remain the final implementation truth once application code exists.
 
 Agents working in this repository must keep implementation and documentation changes aligned with the project goal:
 
@@ -25,10 +25,11 @@ The main app sections are Dashboard, Accounts, Income, Expense, Monthly Monitori
 
 ## Detected Tech Stack
 
-Frontend and backend implementation have started. The selected application stack is Next.js for the frontend and NestJS for the backend.
+The repository is a monorepo hosting two apps. `notable-finance-web/` is the implemented web app (Next.js frontend + NestJS backend) where Notion is the source of truth. `notable-finance-app/` is the planned local-first desktop app (Electron; local SQLite is the source of truth and Notion is a bidirectional mirror). The two apps share the same finance domain and business logic.
 
-- Application/runtime: Next.js frontend foundation under `application/`.
-- Service/API layer: NestJS backend service foundation under `service/` for Notion integration, validation, sync, and schema checks.
+- Application/runtime: Next.js frontend under `notable-finance-web/application/`.
+- Service/API layer: NestJS backend service under `notable-finance-web/service/` for Notion integration, validation, sync, and schema checks.
+- Desktop (planned): Electron + local SQLite (better-sqlite3 / Drizzle) under `notable-finance-app/`; design specified in `wiki/desktop/`.
 - Data store: Notion is the canonical finance data store. PostgreSQL is the primary durable app metadata store for sync logs, sessions if needed, conflicts, pending mutations, audit events, and snapshots. Use Neon Free as the planned PostgreSQL provider while the app remains within free-tier limits. Redis is optional for cache, rate limits, short-lived sessions, or queue coordination if implementation needs it.
 - Testing: Recommended tooling is ESLint, TypeScript, Vitest, React Testing Library, Jest or Vitest for NestJS depending on scaffold defaults, Supertest, Playwright, and manual verification against a duplicated Notion space.
 - Deployment: Planned targets are Vercel for the frontend, Render for the backend, and Neon Free for PostgreSQL app metadata storage. Must use server-side secret management and never expose Notion secrets in frontend code.
@@ -37,12 +38,14 @@ Frontend and backend implementation have started. The selected application stack
 
 Update this map whenever the project structure changes.
 
-- `application/`: user-facing finance UI foundation.
-- `service/`: backend API, Notion adapter boundary, validation, sync, auth shell, and integration logic foundation.
+- `notable-finance-web/`: the web app (Notion is source of truth). Self-contained with its own `package.json` (run web commands here or via `--prefix`). Contains:
+  - `notable-finance-web/application/`: user-facing finance UI (Next.js).
+  - `notable-finance-web/service/`: backend API, Notion adapter boundary, validation, sync, auth shell, and integration logic (NestJS).
+- `notable-finance-app/`: the local-first desktop app (Electron; local SQLite is source of truth, Notion is a bidirectional mirror). Planned/scaffolding.
+- `wiki/`: shared-root documentation with three zones — `wiki/shared/` (product spec, finance glossary, Notion field mapping), `wiki/web/` (web-specific: API, database, deployment, tdd, testing, development plan, diagrams), and `wiki/desktop/` (desktop architecture, sync/conflict, local schema, IPC, offline, onboarding, security, packaging, testing, plan).
 - `shared/`: future shared contracts, DTOs, schemas, constants, and formatting helpers.
 - `tests/`: cross-cutting manual and automated tests.
 - `tickets/`: planning or task artifacts.
-- `wiki/`: project intent, product specification, technical design, data model, diagrams, API, testing, deployment, and operating docs.
 - `.agents/`: canonical reusable AI roles, skills, overlays, workflows, and tool policies.
 - `.ai/`: context routing, maps, prompt recipes, and generated-index guidance.
 - Tool adapters: `.claude/`, `.codex/`, `.cursor/`, `.github/`, `.opencode/`, and other generated folders expose canonical assets in each tool's expected format.
@@ -80,10 +83,10 @@ Update this map whenever the project structure changes.
 
 ## Documentation Rules
 
-- Keep `wiki/tdd/tdd.md` canonical for technical intent.
-- Keep `wiki/product-specification/product-specification.md` canonical for product behavior and acceptance criteria.
+- Keep `wiki/web/tdd/tdd.md` canonical for web technical intent, and `wiki/desktop/` canonical for the desktop app's technical design.
+- Keep `wiki/shared/product-specification.md` canonical for shared product behavior and acceptance criteria, with `wiki/web/product-specification/product-specification.md` for full web feature detail. Shared finance domain terms live in `wiki/shared/finance-domain-glossary.md` and the canonical Notion field taxonomy in `wiki/shared/notion-field-mapping.md`.
 - Update API, data, diagram, testing, deployment, and project-structure wiki pages when behavior or architecture changes.
-- If work is tracked in `wiki/development-plan/development-plan.md`, update the matching status.
+- If work is tracked in `wiki/web/development-plan/development-plan.md` (web) or `wiki/desktop/development-plan.md` (desktop), update the matching status.
 - Draft wiki files with `-draft` in the name are not canonical. Fold useful content into canonical pages, then remove the draft file.
 
 ## Security Rules
@@ -148,14 +151,15 @@ Reusable skills live in `.agents/skills/`. Tool-specific skill copies are genera
 
 ## Verification Commands
 
-Application verification commands are now available for the implemented foundations.
+Web app verification commands (run from the repository root, or drop the `notable-finance-web/` prefix when run from inside `notable-finance-web/`, which now holds the web `package.json`):
 
-- Frontend lint command: `npm --prefix application run lint`.
-- Frontend typecheck command: `npm --prefix application run typecheck`.
-- Frontend test command: `npm --prefix application run test`.
-- Frontend build command: `npm --prefix application run build`.
-- Backend typecheck command: `npm --prefix service run typecheck`.
-- Backend test command: `npm --prefix service run test`.
-- Backend build command: `npm --prefix service run build`.
+- Frontend lint command: `npm --prefix notable-finance-web/application run lint`.
+- Frontend typecheck command: `npm --prefix notable-finance-web/application run typecheck`.
+- Frontend test command: `npm --prefix notable-finance-web/application run test`.
+- Frontend build command: `npm --prefix notable-finance-web/application run build`.
+- Backend typecheck command: `npm --prefix notable-finance-web/service run typecheck`.
+- Backend test command: `npm --prefix notable-finance-web/service run test`.
+- Backend build command: `npm --prefix notable-finance-web/service run build`.
+- Desktop app commands: TBD until `notable-finance-app/` is scaffolded (planned: pnpm workspace, electron-vite, Vitest + Playwright/Electron e2e).
 - E2E command: TBD after project scaffolding.
 - Documentation-only verification: inspect updated Markdown, run draft cleanup search, and confirm no source code was created.

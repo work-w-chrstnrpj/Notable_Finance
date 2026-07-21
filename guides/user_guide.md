@@ -71,14 +71,16 @@ git clone <repository-url>
 cd "Notable Finance"
 ```
 
-### 3.2 Backend setup (`service/`)
+### 3.2 Backend setup (`notable-finance-web/service/`)
+
+The web app lives under `notable-finance-web/`. From the repository root:
 
 ```bash
-cd service
+cd notable-finance-web/service
 npm install
 ```
 
-Create a `.env` file in `service/` with the required environment variables:
+Create a `.env` file in `notable-finance-web/service/` with the required environment variables:
 
 ```env
 # Server
@@ -123,14 +125,16 @@ npm run start:dev
 
 The backend starts on `http://localhost:3001` by default.
 
-### 3.3 Frontend setup (`application/`)
+### 3.3 Frontend setup (`notable-finance-web/application/`)
+
+From the repository root:
 
 ```bash
-cd application
+cd notable-finance-web/application
 npm install
 ```
 
-Create a `.env.local` file in `application/`:
+Create a `.env.local` file in `notable-finance-web/application/`:
 
 ```env
 NEXT_PUBLIC_BACKEND_API_BASE_PATH=http://localhost:3001/api/v1

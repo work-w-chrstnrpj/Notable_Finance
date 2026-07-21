@@ -129,9 +129,9 @@ Use camelCase for API fields and keep raw Notion property names inside the backe
 
 Before adding implementation code:
 
-1. Confirm the module is in scope in `wiki/product-specification/product-specification.md`.
-2. Confirm the technical boundary in `wiki/tdd/tdd.md`.
-3. Define API/data contracts in `wiki/api/api-specification.md` and `wiki/database/data-model.md`.
+1. Confirm the module is in scope in `wiki/web/product-specification/product-specification.md`.
+2. Confirm the technical boundary in `wiki/web/tdd/tdd.md`.
+3. Define API/data contracts in `wiki/web/api/api-specification.md` and `wiki/web/database/data-model.md`.
 4. Add tests or manual verification expectations.
 5. Keep the edit small and reviewable.
 

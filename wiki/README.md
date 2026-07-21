@@ -1,33 +1,27 @@
-# Wiki Index
+# Notable Finance — Documentation
 
-This folder is the project intent and operating record for Notable Finance.
+Notable Finance ships as **two applications that share the same finance domain and business logic**, differing only in how they store and sync data:
 
-## Read First
+| App | Store / source of truth | Excels at | Docs |
+| --- | --- | --- | --- |
+| **Notable Finance Web** (`notable-finance-web/`) | Notion is the source of truth; PostgreSQL holds minimal metadata | On-the-go, cloud-backed access | [`web/`](web/) |
+| **Notable Finance App** (`notable-finance-app/`) | Local SQLite is the working source of truth; Notion is a bidirectional mirror/backup | Smoothness, offline mode, daily driving | [`desktop/`](desktop/) |
 
-1. `product-specification/product-specification.md`
-2. `tdd/tdd.md`
-3. `project-structure/project-structure.md`
-4. `development-plan/development-plan.md`
+Both apps encode, view, validate, and sync the same records (Accounts, Income, Expense, Transactions, Scheduler, Monthly Monitoring) against a user's Notion workspace. The **desktop app is local-first**: it inverts the source of truth to a local SQLite database so it works fully offline, and reconciles with Notion in the background.
 
-## Planning And Contracts
+## Zones
 
-- `api/api-specification.md`: planned backend API contract.
-- `database/data-model.md`: Notion data source and field access contract.
-- `testing/test-specification.md`: planned verification strategy.
-- `deployment/deployment.md`: deployment and operations requirements.
-- `commands/commands.md`: safe command reference.
+This wiki is organized into three zones so the identical parts are documented once:
 
-## Diagrams
+- **[`shared/`](shared/)** — one source of truth for both apps: product intent, finance domain glossary, and the canonical Notion field mapping (which fields are writable vs computed).
+- **[`desktop/`](desktop/)** — everything specific to the local-first Electron app (architecture, sync engine, local schema, IPC, offline behavior, onboarding, packaging, security, testing, plan).
+- **[`web/`](web/)** — the existing web app's docs, relocated into this wiki as the web zone, canonical for web-specific concerns (HTTP API, Vercel/Render deployment, its development plan).
 
-- `diagrams/context-diagram.md`
-- `diagrams/data-flow.md`
-- `diagrams/entity-relationship.md`
-- `diagrams/user-flow.md`
+## Reading order for the desktop app
 
-## Rules
-
-- Notion is the source of truth.
-- Accounts, Income Categories, and Expense Categories are Notion-maintained reference/configuration data in the app.
-- Monthly Monitoring is in app scope as a read-focused monitoring section, with selected-month values calculated from scoped Income and Expense records.
-- Draft files with `-draft` in the name are not canonical.
-- Keep wiki pages concise, current, and tied to implementation truth as code is added.
+1. [`shared/product-specification.md`](shared/product-specification.md) — what the app does (parity + desktop deltas).
+2. [`desktop/desktop-architecture.md`](desktop/desktop-architecture.md) — the Electron process model and technical design.
+3. [`desktop/sync-and-conflict-design.md`](desktop/sync-and-conflict-design.md) — the heart of the app: the reconcile + conflict engine.
+4. [`desktop/local-data-schema.md`](desktop/local-data-schema.md) — SQLite tables and sync columns.
+5. [`desktop/ipc-contract.md`](desktop/ipc-contract.md) — the main↔renderer contract (the desktop "API").
+6. The remaining desktop docs for offline behavior, onboarding, packaging, security, testing, and the plan.

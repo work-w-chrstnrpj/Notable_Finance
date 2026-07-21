@@ -110,9 +110,9 @@ When adoption details change, use the `update-docs` skill to:
 
 | File | Purpose |
 | --- | --- |
-| `wiki/tdd/tdd.md` | Technical design and implementation intent |
-| `wiki/product-specification/product-specification.md` | Product goals, workflows, acceptance criteria |
-| `wiki/project-structure/project-structure.md` | Source layout and ownership boundaries |
+| `wiki/web/tdd/tdd.md` | Technical design and implementation intent |
+| `wiki/web/product-specification/product-specification.md` | Product goals, workflows, acceptance criteria |
+| `wiki/web/project-structure/project-structure.md` | Source layout and ownership boundaries |
 | `AGENTS.md` | Project goal, stack, repo map, verification commands |
 
 ### 2. Adapt code folders
@@ -380,7 +380,7 @@ Context routing rules for a specific project belong in `.ai/context-routing.md` 
 
 ### Wiki update rules
 
-- Keep `wiki/tdd/tdd.md` as technical intent source.
+- Keep `wiki/web/tdd/tdd.md` as technical intent source.
 - Update API, testing, deployment, and structure wiki pages when behavior changes.
 - Keep this guidelines page aligned when the canonical AI model changes.
 
@@ -427,4 +427,4 @@ Never claim verification passed unless commands actually ran.
 | `.agents/README.md` | Canonical AI asset overview |
 | `.agents/skills/README.md` | Curated skill list and criteria |
 | `scripts/README.md` | Sync and validation scripts |
-| `wiki/guidelines/ai-structure-guidelines.md` | This document |
+| `wiki/web/guidelines/ai-structure-guidelines.md` | This document |

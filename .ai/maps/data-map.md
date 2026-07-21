@@ -4,9 +4,9 @@ Use this map for Notion schema, field mapping, and future persistence work.
 
 ## Read First
 
-- `wiki/database/data-model.md`
-- `wiki/tdd/tdd.md`
-- `wiki/diagrams/entity-relationship.md`
+- `wiki/web/database/data-model.md`
+- `wiki/web/tdd/tdd.md`
+- `wiki/web/diagrams/entity-relationship.md`
 
 ## Canonical Finance Data
 

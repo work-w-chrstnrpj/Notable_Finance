@@ -18,11 +18,14 @@ Monthly Monitoring is not shown in the app. Users should be able to create, edit
 
 ## Current Status
 
-This repository now contains a Next.js frontend in `application/` and a NestJS backend service in `service/`.
+This repository is a monorepo with two apps:
+
+- `notable-finance-web/` — the implemented web app: a Next.js frontend (`application/`) and a NestJS backend service (`service/`), with Notion as the source of truth. Current release: v0.2.0 (2026-07-14).
+- `notable-finance-app/` — the planned local-first desktop app (Electron; local SQLite as source of truth, Notion as a bidirectional mirror). Design specified under `wiki/desktop/`.
 
 ## Development Commands
 
-Run these commands from the repository root:
+Run these web-app commands from `notable-finance-web/` (which holds the web `package.json`):
 
 | Command | Purpose |
 | --- | --- |
@@ -46,10 +49,11 @@ Run these commands from the repository root:
 
 Read these first:
 
-- `wiki/product-specification/product-specification.md`
-- `wiki/tdd/tdd.md`
-- `wiki/project-structure/project-structure.md`
-- `wiki/development-plan/development-plan.md`
+- `wiki/shared/product-specification.md` (and `wiki/web/product-specification/product-specification.md` for full web detail)
+- `wiki/web/tdd/tdd.md`
+- `wiki/web/project-structure/project-structure.md`
+- `wiki/web/development-plan/development-plan.md`
+- `wiki/desktop/` — the planned desktop app's design
 - `AGENTS.md`
 
 ## Core Rules

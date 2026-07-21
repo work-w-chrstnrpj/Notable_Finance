@@ -4,9 +4,9 @@ Use this map for planned backend API contract work.
 
 ## Read First
 
-- `wiki/api/api-specification.md`
-- `wiki/tdd/tdd.md`
-- `wiki/database/data-model.md`
+- `wiki/web/api/api-specification.md`
+- `wiki/web/tdd/tdd.md`
+- `wiki/web/database/data-model.md`
 
 ## Planned API Areas
 
