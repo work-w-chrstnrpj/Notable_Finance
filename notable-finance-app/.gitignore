@@ -1,0 +1,10 @@
+node_modules
+dist
+out
+*.log
+.DS_Store
+
+# Local SQLite / app data written during dev (Phase 0.2+)
+*.sqlite
+*.sqlite-journal
+*.db

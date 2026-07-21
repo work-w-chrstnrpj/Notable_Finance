@@ -21,7 +21,28 @@ app remains the on-the-go, cloud-backed client.
 
 ## Status
 
-Scaffolding not started. See the design write-up in the wiki for the full plan.
+**Phase 0 complete** (2026-07-21):
+
+- **0.1** — pnpm workspace + electron-vite scaffold; window boots with Vite HMR.
+- **0.2** — better-sqlite3 (rebuilt for Electron) + drizzle; migrations run on start, creating
+  the local DB in `userData`.
+- **0.3** — finance DTOs, resource helpers, and local derivations copied/implemented in
+  `src/shared` + `src/main/domain`; 16 derivation unit tests pass.
+- **0.4** — contextBridge preload + `ipcMain.handle` skeleton (`app:ping`, `db:health`) using
+  the `ApiResult` envelope; renderer↔main roundtrip verified.
+
+Build, typecheck, and tests are clean. Next: Phase 1 (offline CRUD + ported pages). See
+[`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
+tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).
+
+## Run it
+
+```bash
+pnpm install                              # from the repo root (approves native builds at the gate)
+pnpm --filter notable-finance-app rebuild # compile better-sqlite3 for Electron's ABI
+pnpm --filter notable-finance-app dev     # boots the window with HMR
+pnpm --filter notable-finance-app test    # run the derivation unit tests
+```
 
 ## Proposed layout (subject to change)
 

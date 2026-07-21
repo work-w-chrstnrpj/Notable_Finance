@@ -13,10 +13,10 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 0 — Scaffold & shared logic (foundations)
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 0.1 | pnpm workspace; `notable-finance-app` with electron-vite (main/preload/renderer) | App window boots with HMR | Not Started |
-| 0.2 | better-sqlite3 + drizzle wired; migrations run on start | Empty DB created in userData | Not Started |
-| 0.3 | Copy domain/types/mapping/reporting from web into `src/main/domain` + `src/shared` | Unit tests for derivations pass | Not Started |
-| 0.4 | contextBridge preload + IPC skeleton | Renderer calls a no-op `window.api` channel | Not Started |
+| 0.1 | pnpm workspace; `notable-finance-app` with electron-vite (main/preload/renderer) | App window boots with HMR | Done |
+| 0.2 | better-sqlite3 + drizzle wired; migrations run on start | Empty DB created in userData | Done |
+| 0.3 | Copy domain/types/mapping/reporting from web into `src/main/domain` + `src/shared` | Unit tests for derivations pass | Done |
+| 0.4 | contextBridge preload + IPC skeleton | Renderer calls a no-op `window.api` channel | Done |
 
 ### Phase 1 — Offline app (fully usable, no sync)
 | # | Work item | Acceptance | Status |

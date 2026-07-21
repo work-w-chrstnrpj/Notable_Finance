@@ -1,0 +1,21 @@
+# pnpm workspace — additive, does not disturb the web app.
+# notable-finance-web keeps its existing npm-based setup (see wiki/desktop/shared-core-and-monorepo.md).
+# Only the desktop app (and future shared packages) are managed by pnpm for now.
+packages:
+  - 'notable-finance-app'
+  # - 'packages/*'   # future: extracted shared core (packages/core, packages/notion-adapter)
+
+  # pnpm blocks dependency build scripts by default. Allow only the ones we trust and need:
+  #   electron       — postinstall downloads the platform Electron binary
+  #   esbuild        — installs its native binary (used by vite/electron-vite)
+  #   better-sqlite3 — compiles the native SQLite bindings (rebuilt for Electron via `pnpm rebuild`)
+allowBuilds:
+  esbuild: true
+  electron: true
+  better-sqlite3: true
+minimumReleaseAgeExclude:
+  - better-sqlite3@13.0.1
+onlyBuiltDependencies:
+  - electron
+  - esbuild
+  - better-sqlite3
