@@ -52,9 +52,11 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 5 — Package
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 5.1 | electron-builder for mac/linux/windows; native rebuild | Installers produced; app runs unsigned | Not Started |
-| 5.2 | Playwright + Electron e2e for core flows | E2E suite green | Not Started |
-| 5.3 | CHANGELOG + versioning | v0.1.0 tagged | Not Started |
+| 5.1 | electron-builder for mac/linux/windows; native rebuild | Installers produced; app runs unsigned | Done |
+| 5.2 | Playwright + Electron e2e for core flows | E2E suite green | Done |
+| 5.3 | CHANGELOG + versioning | v0.1.0 tagged | Done¹ |
+
+¹ CHANGELOG + version 0.1.0 done; the `v0.1.0` git tag is deferred to the commit/release step.
 
 ## Milestone summary
 

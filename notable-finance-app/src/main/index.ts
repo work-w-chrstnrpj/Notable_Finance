@@ -4,6 +4,11 @@ import { registerIpc } from './ipc'
 import { createWindow, installMenu, onActivate } from './windows'
 import { reschedule, stopScheduler } from './sync/scheduler'
 
+// Test hook: redirect userData (DB + keychain token file) to an isolated dir for e2e runs.
+if (process.env.NF_USER_DATA_DIR) {
+  app.setPath('userData', process.env.NF_USER_DATA_DIR)
+}
+
 // Electron main process bootstrap. Main owns all data & side effects: SQLite, domain
 // logic, IPC. See wiki/desktop/desktop-architecture.md.
 

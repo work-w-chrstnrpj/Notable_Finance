@@ -4,6 +4,10 @@ out
 *.log
 .DS_Store
 
+# Playwright e2e artifacts
+test-results
+playwright-report
+
 # Local SQLite / app data written during dev (Phase 0.2+)
 *.sqlite
 *.sqlite-journal

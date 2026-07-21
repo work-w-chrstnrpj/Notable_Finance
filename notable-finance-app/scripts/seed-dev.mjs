@@ -9,6 +9,7 @@ import { existsSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 
 function userDataDir() {
+  if (process.env.NF_USER_DATA_DIR) return process.env.NF_USER_DATA_DIR
   if (process.platform === 'darwin') return join(homedir(), 'Library', 'Application Support', 'notable-finance-app')
   if (process.platform === 'win32') return join(process.env.APPDATA ?? '', 'notable-finance-app')
   return join(process.env.XDG_CONFIG_HOME ?? join(homedir(), '.config'), 'notable-finance-app')

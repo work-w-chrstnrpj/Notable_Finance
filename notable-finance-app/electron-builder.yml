@@ -1,0 +1,49 @@
+# electron-builder packaging (Phase 5.1). Personal / unsigned for now; signing +
+# notarization + auto-update are documented future steps (wiki/desktop/packaging-and-release.md).
+appId: com.notablefinance.desktop
+productName: Notable Finance
+copyright: Copyright © 2026 Notable Finance
+
+directories:
+  output: dist
+  buildResources: build
+
+# The app is the electron-vite output plus production deps (better-sqlite3 native addon).
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+
+# Drizzle migration SQL is read at runtime from resources (see src/main/db/index.ts:
+# app.isPackaged → process.resourcesPath/migrations).
+extraResources:
+  - from: src/main/db/migrations
+    to: migrations
+
+# Keep native .node addons outside the asar so they can be dlopen'd.
+asarUnpack:
+  - '**/*.node'
+
+# better-sqlite3 is rebuilt for the packaged Electron ABI.
+npmRebuild: true
+
+mac:
+  target:
+    - target: dmg
+    - target: zip
+  category: public.app-category.finance
+  identity: null # unsigned (personal). Gatekeeper: right-click → Open once.
+  darkModeSupport: true
+
+linux:
+  target:
+    - AppImage
+  category: Finance
+
+win:
+  target:
+    - nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

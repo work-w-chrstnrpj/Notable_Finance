@@ -13,6 +13,9 @@ allowBuilds:
   esbuild: true
   electron: true
   better-sqlite3: true
+  # Windows-only Squirrel helper (transitive of electron-builder). We package Windows with
+  # NSIS, never build on this machine, and don't need its native binary — deny.
+  electron-winstaller: false
 minimumReleaseAgeExclude:
   - better-sqlite3@13.0.1
 onlyBuiltDependencies:

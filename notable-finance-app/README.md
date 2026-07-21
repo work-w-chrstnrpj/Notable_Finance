@@ -81,8 +81,28 @@ detection, dirty preservation).
   (crash-safe); push retries with exponential backoff on HTTP 429 and is idempotent.
 
 Verified end-to-end against the mock (conflict + resolution, auto-merge, crash durability,
-and an injected-429 absorbed by backoff). The app now does everything except packaging.
-Next: **Phase 5** (electron-builder installers, e2e, versioning).
+and an injected-429 absorbed by backoff).
+
+**Phase 5 complete** (2026-07-21) — packaging & tests (v0.1.0, all phases done):
+
+- **5.1** — `electron-builder` targets: macOS `.dmg`/`.zip`, Linux `AppImage`, Windows NSIS.
+  Migrations bundled as resources; `better-sqlite3` rebuilt for the packaged Electron ABI.
+  Produced the unsigned macOS `.dmg`/`.zip`; the packaged `.app` boots and opens SQLite.
+- **5.2** — Playwright + Electron e2e (`e2e/app.spec.ts`) covering boot, all sections, offline
+  income create with live dashboard update, seeded accounts, and multi-window — 5/5 green.
+- **5.3** — `CHANGELOG.md` at v0.1.0.
+
+### Package it
+
+```bash
+pnpm --filter notable-finance-app dist:mac   # .dmg + .zip (this machine)
+pnpm --filter notable-finance-app dist:linux # AppImage (on Linux)
+pnpm --filter notable-finance-app dist:win   # NSIS (on Windows)
+pnpm --filter notable-finance-app test:e2e   # build + Electron e2e
+```
+
+macOS builds are **unsigned** — right-click → Open once to pass Gatekeeper. Windows/Linux
+installers build on their own OS (or CI); this machine has no wine/docker for cross-builds.
 
 See [`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
 tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).
