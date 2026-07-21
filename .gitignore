@@ -20,3 +20,7 @@ repomix-output.*
 *.p12
 *.crt
 .DS_Store
+
+# Do not commit personal project folders nested under Users/<your-name>/
+# If you accidentally copied a project into this repo, move it out before staging.
+# Note: a blanket 'Users/' rule is NOT safe here — service/src/users/ and SQL migrations use that path.
