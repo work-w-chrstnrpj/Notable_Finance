@@ -76,11 +76,11 @@ export function listExpenseCategories(): ExpenseCategoryOption[] {
   return rows.map(mapExpenseCategory)
 }
 
-function findIncomeCategoryIdBySource(source: string): string | undefined {
-  const row = getSqlite()
-    .prepare('SELECT id FROM income_categories WHERE source = ? LIMIT 1')
-    .get(source) as { id: string } | undefined
-  return row?.id
+function findIncomeCategoryIdsBySource(source: string): Set<string> {
+  const rows = getSqlite()
+    .prepare('SELECT id FROM income_categories WHERE LOWER(source) = LOWER(?)')
+    .all(source) as Array<{ id: string }>
+  return new Set(rows.map((r) => r.id))
 }
 
 function auxiliaryIncomeCategoryIds(): Set<string> {
@@ -113,8 +113,8 @@ export function listIncomes(params: IncomeListParams = {}): IncomeRecordDto[] {
 
   const fixedCategory = INCOME_VIEW_FIXED_CATEGORY[view]
   if (fixedCategory !== undefined) {
-    const categoryId = findIncomeCategoryIdBySource(fixedCategory)
-    records = categoryId ? records.filter((r) => r.categoryId === categoryId) : []
+    const categoryIds = findIncomeCategoryIdsBySource(fixedCategory)
+    records = categoryIds.size > 0 ? records.filter((r) => categoryIds.has(r.categoryId)) : []
   }
   if (view === 'receivables') {
     records = records.filter((r) => !r.accountId)
