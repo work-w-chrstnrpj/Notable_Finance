@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   AccountDto,
   ApiResult,
+  ConflictGroup,
+  ConflictResolution,
   ConnectResult,
   CreateExpenseInput,
   CreateIncomeInput,
@@ -22,6 +24,7 @@ import type {
   SchedulerRecordDto,
   SchemaReport,
   SyncNowResult,
+  SyncSettings,
   SyncStatus,
   UpdateExpenseInput,
   UpdateIncomeInput,
@@ -116,10 +119,21 @@ const api = {
 
   sync: {
     status: (): Promise<ApiResult<SyncStatus>> => ipcRenderer.invoke('sync:status'),
-    /** Push local changes, then pull remote (incremental). */
+    /** Reconcile (pull) then push. */
     now: (): Promise<ApiResult<SyncNowResult>> => ipcRenderer.invoke('sync:now'),
     /** Full pull from Notion (onboarding / first sync). */
-    initialPull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:initialPull')
+    initialPull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:initialPull'),
+    getSettings: (): Promise<ApiResult<SyncSettings>> => ipcRenderer.invoke('sync:getSettings'),
+    setMode: (patch: Partial<SyncSettings>): Promise<ApiResult<SyncSettings>> =>
+      ipcRenderer.invoke('sync:setMode', patch),
+    listConflicts: (): Promise<ApiResult<ConflictGroup[]>> =>
+      ipcRenderer.invoke('sync:listConflicts'),
+    resolveConflict: (
+      table: 'incomes' | 'expenses',
+      id: string,
+      resolution: ConflictResolution
+    ): Promise<ApiResult<ConflictGroup[]>> =>
+      ipcRenderer.invoke('sync:resolveConflict', table, id, resolution)
   },
 
   /**

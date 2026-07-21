@@ -6,7 +6,7 @@ import type {
   PaymentStatus
 } from '../../../shared/finance.types'
 import { currentMonth, money, runMutation, today, useApiData } from '../lib/hooks'
-import { EmptyState, ErrorNote, Field, Modal, MonthPicker, PageHeader } from '../components/ui'
+import { EmptyState, ErrorNote, Field, Modal, MonthPicker, PageHeader, SyncBadge } from '../components/ui'
 
 const PAYMENT_STATUSES: PaymentStatus[] = ['Paid', 'Unpaid', 'Installment', 'Cancelled']
 const PASABUY_STATUSES: PasabuyStatus[] = [
@@ -200,7 +200,7 @@ export function ExpensePage() {
             {expenses.data?.map((r) => (
               <tr key={r.id}>
                 <td>
-                  {r.description}
+                  {r.description} <SyncBadge state={r.syncState} />
                   {r.pasabuyer && <span className="tag">Pasabuy: {r.pasabuyer}</span>}
                 </td>
                 <td>{r.purchaseDate}</td>

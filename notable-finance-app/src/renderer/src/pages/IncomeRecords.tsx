@@ -6,7 +6,7 @@ import type {
 } from '../../../shared/finance.types'
 import { INCOME_VIEW_FIXED_CATEGORY } from '../../../shared/finance.types'
 import { currentMonth, money, runMutation, today, useApiData } from '../lib/hooks'
-import { EmptyState, ErrorNote, Field, Modal, MonthPicker, PageHeader } from '../components/ui'
+import { EmptyState, ErrorNote, Field, Modal, MonthPicker, PageHeader, SyncBadge } from '../components/ui'
 
 // Shared page for all income-backed sections, mirroring the web app's view semantics:
 // Income (excludes auxiliary categories), Transfer / CC Payment / Alkansya (fixed
@@ -158,7 +158,9 @@ export function IncomeRecordsPage({ view, title, subtitle }: Props) {
           <tbody>
             {records.data?.map((r) => (
               <tr key={r.id}>
-                <td>{r.name}</td>
+                <td>
+                  {r.name} <SyncBadge state={r.syncState} />
+                </td>
                 <td>{r.date}</td>
                 <td className="num">{money(r.grossIncome)}</td>
                 <td className="num">{money(r.capitalExpenditure)}</td>

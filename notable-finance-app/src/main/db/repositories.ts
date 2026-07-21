@@ -91,7 +91,7 @@ function auxiliaryIncomeCategoryIds(): Set<string> {
 // ── incomes (and income-backed views) ───────────────────────────────────────
 
 const INCOME_COLS = `id, title, date, gross_income, capital_expenditure, account_id,
-  category_id, notes, is_transaction, transacted_account_id, cc_payment_covered_id, deleted`
+  category_id, notes, is_transaction, transacted_account_id, cc_payment_covered_id, deleted, sync_state`
 
 function allIncomeRows(includeDeleted = false): IncomeRow[] {
   const where = includeDeleted ? '' : 'WHERE deleted = 0'
@@ -202,7 +202,7 @@ export function softDeleteIncome(id: string): IncomeRecordDto {
 const EXPENSE_COLS = `id, title, purchase_date, date_paid, amount, interest, account_id,
   category_id, payment_status, payment_frequency, period_count, paid_period, is_pasabuy,
   pasabuyer, pasabuy_status, pasabuy_date_of_payment, pasabuy_paid_period,
-  pasabuy_account_receiver_id, cc_link_payment_receipt_id, deleted`
+  pasabuy_account_receiver_id, cc_link_payment_receipt_id, deleted, sync_state`
 
 export function listExpenses(params: ListRecordsParams = {}): ExpenseRecordDto[] {
   const where = params.includeDeleted ? '' : 'WHERE deleted = 0'

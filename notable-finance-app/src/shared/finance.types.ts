@@ -81,6 +81,8 @@ export interface IncomeRecordDto {
   transactedAccountId?: string | null
   ccPaymentCoveredId?: string | null
   deleted?: boolean
+  /** Local sync state for record-level badges (desktop only; web omits it). */
+  syncState?: 'clean' | 'dirty' | 'conflict'
 }
 
 export interface ExpenseCategoryDto {
@@ -116,6 +118,8 @@ export interface ExpenseRecordDto {
   pasabuyAccountReceiverId: string | null
   pasabuyBalance: number
   deleted?: boolean
+  /** Local sync state for record-level badges (desktop only; web omits it). */
+  syncState?: 'clean' | 'dirty' | 'conflict'
 }
 
 /** Dashboard summary — computed locally in main (see ipc-contract.md `reports.dashboard`). */
@@ -323,16 +327,45 @@ export interface SchemaReport {
   resources: SchemaResourceReport[]
 }
 
+export type SyncMode = 'manual' | 'auto'
+
+export interface SyncSettings {
+  mode: SyncMode
+  intervalSeconds: number
+}
+
 export interface SyncStatus {
   connected: boolean
   mapped: boolean
+  online: boolean
   running: boolean
+  mode: SyncMode
+  intervalSeconds: number
   dirtyCount: number
   conflictCount: number
   lastPushAt: number | null
   lastPullAt: number | null
   lastError: string | null
 }
+
+export interface ConflictField {
+  field: string
+  base: unknown
+  local: unknown
+  remote: unknown
+}
+
+export interface ConflictGroup {
+  recordTable: 'incomes' | 'expenses'
+  recordId: string
+  title: string
+  fields: ConflictField[]
+  detectedAt: number
+}
+
+export type ConflictResolution =
+  | { all: 'local' | 'remote' }
+  | { perField: Record<string, 'local' | 'remote'> }
 
 export interface PushResult {
   pushed: number
@@ -348,10 +381,14 @@ export interface PullResult {
   referenceUpserted: number
   /** New income/expense records inserted from Notion. */
   inserted: number
-  /** Existing clean records updated from Notion. */
+  /** Existing clean records updated from Notion (remote applied). */
   updated: number
-  /** Local dirty records left untouched (Phase 4 reconcile owns those). */
-  skippedDirty: number
+  /** Records auto-merged (both sides changed, disjoint fields). */
+  autoMerged: number
+  /** Records flagged as same-field conflicts needing resolution. */
+  conflicts: number
+  /** Records left dirty for the push phase (local-only changes). */
+  pushPending: number
   errors: string[]
   /** The last_edited_time cursor after this pass (ISO). */
   cursor: string | null

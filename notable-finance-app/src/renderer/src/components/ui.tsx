@@ -74,3 +74,10 @@ export function Field(props: { label: string; children: ReactNode }) {
     </label>
   )
 }
+
+/** Per-record sync badge (offline-and-state-model.md): dirty and conflict are shown. */
+export function SyncBadge({ state }: { state?: 'clean' | 'dirty' | 'conflict' }) {
+  if (state === 'dirty') return <span className="sync-badge dirty">Not yet synced</span>
+  if (state === 'conflict') return <span className="sync-badge conflict">Conflict</span>
+  return null
+}

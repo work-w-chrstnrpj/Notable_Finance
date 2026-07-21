@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { SyncStatus } from '../../shared/finance.types'
 import { useApiData } from './lib/hooks'
 import { DashboardPage } from './pages/Dashboard'
 import { AccountsPage } from './pages/Accounts'
@@ -81,6 +82,41 @@ function Page({ section }: { section: SectionId }) {
   }
 }
 
+function SyncChip() {
+  const [sync, setSync] = useState<SyncStatus | null>(null)
+  useEffect(() => {
+    void window.api.sync.status().then((r) => r.ok && setSync(r.data))
+    const off = window.api.on('sync:status', (p) => setSync(p as SyncStatus))
+    return off
+  }, [])
+
+  if (!sync) return <p className="store-status">Connecting…</p>
+  const lastSync = sync.lastPullAt ?? sync.lastPushAt
+  return (
+    <div className="sync-chip">
+      <div className="sync-line">
+        <span className={`dot ${sync.online ? 'on' : 'off'}`} />
+        {sync.online ? 'Online' : 'Offline'}
+        {sync.running && <span className="spinner" aria-label="syncing" />}
+        <span className="mode-tag">{sync.mode}</span>
+      </div>
+      <div className="sync-badges">
+        {sync.dirtyCount > 0 && <span className="badge dirty">{sync.dirtyCount} unsynced</span>}
+        {sync.conflictCount > 0 && <span className="badge conflict">{sync.conflictCount} conflict</span>}
+        {sync.dirtyCount === 0 && sync.conflictCount === 0 && !sync.connected && (
+          <span className="badge muted">not connected</span>
+        )}
+        {sync.dirtyCount === 0 && sync.conflictCount === 0 && sync.connected && (
+          <span className="badge ok">all synced</span>
+        )}
+      </div>
+      <p className="sync-when">
+        {lastSync ? `Last synced ${new Date(lastSync).toLocaleTimeString()}` : 'Never synced'}
+      </p>
+    </div>
+  )
+}
+
 function App() {
   const [section, setSection] = useState<SectionId>('dashboard')
   const health = useApiData(() => window.api.health(), [])
@@ -107,12 +143,13 @@ function App() {
           <button type="button" className="nav-item" onClick={() => void window.api.windows.new()}>
             ⧉ New Window
           </button>
+          <SyncChip />
           <p className="store-status">
             {health.data
               ? `Local store · ${health.data.tables.length} tables`
               : health.error
                 ? 'Local store unavailable'
-                : 'Connecting…'}
+                : ''}
           </p>
         </div>
       </aside>

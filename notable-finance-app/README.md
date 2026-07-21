@@ -65,7 +65,24 @@ own integration token in the Sync section.
 
 `Sync now` is now push + incremental pull; onboarding runs a full initial pull. Verified
 end-to-end against the mock (initial pull, relation translation, cursor, remote-edit
-detection, dirty preservation). Next: Phase 4 (three-way merge + conflict resolver).
+detection, dirty preservation).
+
+**Phase 4 complete** (2026-07-21) — full bidirectional reconcile (Milestone M3):
+
+- **4.1** — Three-way merge (`base_snapshot` / local / remote) over a shared writable space:
+  disjoint edits auto-merge, same-field overlaps become conflicts, base advances per field.
+- **4.2** — `Sync now` runs **reconcile (pull) before push**, so a remote edit is never
+  clobbered. Overlaps are logged and the record is marked `conflict`; the Sync page's
+  resolver lets you keep-all-mine / keep-all-Notion / choose per field.
+- **4.3** — Manual or **auto** sync (configurable interval, online-gated). A sidebar chip
+  shows online/offline, unsynced + conflict counts, last-synced time, and a spinner;
+  records carry **"Not yet synced"** / **"Conflict"** badges (offline-and-state-model.md).
+- **4.4** — Offline edits are journaled to `mutation_queue` and survive as dirty rows
+  (crash-safe); push retries with exponential backoff on HTTP 429 and is idempotent.
+
+Verified end-to-end against the mock (conflict + resolution, auto-merge, crash durability,
+and an injected-429 absorbed by backoff). The app now does everything except packaging.
+Next: **Phase 5** (electron-builder installers, e2e, versioning).
 
 See [`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
 tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).

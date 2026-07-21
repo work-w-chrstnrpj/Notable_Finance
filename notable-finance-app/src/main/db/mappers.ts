@@ -40,6 +40,7 @@ export interface IncomeRow {
   transacted_account_id: string | null
   cc_payment_covered_id: string | null
   deleted: number
+  sync_state?: string
 }
 
 export interface ExpenseRow {
@@ -63,6 +64,7 @@ export interface ExpenseRow {
   pasabuy_account_receiver_id: string | null
   cc_link_payment_receipt_id: string | null
   deleted: number
+  sync_state?: string
 }
 
 export interface SchedulerRow {
@@ -131,7 +133,8 @@ export function mapIncome(row: IncomeRow): IncomeRecordDto {
     categoryId: row.category_id ?? '',
     transactedAccountId: row.transacted_account_id,
     ccPaymentCoveredId: row.cc_payment_covered_id,
-    deleted: row.deleted === 1
+    deleted: row.deleted === 1,
+    syncState: row.sync_state as IncomeRecordDto['syncState']
   }
 }
 
@@ -157,7 +160,8 @@ export function mapExpense(row: ExpenseRow): ExpenseRecordDto {
     pasabuyAccountReceiverId: row.pasabuy_account_receiver_id,
     // Local mirror of Notion's "Pasabuyer Balance" formula is a Phase 2+ concern; 0 until then.
     pasabuyBalance: 0,
-    deleted: row.deleted === 1
+    deleted: row.deleted === 1,
+    syncState: row.sync_state as ExpenseRecordDto['syncState']
   }
 }
 

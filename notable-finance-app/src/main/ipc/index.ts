@@ -16,10 +16,23 @@ import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
-import { pullAll, syncNow, syncStatus } from '../sync'
+import {
+  getSyncSettings,
+  listConflicts,
+  pullAll,
+  resolveConflict,
+  setSyncSettings,
+  syncNow,
+  syncStatus
+} from '../sync'
+import { reschedule } from '../sync/scheduler'
 import { broadcast, createWindow } from '../windows'
 import { ValidationError } from '../domain/validation'
-import type { NotionMapping } from '../../shared/finance.types'
+import type {
+  ConflictResolution,
+  NotionMapping,
+  SyncSettings
+} from '../../shared/finance.types'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
@@ -179,8 +192,29 @@ export function registerIpc(): void {
   )
   ipcMain.handle('notion:verifySchema', () => result(() => notion.verifySchema()))
 
-  // sync (Phase 2.3 push + Phase 3 pull)
+  // sync (Phase 2.3 push + Phase 3 pull + Phase 4 reconcile)
   ipcMain.handle('sync:status', () => result(() => syncStatus()))
-  ipcMain.handle('sync:now', () => result(() => syncNow())) // push then incremental pull
+  ipcMain.handle('sync:now', () => result(() => syncNow())) // reconcile (pull) then push
   ipcMain.handle('sync:initialPull', () => result(() => pullAll(true))) // full pull (onboarding)
+  ipcMain.handle('sync:getSettings', () => result(() => getSyncSettings()))
+  ipcMain.handle('sync:setMode', (_e, patch: Partial<SyncSettings>) =>
+    result(() => {
+      const settings = setSyncSettings(patch)
+      reschedule() // re-arm the auto-sync timer
+      broadcast('sync:status', syncStatus())
+      return settings
+    })
+  )
+
+  // conflicts (Phase 4.2)
+  ipcMain.handle('sync:listConflicts', () => result(() => listConflicts()))
+  ipcMain.handle('sync:resolveConflict', (_e, table: 'incomes' | 'expenses', id: string, resolution: ConflictResolution) =>
+    result(() => {
+      resolveConflict(table, id, resolution)
+      broadcast('records:changed', { resource: table, ids: [id] })
+      broadcast('derived:updated', {})
+      broadcast('sync:status', syncStatus())
+      return listConflicts()
+    })
+  )
 }

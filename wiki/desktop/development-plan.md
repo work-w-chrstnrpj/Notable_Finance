@@ -44,10 +44,10 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 4 — Reconcile + Conflict
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 4.1 | Three-way merge (base/local/remote); auto-merge disjoint fields | Scenario matrix tests pass | Not Started |
-| 4.2 | Conflict detection + log + resolver UI (prompt) | Same-field conflict prompts and resolves | Not Started |
-| 4.3 | Sync modes (manual + interval push/pull); status indicator; badges | Status/badges per [`offline-and-state-model.md`](offline-and-state-model.md) | Not Started |
-| 4.4 | Mutation queue durability + rate-limit backoff | Crash/429 simulations pass | Not Started |
+| 4.1 | Three-way merge (base/local/remote); auto-merge disjoint fields | Scenario matrix tests pass | Done |
+| 4.2 | Conflict detection + log + resolver UI (prompt) | Same-field conflict prompts and resolves | Done |
+| 4.3 | Sync modes (manual + interval push/pull); status indicator; badges | Status/badges per [`offline-and-state-model.md`](offline-and-state-model.md) | Done |
+| 4.4 | Mutation queue durability + rate-limit backoff | Crash/429 simulations pass | Done |
 
 ### Phase 5 — Package
 | # | Work item | Acceptance | Status |

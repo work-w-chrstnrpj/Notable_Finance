@@ -16,6 +16,7 @@ import { NotionApiError } from '../notion/client'
 import { expenseDtoToProperties, incomeDtoToProperties } from '../notion/property-mapper'
 import { metaSet, META_KEYS } from './meta'
 import { emitStatus, isRunning, setRunning, syncStatus } from './status'
+import { expenseWritableFromRow, incomeWritableFromRow } from './writable'
 import type { PushResult } from '../../shared/finance.types'
 
 const THROTTLE_MS = 340
@@ -61,40 +62,9 @@ interface DirtyRow {
   notion_page_id: string | null
 }
 
-function incomeWritable(row: DirtyRow): Record<string, unknown> {
-  return {
-    name: row.title,
-    date: row.date,
-    grossIncome: row.gross_income,
-    capitalExpenditure: row.capital_expenditure,
-    accountId: row.account_id,
-    categoryId: row.category_id,
-    transactedAccountId: row.transacted_account_id,
-    ccPaymentCoveredId: row.cc_payment_covered_id
-  }
-}
-
-function expenseWritable(row: DirtyRow): Record<string, unknown> {
-  return {
-    description: row.title,
-    purchaseDate: row.purchase_date,
-    datePaid: row.date_paid,
-    amount: row.amount,
-    interest: row.interest,
-    accountId: row.account_id,
-    categoryId: row.category_id,
-    paymentStatus: row.payment_status,
-    paymentFrequency: row.payment_frequency,
-    periodCount: row.period_count,
-    paidPeriod: row.paid_period,
-    pasabuyer: row.pasabuyer,
-    pasabuyStatus: row.pasabuy_status,
-    pasabuyDateOfPayment: row.pasabuy_date_of_payment,
-    pasabuyPaidPeriod: row.pasabuy_paid_period,
-    pasabuyAccountReceiverId: row.pasabuy_account_receiver_id,
-    ccLinkPaymentReceiptId: row.cc_link_payment_receipt_id
-  }
-}
+// Writable-field views are shared with pull + merge (base_snapshot is this shape).
+const incomeWritable = incomeWritableFromRow
+const expenseWritable = expenseWritableFromRow
 
 /**
  * A record soft-deleted before it was ever pushed has no Notion page to mirror, so

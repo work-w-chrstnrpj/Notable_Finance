@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
 import type {
+  ConflictGroup,
+  ConflictResolution,
   DiscoveredDb,
   MappableResource,
   NotionMapping,
   PullResult,
   SchemaReport,
   SyncNowResult,
+  SyncSettings,
   SyncStatus
 } from '../../../shared/finance.types'
+
+const fmt = (v: unknown): string => (v === null || v === undefined || v === '' ? '—' : String(v))
 import { runMutation, useApiData } from '../lib/hooks'
 import { ErrorNote, Field, PageHeader } from '../components/ui'
 
@@ -32,19 +37,55 @@ export function SyncPage() {
   const [report, setReport] = useState<SchemaReport | null>(null)
   const [pullResult, setPullResult] = useState<PullResult | null>(null)
   const [syncResult, setSyncResult] = useState<SyncNowResult | null>(null)
+  const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
+  const [settings, setSettings] = useState<SyncSettings | null>(null)
 
   const savedMapping = useApiData(() => window.api.notion.getMapping(), [])
+
+  const reloadConflicts = async (): Promise<void> => {
+    const c = await window.api.sync.listConflicts()
+    if (c.ok) setConflicts(c.data)
+  }
 
   const refreshStatus = async (): Promise<void> => {
     const s = await window.api.sync.status()
     if (s.ok) setStatus(s.data)
+    await reloadConflicts()
   }
 
   useEffect(() => {
     void refreshStatus()
-    const off = window.api.on('sync:status', (payload) => setStatus(payload as SyncStatus))
+    void window.api.sync.getSettings().then((r) => r.ok && setSettings(r.data))
+    const off = window.api.on('sync:status', (payload) => {
+      setStatus(payload as SyncStatus)
+      void reloadConflicts()
+    })
     return off
   }, [])
+
+  const resolve = (
+    table: 'incomes' | 'expenses',
+    id: string,
+    resolution: ConflictResolution
+  ): Promise<void> =>
+    run('resolve', async () => {
+      const res = await window.api.sync.resolveConflict(table, id, resolution)
+      if (res.ok) {
+        setConflicts(res.data)
+        return { ok: true }
+      }
+      return { ok: false, error: res.error.message }
+    })
+
+  const changeMode = (patch: Partial<SyncSettings>): Promise<void> =>
+    run('mode', async () => {
+      const res = await window.api.sync.setMode(patch)
+      if (res.ok) {
+        setSettings(res.data)
+        return { ok: true }
+      }
+      return { ok: false, error: res.error.message }
+    })
 
   useEffect(() => {
     if (savedMapping.data) setMapping(savedMapping.data)
@@ -244,7 +285,8 @@ export function SyncPage() {
         {pullResult && (
           <p className="hint">
             Pulled: {pullResult.referenceUpserted} reference rows, {pullResult.inserted} new records,{' '}
-            {pullResult.updated} updated, {pullResult.skippedDirty} local edits preserved.
+            {pullResult.updated} updated, {pullResult.autoMerged} auto-merged,{' '}
+            {pullResult.conflicts} conflict(s).
             {pullResult.errors.length > 0 && ` Error: ${pullResult.errors[0]}`}
           </p>
         )}
@@ -272,20 +314,101 @@ export function SyncPage() {
           {status?.lastPushAt && <span className="hint">Last push: {new Date(status.lastPushAt).toLocaleString()}</span>}
           {status?.lastPullAt && <span className="hint">Last pull: {new Date(status.lastPullAt).toLocaleString()}</span>}
         </div>
+        {settings && (
+          <div className="mode-row">
+            <label className="toggle">
+              <input
+                type="radio"
+                name="syncmode"
+                checked={settings.mode === 'manual'}
+                onChange={() => void changeMode({ mode: 'manual' })}
+              />
+              Manual
+            </label>
+            <label className="toggle">
+              <input
+                type="radio"
+                name="syncmode"
+                checked={settings.mode === 'auto'}
+                onChange={() => void changeMode({ mode: 'auto' })}
+              />
+              Auto every
+            </label>
+            <input
+              className="interval-input"
+              type="number"
+              min={30}
+              step={30}
+              value={settings.intervalSeconds}
+              disabled={settings.mode !== 'auto'}
+              onChange={(e) => setSettings({ ...settings, intervalSeconds: Number(e.target.value) })}
+              onBlur={() => settings.mode === 'auto' && void changeMode({ intervalSeconds: settings.intervalSeconds })}
+            />
+            <span className="hint">seconds (min 30)</span>
+          </div>
+        )}
         {status?.lastError && <ErrorNote error={status.lastError} />}
         {syncResult && (
           <p className="hint">
+            Pull: {syncResult.pull.inserted} new, {syncResult.pull.updated} updated,{' '}
+            {syncResult.pull.autoMerged} auto-merged, {syncResult.pull.conflicts} conflict(s). ·
             Push: {syncResult.push.created} created, {syncResult.push.updated} updated,{' '}
-            {syncResult.push.skipped} skipped, {syncResult.push.failed} failed. · Pull:{' '}
-            {syncResult.pull.inserted} new, {syncResult.pull.updated} updated,{' '}
-            {syncResult.pull.skippedDirty} local edits preserved.
+            {syncResult.push.failed} failed.
           </p>
         )}
         <p className="hint">
-          Push sends writable fields only; pull applies remote changes to clean records and leaves
-          your unpushed local edits untouched (full three-way merge is Phase 4).
+          Reconcile (pull) runs first: a three-way merge auto-merges disjoint edits and flags
+          same-field conflicts below; push then sends the rest. Your unpushed edits are never
+          clobbered.
         </p>
       </div>
+
+      {/* conflicts resolver (Phase 4.2) */}
+      {conflicts.length > 0 && (
+        <div className="panel conflict-panel">
+          <h3>
+            Conflicts <span className="status status-cancelled">{conflicts.length} to resolve</span>
+          </h3>
+          {conflicts.map((g) => (
+            <div key={`${g.recordTable}:${g.recordId}`} className="conflict-card">
+              <div className="conflict-head">
+                <strong>{g.title}</strong>
+                <span className="conflict-meta">{g.recordTable}</span>
+                <div className="conflict-actions">
+                  <button type="button" onClick={() => void resolve(g.recordTable, g.recordId, { all: 'local' })}>
+                    Keep all mine
+                  </button>
+                  <button type="button" onClick={() => void resolve(g.recordTable, g.recordId, { all: 'remote' })}>
+                    Keep all Notion
+                  </button>
+                </div>
+              </div>
+              <table className="data-table conflict-fields">
+                <thead>
+                  <tr><th>Field</th><th>Mine (local)</th><th>Notion (remote)</th><th /></tr>
+                </thead>
+                <tbody>
+                  {g.fields.map((f) => (
+                    <tr key={f.field}>
+                      <td>{f.field}</td>
+                      <td>{fmt(f.local)}</td>
+                      <td>{fmt(f.remote)}</td>
+                      <td className="row-actions">
+                        <button type="button" onClick={() => void resolve(g.recordTable, g.recordId, { perField: { [f.field]: 'local' } })}>
+                          Mine
+                        </button>
+                        <button type="button" onClick={() => void resolve(g.recordTable, g.recordId, { perField: { [f.field]: 'remote' } })}>
+                          Notion
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
