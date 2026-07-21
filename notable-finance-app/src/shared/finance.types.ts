@@ -164,3 +164,125 @@ export interface HealthData {
   dbPath: string
   tables: string[]
 }
+
+// ── Phase 1: local CRUD contract ────────────────────────────────────────────
+
+/**
+ * Income-backed views, mirroring the web app's query semantics
+ * (notion-query.service.ts filterIncomeBacked):
+ *  - incomes:            excludes auxiliary-category records
+ *  - transfers:          fixed income category "Transfer"
+ *  - creditCardPayments: fixed income category "Credit Card Payment"
+ *  - alkansya:           fixed income category "Savings"
+ *  - receivables:        records with no receiving account
+ */
+export type IncomeView =
+  | 'incomes'
+  | 'transfers'
+  | 'creditCardPayments'
+  | 'alkansya'
+  | 'receivables'
+
+/** The web fixed-category names per income view (source field of income_categories). */
+export const INCOME_VIEW_FIXED_CATEGORY: Partial<Record<IncomeView, string>> = {
+  transfers: 'Transfer',
+  creditCardPayments: 'Credit Card Payment',
+  alkansya: 'Savings'
+}
+
+export interface ListRecordsParams {
+  /** YYYY-MM month scope; omitted = all time. */
+  month?: string
+  accountId?: string
+  categoryId?: string
+  includeDeleted?: boolean
+}
+
+export interface IncomeListParams extends ListRecordsParams {
+  view?: IncomeView
+}
+
+export interface CreateIncomeInput {
+  name: string
+  date: string
+  grossIncome: number
+  capitalExpenditure?: number
+  accountId?: string | null
+  categoryId: string
+  notes?: string | null
+  isTransaction?: boolean
+  transactedAccountId?: string | null
+  ccPaymentCoveredId?: string | null
+}
+
+export type UpdateIncomeInput = Partial<CreateIncomeInput>
+
+export interface CreateExpenseInput {
+  description: string
+  purchaseDate: string
+  datePaid?: string | null
+  amount: number
+  interest?: number
+  accountId: string
+  categoryId: string
+  paymentStatus?: PaymentStatus
+  paymentFrequency?: PaymentFrequency | null
+  periodCount?: number | null
+  paidPeriod?: number | null
+  isPasabuy?: boolean
+  pasabuyer?: string | null
+  pasabuyStatus?: PasabuyStatus | null
+  pasabuyDateOfPayment?: string | null
+  pasabuyPaidPeriod?: number | null
+  pasabuyAccountReceiverId?: string | null
+  ccLinkPaymentReceiptId?: string | null
+}
+
+export type UpdateExpenseInput = Partial<CreateExpenseInput>
+
+export interface SchedulerRecordDto {
+  id: string
+  title: string
+  amount: number
+  accountId: string | null
+  categoryId: string | null
+  frequency: PaymentFrequency | null
+  nextRunDate: string | null
+  active: boolean
+  deleted?: boolean
+}
+
+export interface CreateSchedulerInput {
+  title: string
+  amount: number
+  accountId?: string | null
+  categoryId?: string | null
+  frequency?: PaymentFrequency | null
+  nextRunDate?: string | null
+  active?: boolean
+}
+
+export type UpdateSchedulerInput = Partial<CreateSchedulerInput>
+
+/** Lightweight category DTOs for selectors (reference cache; full stats come later). */
+export interface IncomeCategoryOption {
+  id: string
+  source: string
+  auxiliary: boolean
+}
+
+export interface ExpenseCategoryOption {
+  id: string
+  name: string
+  monthlyBudget: number
+  auxiliary: boolean
+}
+
+// ── Events (main → renderer), per ipc-contract.md ───────────────────────────
+
+export interface RecordsChangedEvent {
+  resource: 'incomes' | 'expenses' | 'expenseScheduler' | 'accounts' | 'categories'
+  ids: string[]
+}
+
+export type EventChannel = 'records:changed' | 'derived:updated'

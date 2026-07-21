@@ -21,11 +21,11 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 ### Phase 1 — Offline app (fully usable, no sync)
 | # | Work item | Acceptance | Status |
 | --- | --- | --- | --- |
-| 1.1 | SQLite schema for all resources + sync columns | Schema matches [`local-data-schema.md`](local-data-schema.md) | Not Started |
-| 1.2 | Local CRUD for incomes/expenses/scheduler (instant write, `dirty`) | Create/edit/soft-delete works offline | Not Started |
-| 1.3 | Derived values (balances, budgets, net, monthly) computed from SQLite | Numbers match golden tests; update on edit | Not Started |
-| 1.4 | Ported renderer pages (Dashboard, Accounts, Income, Expense, Monitoring, Transfer, CC Payment, Alkansya, Receivables) | Sections render from local data | Not Started |
-| 1.5 | Multi-window; changes reflect across windows | Two windows stay consistent | Not Started |
+| 1.1 | SQLite schema for all resources + sync columns | Schema matches [`local-data-schema.md`](local-data-schema.md) | Done |
+| 1.2 | Local CRUD for incomes/expenses/scheduler (instant write, `dirty`) | Create/edit/soft-delete works offline | Done |
+| 1.3 | Derived values (balances, budgets, net, monthly) computed from SQLite | Numbers match golden tests; update on edit | Done |
+| 1.4 | Ported renderer pages (Dashboard, Accounts, Income, Expense, Monitoring, Transfer, CC Payment, Alkansya, Receivables) | Sections render from local data | Done |
+| 1.5 | Multi-window; changes reflect across windows | Two windows stay consistent | Done |
 
 ### Phase 2 — Onboarding + Push
 | # | Work item | Acceptance | Status |

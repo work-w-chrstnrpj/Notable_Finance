@@ -81,6 +81,8 @@ export const expenses = sqliteTable('expenses', {
   isPasabuy: integer('is_pasabuy').notNull().default(0),
   pasabuyer: text('pasabuyer'),
   pasabuyStatus: text('pasabuy_status'),
+  pasabuyDateOfPayment: text('pasabuy_date_of_payment'),
+  pasabuyPaidPeriod: integer('pasabuy_paid_period'),
   pasabuyAccountReceiverId: text('pasabuy_account_receiver_id'),
   ccLinkPaymentReceiptId: text('cc_link_payment_receipt_id')
 })

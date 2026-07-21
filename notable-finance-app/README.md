@@ -21,17 +21,23 @@ app remains the on-the-go, cloud-backed client.
 
 ## Status
 
-**Phase 0 complete** (2026-07-21):
+**Phases 0–1 complete** (2026-07-21) — the app is a fully usable **offline daily driver**:
 
-- **0.1** — pnpm workspace + electron-vite scaffold; window boots with Vite HMR.
-- **0.2** — better-sqlite3 (rebuilt for Electron) + drizzle; migrations run on start, creating
-  the local DB in `userData`.
-- **0.3** — finance DTOs, resource helpers, and local derivations copied/implemented in
-  `src/shared` + `src/main/domain`; 16 derivation unit tests pass.
-- **0.4** — contextBridge preload + `ipcMain.handle` skeleton (`app:ping`, `db:health`) using
-  the `ApiResult` envelope; renderer↔main roundtrip verified.
+- **Phase 0** — electron-vite scaffold with HMR; better-sqlite3 + drizzle migrations in
+  `userData`; finance DTOs + local derivations; typed IPC skeleton.
+- **1.1** — full SQLite schema incl. sync bookkeeping and pasabuy columns (migration 0001).
+- **1.2** — local CRUD for incomes/expenses/scheduler: instant writes marked `dirty`,
+  mutation-queue journal, soft-delete via title rewrite, validation in main.
+- **1.3** — balances/budgets/net/monthly computed live from SQLite on every edit
+  (golden-checked at runtime; 27 unit tests).
+- **1.4** — all nine sections render from local data: Dashboard, Accounts, Income, Expense
+  (+ scheduler panel), Monitoring, Transfer, CC Payment, Alkansya, Receivables — using the
+  web app's view semantics (fixed workflow categories; receivables = no receiving account;
+  Income view excludes auxiliary categories).
+- **1.5** — multi-window (File → New Window, Cmd/Ctrl+N): every data change broadcasts
+  `records:changed` / `derived:updated` to all windows, which refetch — windows stay consistent.
 
-Build, typecheck, and tests are clean. Next: Phase 1 (offline CRUD + ported pages). See
+Next: Phase 2 (Notion onboarding + push). See
 [`../wiki/desktop/development-plan.md`](../wiki/desktop/development-plan.md) and the progress
 tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/desktop-development-plan.xlsx).
 
@@ -41,8 +47,13 @@ tracker at [`../wiki/desktop/desktop-development-plan.xlsx`](../wiki/desktop/des
 pnpm install                              # from the repo root (approves native builds at the gate)
 pnpm --filter notable-finance-app rebuild # compile better-sqlite3 for Electron's ABI
 pnpm --filter notable-finance-app dev     # boots the window with HMR
-pnpm --filter notable-finance-app test    # run the derivation unit tests
+pnpm --filter notable-finance-app seed    # OPTIONAL: seed dev accounts/categories (run app once first)
+pnpm --filter notable-finance-app test    # run the unit tests
 ```
+
+Accounts and categories are **read-only reference data** (maintained in Notion, pulled in
+Phase 3). Until then, `seed` provides a realistic local set so the forms and reports have
+accounts/categories to work with.
 
 ## Proposed layout (subject to change)
 

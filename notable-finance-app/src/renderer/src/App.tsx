@@ -1,88 +1,121 @@
-import { useEffect, useState } from 'react'
-import type { HealthData } from '../../shared/finance.types'
+import { useState } from 'react'
+import { useApiData } from './lib/hooks'
+import { DashboardPage } from './pages/Dashboard'
+import { AccountsPage } from './pages/Accounts'
+import { IncomeRecordsPage } from './pages/IncomeRecords'
+import { ExpensePage } from './pages/Expense'
+import { MonitoringPage } from './pages/Monitoring'
 
-// Phase 0 landing view: proves the window boots (0.1), React renders, the preload bridge
-// is reachable, the IPC roundtrip works (0.4), and the local SQLite store is wired (0.2).
-// Real pages (Dashboard, Accounts, Income, Expense, Monitoring, …) are ported in Phase 1.4.
+// App shell: the nine sections from the shared product scope
+// (Dashboard, Accounts, Income, Expense, Monitoring, Transfer, CC Payment, Alkansya,
+// Receivables), a New Window action (Phase 1.5), and a local-store status footer.
+
+const SECTIONS = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'accounts', label: 'Accounts' },
+  { id: 'income', label: 'Income' },
+  { id: 'expense', label: 'Expense' },
+  { id: 'monitoring', label: 'Monitoring' },
+  { id: 'transfer', label: 'Transfer' },
+  { id: 'ccPayment', label: 'CC Payment' },
+  { id: 'alkansya', label: 'Alkansya' },
+  { id: 'receivables', label: 'Receivables' }
+] as const
+
+type SectionId = (typeof SECTIONS)[number]['id']
+
+function Page({ section }: { section: SectionId }) {
+  switch (section) {
+    case 'dashboard':
+      return <DashboardPage />
+    case 'accounts':
+      return <AccountsPage />
+    case 'income':
+      return (
+        <IncomeRecordsPage
+          view="incomes"
+          title="Income"
+          subtitle="Normal income — auxiliary workflow categories are excluded"
+        />
+      )
+    case 'expense':
+      return <ExpensePage />
+    case 'monitoring':
+      return <MonitoringPage />
+    case 'transfer':
+      return (
+        <IncomeRecordsPage
+          view="transfers"
+          title="Transfer"
+          subtitle="Incomes in the fixed “Transfer” workflow category"
+        />
+      )
+    case 'ccPayment':
+      return (
+        <IncomeRecordsPage
+          view="creditCardPayments"
+          title="CC Payment"
+          subtitle="Incomes in the fixed “Credit Card Payment” workflow category"
+        />
+      )
+    case 'alkansya':
+      return (
+        <IncomeRecordsPage
+          view="alkansya"
+          title="Alkansya"
+          subtitle="Incomes in the fixed “Savings” workflow category"
+        />
+      )
+    case 'receivables':
+      return (
+        <IncomeRecordsPage
+          view="receivables"
+          title="Receivables"
+          subtitle="Incomes with no receiving account yet"
+        />
+      )
+  }
+}
+
 function App() {
-  const versions = window.api?.versions
-  const [count, setCount] = useState(0)
-  const [ping, setPing] = useState<string>('…')
-  const [health, setHealth] = useState<HealthData | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    void (async () => {
-      const p = await window.api.ping()
-      setPing(p.ok ? p.data : `error: ${p.error.message}`)
-
-      const h = await window.api.health()
-      if (h.ok) setHealth(h.data)
-      else setError(h.error.message)
-    })()
-  }, [])
+  const [section, setSection] = useState<SectionId>('dashboard')
+  const health = useApiData(() => window.api.health(), [])
 
   return (
-    <main className="shell">
-      <section className="card">
-        <p className="eyebrow">Notable Finance</p>
-        <h1>Desktop app is running</h1>
-        <p className="lede">Offline-first Electron shell. Phase 0 — scaffold, local DB &amp; IPC.</p>
-
-        <div className="hmr">
-          <button type="button" onClick={() => setCount((c) => c + 1)}>
-            HMR state check: {count}
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="brand-mark">◆</span> Notable Finance
+        </div>
+        <nav>
+          {SECTIONS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={`nav-item ${section === s.id ? 'active' : ''}`}
+              onClick={() => setSection(s.id)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <button type="button" className="nav-item" onClick={() => void window.api.windows.new()}>
+            ⧉ New Window
           </button>
-          <span className="hint">
-            Edit <code>src/renderer/src/App.tsx</code> — the view updates while this count is
-            preserved.
-          </span>
+          <p className="store-status">
+            {health.data
+              ? `Local store · ${health.data.tables.length} tables`
+              : health.error
+                ? 'Local store unavailable'
+                : 'Connecting…'}
+          </p>
         </div>
-
-        <dl className="versions">
-          <div>
-            <dt>Electron</dt>
-            <dd>{versions?.electron ?? '—'}</dd>
-          </div>
-          <div>
-            <dt>Chromium</dt>
-            <dd>{versions?.chrome ?? '—'}</dd>
-          </div>
-          <div>
-            <dt>Node</dt>
-            <dd>{versions?.node ?? '—'}</dd>
-          </div>
-        </dl>
-
-        <div className="ipc">
-          <div className="ipc-row">
-            <span className="k">IPC ping</span>
-            <span className={`v ${ping === 'pong' ? 'ok' : ''}`}>{ping}</span>
-          </div>
-          <div className="ipc-row">
-            <span className="k">SQLite</span>
-            <span className="v">
-              {error ? (
-                <span className="bad">error: {error}</span>
-              ) : health ? (
-                `${health.tables.length} tables`
-              ) : (
-                '…'
-              )}
-            </span>
-          </div>
-          {health && (
-            <p className="tables">{health.tables.join(' · ')}</p>
-          )}
-        </div>
-
-        <p className={`bridge ${versions ? 'ok' : 'bad'}`}>
-          {versions
-            ? 'Preload bridge connected (window.api reachable)'
-            : 'Preload bridge NOT reachable'}
-        </p>
-      </section>
-    </main>
+      </aside>
+      <main className="content">
+        <Page section={section} />
+      </main>
+    </div>
   )
 }
 

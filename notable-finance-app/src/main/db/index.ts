@@ -41,6 +41,12 @@ export function getDb(): AppDatabase {
   return db
 }
 
+/** Raw better-sqlite3 handle for prepared-statement repositories. */
+export function getSqlite(): Database.Database {
+  if (!sqlite) throw new Error('Database not initialised — call initDatabase() first')
+  return sqlite
+}
+
 export function getDbPath(): string {
   return dbPath
 }

@@ -1,23 +1,119 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import type { ApiResult, HealthData } from '../shared/finance.types'
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import type {
+  AccountDto,
+  ApiResult,
+  CreateExpenseInput,
+  CreateIncomeInput,
+  CreateSchedulerInput,
+  DashboardSummary,
+  EventChannel,
+  ExpenseCategoryOption,
+  ExpenseRecordDto,
+  HealthData,
+  IncomeCategoryOption,
+  IncomeListParams,
+  IncomeRecordDto,
+  ListRecordsParams,
+  MonthlyMonitoringDto,
+  RecordsChangedEvent,
+  SchedulerRecordDto,
+  UpdateExpenseInput,
+  UpdateIncomeInput,
+  UpdateSchedulerInput
+} from '../shared/finance.types'
 
 // Preload — the ONLY bridge between the sandboxed renderer and main. Channels are
 // explicitly allow-listed here; the renderer cannot invoke arbitrary channels.
-// See wiki/desktop/ipc-contract.md.
+// Mirrors wiki/desktop/ipc-contract.md.
+
+const EVENT_CHANNELS: EventChannel[] = ['records:changed', 'derived:updated']
+
 const api = {
   versions: {
     electron: process.versions.electron,
     chrome: process.versions.chrome,
     node: process.versions.node
   },
-  /** No-op liveness check. */
   ping: (): Promise<ApiResult<'pong'>> => ipcRenderer.invoke('app:ping'),
-  /** Local SQLite health — path + table list. */
-  health: (): Promise<ApiResult<HealthData>> => ipcRenderer.invoke('db:health')
+  health: (): Promise<ApiResult<HealthData>> => ipcRenderer.invoke('db:health'),
+
+  accounts: {
+    list: (params?: { includeInactive?: boolean }): Promise<ApiResult<AccountDto[]>> =>
+      ipcRenderer.invoke('accounts:list', params)
+  },
+
+  categories: {
+    income: (): Promise<ApiResult<IncomeCategoryOption[]>> =>
+      ipcRenderer.invoke('categories:income'),
+    expense: (): Promise<ApiResult<ExpenseCategoryOption[]>> =>
+      ipcRenderer.invoke('categories:expense')
+  },
+
+  incomes: {
+    list: (params?: IncomeListParams): Promise<ApiResult<IncomeRecordDto[]>> =>
+      ipcRenderer.invoke('incomes:list', params),
+    create: (input: CreateIncomeInput): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke('incomes:create', input),
+    update: (id: string, patch: UpdateIncomeInput): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke('incomes:update', id, patch),
+    softDelete: (id: string): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke('incomes:softDelete', id)
+  },
+
+  expenses: {
+    list: (params?: ListRecordsParams): Promise<ApiResult<ExpenseRecordDto[]>> =>
+      ipcRenderer.invoke('expenses:list', params),
+    create: (input: CreateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
+      ipcRenderer.invoke('expenses:create', input),
+    update: (id: string, patch: UpdateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
+      ipcRenderer.invoke('expenses:update', id, patch),
+    softDelete: (id: string): Promise<ApiResult<ExpenseRecordDto>> =>
+      ipcRenderer.invoke('expenses:softDelete', id)
+  },
+
+  expenseScheduler: {
+    list: (): Promise<ApiResult<SchedulerRecordDto[]>> => ipcRenderer.invoke('scheduler:list'),
+    create: (input: CreateSchedulerInput): Promise<ApiResult<SchedulerRecordDto>> =>
+      ipcRenderer.invoke('scheduler:create', input),
+    update: (id: string, patch: UpdateSchedulerInput): Promise<ApiResult<SchedulerRecordDto>> =>
+      ipcRenderer.invoke('scheduler:update', id, patch),
+    softDelete: (id: string): Promise<ApiResult<SchedulerRecordDto>> =>
+      ipcRenderer.invoke('scheduler:softDelete', id),
+    generate: (id: string): Promise<ApiResult<ExpenseRecordDto>> =>
+      ipcRenderer.invoke('scheduler:generate', id)
+  },
+
+  reports: {
+    dashboard: (month: string): Promise<ApiResult<DashboardSummary>> =>
+      ipcRenderer.invoke('reports:dashboard', month),
+    monthlyMonitoring: (month: string): Promise<ApiResult<MonthlyMonitoringDto>> =>
+      ipcRenderer.invoke('reports:monthlyMonitoring', month)
+  },
+
+  windows: {
+    new: (): Promise<ApiResult<true>> => ipcRenderer.invoke('windows:new')
+  },
+
+  /**
+   * Subscribe to a main→renderer event. Returns an unsubscribe function
+   * (call it on unmount). Only the allow-listed event channels work.
+   */
+  on: (
+    channel: EventChannel,
+    handler: (payload: RecordsChangedEvent | Record<string, never>) => void
+  ): (() => void) => {
+    if (!EVENT_CHANNELS.includes(channel)) {
+      throw new Error(`Unknown event channel: ${channel}`)
+    }
+    const listener = (_e: IpcRendererEvent, payload: RecordsChangedEvent): void =>
+      handler(payload)
+    ipcRenderer.on(channel, listener)
+    return () => ipcRenderer.removeListener(channel, listener)
+  }
 }
 
-// contextIsolation is always on (see src/main/index.ts), so exposeInMainWorld is the
-// only path. It throws if isolation is ever disabled — surface that rather than fall back.
+// contextIsolation is always on (see src/main/windows/index.ts), so exposeInMainWorld is
+// the only path. It throws if isolation is ever disabled — surface that rather than fall back.
 try {
   contextBridge.exposeInMainWorld('api', api)
 } catch (error) {

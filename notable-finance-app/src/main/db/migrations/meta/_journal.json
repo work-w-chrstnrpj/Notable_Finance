@@ -8,6 +8,13 @@
       "when": 1784628177876,
       "tag": "0000_same_silver_surfer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1784636186888,
+      "tag": "0001_kind_nekra",
+      "breakpoints": true
     }
   ]
 }
