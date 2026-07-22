@@ -91,8 +91,8 @@ async function pullAccounts(dbId: string, since?: string): Promise<number> {
     const f = pageToAccountFields(page)
     n += upsertReference(
       'accounts',
-      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points'],
-      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points],
+      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'qr_code'],
+      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, f.qr_code],
       pageId(page),
       pageLastEditedTime(page)
     )

@@ -19,7 +19,8 @@ export const NOTION_PROPERTY_NAMES = {
     inactive: 'Inactive',
     totalIncomes: 'Total Incomes',
     totalExpenses: 'Total Expenses',
-    qrCode: 'QR Code'
+    // Notion property is spelled "Qr Code" (case matters); the old 'QR Code' never matched.
+    qrCode: 'Qr Code'
   },
   incomeCategories: {
     source: 'Source of Income',

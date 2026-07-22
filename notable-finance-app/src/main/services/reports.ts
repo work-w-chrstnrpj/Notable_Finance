@@ -3,11 +3,11 @@
 import type { DashboardSummary, MonthlyMonitoringDto } from '../../shared/finance.types'
 import { dashboardSummary, monthlyMonitoring } from '../domain/derivations'
 import { assertMonth } from '../domain/validation'
-import { financeSnapshot, listExpenseCategories, listIncomeCategories } from '../db/repositories'
+import { balanceContext, financeSnapshot, listExpenseCategories, listIncomeCategories } from '../db/repositories'
 
 export function dashboard(month: string): DashboardSummary {
   assertMonth(month)
-  return dashboardSummary(month, financeSnapshot())
+  return dashboardSummary(month, financeSnapshot(), balanceContext())
 }
 
 export function monitoring(month: string): MonthlyMonitoringDto {

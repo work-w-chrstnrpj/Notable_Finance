@@ -18,7 +18,8 @@ import {
   type IncomeRow,
   type SchedulerRow
 } from './mappers'
-import { computeAccountBalances } from '../domain/derivations'
+import { computeAccountBalances, type BalanceContext } from '../domain/derivations'
+import { pasabuyerBalance } from '../domain/notion-formulas'
 import { advanceDate } from '../domain/schedule'
 import { isCreditLike } from '../domain/resource-utils'
 import { filterExpensesByQuery, filterIncomeByQuery } from '../domain/query-filters'
@@ -206,13 +207,53 @@ const EXPENSE_COLS = `id, title, purchase_date, date_paid, amount, interest, acc
   pasabuyer, pasabuy_status, pasabuy_date_of_payment, pasabuy_paid_period,
   pasabuy_account_receiver_id, cc_link_payment_receipt_id, deleted, sync_state`
 
+// ── category-name lookups (Notion formulas key off category names) ──────────
+
+function expenseCategoryNames(): Map<string, string> {
+  const rows = getSqlite().prepare('SELECT id, name FROM expense_categories').all() as Array<{
+    id: string
+    name: string
+  }>
+  return new Map(rows.map((r) => [r.id, r.name]))
+}
+
+function incomeCategoryNames(): Map<string, string> {
+  const rows = getSqlite().prepare('SELECT id, source FROM income_categories').all() as Array<{
+    id: string
+    source: string
+  }>
+  return new Map(rows.map((r) => [r.id, r.source]))
+}
+
+/** Context for the Current Balance / Transaction Amount / Pasabuy Received formulas. */
+export function balanceContext(): BalanceContext {
+  const inc = incomeCategoryNames()
+  const exp = expenseCategoryNames()
+  return {
+    incomeCategoryName: (id) => inc.get(id),
+    expenseCategoryName: (id) => exp.get(id)
+  }
+}
+
+/** Compute each expense's Pasabuyer Balance locally (Notion formula) so it's never a stale 0. */
+function decoratePasabuy(records: ExpenseRecordDto[], catName: Map<string, string>): ExpenseRecordDto[] {
+  return records.map((e) => ({
+    ...e,
+    pasabuyBalance: pasabuyerBalance(e, catName.get(e.categoryId)) ?? 0
+  }))
+}
+
 export function listExpenses(params: ExpenseListParams = {}): ExpenseRecordDto[] {
   const where = params.includeDeleted ? '' : 'WHERE deleted = 0'
-  const records = (
-    getSqlite()
-      .prepare(`SELECT ${EXPENSE_COLS} FROM expenses ${where} ORDER BY purchase_date DESC, created_at DESC`)
-      .all() as ExpenseRow[]
-  ).map(mapExpense)
+  const catName = expenseCategoryNames()
+  const records = decoratePasabuy(
+    (
+      getSqlite()
+        .prepare(`SELECT ${EXPENSE_COLS} FROM expenses ${where} ORDER BY purchase_date DESC, created_at DESC`)
+        .all() as ExpenseRow[]
+    ).map(mapExpense),
+    catName
+  )
 
   // View-mode + range + secondary filters, copied from the web query service so
   // desktop list outputs match the web app view-for-view.
@@ -240,7 +281,7 @@ export function getExpense(id: string): ExpenseRecordDto {
     .prepare(`SELECT ${EXPENSE_COLS} FROM expenses WHERE id = ?`)
     .get(id) as ExpenseRow | undefined
   if (!row) throw new ValidationError(`expense ${id} not found`)
-  return mapExpense(row)
+  return decoratePasabuy([mapExpense(row)], expenseCategoryNames())[0]
 }
 
 export function createExpense(input: CreateExpenseInput): ExpenseRecordDto {
@@ -426,19 +467,30 @@ export function listAccounts(includeInactive = false): AccountDto[] {
   const rows = getSqlite()
     .prepare(
       `SELECT id, account_name, account_type, starting_balance, credit_limit, inactive,
-         billing_day, due_day, annual_fee, credit_points
+         billing_day, due_day, annual_fee, credit_points, qr_code
        FROM accounts ${where} ORDER BY account_name`
     )
     .all() as AccountRow[]
 
-  // Balances derive from ALL-TIME records (soft-deleted excluded inside derivations).
+  // Balances derive from ALL-TIME records (soft-deleted excluded inside derivations),
+  // aggregated per the exact Notion "Current Balance" formula (needs category names).
   const incomes = allIncomeRows().map(mapIncome)
-  const expenses = listExpenses()
-  const partial = rows.map((r) => mapAccount(r, { currentBalance: 0, availableLimit: null }))
-  const balances = computeAccountBalances(partial, incomes, expenses)
+  const expenses = listExpenses({ includeDeleted: true })
+  const partial = rows.map((r) =>
+    mapAccount(r, { currentBalance: 0, availableLimit: null, totalIncomes: null, totalExpenses: null })
+  )
+  const balances = computeAccountBalances(partial, incomes, expenses, balanceContext())
   return partial.map((a) => {
     const b = balances.get(a.id)
-    return b ? { ...a, currentBalance: b.currentBalance, availableLimit: b.availableLimit } : a
+    return b
+      ? {
+          ...a,
+          currentBalance: b.currentBalance,
+          availableLimit: b.availableLimit,
+          totalIncomes: b.totalIncomes,
+          totalExpenses: b.totalExpenses
+        }
+      : a
   })
 }
 

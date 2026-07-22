@@ -15,31 +15,45 @@ describe('netIncome', () => {
   })
 })
 
-describe('computeAccountBalance — non-credit', () => {
-  it('starting + net income − (amount + interest)', () => {
-    const acc = account({ id: 'cash', type: 'Cash', startingBalance: 1000 })
+describe('computeAccountBalance — Notion formula (no starting balance, gross income)', () => {
+  it('= ΣGrossIncome − Σ(amount + interest)  [no Starting Balance, gross not net]', () => {
+    const acc = account({ id: 'cash', type: 'Cash', startingBalance: 1000 }) // starting IGNORED
     const incomes = [
-      income({ id: 'i1', accountId: 'cash', grossIncome: 500, capitalExpenditure: 100 }) // net 400
+      income({ id: 'i1', accountId: 'cash', grossIncome: 500, capitalExpenditure: 100 }) // GROSS 500
     ]
-    const expenses = [
-      expense({ id: 'e1', accountId: 'cash', amount: 50, interest: 10 }) // out 60
-    ]
+    const expenses = [expense({ id: 'e1', accountId: 'cash', amount: 50, interest: 10 })] // 60
     const bal = computeAccountBalance(acc, incomes, expenses)
-    expect(bal.currentBalance).toBe(1340) // 1000 + 400 - 60
+    expect(bal.currentBalance).toBe(440) // 500 − 60 (starting balance & capex not used)
+    expect(bal.totalIncomes).toBe(500) // cash inflow = gross
+    expect(bal.totalExpenses).toBe(60) // cash outflow = amount + interest
     expect(bal.availableLimit).toBeNull()
   })
 
-  it('excludes soft-deleted records', () => {
+  it('excludes soft-deleted records and starting balance', () => {
     const acc = account({ id: 'cash', startingBalance: 100 })
     const incomes = [income({ id: 'i1', accountId: 'cash', grossIncome: 50, deleted: true })]
     const expenses = [expense({ id: 'e1', accountId: 'cash', amount: 30, deleted: true })]
-    expect(computeAccountBalance(acc, incomes, expenses).currentBalance).toBe(100)
+    expect(computeAccountBalance(acc, incomes, expenses).currentBalance).toBe(0)
   })
 
-  it('ignores records belonging to other accounts', () => {
-    const acc = account({ id: 'cash', startingBalance: 0 })
-    const expenses = [expense({ id: 'e1', accountId: 'other', amount: 999 })]
-    expect(computeAccountBalance(acc, [], expenses).currentBalance).toBe(0)
+  it('adds Total Pasabuy (by receiver) and Total CC/Debt/Transfer (by transacted account)', () => {
+    const acc = account({ id: 'cash', type: 'Cash' })
+    const ctx = {
+      incomeCategoryName: (id: string) => (id === 'transfer' ? 'Transfer' : 'Salary'),
+      expenseCategoryName: (id: string) => (id === 'pasabuy' ? 'Pasabuy' : 'Food')
+    }
+    const incomes = [
+      income({ id: 'i1', accountId: 'cash', grossIncome: 1000, categoryId: 'salary' }), // +1000
+      // a Transfer OUT of this account (transacted account = cash): Transaction Amount = −gross
+      income({ id: 't1', accountId: 'other', transactedAccountId: 'cash', grossIncome: 300, categoryId: 'transfer' })
+    ]
+    const expenses = [
+      expense({ id: 'e1', accountId: 'cash', amount: 200, interest: 0, categoryId: 'food' }), // −200
+      // a Pasabuy this account received (installment 1 period, 1 paid): received = grossPrice = 150
+      expense({ id: 'p1', accountId: 'other', pasabuyAccountReceiverId: 'cash', amount: 150, interest: 0, categoryId: 'pasabuy', periodCount: 1, paidPeriod: 1, pasabuyPaidPeriod: 1 })
+    ]
+    // 1000 − 200 + 150 (pasabuy) + (−300) (transfer out) = 650
+    expect(computeAccountBalance(acc, incomes, expenses, ctx).currentBalance).toBe(650)
   })
 })
 
@@ -67,14 +81,11 @@ describe('computeAccountBalance — credit-like', () => {
 })
 
 describe('computeAccountBalances', () => {
-  it('returns a map keyed by account id', () => {
-    const accounts = [
-      account({ id: 'a', startingBalance: 10 }),
-      account({ id: 'b', startingBalance: 20 })
-    ]
-    const map = computeAccountBalances(accounts, [], [])
-    expect(map.get('a')?.currentBalance).toBe(10)
-    expect(map.get('b')?.currentBalance).toBe(20)
+  it('returns a map keyed by account id (starting balance not used)', () => {
+    const accounts = [account({ id: 'a', startingBalance: 10 }), account({ id: 'b', startingBalance: 20 })]
+    const map = computeAccountBalances(accounts, [income({ id: 'x', accountId: 'a', grossIncome: 10 })], [])
+    expect(map.get('a')?.currentBalance).toBe(10) // from the income, not starting balance
+    expect(map.get('b')?.currentBalance).toBe(0)
   })
 })
 
@@ -113,8 +124,9 @@ describe('dashboardSummary', () => {
   })
 
   it('cash flow uses all-time balances of active non-credit accounts only', () => {
-    // cash: 1000 + net income (700 + 500) − (200 + 77) = 1923; card excluded; old inactive excluded
-    expect(summary.totalCashFlow).toBe(1923)
+    // cash (Notion formula, gross, no starting): ΣGross(800+500) − Σ(200+77) = 1023;
+    // card excluded (credit); old excluded (inactive)
+    expect(summary.totalCashFlow).toBe(1023)
   })
 
   it('counts active accounts and pending (unpaid) month expenses', () => {

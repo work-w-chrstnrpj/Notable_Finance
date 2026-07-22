@@ -27,6 +27,7 @@ export const accounts = sqliteTable('accounts', {
   dueDay: integer('due_day'),
   annualFee: real('annual_fee'),
   creditPoints: real('credit_points'),
+  qrCode: text('qr_code'), // Notion "Qr Code" file URL (pulled read-only)
   notionLastEditedAt: text('notion_last_edited_at'),
   createdAt: integer('created_at').notNull()
 })

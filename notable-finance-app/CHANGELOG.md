@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Account & expense computations now match the Notion formulas exactly** (decoded from the
+  workspace schema, replacing earlier guesses):
+  - **Current Balance** is one unified formula for every account type — `ΣGrossIncome −
+    (ΣExpenseAmount + ΣInterest) + ΣPasabuyReceived + ΣTransactionAmount` — with **no Starting
+    Balance**, using **gross** (not net) income, and each term aggregated by the correct
+    relation (`accountId`, `transactedAccountId`, `pasabuyAccountReceiverId`). Fixes the wrong
+    dashboard Total Cash Flow.
+  - **Available Limit** = `creditLimit>0 ? min(creditLimit + currentBalance, creditLimit) : —`.
+  - Accounts now expose **Total Cash Inflow / Outflow** (labelled "Payment / Purchase Made" for
+    credit accounts).
+  - **Pasabuyer Balance** in the Unpaid-Pasabuy view is now computed (`amount − installment ×
+    pasabuyPaidPeriod`; 0 when fully received) instead of always ₱0.00, and that column is
+    relabelled "Pasabuyer Balance". Gross Price / Installment / Paid / Received amounts are
+    ported verbatim from the Notion formulas.
+  - **QR Code** now syncs: the account property is "Qr Code" (not "QR Code" — the old name
+    never matched), with a new `qr_code` column, pull extraction, and DTO field.
+
 ### Changed
 
 - **Renderer aligned 1:1 with the web app.** The desktop UI is now the web renderer ported

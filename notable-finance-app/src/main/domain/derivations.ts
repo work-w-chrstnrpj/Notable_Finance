@@ -19,12 +19,13 @@ import type {
   MonthlyMonitoringDto
 } from '../../shared/finance.types'
 import { filterByMonth, isCreditLike } from './resource-utils'
+import { pasabuyReceivedAmount, round2, transactionAmount } from './notion-formulas'
 
 /** Round to cents the same way the web reporting service does. */
 export const roundMoney = (value: number): number =>
   Math.round((value + Number.EPSILON) * 100) / 100
 
-/** Net income for a single income record: gross minus capital expenditure. */
+/** Net income for a single income record: gross minus capital expenditure (display insight only). */
 export const netIncome = (income: Pick<IncomeRecordDto, 'grossIncome' | 'capitalExpenditure'>): number =>
   income.grossIncome - income.capitalExpenditure
 
@@ -34,42 +35,79 @@ export interface AccountBalance {
   currentBalance: number
   /** Only meaningful for credit-like accounts; null otherwise. */
   availableLimit: number | null
+  /** Total Cash Inflow: Σ gross income linked to this account (= "Total Payment Made" for credit). */
+  totalIncomes: number
+  /** Total Cash Outflow: Σ gross expense (amount + interest) charged to this account (= "Total Purchase Made"). */
+  totalExpenses: number
+}
+
+/** Category-name lookups needed by the Transaction Amount / Pasabuy Received formulas. */
+export interface BalanceContext {
+  incomeCategoryName: (id: string) => string | undefined
+  expenseCategoryName: (id: string) => string | undefined
+}
+
+const EMPTY_CONTEXT: BalanceContext = {
+  incomeCategoryName: () => undefined,
+  expenseCategoryName: () => undefined
 }
 
 /**
- * Current balance (and available limit) for one account, from all-time records.
+ * Current Balance for one account — an exact local port of the Notion "Current Balance"
+ * formula (see domain/notion-formulas.ts). ONE formula for every account type, no Starting
+ * Balance, with each term aggregated by the RELATION Notion uses:
  *
- * - Inflow to an account  = Σ net income of incomes deposited to it.
- * - Outflow from an account = Σ (amount + interest) of expenses charged to it.
- * - Non-credit:  balance = starting_balance + inflow − outflow
- * - Credit-like: outstanding = charges + interest − payments;
- *                balance = −outstanding (signed per app convention),
- *                availableLimit = credit_limit − outstanding.
+ *   CurrentBalance =  ΣGrossIncome        [income.accountId = acc]              (Total Incomes)
+ *                   − Σ(Amount + Interest)[expense.accountId = acc]             (Total Expenses + Credit Interest)
+ *                   + ΣPasabuyReceived    [expense.pasabuyAccountReceiverId=acc](Total Pasabuy)
+ *                   + ΣTransactionAmount  [income.transactedAccountId = acc]    (Total CC, Debt & Transfer)
+ *
+ *   AvailableLimit = creditLimit>0 ? min(creditLimit + currentBalance, creditLimit) : null
  */
 export function computeAccountBalance(
-  account: Pick<AccountDto, 'id' | 'type' | 'startingBalance' | 'creditLimit'>,
+  account: Pick<AccountDto, 'id' | 'type' | 'creditLimit'>,
   incomes: IncomeRecordDto[],
-  expenses: ExpenseRecordDto[]
+  expenses: ExpenseRecordDto[],
+  ctx: BalanceContext = EMPTY_CONTEXT
 ): AccountBalance {
-  const mine = <T extends { accountId: string | null; deleted?: boolean }>(records: T[]): T[] =>
-    records.filter(notDeleted).filter((r) => r.accountId === account.id)
+  const liveIncomes = incomes.filter(notDeleted)
+  const liveExpenses = expenses.filter(notDeleted)
 
-  const payments = roundMoney(mine(incomes).reduce((sum, i) => sum + netIncome(i), 0))
-  const charges = roundMoney(mine(expenses).reduce((sum, e) => sum + e.amount, 0))
-  const interest = roundMoney(mine(expenses).reduce((sum, e) => sum + e.interest, 0))
+  // Total Incomes — gross income linked via the Accounts relation.
+  const totalIncomes = round2(
+    liveIncomes.filter((i) => i.accountId === account.id).reduce((s, i) => s + i.grossIncome, 0)
+  )
+  // Total Expenses + Total Credit Interest — via the Expenses relation.
+  const chargedExpenses = liveExpenses.filter((e) => e.accountId === account.id)
+  const totalExpenseAmount = round2(chargedExpenses.reduce((s, e) => s + e.amount, 0))
+  const totalInterest = round2(chargedExpenses.reduce((s, e) => s + e.interest, 0))
+  // Total Pasabuy — Pasabuy Received Amount via the Pasabuy Account Receiver relation.
+  const totalPasabuy = round2(
+    liveExpenses
+      .filter((e) => e.pasabuyAccountReceiverId === account.id)
+      .reduce((s, e) => s + pasabuyReceivedAmount(e, ctx.expenseCategoryName(e.categoryId)), 0)
+  )
+  // Total CC, Debt & Transfer — Transaction Amount via the Transacted Account relation.
+  const totalTransfer = round2(
+    liveIncomes
+      .filter((i) => i.transactedAccountId === account.id)
+      .reduce((s, i) => s + transactionAmount(i, ctx.incomeCategoryName(i.categoryId)), 0)
+  )
 
-  if (isCreditLike(account.type)) {
-    const outstanding = roundMoney(charges + interest - payments)
-    return {
-      currentBalance: roundMoney(-outstanding),
-      availableLimit:
-        account.creditLimit === null ? null : roundMoney(account.creditLimit - outstanding)
-    }
-  }
+  const currentBalance = round2(
+    totalIncomes - (totalExpenseAmount + totalInterest) + totalPasabuy + totalTransfer
+  )
+
+  const availableLimit =
+    account.creditLimit && account.creditLimit > 0
+      ? round2(Math.min(account.creditLimit + currentBalance, account.creditLimit))
+      : null
 
   return {
-    currentBalance: roundMoney(account.startingBalance + payments - charges - interest),
-    availableLimit: null
+    currentBalance,
+    availableLimit,
+    totalIncomes,
+    totalExpenses: round2(totalExpenseAmount + totalInterest)
   }
 }
 
@@ -77,9 +115,10 @@ export function computeAccountBalance(
 export function computeAccountBalances(
   accounts: AccountDto[],
   incomes: IncomeRecordDto[],
-  expenses: ExpenseRecordDto[]
+  expenses: ExpenseRecordDto[],
+  ctx: BalanceContext = EMPTY_CONTEXT
 ): Map<string, AccountBalance> {
-  return new Map(accounts.map((a) => [a.id, computeAccountBalance(a, incomes, expenses)]))
+  return new Map(accounts.map((a) => [a.id, computeAccountBalance(a, incomes, expenses, ctx)]))
 }
 
 /** Category spending for a month = Σ (amount + interest) of that category's expenses. */
@@ -101,7 +140,11 @@ export interface FinanceSnapshot {
  * Dashboard summary for a month. Totals are month-scoped; totalCashFlow is the all-time
  * balance across active non-credit accounts (mirrors the web dashboardSummary).
  */
-export function dashboardSummary(month: string, snap: FinanceSnapshot): DashboardSummary {
+export function dashboardSummary(
+  month: string,
+  snap: FinanceSnapshot,
+  ctx?: BalanceContext
+): DashboardSummary {
   const monthIncomes = filterByMonth(snap.incomes.filter(notDeleted), 'date', month)
   const monthExpenses = filterByMonth(snap.expenses.filter(notDeleted), 'purchaseDate', month)
 
@@ -110,7 +153,7 @@ export function dashboardSummary(month: string, snap: FinanceSnapshot): Dashboar
     monthExpenses.reduce((sum, e) => sum + e.amount + e.interest, 0)
   )
 
-  const balances = computeAccountBalances(snap.accounts, snap.incomes, snap.expenses)
+  const balances = computeAccountBalances(snap.accounts, snap.incomes, snap.expenses, ctx)
   const totalCashFlow = roundMoney(
     snap.accounts
       .filter((a) => !a.inactive && !isCreditLike(a.type))

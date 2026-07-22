@@ -821,7 +821,7 @@ function ExpensePage({
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
             wide
-            headers={["Date", "Name", "Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
+            headers={["Date", "Name", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
             rows={searchFilteredRecords.map((record) => [
               formatDate(record.purchaseDate),

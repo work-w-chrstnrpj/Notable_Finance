@@ -25,6 +25,7 @@ export interface AccountRow {
   due_day: number | null
   annual_fee: number | null
   credit_points: number | null
+  qr_code?: string | null
 }
 
 export interface IncomeRow {
@@ -99,7 +100,12 @@ export interface ExpenseCategoryRow {
  */
 export function mapAccount(
   row: AccountRow,
-  balance: { currentBalance: number; availableLimit: number | null }
+  balance: {
+    currentBalance: number
+    availableLimit: number | null
+    totalIncomes: number | null
+    totalExpenses: number | null
+  }
 ): AccountDto {
   return {
     id: row.id,
@@ -115,9 +121,10 @@ export function mapAccount(
     annualFee: row.annual_fee,
     billingDay: row.billing_day,
     dueDay: row.due_day,
-    totalIncomes: null,
-    totalExpenses: null,
-    qrCode: null,
+    // Total Cash Inflow / Outflow (labelled "Payment Made" / "Purchase Made" for credit).
+    totalIncomes: balance.totalIncomes,
+    totalExpenses: balance.totalExpenses,
+    qrCode: row.qr_code ?? null,
     inactive: row.inactive === 1
   }
 }

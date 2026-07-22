@@ -44,6 +44,16 @@ export function extractRelationFirst(props: Props, name: string): string | null 
   return rel?.[0]?.id ?? null
 }
 
+/** First file URL from a "files" property (Notion-hosted or external). */
+export function extractFileUrl(props: Props, name: string): string | null {
+  const files = prop(props, name)?.files as
+    | Array<{ type?: string; file?: { url?: string }; external?: { url?: string } }>
+    | undefined
+  const first = files?.[0]
+  if (!first) return null
+  return first.file?.url ?? first.external?.url ?? null
+}
+
 /** Number that may be stored directly, or produced by a formula/rollup. */
 export function extractNumberOrFormula(props: Props, name: string): number | null {
   const p = prop(props, name)
@@ -76,6 +86,7 @@ export interface AccountFields {
   due_day: number | null
   annual_fee: number | null
   credit_points: number | null
+  qr_code: string | null
 }
 
 export interface IncomeCategoryFields {
@@ -133,7 +144,8 @@ export function pageToAccountFields(page: Record<string, unknown>): AccountField
     billing_day: extractNumber(props, n.billingDay),
     due_day: extractNumber(props, n.dueDay),
     annual_fee: extractNumber(props, n.annualFee),
-    credit_points: extractNumber(props, n.creditPoints)
+    credit_points: extractNumber(props, n.creditPoints),
+    qr_code: extractFileUrl(props, n.qrCode)
   }
 }
 
