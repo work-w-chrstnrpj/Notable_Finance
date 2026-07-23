@@ -42,6 +42,7 @@ import { expensesApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { parseNumberInput, parseOptionalNumberInput, getExpenseTotal } from "@/lib/finance-helpers";
+import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import {
   expenseCategoryFilterWithoutPasabuy,
   type AccountScope,
@@ -159,13 +160,43 @@ function ExpensePage({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
-  const { hardDeleteEnabled } = useUiSettings();
+  const { hardDeleteEnabled, settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!settingsReady || filtersHydrated) return;
+    const f = settings.expenseFilters;
+    setAccountFilterId(f.accountFilterId);
+    setExpenseCategoryFilter(f.expenseCategoryFilter);
+    setPasabuyerFilter(f.pasabuyerFilter);
+    setFilterActive(f.filterActive);
+    setAnnualView(f.annualView);
+    setGroupBy(f.groupBy);
+    setFiltersHydrated(true);
+  }, [settingsReady, filtersHydrated, settings.expenseFilters]);
+
+  useDebouncedPersist(
+    filtersHydrated,
+    [accountFilterId, expenseCategoryFilter, pasabuyerFilter, filterActive, annualView, groupBy],
+    () => {
+      void updateSettings({
+        expenseFilters: {
+          accountFilterId,
+          expenseCategoryFilter,
+          pasabuyerFilter,
+          filterActive,
+          annualView,
+          groupBy,
+        },
+      });
+    },
+  );
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
     rangeEnd: expenseRange?.end,

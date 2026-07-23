@@ -17,9 +17,11 @@ import {
 } from "@/lib/app-tabs";
 import {
   currentSection,
+  parseSection,
   setNavigateListener,
   syncHashToSection,
 } from "@/lib/router";
+import { useUiSettings } from "@/lib/ui-settings-context";
 import type { FinanceSectionId } from "@/types/finance";
 
 interface AppTabsContextValue {
@@ -40,6 +42,8 @@ const AppTabsContext = createContext<AppTabsContextValue | null>(null);
  * stay live everywhere (same as multi-window).
  */
 export function AppTabsProvider({ children }: { children: ReactNode }) {
+  const { settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const restoredRef = useRef(false);
   const [state, dispatch] = useReducer(
     tabsReducer,
     undefined,
@@ -50,10 +54,28 @@ export function AppTabsProvider({ children }: { children: ReactNode }) {
 
   const section = activeSection(state);
 
+  // Restore last section from SQLite when there is no meaningful hash yet.
+  useEffect(() => {
+    if (!settingsReady || restoredRef.current) return;
+    restoredRef.current = true;
+    const last = parseSection(settings.workspace.lastSection);
+    const current = currentSection();
+    const hashEmpty = !window.location.hash || window.location.hash === "#/" || window.location.hash === "#";
+    if (hashEmpty && last !== current) {
+      dispatch({ type: "navigate", section: last });
+    }
+  }, [settingsReady, settings.workspace.lastSection]);
+
   // Keep the URL hash aligned with the active tab (deep-link + Link hrefs).
   useEffect(() => {
     syncHashToSection(section);
   }, [section, state.activeId]);
+
+  // Persist last section for next launch.
+  useEffect(() => {
+    if (!settingsReady || !restoredRef.current) return;
+    void updateSettings({ workspace: { lastSection: section } });
+  }, [section, settingsReady, updateSettings]);
 
   // Sidebar Link / navigate() updates the *active* tab's section.
   useEffect(() => {

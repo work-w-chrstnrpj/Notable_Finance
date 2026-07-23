@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageToolbar, FilterSelect, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
@@ -7,17 +7,40 @@ import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
 import { useFinanceData } from "@/lib/finance-data-context";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
+import { useUiSettings } from "@/lib/ui-settings-context";
+import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import type { Account } from "@/types/finance";
 import type { AccountScope } from "@/components/constants";
 
 function AccountsPage() {
+  const { settings, ready: settingsReady, updateSettings } = useUiSettings();
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  // Reference accounts come from the shared provider (fetched once per session).
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const { allAccounts: sourceAccounts, referenceLoading } = useFinanceData();
+
+  useEffect(() => {
+    if (!settingsReady || filtersHydrated) return;
+    const f = settings.accountsFilters;
+    setViewMode(f.viewMode);
+    setAccountScope(f.accountScope);
+    setHideZeroBalance(f.hideZeroBalance);
+    setCardTypeFilter(f.cardTypeFilter);
+    setFiltersHydrated(true);
+  }, [settingsReady, filtersHydrated, settings.accountsFilters]);
+
+  useDebouncedPersist(
+    filtersHydrated,
+    [viewMode, accountScope, hideZeroBalance, cardTypeFilter],
+    () => {
+      void updateSettings({
+        accountsFilters: { viewMode, accountScope, hideZeroBalance, cardTypeFilter },
+      });
+    },
+  );
 
   // P5: Show skeleton while reference data is loading
   if (referenceLoading) {

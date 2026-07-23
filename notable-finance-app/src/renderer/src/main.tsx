@@ -11,10 +11,7 @@ import { FinanceWorkspace } from "@/components/finance-workspace";
 import { WorkspaceTabBar } from "@/components/layout/workspace-tab-bar";
 import { AppTabsProvider, useActiveTabSection } from "@/lib/app-tabs-context";
 
-// Desktop entry — mirrors the web root layout (ThemeProvider → AuthProvider →
-// QueryProvider → FinanceDataProvider → FinanceWorkspace). Routing is hash-based
-// (#/section) instead of Next.js paths; in-window tabs each hold a section while
-// sharing one SQLite store via the main process.
+// Desktop entry — UiSettings (SQLite) wraps theme/auth so profile + prefs persist.
 
 /**
  * Bridges main-process events into React Query: when ANY window writes (or a sync pass
@@ -62,20 +59,20 @@ function TabbedWorkspace() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <QueryProvider>
-          <UiSettingsProvider>
+    <QueryProvider>
+      <UiSettingsProvider>
+        <ThemeProvider>
+          <AuthProvider>
             <FinanceDataProvider>
               <IpcInvalidationBridge />
               <AppTabsProvider>
                 <TabbedWorkspace />
               </AppTabsProvider>
             </FinanceDataProvider>
-          </UiSettingsProvider>
-        </QueryProvider>
-      </AuthProvider>
-    </ThemeProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </UiSettingsProvider>
+    </QueryProvider>
   );
 }
 

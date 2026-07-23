@@ -1,5 +1,13 @@
-
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useUiSettings } from "@/lib/ui-settings-context";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -28,7 +36,7 @@ const DEFAULTS: StoredTheme = {
   secondaryColor: "#0d9488",
 };
 
-function loadTheme(): StoredTheme {
+function loadLocalTheme(): StoredTheme {
   if (typeof window === "undefined") return DEFAULTS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -40,7 +48,7 @@ function loadTheme(): StoredTheme {
   }
 }
 
-function saveTheme(state: StoredTheme) {
+function saveLocalTheme(state: StoredTheme) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
@@ -54,27 +62,42 @@ function resolveEffectiveMode(mode: ThemeMode): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+/**
+ * Theme state: localStorage for instant paint, SQLite (UiSettings) as durable source of truth.
+ * Must render under UiSettingsProvider.
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [stored, setStored] = useState<StoredTheme>(DEFAULTS);
+  const { settings, ready, updateSettings } = useUiSettings();
+  const [stored, setStored] = useState<StoredTheme>(() => loadLocalTheme());
   const [mounted, setMounted] = useState(false);
+  const hydratedRef = useRef(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
-    setStored(loadTheme());
     setMounted(true);
   }, []);
 
-  // Apply data-theme attribute and CSS custom properties
+  // Prefer durable SQLite theme once settings load.
+  useEffect(() => {
+    if (!ready || hydratedRef.current) return;
+    hydratedRef.current = true;
+    const next = {
+      mode: settings.theme.mode,
+      primaryColor: settings.theme.primaryColor,
+      secondaryColor: settings.theme.secondaryColor,
+    };
+    setStored(next);
+    saveLocalTheme(next);
+  }, [ready, settings.theme.mode, settings.theme.primaryColor, settings.theme.secondaryColor]);
+
   useEffect(() => {
     if (!mounted) return;
     const effective = resolveEffectiveMode(stored.mode);
     document.documentElement.setAttribute("data-theme", effective);
     document.documentElement.style.setProperty("--blue", stored.primaryColor);
     document.documentElement.style.setProperty("--green", stored.secondaryColor);
-    document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`); // 28% opacity hex
+    document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`);
   }, [stored, mounted]);
 
-  // Listen for system color scheme changes
   useEffect(() => {
     if (stored.mode !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -86,29 +109,35 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", handler);
   }, [stored.mode]);
 
-  const setMode = useCallback((mode: ThemeMode) => {
-    setStored((prev) => {
-      const next = { ...prev, mode };
-      saveTheme(next);
-      return next;
-    });
-  }, []);
+  const persist = useCallback(
+    (next: StoredTheme) => {
+      setStored(next);
+      saveLocalTheme(next);
+      void updateSettings({ theme: next });
+    },
+    [updateSettings],
+  );
 
-  const setPrimaryColor = useCallback((color: string) => {
-    setStored((prev) => {
-      const next = { ...prev, primaryColor: color };
-      saveTheme(next);
-      return next;
-    });
-  }, []);
+  const setMode = useCallback(
+    (mode: ThemeMode) => {
+      persist({ ...stored, mode });
+    },
+    [persist, stored],
+  );
 
-  const setSecondaryColor = useCallback((color: string) => {
-    setStored((prev) => {
-      const next = { ...prev, secondaryColor: color };
-      saveTheme(next);
-      return next;
-    });
-  }, []);
+  const setPrimaryColor = useCallback(
+    (color: string) => {
+      persist({ ...stored, primaryColor: color });
+    },
+    [persist, stored],
+  );
+
+  const setSecondaryColor = useCallback(
+    (color: string) => {
+      persist({ ...stored, secondaryColor: color });
+    },
+    [persist, stored],
+  );
 
   const value = useMemo<ThemeState>(
     () => ({

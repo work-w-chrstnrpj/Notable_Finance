@@ -14,17 +14,46 @@ import { SHOT_HIDE_CLASS } from "@/lib/export-node";
 import { cx, getExpenseTotal, getIncomeCapitalExpenditureTotal, getIncomeGrossTotal, getIncomeNetTotal, getMonthLabel, parseNumberInput } from "@/lib/finance-helpers";
 import { calculateCategoryTotalOverview } from "@/lib/finance-rules";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { useUiSettings } from "@/lib/ui-settings-context";
+import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import type { ExpenseRecord, IncomeRecord } from "@/types/finance";
 
 function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
+  type ZeroFilter = "all" | "hide-both" | "hide-spending" | "hide-budget";
+  const { settings, ready: settingsReady, updateSettings } = useUiSettings();
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
   const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
-  type ZeroFilter = "all" | "hide-both" | "hide-spending" | "hide-budget";
   const [zeroFilter, setZeroFilter] = useState<ZeroFilter>("all");
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
+
+  useEffect(() => {
+    if (!settingsReady || filtersHydrated) return;
+    const f = settings.monitoringFilters;
+    setIncomeCategoryView(f.incomeCategoryView);
+    setExpenseCategoryView(f.expenseCategoryView);
+    setHideZeroIncomeCategories(f.hideZeroIncomeCategories);
+    setZeroFilter(f.zeroFilter);
+    setFiltersHydrated(true);
+  }, [settingsReady, filtersHydrated, settings.monitoringFilters]);
+
+  useDebouncedPersist(
+    filtersHydrated,
+    [incomeCategoryView, expenseCategoryView, hideZeroIncomeCategories, zeroFilter],
+    () => {
+      void updateSettings({
+        monitoringFilters: {
+          incomeCategoryView,
+          expenseCategoryView,
+          hideZeroIncomeCategories,
+          zeroFilter,
+        },
+      });
+    },
+  );
 
   // ── Forecast income (Monitoring-only, local, NOT written to Notion) ──────
   // Since real income lands mid/end of month, monthly income can read negative

@@ -350,9 +350,79 @@ export interface SyncSettings {
 }
 
 /** App UI preferences persisted in `app_settings` (not Notion). */
+export interface UiThemeSettings {
+  mode: 'light' | 'dark' | 'system'
+  primaryColor: string
+  secondaryColor: string
+}
+
+export interface UiProfileSettings {
+  displayName: string
+  /** JPEG/PNG/WebP data URL, or null for initials-only avatar. */
+  avatarDataUrl: string | null
+}
+
+export interface UiWorkspaceSettings {
+  /** ISO date anchor for period selectors; null means “today” on next launch. */
+  selectedDate: string | null
+  incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
+  expenseViewMode:
+    | 'Daily'
+    | 'Weekly'
+    | 'Monthly'
+    | 'Annually'
+    | 'To pay'
+    | 'To buy'
+    | 'Installments'
+    | 'Unpaid CC'
+    | 'Unpaid Pasabuy'
+  sidebarCollapsed: boolean
+  showFab: boolean
+  /** Last active section hash (without leading #/). */
+  lastSection: string
+}
+
+export interface UiIncomeFilters {
+  accountId: string
+  categoryId: string
+  filterActive: boolean
+  annualView: 'table' | 'chart'
+  groupBy: 'month' | 'account' | 'category'
+}
+
+export interface UiExpenseFilters {
+  accountFilterId: string
+  expenseCategoryFilter: string
+  pasabuyerFilter: string
+  filterActive: boolean
+  annualView: 'table' | 'chart'
+  groupBy: 'month' | 'account' | 'category'
+}
+
+export interface UiAccountsFilters {
+  viewMode: 'cards' | 'table'
+  accountScope: 'standard' | 'credit' | 'all'
+  hideZeroBalance: boolean
+  cardTypeFilter: string
+}
+
+export interface UiMonitoringFilters {
+  incomeCategoryView: string
+  expenseCategoryView: string
+  hideZeroIncomeCategories: boolean
+  zeroFilter: 'all' | 'hide-both' | 'hide-spending' | 'hide-budget'
+}
+
 export interface UiSettings {
   /** When true, delete actions permanently remove local rows and archive Notion pages to trash. */
   hardDeleteEnabled: boolean
+  profile: UiProfileSettings
+  theme: UiThemeSettings
+  workspace: UiWorkspaceSettings
+  incomeFilters: UiIncomeFilters
+  expenseFilters: UiExpenseFilters
+  accountsFilters: UiAccountsFilters
+  monitoringFilters: UiMonitoringFilters
 }
 
 export interface SyncStatus {

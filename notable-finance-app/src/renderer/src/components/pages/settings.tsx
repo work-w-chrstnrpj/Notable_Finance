@@ -1,7 +1,8 @@
-
 import { useState } from "react";
-import { Database, Palette, SlidersHorizontal } from "lucide-react";
+import { Database, Palette, SlidersHorizontal, UserRound } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import { useAuth } from "@/lib/auth-context";
+import { userInitials } from "@/lib/avatar";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
 import {
@@ -9,11 +10,11 @@ import {
   ThemeCustomizeModal,
   NotionConfigModal,
   InterfaceManageModal,
+  ProfileManageModal,
 } from "@/components/pages/settings-modals";
 import type { SchemaHealth } from "@/types/finance";
 
-// Desktop settings — identical to the web page minus login/account management
-// (the desktop app is single-user and local; there are no accounts to manage).
+// Desktop settings — profile + interface/theme/Notion. No cloud account management.
 
 function SettingsPage({
   schemaHealth,
@@ -27,10 +28,43 @@ function SettingsPage({
   onShowFabChange: (next: boolean) => void;
 }) {
   const [modal, setModal] = useState<SettingsModalKind>(null);
-  useTheme(); // theme context is exercised by the modal
+  useTheme();
+  const { user } = useAuth();
+  const initials = userInitials(user?.name, user?.email);
 
   return (
     <div className="page-stack">
+      <Panel title="Profile">
+        <div className="settings-row">
+          <div className="settings-profile-preview">
+            <div className="settings-profile-preview__avatar" aria-hidden="true">
+              {user?.avatarDataUrl ? (
+                <img src={user.avatarDataUrl} alt="" />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </div>
+            <div>
+              <p className="settings-toggle__title">{user?.name ?? "Local User"}</p>
+              <p className="settings-toggle__hint">
+                Click{" "}
+                <button
+                  type="button"
+                  className="settings-inline-link"
+                  onClick={() => setModal("profile")}
+                >
+                  edit
+                </button>{" "}
+                to change your display name and profile photo on this device.
+              </p>
+            </div>
+          </div>
+          <button type="button" className="button" onClick={() => setModal("profile")}>
+            <UserRound size={16} />
+            Edit
+          </button>
+        </div>
+      </Panel>
       <Panel title="Interface">
         <div className="settings-row">
           <div>
@@ -124,6 +158,7 @@ function SettingsPage({
           onShowFabChange={onShowFabChange}
         />
       )}
+      {modal === "profile" && <ProfileManageModal onClose={() => setModal(null)} />}
     </div>
   );
 }

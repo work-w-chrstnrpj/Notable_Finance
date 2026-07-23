@@ -1,13 +1,12 @@
-// Desktop auth stub. The desktop app is single-user and fully local — there is no login,
-// registration, or account management (per product decision). This keeps the web
-// components' `useAuth()` contract so they render as "signed in" without a cloud backend.
-import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
+// Desktop auth stub. Single-user / local — profile name + avatar come from persisted UiSettings.
+import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { useUiSettings } from "@/lib/ui-settings-context";
 
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  avatarDataUrl: string | null;
 }
 
 type Result = { ok: boolean; error?: string };
@@ -23,34 +22,40 @@ interface AuthContextValue {
   deleteAccount: (currentPassword: string) => Promise<Result>;
 }
 
-const LOCAL_USER: AuthUser = {
-  id: "local",
-  email: "local@this-device",
-  name: "Local User",
-};
-
 const NOT_SUPPORTED: Result = {
   ok: false,
   error: "Accounts do not exist in the desktop app — data lives locally on this device.",
 };
 
-const value: AuthContextValue = {
-  user: LOCAL_USER,
-  loading: false,
-  login: async () => NOT_SUPPORTED,
-  register: async () => NOT_SUPPORTED,
-  logout: async () => undefined,
-  changeEmail: async () => NOT_SUPPORTED,
-  changePassword: async () => NOT_SUPPORTED,
-  deleteAccount: async () => NOT_SUPPORTED,
-};
-
-const AuthContext = createContext<AuthContextValue>(value);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { settings, ready } = useUiSettings();
+
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user: {
+        id: "local",
+        email: "local@this-device",
+        name: settings.profile.displayName || "Local User",
+        avatarDataUrl: settings.profile.avatarDataUrl,
+      },
+      loading: !ready,
+      login: async () => NOT_SUPPORTED,
+      register: async () => NOT_SUPPORTED,
+      logout: async () => undefined,
+      changeEmail: async () => NOT_SUPPORTED,
+      changePassword: async () => NOT_SUPPORTED,
+      deleteAccount: async () => NOT_SUPPORTED,
+    }),
+    [settings.profile.displayName, settings.profile.avatarDataUrl, ready],
+  );
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {
-  return useContext(AuthContext);
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

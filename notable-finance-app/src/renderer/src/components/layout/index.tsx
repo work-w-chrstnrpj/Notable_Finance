@@ -23,6 +23,7 @@ import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { financeSections } from "@/lib/finance-data";
 import { cx } from "@/lib/finance-helpers";
+import { userInitials } from "@/lib/avatar";
 import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
 import type {
   ExpenseViewMode,
@@ -95,9 +96,7 @@ function Sidebar({
     }),
     [],
   );
-  const initials = user?.name
-    ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-    : user?.email?.slice(0, 2).toUpperCase() ?? "?";
+  const initials = userInitials(user?.name, user?.email);
 
   return (
     <aside className="sidebar">
@@ -132,7 +131,13 @@ function Sidebar({
         <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
       </nav>
       <div className="sidebar-profile">
-        <div className="sidebar-profile__avatar">{initials}</div>
+        <div className="sidebar-profile__avatar" aria-hidden="true">
+          {user?.avatarDataUrl ? (
+            <img src={user.avatarDataUrl} alt="" />
+          ) : (
+            initials
+          )}
+        </div>
         <div>
           <p>{user?.name ?? "Local User"}</p>
           <span>This device</span>
@@ -212,9 +217,7 @@ function TopBar({
   onMobileNavToggle: () => void;
 }) {
   const { user } = useAuth();
-  const initials = user?.name
-    ? user.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-    : user?.email?.slice(0, 2).toUpperCase() ?? "?";
+  const initials = userInitials(user?.name, user?.email);
 
   return (
     <header className="topbar">
@@ -252,7 +255,9 @@ function TopBar({
             Sync
           </button>
         </div>
-        <Link href="/settings" className="topbar__avatar">{initials}</Link>
+        <Link href="/settings" className="topbar__avatar" title={user?.name ?? "Settings"}>
+          {user?.avatarDataUrl ? <img src={user.avatarDataUrl} alt="" /> : initials}
+        </Link>
       </div>
     </header>
   );

@@ -74,7 +74,11 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `saveMapping(mapping)` | `void` | Persist per-workspace db/property mapping. |
 
 ### `window.api.settings`
-`get()`, `update(patch)` — UI prefs including `hardDeleteEnabled` (default off). Soft delete remains the default; hard delete removes the local row and archives the Notion page to trash on push. Sync mode/interval live under `window.api.sync`.
+`get()`, `update(patch)` — durable UI prefs in SQLite `app_settings` (`ui.settings`):
+profile (`displayName`, `avatarDataUrl`), theme, workspace view modes/date/sidebar/FAB/last section,
+Income/Expense/Accounts/Monitoring filters, and `hardDeleteEnabled`. Soft delete remains the default;
+hard delete removes the local row and archives the Notion page to trash on push. Sync mode/interval
+live under `window.api.sync`.
 
 ## Events (main → renderer)
 

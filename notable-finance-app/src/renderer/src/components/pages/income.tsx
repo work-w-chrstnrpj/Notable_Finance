@@ -20,6 +20,7 @@ import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 import { incomesApi } from "@/lib/api-client";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
+import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import type { AnnualGroupBy } from "@/components/constants";
 import type { IncomeViewMode, IncomeRecord } from "@/types/finance";
 
@@ -58,7 +59,8 @@ function IncomePage({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
-  const { hardDeleteEnabled } = useUiSettings();
+  const { hardDeleteEnabled, settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const [massEditOpen, setMassEditOpen] = useState(false);
@@ -70,6 +72,27 @@ function IncomePage({
   const [filterActive, setFilterActive] = useState(false);
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
+
+  useEffect(() => {
+    if (!settingsReady || filtersHydrated) return;
+    const f = settings.incomeFilters;
+    setAccountId(f.accountId);
+    setCategoryId(f.categoryId);
+    setFilterActive(f.filterActive);
+    setAnnualView(f.annualView);
+    setGroupBy(f.groupBy);
+    setFiltersHydrated(true);
+  }, [settingsReady, filtersHydrated, settings.incomeFilters]);
+
+  useDebouncedPersist(
+    filtersHydrated,
+    [accountId, categoryId, filterActive, annualView, groupBy],
+    () => {
+      void updateSettings({
+        incomeFilters: { accountId, categoryId, filterActive, annualView, groupBy },
+      });
+    },
+  );
   const isAnnual = viewMode === "Annually";
   const calculatedNetIncome = calculateNetIncome(
     parseNumberInput(grossIncomeInput),

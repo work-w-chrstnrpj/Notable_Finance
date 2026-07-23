@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useFinanceData } from "@/lib/finance-data-context";
-import { preferencesApi, syncApi } from "@/lib/api-client";
+import { syncApi } from "@/lib/api-client";
 import { cx } from "@/lib/finance-helpers";
 import { activeSelectorUnit, anchorMonth, todayIso } from "@/lib/date-range";
+import { useUiSettings } from "@/lib/ui-settings-context";
+import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 
 // Layout
 import { Sidebar, TopBar } from "@/components/layout";
@@ -34,13 +36,12 @@ import { isWorkflowSection } from "@/components/hooks";
 import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, SchemaHealth, SyncState } from "@/types/finance";
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { refreshReferenceData } = useFinanceData();
-  // Use a stable default to avoid SSR/client hydration mismatch.
-  // todayIso() produces different results on server vs client (timezone/time).
+  const { settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const [workspaceHydrated, setWorkspaceHydrated] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState<string>("2026-07-01");
-  // Sync to real date on client mount (runs once, after hydration).
-  useEffect(() => { setSelectedDate(todayIso()); }, []);
   const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
@@ -50,47 +51,44 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [schemaHealth, setSchemaHealth] = useState<SchemaHealth>("notChecked");
   const [pendingOperations, setPendingOperations] = useState(0);
   const [lastSync, setLastSync] = useState("—");
-  // Stable default avoids hydration mismatch; synced from localStorage in useEffect below.
   const [showFab, setShowFab] = useState(true);
-  // Load FAB preference from localStorage on client mount (after hydration).
-  useEffect(() => {
-    try {
-      const cached = localStorage.getItem("nf_show_fab");
-      if (cached !== null) setShowFab(cached === "true");
-    } catch { /* ignore */ }
-  }, []);
 
+  // Hydrate workspace prefs from SQLite once.
   useEffect(() => {
-    if (authLoading || !user) return;
-    let cancelled = false;
-    preferencesApi
-      .get()
-      .then((res) => {
-        if (!cancelled && res.success) {
-          setShowFab(res.data.showFab);
-          try {
-            localStorage.setItem("nf_show_fab", String(res.data.showFab));
-          } catch { /* ignore */ }
-        }
-      })
-      .catch(() => {
-        /* keep default on network/backend error */
+    if (!settingsReady || workspaceHydrated) return;
+    const ws = settings.workspace;
+    setSelectedDate(ws.selectedDate || todayIso());
+    setIncomeViewMode(ws.incomeViewMode);
+    setExpenseViewMode(ws.expenseViewMode);
+    setSidebarCollapsed(ws.sidebarCollapsed);
+    setShowFab(ws.showFab);
+    setWorkspaceHydrated(true);
+  }, [settingsReady, workspaceHydrated, settings.workspace]);
+
+  useDebouncedPersist(
+    workspaceHydrated,
+    [selectedDate, incomeViewMode, expenseViewMode, sidebarCollapsed, showFab, activeSection],
+    () => {
+      void updateSettings({
+        workspace: {
+          selectedDate,
+          incomeViewMode,
+          expenseViewMode,
+          sidebarCollapsed,
+          showFab,
+          lastSection: activeSection,
+        },
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, user]);
+      try {
+        localStorage.setItem("nf_show_fab", String(showFab));
+      } catch {
+        /* ignore */
+      }
+    },
+  );
 
   async function updateShowFab(next: boolean) {
     setShowFab(next);
-    try {
-      localStorage.setItem("nf_show_fab", String(next));
-    } catch { /* ignore */ }
-    try {
-      await preferencesApi.save({ showFab: next });
-    } catch {
-      /* optimistic; ignore persistence errors */
-    }
   }
 
   const [activeSyncKind, setActiveSyncKind] = useState<"full" | "pull" | "push" | null>(null);

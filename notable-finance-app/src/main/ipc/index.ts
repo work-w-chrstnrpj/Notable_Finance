@@ -34,8 +34,7 @@ import { ValidationError } from '../domain/validation'
 import type {
   ConflictResolution,
   NotionMapping,
-  SyncSettings,
-  UiSettings
+  SyncSettings
 } from '../../shared/finance.types'
 import { getUiSettings, setUiSettings } from '../settings/ui'
 
@@ -261,7 +260,7 @@ export function registerIpc(): void {
 
   // UI settings (hard-delete mode, etc.)
   ipcMain.handle('settings:get', () => result(() => getUiSettings()))
-  ipcMain.handle('settings:update', (_e, patch: Partial<UiSettings>) =>
+  ipcMain.handle('settings:update', (_e, patch: Parameters<typeof setUiSettings>[0]) =>
     result(() => setUiSettings(patch))
   )
 }

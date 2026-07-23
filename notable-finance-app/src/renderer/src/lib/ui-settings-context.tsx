@@ -1,33 +1,101 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import type { UiSettings } from "../../../shared/finance.types";
+
+const DEFAULT_SETTINGS: UiSettings = {
+  hardDeleteEnabled: false,
+  profile: { displayName: "Local User", avatarDataUrl: null },
+  theme: { mode: "system", primaryColor: "#5b6cf9", secondaryColor: "#0d9488" },
+  workspace: {
+    selectedDate: null,
+    incomeViewMode: "Monthly",
+    expenseViewMode: "Monthly",
+    sidebarCollapsed: false,
+    showFab: true,
+    lastSection: "dashboard",
+  },
+  incomeFilters: {
+    accountId: "",
+    categoryId: "",
+    filterActive: false,
+    annualView: "table",
+    groupBy: "month",
+  },
+  expenseFilters: {
+    accountFilterId: "",
+    expenseCategoryFilter: "",
+    pasabuyerFilter: "",
+    filterActive: false,
+    annualView: "table",
+    groupBy: "month",
+  },
+  accountsFilters: {
+    viewMode: "cards",
+    accountScope: "standard",
+    hideZeroBalance: false,
+    cardTypeFilter: "",
+  },
+  monitoringFilters: {
+    incomeCategoryView: "table",
+    expenseCategoryView: "simplified",
+    hideZeroIncomeCategories: false,
+    zeroFilter: "all",
+  },
+};
+
+type UiSettingsPatch = {
+  hardDeleteEnabled?: boolean;
+  profile?: Partial<UiSettings["profile"]>;
+  theme?: Partial<UiSettings["theme"]>;
+  workspace?: Partial<UiSettings["workspace"]>;
+  incomeFilters?: Partial<UiSettings["incomeFilters"]>;
+  expenseFilters?: Partial<UiSettings["expenseFilters"]>;
+  accountsFilters?: Partial<UiSettings["accountsFilters"]>;
+  monitoringFilters?: Partial<UiSettings["monitoringFilters"]>;
+};
 
 type UiSettingsContextValue = {
-  hardDeleteEnabled: boolean;
+  settings: UiSettings;
   ready: boolean;
+  hardDeleteEnabled: boolean;
   setHardDeleteEnabled: (next: boolean) => Promise<void>;
+  updateSettings: (patch: UiSettingsPatch) => Promise<UiSettings | null>;
 };
 
 const UiSettingsContext = createContext<UiSettingsContextValue>({
-  hardDeleteEnabled: false,
+  settings: DEFAULT_SETTINGS,
   ready: false,
+  hardDeleteEnabled: false,
   setHardDeleteEnabled: async () => undefined,
+  updateSettings: async () => null,
 });
 
 export function UiSettingsProvider({ children }: { children: ReactNode }) {
-  const [hardDeleteEnabled, setHardDeleteEnabledState] = useState(false);
+  const [settings, setSettings] = useState<UiSettings>(DEFAULT_SETTINGS);
   const [ready, setReady] = useState(false);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   useEffect(() => {
     let cancelled = false;
-    const api = window.api
+    const api = window.api;
     if (!api?.settings) {
-      setReady(true)
-      return
+      setReady(true);
+      return;
     }
     void api.settings
       .get()
       .then((res) => {
         if (cancelled || !res.ok) return;
-        setHardDeleteEnabledState(res.data.hardDeleteEnabled === true);
+        setSettings(res.data);
       })
       .finally(() => {
         if (!cancelled) setReady(true);
@@ -37,21 +105,60 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const setHardDeleteEnabled = useCallback(async (next: boolean) => {
-    setHardDeleteEnabledState(next);
-    const api = window.api
-    if (!api?.settings) return
-    const res = await api.settings.update({ hardDeleteEnabled: next });
+  const updateSettings = useCallback(async (patch: UiSettingsPatch) => {
+    // Optimistic local merge so UI feels instant.
+    setSettings((prev) => ({
+      ...prev,
+      hardDeleteEnabled:
+        patch.hardDeleteEnabled === undefined
+          ? prev.hardDeleteEnabled
+          : patch.hardDeleteEnabled === true,
+      profile: patch.profile ? { ...prev.profile, ...patch.profile } : prev.profile,
+      theme: patch.theme ? { ...prev.theme, ...patch.theme } : prev.theme,
+      workspace: patch.workspace ? { ...prev.workspace, ...patch.workspace } : prev.workspace,
+      incomeFilters: patch.incomeFilters
+        ? { ...prev.incomeFilters, ...patch.incomeFilters }
+        : prev.incomeFilters,
+      expenseFilters: patch.expenseFilters
+        ? { ...prev.expenseFilters, ...patch.expenseFilters }
+        : prev.expenseFilters,
+      accountsFilters: patch.accountsFilters
+        ? { ...prev.accountsFilters, ...patch.accountsFilters }
+        : prev.accountsFilters,
+      monitoringFilters: patch.monitoringFilters
+        ? { ...prev.monitoringFilters, ...patch.monitoringFilters }
+        : prev.monitoringFilters,
+    }));
+
+    const api = window.api;
+    if (!api?.settings) return null;
+    const res = await api.settings.update(patch as Partial<UiSettings>);
     if (res.ok) {
-      setHardDeleteEnabledState(res.data.hardDeleteEnabled === true);
+      setSettings(res.data);
+      return res.data;
     }
+    return null;
   }, []);
 
-  return (
-    <UiSettingsContext.Provider value={{ hardDeleteEnabled, ready, setHardDeleteEnabled }}>
-      {children}
-    </UiSettingsContext.Provider>
+  const setHardDeleteEnabled = useCallback(
+    async (next: boolean) => {
+      await updateSettings({ hardDeleteEnabled: next });
+    },
+    [updateSettings],
   );
+
+  const value = useMemo<UiSettingsContextValue>(
+    () => ({
+      settings,
+      ready,
+      hardDeleteEnabled: settings.hardDeleteEnabled,
+      setHardDeleteEnabled,
+      updateSettings,
+    }),
+    [settings, ready, setHardDeleteEnabled, updateSettings],
+  );
+
+  return <UiSettingsContext.Provider value={value}>{children}</UiSettingsContext.Provider>;
 }
 
 export function useUiSettings(): UiSettingsContextValue {
