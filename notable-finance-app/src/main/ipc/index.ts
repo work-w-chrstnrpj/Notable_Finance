@@ -37,10 +37,33 @@ import type {
   SyncSettings
 } from '../../shared/finance.types'
 import { getUiSettings, setUiSettings } from '../settings/ui'
+import * as chat from '../chat'
+import {
+  CHAT_CURATED_MODELS,
+  listChatProviders,
+  modelsForProvider,
+  providerPresetFromBaseUrl
+} from '../chat/models'
+import {
+  appendDevLog,
+  clearDevLogs,
+  listDevLogs,
+  logDevOperation,
+  summarizeForDevLog
+} from '../dev-logs/store'
+import type { DevLogKind } from '../../shared/finance.types'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
 // Writes broadcast records:changed + derived:updated to ALL windows (Phase 1.5).
+
+const SKIP_DEV_LOG_CHANNELS = new Set([
+  'devLogs:list',
+  'devLogs:clear',
+  'devLogs:append',
+  'app:ping',
+  'settings:get'
+])
 
 async function result<T>(fn: () => T | Promise<T>): Promise<ApiResult<T>> {
   try {
@@ -60,9 +83,89 @@ function changed(resource: 'incomes' | 'expenses' | 'expenseScheduler', ids: str
   broadcast('records:changed', { resource, ids })
   broadcast('derived:updated', {})
   broadcast('sync:status', syncStatus())
+  logDevOperation('records:changed', `Broadcast ${resource}`, { resource, ids })
+}
+
+function installDevLogIpcWrapper(): void {
+  const originalHandle = ipcMain.handle.bind(ipcMain)
+  ipcMain.handle = ((channel: string, listener: (...args: unknown[]) => unknown) => {
+    return originalHandle(channel, async (event, ...args) => {
+      if (SKIP_DEV_LOG_CHANNELS.has(channel)) {
+        return listener(event, ...args)
+      }
+      const started = Date.now()
+      try {
+        const out = await listener(event, ...args)
+        const ok =
+          out && typeof out === 'object' && 'ok' in (out as object)
+            ? Boolean((out as ApiResult<unknown>).ok)
+            : true
+        appendDevLog({
+          kind: 'api',
+          source: 'main',
+          action: channel,
+          message: ok ? `IPC ${channel} ok` : `IPC ${channel} failed`,
+          detail: {
+            args: summarizeForDevLog(args)
+          } as Record<string, unknown>,
+          durationMs: Date.now() - started,
+          ok
+        })
+        return out
+      } catch (error) {
+        appendDevLog({
+          kind: 'api',
+          source: 'main',
+          action: channel,
+          message: `IPC ${channel} threw`,
+          detail: {
+            args: summarizeForDevLog(args),
+            error: error instanceof Error ? error.message : String(error)
+          } as Record<string, unknown>,
+          durationMs: Date.now() - started,
+          ok: false
+        })
+        throw error
+      }
+    })
+  }) as typeof ipcMain.handle
 }
 
 export function registerIpc(): void {
+  installDevLogIpcWrapper()
+
+  // Dev Mode logs (in-memory only; gated by settings.devModeEnabled inside store).
+  ipcMain.handle('devLogs:list', (_e, limit?: number) =>
+    result(() => listDevLogs(typeof limit === 'number' ? limit : undefined))
+  )
+  ipcMain.handle('devLogs:clear', () => result(() => clearDevLogs()))
+  ipcMain.handle(
+    'devLogs:append',
+    (
+      _e,
+      input: {
+        kind: DevLogKind
+        action: string
+        message: string
+        detail?: Record<string, unknown> | null
+        ok?: boolean | null
+      }
+    ) =>
+      result(() => {
+        const entry = appendDevLog({
+          kind: input.kind,
+          source: 'renderer',
+          action: input.action,
+          message: input.message,
+          detail: input.detail
+            ? (summarizeForDevLog(input.detail) as Record<string, unknown>)
+            : null,
+          ok: input.ok ?? null
+        })
+        return entry
+      })
+  )
+
   // liveness + local store health (Phase 0.4)
   ipcMain.handle('app:ping', () => result(() => 'pong' as const))
   ipcMain.handle('db:health', () =>
@@ -258,9 +361,188 @@ export function registerIpc(): void {
     })
   )
 
-  // UI settings (hard-delete mode, etc.)
+  // UI settings (hard-delete mode, chat flags, etc.)
   ipcMain.handle('settings:get', () => result(() => getUiSettings()))
   ipcMain.handle('settings:update', (_e, patch: Parameters<typeof setUiSettings>[0]) =>
     result(() => setUiSettings(patch))
   )
+
+  // Chat (Phase 6.1) — credentials usable from Settings even when Chat is off;
+  // threads + send require chatEnabled (enforced in handlers / orchestrator).
+  ipcMain.handle('chat:status', (_e, opts?: { forceRefresh?: boolean }) =>
+    result(() => chat.getChatStatus(opts))
+  )
+  ipcMain.handle('chat:providers', () =>
+    result(() =>
+      listChatProviders().map((p) => ({
+        id: p.id,
+        label: p.label,
+        keyPlaceholder: p.keyPlaceholder,
+        hint: p.hint,
+        docsUrl: p.docsUrl,
+        defaultModelId: p.defaultModelId,
+        needsCustomBaseUrl: p.id === 'custom',
+        models: p.models.map((m) => ({ id: m.id, label: m.label, free: m.free }))
+      }))
+    )
+  )
+  ipcMain.handle('chat:models', (_e, credentialId?: string | null) =>
+    result(() => {
+      let providerId: string | null = null
+      if (credentialId) {
+        const cred = chat.listCredentials().find((c) => c.id === credentialId)
+        providerId = cred?.providerId ?? providerPresetFromBaseUrl(cred?.baseUrl ?? null)
+      }
+      const models = credentialId ? modelsForProvider(providerId) : CHAT_CURATED_MODELS
+      return models.map((m) => ({ id: m.id, label: m.label, free: m.free === true }))
+    })
+  )
+  ipcMain.handle('chat:overlays', () => result(() => chat.CHAT_SLASH_OVERLAYS))
+  ipcMain.handle('chat:isAppleOs', () => result(() => chat.isAppleOs()))
+
+  ipcMain.handle('chat:listCredentials', () => result(() => chat.listCredentials()))
+  ipcMain.handle(
+    'chat:createCredential',
+    (
+      _e,
+      name: string,
+      apiKey: string,
+      opts?: { baseUrl?: string | null; providerId?: string | null }
+    ) => result(() => chat.createCredential(name, apiKey, opts))
+  )
+  ipcMain.handle(
+    'chat:updateCredential',
+    (
+      _e,
+      id: string,
+      patch: { name?: string; apiKey?: string; baseUrl?: string | null; providerId?: string | null }
+    ) => result(() => chat.updateCredential(id, patch))
+  )
+  ipcMain.handle('chat:setDefaultCredential', (_e, id: string) =>
+    result(() => chat.setDefaultCredential(id))
+  )
+  ipcMain.handle('chat:deleteCredential', (_e, id: string) =>
+    result(() => {
+      chat.deleteCredential(id)
+      return true as const
+    })
+  )
+
+  ipcMain.handle('chat:listThreads', () =>
+    result(() => {
+      requireChatEnabled()
+      return chat.listThreads()
+    })
+  )
+  ipcMain.handle('chat:getThread', (_e, id: string) =>
+    result(() => {
+      requireChatEnabled()
+      const thread = chat.getThread(id)
+      if (!thread) throw new Error('Thread not found')
+      return thread
+    })
+  )
+  ipcMain.handle(
+    'chat:createThread',
+    (
+      _e,
+      input?: {
+        title?: string
+        credentialId?: string | null
+        modelId?: string | null
+        overlay?: string
+      }
+    ) =>
+      result(() => {
+        requireChatEnabled()
+        return chat.createThread(input)
+      })
+  )
+  ipcMain.handle(
+    'chat:updateThread',
+    (
+      _e,
+      id: string,
+      patch: {
+        title?: string
+        credentialId?: string | null
+        modelId?: string | null
+        overlay?: string
+      }
+    ) =>
+      result(() => {
+        requireChatEnabled()
+        return chat.updateThread(id, patch)
+      })
+  )
+  ipcMain.handle('chat:deleteThread', (_e, id: string) =>
+    result(() => {
+      requireChatEnabled()
+      chat.deleteThread(id)
+      return true as const
+    })
+  )
+  ipcMain.handle('chat:deleteAllThreads', () =>
+    result(() => {
+      // Allowed from Configure AI even when Chat is off (history cleanup).
+      chat.deleteAllThreads()
+      return true as const
+    })
+  )
+  ipcMain.handle('chat:listMessages', (_e, threadId: string) =>
+    result(() => {
+      requireChatEnabled()
+      return chat.listMessages(threadId)
+    })
+  )
+  ipcMain.handle(
+    'chat:send',
+    (
+      _e,
+      input: {
+        threadId?: string | null
+        content: string
+        credentialId?: string | null
+        modelId?: string | null
+        overlay?: import('../../shared/finance.types').ChatOverlayId | null
+      }
+    ) => result(() => chat.sendChatMessage(input))
+  )
+
+  ipcMain.handle('chat:listDrafts', (_e, threadId?: string) =>
+    result(() => {
+      requireChatEnabled()
+      return chat.listDrafts(threadId)
+    })
+  )
+  ipcMain.handle('chat:confirmDraft', (_e, draftId: string) =>
+    result(() => {
+      requireChatEnabled()
+      const out = chat.confirmDraft(draftId)
+      const { draft, record } = out
+      const ids = chat.changedIdsFromResult(draft, record)
+      changed(chat.changedResourceFromDraft(draft), ids)
+      logDevOperation('chat:confirmDraft', `Approved ${draft.resource} ${draft.action}`, {
+        draftId,
+        resource: draft.resource,
+        action: draft.action,
+        ids
+      })
+      return out
+    })
+  )
+  ipcMain.handle('chat:cancelDraft', (_e, draftId: string) =>
+    result(() => {
+      requireChatEnabled()
+      const cancelled = chat.cancelDraft(draftId)
+      logDevOperation('chat:cancelDraft', 'Cancelled draft', { draftId }, true)
+      return cancelled
+    })
+  )
+}
+
+function requireChatEnabled(): void {
+  if (!getUiSettings().chatEnabled) {
+    throw new Error('Chat is disabled. Enable it in Settings → AI / Chat.')
+  }
 }

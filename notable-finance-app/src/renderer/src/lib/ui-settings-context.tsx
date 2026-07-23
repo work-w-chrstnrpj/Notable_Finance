@@ -12,6 +12,10 @@ import type { UiSettings } from "../../../shared/finance.types";
 
 const DEFAULT_SETTINGS: UiSettings = {
   hardDeleteEnabled: false,
+  chatEnabled: false,
+  chatPreferAppleReadOnly: false,
+  chatDefaultModel: "gpt-4o-mini",
+  devModeEnabled: false,
   profile: { displayName: "Local User", avatarDataUrl: null },
   theme: { mode: "system", primaryColor: "#5b6cf9", secondaryColor: "#0d9488" },
   workspace: {
@@ -53,6 +57,10 @@ const DEFAULT_SETTINGS: UiSettings = {
 
 type UiSettingsPatch = {
   hardDeleteEnabled?: boolean;
+  chatEnabled?: boolean;
+  chatPreferAppleReadOnly?: boolean;
+  chatDefaultModel?: string;
+  devModeEnabled?: boolean;
   profile?: Partial<UiSettings["profile"]>;
   theme?: Partial<UiSettings["theme"]>;
   workspace?: Partial<UiSettings["workspace"]>;
@@ -66,7 +74,11 @@ type UiSettingsContextValue = {
   settings: UiSettings;
   ready: boolean;
   hardDeleteEnabled: boolean;
+  chatEnabled: boolean;
+  devModeEnabled: boolean;
   setHardDeleteEnabled: (next: boolean) => Promise<void>;
+  setChatEnabled: (next: boolean) => Promise<void>;
+  setDevModeEnabled: (next: boolean) => Promise<void>;
   updateSettings: (patch: UiSettingsPatch) => Promise<UiSettings | null>;
 };
 
@@ -74,7 +86,11 @@ const UiSettingsContext = createContext<UiSettingsContextValue>({
   settings: DEFAULT_SETTINGS,
   ready: false,
   hardDeleteEnabled: false,
+  chatEnabled: false,
+  devModeEnabled: false,
   setHardDeleteEnabled: async () => undefined,
+  setChatEnabled: async () => undefined,
+  setDevModeEnabled: async () => undefined,
   updateSettings: async () => null,
 });
 
@@ -106,13 +122,24 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateSettings = useCallback(async (patch: UiSettingsPatch) => {
-    // Optimistic local merge so UI feels instant.
     setSettings((prev) => ({
       ...prev,
       hardDeleteEnabled:
         patch.hardDeleteEnabled === undefined
           ? prev.hardDeleteEnabled
           : patch.hardDeleteEnabled === true,
+      chatEnabled:
+        patch.chatEnabled === undefined ? prev.chatEnabled : patch.chatEnabled === true,
+      chatPreferAppleReadOnly:
+        patch.chatPreferAppleReadOnly === undefined
+          ? prev.chatPreferAppleReadOnly
+          : patch.chatPreferAppleReadOnly === true,
+      chatDefaultModel:
+        patch.chatDefaultModel === undefined
+          ? prev.chatDefaultModel
+          : patch.chatDefaultModel.trim() || prev.chatDefaultModel,
+      devModeEnabled:
+        patch.devModeEnabled === undefined ? prev.devModeEnabled : patch.devModeEnabled === true,
       profile: patch.profile ? { ...prev.profile, ...patch.profile } : prev.profile,
       theme: patch.theme ? { ...prev.theme, ...patch.theme } : prev.theme,
       workspace: patch.workspace ? { ...prev.workspace, ...patch.workspace } : prev.workspace,
@@ -147,15 +174,33 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
     [updateSettings],
   );
 
+  const setChatEnabled = useCallback(
+    async (next: boolean) => {
+      await updateSettings({ chatEnabled: next });
+    },
+    [updateSettings],
+  );
+
+  const setDevModeEnabled = useCallback(
+    async (next: boolean) => {
+      await updateSettings({ devModeEnabled: next });
+    },
+    [updateSettings],
+  );
+
   const value = useMemo<UiSettingsContextValue>(
     () => ({
       settings,
       ready,
       hardDeleteEnabled: settings.hardDeleteEnabled,
+      chatEnabled: settings.chatEnabled,
+      devModeEnabled: settings.devModeEnabled,
       setHardDeleteEnabled,
+      setChatEnabled,
+      setDevModeEnabled,
       updateSettings,
     }),
-    [settings, ready, setHardDeleteEnabled, updateSettings],
+    [settings, ready, setHardDeleteEnabled, setChatEnabled, setDevModeEnabled, updateSettings],
   );
 
   return <UiSettingsContext.Provider value={value}>{children}</UiSettingsContext.Provider>;

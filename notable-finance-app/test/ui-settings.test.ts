@@ -12,8 +12,26 @@ describe('normalizeUiSettings', () => {
       profile: { displayName: 'Chris', avatarDataUrl: null }
     })
     expect(next.hardDeleteEnabled).toBe(true)
+    expect(next.chatEnabled).toBe(false)
     expect(next.profile.displayName).toBe('Chris')
     expect(next.workspace.incomeViewMode).toBe('Monthly')
+  })
+
+  it('accepts chat feature flags and default model', () => {
+    const next = normalizeUiSettings({
+      chatEnabled: true,
+      chatPreferAppleReadOnly: true,
+      chatDefaultModel: 'gpt-4o'
+    })
+    expect(next.chatEnabled).toBe(true)
+    expect(next.chatPreferAppleReadOnly).toBe(true)
+    expect(next.chatDefaultModel).toBe('gpt-4o')
+    expect(next.devModeEnabled).toBe(false)
+  })
+
+  it('accepts Dev Mode flag', () => {
+    expect(normalizeUiSettings({ devModeEnabled: true }).devModeEnabled).toBe(true)
+    expect(DEFAULT_UI_SETTINGS.devModeEnabled).toBe(false)
   })
 
   it('rejects non-image avatar payloads', () => {

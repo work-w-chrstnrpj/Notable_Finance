@@ -82,7 +82,17 @@ conflicts(
 Key/value: `last_pull_cursor`, last sync timestamps, per-resource cursors.
 
 ### `app_settings` (local config)
-Sync mode (`manual` | `auto`), interval seconds, window prefs, onboarding state. The Notion token is **not** here — it lives in the OS keychain (see [`security.md`](security.md)).
+Sync mode (`manual` | `auto`), interval seconds, window prefs, onboarding state, and UI prefs JSON (`ui.settings`: profile, theme, workspace, filters, `hardDeleteEnabled`, Chat flags `chatEnabled` / `chatPreferAppleReadOnly` / `chatDefaultModel`, Dev Mode `devModeEnabled`). The Notion token and Chat API keys are **not** here — they live in OS `safeStorage` vaults (see [`security.md`](security.md)). Dev Logs themselves are **not** stored in SQLite.
+
+### Chat tables (Phase 6.1+)
+
+| Table | Role |
+| --- | --- |
+| `chat_credentials` | Named API key metadata: `id`, `name`, `key_fingerprint`, `is_default`, `created_at`. Raw keys are files under userData encrypted with `safeStorage`. |
+| `chat_threads` | Conversation list: `id`, `title`, `credential_id`, `model_id`, `overlay` (slash persona), `created_at`, `updated_at`. |
+| `chat_messages` | Messages: `id`, `thread_id`, `role` (`user` \| `assistant` \| `system`), `content`, `payload_json` (drafts / provider / overlay metadata), `created_at`. |
+
+Turning Chat off does not delete these rows. Users delete threads from Chat mode or **Delete all conversations** in Configure AI. Apple Intelligence read-only uses the same threads/messages plus preference flags; Foundation Models readiness is probed at runtime (no extra tables).
 
 ### `mutation_queue` (durability)
 Append-only journal of pending local mutations so offline edits replay in order and survive a crash. Rows are **cleared on successful push**, so it reflects only *outstanding* work, not history.

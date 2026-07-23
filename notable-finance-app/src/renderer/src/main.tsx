@@ -10,6 +10,7 @@ import { UiSettingsProvider } from "@/lib/ui-settings-context";
 import { FinanceWorkspace } from "@/components/finance-workspace";
 import { WorkspaceTabBar } from "@/components/layout/workspace-tab-bar";
 import { AppTabsProvider, useActiveTabSection } from "@/lib/app-tabs-context";
+import { DevModeProbe } from "@/components/dev-mode-probe";
 
 // Desktop entry — UiSettings (SQLite) wraps theme/auth so profile + prefs persist.
 
@@ -61,6 +62,7 @@ function App() {
   return (
     <QueryProvider>
       <UiSettingsProvider>
+        <DevModeProbe />
         <ThemeProvider>
           <AuthProvider>
             <FinanceDataProvider>

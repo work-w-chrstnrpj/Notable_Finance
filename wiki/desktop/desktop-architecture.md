@@ -80,3 +80,4 @@ main/
 ## Related documents
 
 - [`sync-and-conflict-design.md`](sync-and-conflict-design.md) · [`local-data-schema.md`](local-data-schema.md) · [`ipc-contract.md`](ipc-contract.md) · [`offline-and-state-model.md`](offline-and-state-model.md) · [`security.md`](security.md) · [`packaging-and-release.md`](packaging-and-release.md)
+- Planned Chat copilot (Phase 6): [`chat-agent-design.md`](chat-agent-design.md) · [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md) · checklist in [`development-plan.md`](development-plan.md)

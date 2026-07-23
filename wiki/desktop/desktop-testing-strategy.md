@@ -44,6 +44,26 @@ Golden tests comparing local derivations against expected values for representat
 4. Manual sync and interval sync; status indicator states.
 5. Conflict: force a same-field conflict via the mock adapter; resolve via the UI.
 
+## Finance Copilot (Phase 6) — Vitest
+
+Chat lives under `notable-finance-app/src/main/chat/` with unit tests in `notable-finance-app/test/chat-*.test.ts`.
+
+| Suite | Focus |
+| --- | --- |
+| `chat-read-tools.test.ts` | Month resolve, skill routing, read allowlist, rebudget deltas |
+| `chat-write-tools.test.ts` | Propose tools present, delete forbidden, draft cancel |
+| `chat-overlays.test.ts` | Slash parse, keyword cheer, budget-guard, Approve quips |
+| `chat-hardening.test.ts` | Apple FM probe gates + reason copy, prompt from tools / no propose, full allowlist parity, confirm/clarify rejects, expense profiles (CC/Pasabuy), refuse-delete Taglish |
+| `chat-fingerprint.test.ts` | Credential fingerprint helpers |
+
+Hardening invariants (must stay green):
+
+- `CHAT_TOOL_DEFINITIONS` ↔ `executeChatTool` allowlist; no delete tool names.
+- Incomplete drafts (`needs_input` / `missingRequired`) never apply via `confirmDraft`.
+- Approve with zero BYOK credentials fails (“Select an API credential for writes”).
+- Expense profile: CC fields only for credit-like accounts; Pasabuy fields for Pasabuy category / Unpaid Pasabuy view.
+- Apple/on-device path only for read-only skills when prefer + available.
+
 ## CI
 
 - Lint + typecheck + unit + integration on every change.

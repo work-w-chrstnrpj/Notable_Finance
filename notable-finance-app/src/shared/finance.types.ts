@@ -416,6 +416,17 @@ export interface UiMonitoringFilters {
 export interface UiSettings {
   /** When true, delete actions permanently remove local rows and archive Notion pages to trash. */
   hardDeleteEnabled: boolean
+  /** When true, Chat appears in Main UI and Chat mode can open. Default false. */
+  chatEnabled: boolean
+  /** macOS: prefer Apple Intelligence for read-only Q&A when adapter exists (6.5). */
+  chatPreferAppleReadOnly: boolean
+  /** Default model id for new chat threads. */
+  chatDefaultModel: string
+  /**
+   * When true, Dev Logs section appears and runtime debug logging is active.
+   * Logs are in-memory only and cleared when the app process exits.
+   */
+  devModeEnabled: boolean
   profile: UiProfileSettings
   theme: UiThemeSettings
   workspace: UiWorkspaceSettings
@@ -423,6 +434,135 @@ export interface UiSettings {
   expenseFilters: UiExpenseFilters
   accountsFilters: UiAccountsFilters
   monitoringFilters: UiMonitoringFilters
+}
+
+/** Dev Mode log kinds (in-memory ring buffer; never persisted). */
+export type DevLogKind = 'click' | 'api' | 'operation' | 'system'
+
+export interface DevLogEntry {
+  id: string
+  at: number
+  kind: DevLogKind
+  source: 'main' | 'renderer'
+  /** Short stable label, e.g. incomes:create or click:button */
+  action: string
+  message: string
+  /** Redacted JSON-safe detail (args summary, duration, ok/error). */
+  detail?: Record<string, unknown> | null
+  durationMs?: number | null
+  ok?: boolean | null
+}
+
+/** Saved API credential metadata (raw key never sent to renderer). */
+export interface ChatCredentialDto {
+  id: string
+  name: string
+  keyFingerprint: string
+  isDefault: boolean
+  createdAt: number
+  /**
+   * OpenAI-compatible API base URL for this key.
+   * null/empty → default OpenAI.
+   */
+  baseUrl: string | null
+  /** Catalog id: gemini | groq | cerebras | openrouter | opencode | mistral | claude | openai | custom */
+  providerId: string | null
+}
+
+export interface ChatProviderCatalogDto {
+  id: string
+  label: string
+  keyPlaceholder: string
+  hint: string
+  docsUrl?: string
+  defaultModelId: string
+  /** null → OpenAI default; custom uses empty until user fills URL. */
+  needsCustomBaseUrl: boolean
+  models: Array<{ id: string; label: string; free?: boolean }>
+}
+
+export interface ChatThreadDto {
+  id: string
+  title: string
+  credentialId: string | null
+  modelId: string | null
+  overlay: string
+  createdAt: number
+  updatedAt: number
+}
+
+export type ChatMessageRole = 'user' | 'assistant' | 'system'
+
+export interface ChatMessageDto {
+  id: string
+  threadId: string
+  role: ChatMessageRole
+  content: string
+  payloadJson: string | null
+  createdAt: number
+}
+
+/** Draft mutation awaiting Approve / Cancel (Phase 6.3). Never includes delete. */
+export type ChatDraftResource = 'incomes' | 'expenses'
+export type ChatDraftAction = 'create' | 'update'
+export type ChatDraftStatus = 'needs_input' | 'ready' | 'applied' | 'cancelled'
+
+export interface ChatDraftDto {
+  id: string
+  threadId: string
+  resource: ChatDraftResource
+  action: ChatDraftAction
+  /** Skill / propose tool that created the draft. */
+  kind: string
+  status: ChatDraftStatus
+  summary: string
+  missingRequired: string[]
+  warnings: string[]
+  /** Validated (or partial) payload for create/update. */
+  payload: Record<string, unknown>
+  /** For mass update — target ids (cap 50). */
+  targetIds?: string[]
+  computedPreview?: Record<string, unknown> | null
+  createdAt: number
+}
+
+export interface ChatSendResult {
+  userMessage: ChatMessageDto
+  assistantMessage: ChatMessageDto
+  thread: ChatThreadDto
+  /** Pending drafts created during this send (confirm cards). */
+  drafts?: ChatDraftDto[]
+}
+
+export interface ChatConfirmResult {
+  draft: ChatDraftDto
+  record: unknown
+  /** Persona quip after Approve (Phase 6.4 overlays). */
+  quip?: string | null
+  /** Persisted assistant acknowledgement, when the thread exists. */
+  assistantMessage?: ChatMessageDto | null
+}
+
+/** Slash / persona overlay ids (Phase 6.4). */
+export type ChatOverlayId = 'default' | 'roast' | 'cheer' | 'strict' | 'quiet'
+
+export interface ChatStatusDto {
+  chatEnabled: boolean
+  preferAppleReadOnly: boolean
+  defaultModel: string
+  credentialCount: number
+  hasDefaultCredential: boolean
+  appleAvailable: boolean
+  /** Real Foundation Models probe (or force/unavailable). */
+  appleStatus: 'available' | 'unavailable' | 'unsupported'
+  appleStatusLabel: string
+  appleDetail: string
+  /** apple-local-llm / Foundation Models reason when unavailable (e.g. AI_DISABLED). */
+  appleReasonCode: string | null
+  /** True when a BYOK credential exists (writes/Q&A via API). */
+  canUseByok: boolean
+  /** preferApple + appleAvailable — ask/summarize without BYOK. */
+  canUseAppleReadOnly: boolean
 }
 
 export interface SyncStatus {
@@ -556,6 +696,8 @@ export type EventChannel =
   | 'sync:status'
   /** Focused-window only: File menu / accelerators for in-window tabs. */
   | 'tabs:command'
+  /** Dev Mode live log stream (payload: DevLogEntry). */
+  | 'devLogs:entry'
 
 export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
 

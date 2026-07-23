@@ -149,6 +149,52 @@ export const activityLog = sqliteTable('activity_log', {
   at: integer('at').notNull() // ms timestamp
 })
 
+/** Chat API key metadata — raw keys live in safeStorage vault files, not here. */
+export const chatCredentials = sqliteTable('chat_credentials', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  keyFingerprint: text('key_fingerprint').notNull(),
+  isDefault: integer('is_default').notNull().default(0),
+  createdAt: integer('created_at').notNull()
+})
+
+export const chatThreads = sqliteTable('chat_threads', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  credentialId: text('credential_id'),
+  modelId: text('model_id'),
+  overlay: text('overlay').notNull().default('default'),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull()
+})
+
+export const chatMessages = sqliteTable('chat_messages', {
+  id: text('id').primaryKey(),
+  threadId: text('thread_id').notNull(),
+  role: text('role').notNull(), // user | assistant | system
+  content: text('content').notNull(),
+  payloadJson: text('payload_json'),
+  createdAt: integer('created_at').notNull()
+})
+
+// Confirm-gated write proposals. Durable mirror of the in-memory draft store so
+// a proposed create/update survives an app restart before the user Approves.
+export const chatDrafts = sqliteTable('chat_drafts', {
+  id: text('id').primaryKey(),
+  threadId: text('thread_id').notNull(),
+  resource: text('resource').notNull(), // incomes | expenses
+  action: text('action').notNull(), // create | update
+  kind: text('kind').notNull(),
+  status: text('status').notNull(), // needs_input | ready | applied | cancelled
+  summary: text('summary').notNull(),
+  missingRequired: text('missing_required').notNull(), // JSON string[]
+  warnings: text('warnings').notNull(), // JSON string[]
+  payload: text('payload').notNull(), // JSON object
+  targetIds: text('target_ids'), // JSON string[] | null
+  computedPreview: text('computed_preview'), // JSON | null
+  createdAt: integer('created_at').notNull()
+})
+
 export const schema = {
   accounts,
   incomeCategories,
@@ -160,5 +206,9 @@ export const schema = {
   syncMeta,
   appSettings,
   mutationQueue,
-  activityLog
+  activityLog,
+  chatCredentials,
+  chatThreads,
+  chatMessages,
+  chatDrafts
 }

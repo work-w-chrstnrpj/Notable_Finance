@@ -16,13 +16,17 @@ files:
 
 # Drizzle migration SQL is read at runtime from resources (see src/main/db/index.ts:
 # app.isPackaged → process.resourcesPath/migrations).
+# Apple Foundation Models helper (apple-local-llm / fm-proxy) for Mac read-only Chat.
 extraResources:
   - from: src/main/db/migrations
     to: migrations
+  - from: node_modules/apple-local-llm/bin/fm-proxy
+    to: fm-proxy
 
-# Keep native .node addons outside the asar so they can be dlopen'd.
+# Keep native .node addons + Apple helper outside the asar so they can be executed.
 asarUnpack:
   - '**/*.node'
+  - '**/apple-local-llm/bin/**'
 
 # better-sqlite3 is rebuilt for the packaged Electron ABI.
 npmRebuild: true

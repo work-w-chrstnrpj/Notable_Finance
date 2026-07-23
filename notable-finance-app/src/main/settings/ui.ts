@@ -66,6 +66,10 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {
   hardDeleteEnabled: false,
+  chatEnabled: false,
+  chatPreferAppleReadOnly: false,
+  chatDefaultModel: 'gpt-4o-mini',
+  devModeEnabled: false,
   profile: { ...DEFAULT_PROFILE },
   theme: { ...DEFAULT_THEME },
   workspace: { ...DEFAULT_WORKSPACE },
@@ -215,6 +219,13 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
   const r = asRecord(raw)
   return {
     hardDeleteEnabled: r.hardDeleteEnabled === true,
+    chatEnabled: r.chatEnabled === true,
+    chatPreferAppleReadOnly: r.chatPreferAppleReadOnly === true,
+    chatDefaultModel:
+      typeof r.chatDefaultModel === 'string' && r.chatDefaultModel.trim()
+        ? r.chatDefaultModel.trim()
+        : DEFAULT_UI_SETTINGS.chatDefaultModel,
+    devModeEnabled: r.devModeEnabled === true,
     profile: mergeProfile(r.profile),
     theme: mergeTheme(r.theme),
     workspace: mergeWorkspace(r.workspace),
@@ -239,6 +250,10 @@ export function getUiSettings(): UiSettings {
 
 export function setUiSettings(patch: Partial<{
   hardDeleteEnabled: boolean
+  chatEnabled: boolean
+  chatPreferAppleReadOnly: boolean
+  chatDefaultModel: string
+  devModeEnabled: boolean
   profile: Partial<UiProfileSettings>
   theme: Partial<UiThemeSettings>
   workspace: Partial<UiWorkspaceSettings>
@@ -251,6 +266,15 @@ export function setUiSettings(patch: Partial<{
   const next = normalizeUiSettings({
     hardDeleteEnabled:
       patch.hardDeleteEnabled === undefined ? current.hardDeleteEnabled : patch.hardDeleteEnabled,
+    chatEnabled: patch.chatEnabled === undefined ? current.chatEnabled : patch.chatEnabled,
+    chatPreferAppleReadOnly:
+      patch.chatPreferAppleReadOnly === undefined
+        ? current.chatPreferAppleReadOnly
+        : patch.chatPreferAppleReadOnly,
+    chatDefaultModel:
+      patch.chatDefaultModel === undefined ? current.chatDefaultModel : patch.chatDefaultModel,
+    devModeEnabled:
+      patch.devModeEnabled === undefined ? current.devModeEnabled : patch.devModeEnabled,
     profile: patch.profile ? { ...current.profile, ...patch.profile } : current.profile,
     theme: patch.theme ? { ...current.theme, ...patch.theme } : current.theme,
     workspace: patch.workspace ? { ...current.workspace, ...patch.workspace } : current.workspace,
@@ -273,5 +297,20 @@ export function setUiSettings(patch: Partial<{
        ON CONFLICT(key) DO UPDATE SET value = excluded.value`
     )
     .run(KEY, JSON.stringify(next))
+
+  // Turning Dev Mode off clears the in-memory ring buffer for this process.
+  if (current.devModeEnabled && !next.devModeEnabled) {
+    try {
+      // Lazy require avoids circular import at module load (settings ↔ windows ↔ …).
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { clearDevLogs } = require('../dev-logs/store') as {
+        clearDevLogs: () => number
+      }
+      clearDevLogs()
+    } catch {
+      /* ignore */
+    }
+  }
+
   return next
 }

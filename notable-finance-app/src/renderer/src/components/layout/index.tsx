@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   ArrowUpDown,
   Banknote,
+  Bug,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -14,6 +15,7 @@ import {
   History,
   LayoutDashboard,
   Menu,
+  MessageSquare,
   PiggyBank,
   RefreshCw,
   Settings,
@@ -24,6 +26,7 @@ import { useAuth } from "@/lib/auth-context";
 import { financeSections } from "@/lib/finance-data";
 import { cx } from "@/lib/finance-helpers";
 import { userInitials } from "@/lib/avatar";
+import { useUiSettings } from "@/lib/ui-settings-context";
 import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
 import type {
   ExpenseViewMode,
@@ -47,6 +50,8 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
   receivables: Banknote,
   history: History,
   sync: RefreshCw,
+  chat: MessageSquare,
+  "dev-logs": Bug,
   settings: Settings,
 };
 
@@ -86,15 +91,21 @@ function Sidebar({
   onNavigate?: () => void;
 }) {
   const { user } = useAuth();
+  const { chatEnabled, devModeEnabled } = useUiSettings();
   const conflictCount = useConflictCount();
   const sectionBadges: Partial<Record<FinanceSectionId, number>> = { sync: conflictCount };
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
       workflow: financeSections.filter((section) => section.group === "workflow"),
-      system: financeSections.filter((section) => section.group === "system"),
+      system: financeSections.filter(
+        (section) =>
+          section.group === "system" &&
+          (section.id !== "chat" || chatEnabled) &&
+          (section.id !== "dev-logs" || devModeEnabled),
+      ),
     }),
-    [],
+    [chatEnabled, devModeEnabled],
   );
   const initials = userInitials(user?.name, user?.email);
 

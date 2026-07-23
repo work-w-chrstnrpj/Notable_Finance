@@ -3,6 +3,8 @@ import { initDatabase, closeDatabase, listTables } from './db'
 import { registerIpc } from './ipc'
 import { appIconPath, createWindow, installMenu, onActivate } from './windows'
 import { reschedule, stopScheduler } from './sync/scheduler'
+import { appendDevLog } from './dev-logs/store'
+import { shutdownAppleClient } from './chat/apple'
 
 // Test hook: redirect userData (DB + keychain token file) to an isolated dir for e2e runs.
 if (process.env.NF_USER_DATA_DIR) {
@@ -27,6 +29,15 @@ app.whenReady().then(() => {
   installMenu()
   createWindow()
 
+  appendDevLog({
+    kind: 'system',
+    source: 'main',
+    action: 'app:ready',
+    message: `App ready (${listTables().length} tables)`,
+    detail: { dbPath },
+    ok: true
+  })
+
   // Arm auto-sync if the saved mode is 'auto' (Phase 4.3).
   reschedule()
 
@@ -39,8 +50,9 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
 
-// Close the SQLite handle cleanly on quit.
+// Close SQLite and Apple fm-proxy cleanly on quit.
 app.on('will-quit', () => {
   stopScheduler()
+  void shutdownAppleClient()
   closeDatabase()
 })

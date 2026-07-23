@@ -19,7 +19,9 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 | [project-structure.md](project-structure.md) | Folder layout and boundary intent | P1 |
 | [shared-core-and-monorepo.md](shared-core-and-monorepo.md) | Copy-now/extract-later reuse strategy, pnpm workspace | P1 |
 | [desktop-testing-strategy.md](desktop-testing-strategy.md) | Sync simulations, offline coverage, Electron e2e | P1 |
-| [development-plan.md](development-plan.md) | Phased plan and milestones (~1 week) | — |
+| [development-plan.md](development-plan.md) | Phased plan and milestones | — |
+| [chat-agent-design.md](chat-agent-design.md) | Chat copilot; **Phase 6 complete (6.6 hardening)** | P1 |
+| [chat-skills-and-overlays.md](chat-skills-and-overlays.md) | Chat runtime skills, overlays, clarify/refuse (**6.0 frozen**) | P1 |
 | [diagrams.md](diagrams.md) | Context, process, sync, merge, and state diagrams | — |
 
 ## Decisions locked (source for all docs)
@@ -34,5 +36,6 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 - **Platforms:** macOS, Linux, Windows; personal/unsigned now, signing later.
 - **At rest:** OS disk encryption; token in OS keychain (safeStorage).
 - **UI:** multi-window and in-window tabs; never show stale data without a badge.
+- **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md).
 - **Reuse:** copy web logic into desktop (web untouched); pnpm workspaces.
 - **Testing:** full offline + conflict simulations + Electron e2e.

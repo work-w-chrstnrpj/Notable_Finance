@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
+    "apple-local-llm": "^1.0.0",
     "better-sqlite3": "12.11.1",
     "drizzle-orm": "^0.45.2",
     "html-to-image": "^1.11.13",

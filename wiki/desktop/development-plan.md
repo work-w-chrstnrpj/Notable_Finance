@@ -58,13 +58,32 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 
 ¹ CHANGELOG + version 0.1.0 done; the `v0.1.0` git tag is deferred to the commit/release step.
 
+### Phase 6 — Chat agent (Finance Copilot)
+
+Design: [`chat-agent-design.md`](chat-agent-design.md) · skills/overlays: [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md).
+
+Locked: **Hybrid providers (C)**; confirm-before-write; no finance delete via chat; clarify missing fields; expense profiles + workflows. Chat **Settings-togglable**; Configure AI with **Name + API Key** (many keys). **Chat mode**: side nav = history, **Go Back to Main** to finance UI; deletable chat history.
+
+| # | Work item | Acceptance | Status |
+| --- | --- | --- | --- |
+| 6.0 | Design freeze (Chat mode nav, Name/API Key, skills incl. monitoring-summary + rebudget, overlays) | Design + skills/overlays docs reviewed; freeze checklist in chat-agent-design.md | **Done** (2026-07-24) |
+| 6.1 | Chat mode (history side nav + Go Back to Main) + Enable Chat + Configure AI (Name + API Key) + history CRUD + read-only send | Mode switch; named keys; New/delete chat; Q&A; no finance writes yet | **Done** (2026-07-24) |
+| 6.2 | Read tools (summaries, queries with expense viewMode, budget status) + **`monitoring-summary`** + **`rebudget`** (no writes) | Month/year monitoring answers; rebudget plan table only | **Done** (2026-07-24) |
+| 6.3 | Propose create/update: income, expense profiles (base/CC/Pasabuy), **all workflows** (Transfer, CC Payment, Alkansya, Receivables); confirm; clarify; refuse finance-delete | Approve writes dirty rows; incomplete prompts ask for fields; Cancel no-ops; delete refused | **Done** (2026-07-24) |
+| 6.4 | Persona overlays + slash modes (`/default`, `/roast`, `/cheer`, `/strict`, `/quiet`) | Tone changes; budget/dating/income heuristics work | **Done** (2026-07-24) |
+| 6.5 | Apple Intelligence read-only adapter (macOS stretch) | Bundled `fm-proxy` / Foundation Models; real compatibility probe | **Done** (2026-07-24; real FM bridge) |
+| 6.6 | Hardening: allowlist tests, confirm/clarify gates, profile field tests, docs (IPC/security/testing) | Tests green; contracts updated | **Done** (2026-07-24) |
+
 ## Milestone summary
 
 - **M1 (offline app):** Phases 0–1 — usable offline, real-time balances.
 - **M2 (backup sync):** Phases 2–3 — push + pull working (one-directional feel).
 - **M3 (full sync):** Phase 4 — bidirectional reconcile + conflict resolver.
 - **M4 (shippable):** Phase 5 — packaged for all three OSes.
+- **M5 (chat copilot):** Phase 6 — confirm-gated NL Q&A and create/edit over local data.
 
 ## Out of scope (this cycle)
 
 Code-signing/notarization, auto-update infra, shared-package extraction, webhook-driven realtime pull. See [`packaging-and-release.md`](packaging-and-release.md) and [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
+
+Phase 6 also excludes: auto-commit writes, chat-driven **finance** delete, Apple-backed write tool loops, MCP-as-required-runtime, and RAG-over-SQLite as the primary retrieval path (see design doc). Incomplete create/edit prompts must clarify required fields (including CC/Pasabuy/workflow fields) rather than inventing them. **Chat conversation** delete (thread / all history) is allowed and required.

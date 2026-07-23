@@ -76,9 +76,43 @@ Accounts/categories are read-only reference — no create/update/delete.
 ### `window.api.settings`
 `get()`, `update(patch)` — durable UI prefs in SQLite `app_settings` (`ui.settings`):
 profile (`displayName`, `avatarDataUrl`), theme, workspace view modes/date/sidebar/FAB/last section,
-Income/Expense/Accounts/Monitoring filters, and `hardDeleteEnabled`. Soft delete remains the default;
+Income/Expense/Accounts/Monitoring filters, `hardDeleteEnabled`, and Chat flags
+(`chatEnabled` default false, `chatPreferAppleReadOnly`, `chatDefaultModel`). Soft delete remains the default;
 hard delete removes the local row and archives the Notion page to trash on push. Sync mode/interval
 live under `window.api.sync`.
+
+### `window.api.chat` (Phase 6 — Finance Copilot)
+Opt-in AI chat. Credentials and delete-all-history work from Settings even when Chat is off.
+Thread CRUD and `send` require `chatEnabled`. API keys are encrypted in OS `safeStorage` (never returned).
+Overlays change tone only — never amounts, never finance delete, never auto-Approve.
+**Apple Intelligence read-only (macOS):** when `chatPreferAppleReadOnly` and a real Foundation Models probe reports `appleAvailable`, ask/summarize skills may run without BYOK (bundled `fm-proxy`). Propose + Approve always require a named API key.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `status(opts?)` | `ChatStatusDto` | Enabled flag, credential count, BYOK readiness, Apple probe (`appleAvailable`, `appleStatus`, `appleStatusLabel`, `appleDetail`, `appleReasonCode`, `canUseAppleReadOnly`). Optional `{ forceRefresh: true }` re-runs compatibility. |
+| `providers()` | `ChatProviderCatalogDto[]` | Catalog of Gemini / Groq / Cerebras / OpenRouter / OpenCode / Mistral / Claude / OpenAI / Custom with free-tier model lists. |
+| `models(credentialId?)` | `{ id, label, free? }[]` | Models for the credential’s provider (or full curated list). |
+| `overlays()` | `{ id, slash, label, hint }[]` | Slash persona catalog (`/default`…`/quiet`). |
+| `isAppleOs()` | `boolean` | Show Mac-only Configure AI controls. |
+| `listCredentials()` / `createCredential(name, apiKey, opts?)` / `updateCredential(id, patch)` / `setDefaultCredential(id)` / `deleteCredential(id)` | credential DTOs / `true` | Name + API Key + optional `baseUrl` (OpenAI default, Gemini Google OpenAI-compat host, or custom). Fingerprint last-4 in DTO. |
+| `listThreads()` / `getThread(id)` / `createThread(input?)` / `updateThread(id, patch)` / `deleteThread(id)` | thread DTOs / `true` | Requires Chat enabled. Thread `overlay` persists slash mode. |
+| `deleteAllThreads()` | `true` | Clears conversation history only (not finance records). Allowed when Chat is off. |
+| `listMessages(threadId)` | `ChatMessageDto[]` | Requires Chat enabled. |
+| `send({ threadId?, content, credentialId?, modelId?, overlay? })` | `ChatSendResult` | BYOK agent loop **or** Apple FM read-only turn for ask skills (tools → prompt → on-device summarize). Slash tokens / `overlay` set persona. Returns optional `drafts[]` for confirm cards. Finance delete refused. Write skills without BYOK error with “Select an API credential for writes.” |
+| `listDrafts(threadId?)` | `ChatDraftDto[]` | Pending `needs_input` / `ready` drafts. |
+| `confirmDraft(draftId)` | `ChatConfirmResult` | Applies create/update when draft is complete **and** at least one BYOK credential exists; optional `quip`; broadcasts `records:changed`. Rejects incomplete / Apple-only / delete. |
+| `cancelDraft(draftId)` | `ChatDraftDto & { quip? }` | Discards draft; no finance write; optional cancel ack. |
+
+### `window.api.devLogs` (Dev Mode)
+In-memory debug ring buffer (max 500). **Never persisted to SQLite.** Cleared on app quit or when `devModeEnabled` turns off. Logging is active only while Settings → Developer → Dev Mode is on.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `list(limit?)` | `DevLogEntry[]` | Newest retained entries (clicks, IPC/api, operations, system). |
+| `clear()` | `number` | Empties the buffer; returns prior count. |
+| `append({ kind, action, message, detail?, ok? })` | `DevLogEntry \| null` | Renderer-originated click/nav/operation logs. No-ops when Dev Mode is off. Secrets redacted. |
+
+Event: `devLogs:entry` — live stream of each new `DevLogEntry` to all windows.
 
 ## Events (main → renderer)
 
@@ -89,6 +123,7 @@ live under `window.api.sync`.
 | `sync:conflict` | `Conflict[]` | A pull produced true conflicts needing resolution. |
 | `derived:updated` | `{ accounts?, categories? }` | Derived values recomputed → live balances/budgets. |
 | `tabs:command` | `{ action: 'new' \| 'close' \| 'next' \| 'prev' }` | Focused window only — File/Window menu accelerators for in-window tabs. |
+| `devLogs:entry` | `DevLogEntry` | Dev Mode — each new in-memory log line (all windows). |
 
 Renderer subscribes via `window.api.on(channel, handler)` and unsubscribes on unmount.
 

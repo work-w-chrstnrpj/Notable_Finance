@@ -10,6 +10,8 @@ export type FinanceSectionId =
   | "receivables"
   | "history"
   | "sync"
+  | "chat"
+  | "dev-logs"
   | "settings";
 
 export type AccountType =

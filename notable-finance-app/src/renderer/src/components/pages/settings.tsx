@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Database, Palette, SlidersHorizontal, UserRound } from "lucide-react";
+import { Database, Bug, MessageSquare, Palette, SlidersHorizontal, UserRound } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
+import { useUiSettings } from "@/lib/ui-settings-context";
 import { userInitials } from "@/lib/avatar";
+import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
 import {
@@ -11,10 +13,11 @@ import {
   NotionConfigModal,
   InterfaceManageModal,
   ProfileManageModal,
+  AiChatConfigModal,
 } from "@/components/pages/settings-modals";
 import type { SchemaHealth } from "@/types/finance";
 
-// Desktop settings — profile + interface/theme/Notion. No cloud account management.
+// Desktop settings — profile + interface/theme/Notion/AI/Dev. No cloud account management.
 
 function SettingsPage({
   schemaHealth,
@@ -30,6 +33,7 @@ function SettingsPage({
   const [modal, setModal] = useState<SettingsModalKind>(null);
   useTheme();
   const { user } = useAuth();
+  const { chatEnabled, setChatEnabled, devModeEnabled, setDevModeEnabled } = useUiSettings();
   const initials = userInitials(user?.name, user?.email);
 
   return (
@@ -117,6 +121,72 @@ function SettingsPage({
           </button>
         </div>
       </Panel>
+      <Panel title="AI / Chat">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Finance Copilot</p>
+            <p className="settings-toggle__hint">
+              Turn Chat on or off and{" "}
+              <button
+                type="button"
+                className="settings-inline-link"
+                onClick={() => setModal("ai")}
+              >
+                configure
+              </button>{" "}
+              named API keys. Chat is off by default.
+            </p>
+            <label
+              className={cx("switch", chatEnabled && "switch--on")}
+              aria-label="Enable Chat"
+              style={{ marginTop: "0.75rem" }}
+            >
+              <input
+                type="checkbox"
+                checked={chatEnabled}
+                onChange={(e) => void setChatEnabled(e.target.checked)}
+              />
+              <span className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+            </label>
+          </div>
+          <button type="button" className="button button--primary" onClick={() => setModal("ai")}>
+            <MessageSquare size={16} />
+            Configure
+          </button>
+        </div>
+      </Panel>
+      <Panel title="Developer">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Dev Mode</p>
+            <p className="settings-toggle__hint">
+              When on, shows <strong>Dev Logs</strong> in the sidebar and records clicks, IPC/API
+              calls, and operations in memory. Logs are discarded when the app closes (never written
+              to SQLite). Off by default.
+            </p>
+            <label
+              className={cx("switch", devModeEnabled && "switch--on")}
+              aria-label="Enable Dev Mode"
+              style={{ marginTop: "0.75rem" }}
+            >
+              <input
+                type="checkbox"
+                checked={devModeEnabled}
+                onChange={(e) => void setDevModeEnabled(e.target.checked)}
+              />
+              <span className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+            </label>
+          </div>
+          <span className="settings-toggle__hint" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Bug size={16} />
+            {devModeEnabled ? "Logging" : "Idle"}
+          </span>
+        </div>
+      </Panel>
       <section className="two-column">
         <Panel title="Local Data" action={<Badge tone="green">This device</Badge>}>
           <div className="form-grid form-grid--single">
@@ -159,6 +229,7 @@ function SettingsPage({
         />
       )}
       {modal === "profile" && <ProfileManageModal onClose={() => setModal(null)} />}
+      {modal === "ai" && <AiChatConfigModal onClose={() => setModal(null)} />}
     </div>
   );
 }

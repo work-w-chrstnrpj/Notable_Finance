@@ -7,6 +7,7 @@ import { cx } from "@/lib/finance-helpers";
 import { activeSelectorUnit, anchorMonth, todayIso } from "@/lib/date-range";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
+import { navigate } from "@/lib/router";
 
 // Layout
 import { Sidebar, TopBar } from "@/components/layout";
@@ -21,6 +22,9 @@ import { WorkflowPage } from "@/components/pages/workflow";
 import { HistoryPage } from "@/components/pages/history";
 import { SyncPage } from "@/components/pages/sync";
 import { SettingsPage } from "@/components/pages/settings";
+import { ChatModePage } from "@/components/pages/chat";
+import { DevLogsPage } from "@/components/pages/dev-logs";
+import { logDevEvent } from "@/lib/dev-log";
 
 // FAB
 import { WorkspaceFab } from "@/components/fab";
@@ -38,7 +42,7 @@ import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, SchemaHealth, S
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
   const { user } = useAuth();
   const { refreshReferenceData } = useFinanceData();
-  const { settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const { settings, ready: settingsReady, updateSettings, chatEnabled, devModeEnabled } = useUiSettings();
   const [workspaceHydrated, setWorkspaceHydrated] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<string>("2026-07-01");
@@ -65,6 +69,31 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     setWorkspaceHydrated(true);
   }, [settingsReady, workspaceHydrated, settings.workspace]);
 
+  // If Chat / Dev Logs disabled while on that section, bounce back to last finance section.
+  useEffect(() => {
+    if (!settingsReady) return;
+    if (activeSection === "chat" && !chatEnabled) {
+      navigate(
+        `/${settings.workspace.lastSection !== "chat" ? settings.workspace.lastSection || "dashboard" : "dashboard"}`,
+      );
+    }
+    if (activeSection === "dev-logs" && !devModeEnabled) {
+      navigate(
+        `/${
+          settings.workspace.lastSection !== "dev-logs" && settings.workspace.lastSection !== "chat"
+            ? settings.workspace.lastSection || "dashboard"
+            : "dashboard"
+        }`,
+      );
+    }
+  }, [
+    activeSection,
+    chatEnabled,
+    devModeEnabled,
+    settingsReady,
+    settings.workspace.lastSection,
+  ]);
+
   useDebouncedPersist(
     workspaceHydrated,
     [selectedDate, incomeViewMode, expenseViewMode, sidebarCollapsed, showFab, activeSection],
@@ -76,7 +105,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           expenseViewMode,
           sidebarCollapsed,
           showFab,
-          lastSection: activeSection,
+          // Remember last *finance* section (skip chat / dev-logs modes).
+          lastSection:
+            activeSection === "chat" || activeSection === "dev-logs"
+              ? settings.workspace.lastSection
+              : activeSection,
         },
       });
       try {
@@ -98,6 +131,12 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   async function runSyncPass(kind: "full" | "pull" | "push") {
     setActiveSyncKind(kind);
     setSyncState("syncing");
+    logDevEvent({
+      kind: "operation",
+      action: `sync:${kind}`,
+      message: `Starting ${kind} sync`,
+      ok: true,
+    });
     try {
       const result =
         kind === "pull"
@@ -110,11 +149,31 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
         refreshReferenceData();
+        logDevEvent({
+          kind: "operation",
+          action: `sync:${kind}`,
+          message: `${kind} sync succeeded`,
+          ok: true,
+        });
       } else {
         setSyncState("error");
+        logDevEvent({
+          kind: "operation",
+          action: `sync:${kind}`,
+          message: `${kind} sync failed`,
+          detail: { error: result.error },
+          ok: false,
+        });
       }
-    } catch {
+    } catch (err) {
       setSyncState("error");
+      logDevEvent({
+        kind: "operation",
+        action: `sync:${kind}`,
+        message: `${kind} sync threw`,
+        detail: { error: err instanceof Error ? err.message : String(err) },
+        ok: false,
+      });
     } finally {
       setActiveSyncKind(null);
     }
@@ -134,6 +193,16 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     } catch {
       setSchemaHealth("warning");
     }
+  }
+
+  if (activeSection === "chat" && chatEnabled) {
+    return (
+      <div className="chat-mode-host">
+        <ErrorBoundary sectionLabel="Chat">
+          <ChatModePage />
+        </ErrorBoundary>
+      </div>
+    );
   }
 
   return (
@@ -233,6 +302,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
                 onPushSync={() => void runSyncPass("push")}
                 onSync={runSync}
               />
+            </ErrorBoundary>
+          )}
+          {activeSection === "dev-logs" && (
+            <ErrorBoundary sectionLabel="Dev Logs">
+              <DevLogsPage />
             </ErrorBoundary>
           )}
           {activeSection === "settings" && (

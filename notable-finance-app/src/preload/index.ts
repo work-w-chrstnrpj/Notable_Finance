@@ -2,6 +2,15 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   AccountDto,
   ApiResult,
+  ChatCredentialDto,
+  ChatConfirmResult,
+  ChatDraftDto,
+  ChatMessageDto,
+  ChatOverlayId,
+  ChatProviderCatalogDto,
+  ChatSendResult,
+  ChatStatusDto,
+  ChatThreadDto,
   ConflictGroup,
   ConflictResolution,
   ConnectResult,
@@ -9,6 +18,8 @@ import type {
   CreateIncomeInput,
   CreateSchedulerInput,
   DashboardSummary,
+  DevLogEntry,
+  DevLogKind,
   DiscoveredDb,
   EventChannel,
   ExpenseCategoryOption,
@@ -42,7 +53,8 @@ const EVENT_CHANNELS: EventChannel[] = [
   'records:changed',
   'derived:updated',
   'sync:status',
-  'tabs:command'
+  'tabs:command',
+  'devLogs:entry'
 ]
 
 const api = {
@@ -171,11 +183,96 @@ const api = {
       ipcRenderer.invoke('settings:update', patch)
   },
 
+  chat: {
+    status: (opts?: { forceRefresh?: boolean }): Promise<ApiResult<ChatStatusDto>> =>
+      ipcRenderer.invoke('chat:status', opts),
+    providers: (): Promise<ApiResult<ChatProviderCatalogDto[]>> =>
+      ipcRenderer.invoke('chat:providers'),
+    models: (
+      credentialId?: string | null
+    ): Promise<ApiResult<Array<{ id: string; label: string; free?: boolean }>>> =>
+      ipcRenderer.invoke('chat:models', credentialId),
+    isAppleOs: (): Promise<ApiResult<boolean>> => ipcRenderer.invoke('chat:isAppleOs'),
+    listCredentials: (): Promise<ApiResult<ChatCredentialDto[]>> =>
+      ipcRenderer.invoke('chat:listCredentials'),
+    createCredential: (
+      name: string,
+      apiKey: string,
+      opts?: { baseUrl?: string | null; providerId?: string | null }
+    ): Promise<ApiResult<ChatCredentialDto>> =>
+      ipcRenderer.invoke('chat:createCredential', name, apiKey, opts),
+    updateCredential: (
+      id: string,
+      patch: { name?: string; apiKey?: string; baseUrl?: string | null; providerId?: string | null }
+    ): Promise<ApiResult<ChatCredentialDto>> =>
+      ipcRenderer.invoke('chat:updateCredential', id, patch),
+    setDefaultCredential: (id: string): Promise<ApiResult<ChatCredentialDto>> =>
+      ipcRenderer.invoke('chat:setDefaultCredential', id),
+    deleteCredential: (id: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('chat:deleteCredential', id),
+    listThreads: (): Promise<ApiResult<ChatThreadDto[]>> => ipcRenderer.invoke('chat:listThreads'),
+    getThread: (id: string): Promise<ApiResult<ChatThreadDto>> =>
+      ipcRenderer.invoke('chat:getThread', id),
+    createThread: (input?: {
+      title?: string
+      credentialId?: string | null
+      modelId?: string | null
+      overlay?: string
+    }): Promise<ApiResult<ChatThreadDto>> => ipcRenderer.invoke('chat:createThread', input),
+    updateThread: (
+      id: string,
+      patch: {
+        title?: string
+        credentialId?: string | null
+        modelId?: string | null
+        overlay?: string
+      }
+    ): Promise<ApiResult<ChatThreadDto>> => ipcRenderer.invoke('chat:updateThread', id, patch),
+    deleteThread: (id: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('chat:deleteThread', id),
+    deleteAllThreads: (): Promise<ApiResult<true>> => ipcRenderer.invoke('chat:deleteAllThreads'),
+    listMessages: (threadId: string): Promise<ApiResult<ChatMessageDto[]>> =>
+      ipcRenderer.invoke('chat:listMessages', threadId),
+    send: (input: {
+      threadId?: string | null
+      content: string
+      credentialId?: string | null
+      modelId?: string | null
+      overlay?: ChatOverlayId | null
+    }): Promise<ApiResult<ChatSendResult>> => ipcRenderer.invoke('chat:send', input),
+    listDrafts: (threadId?: string): Promise<ApiResult<ChatDraftDto[]>> =>
+      ipcRenderer.invoke('chat:listDrafts', threadId),
+    confirmDraft: (draftId: string): Promise<ApiResult<ChatConfirmResult>> =>
+      ipcRenderer.invoke('chat:confirmDraft', draftId),
+    cancelDraft: (
+      draftId: string
+    ): Promise<
+      ApiResult<ChatDraftDto & { quip?: string; assistantMessage?: ChatMessageDto | null }>
+    > => ipcRenderer.invoke('chat:cancelDraft', draftId),
+    overlays: (): Promise<
+      ApiResult<Array<{ id: ChatOverlayId; slash: string; label: string; hint: string }>>
+    > => ipcRenderer.invoke('chat:overlays')
+  },
+
+  devLogs: {
+    list: (limit?: number): Promise<ApiResult<DevLogEntry[]>> =>
+      ipcRenderer.invoke('devLogs:list', limit),
+    clear: (): Promise<ApiResult<number>> => ipcRenderer.invoke('devLogs:clear'),
+    append: (input: {
+      kind: DevLogKind
+      action: string
+      message: string
+      detail?: Record<string, unknown> | null
+      ok?: boolean | null
+    }): Promise<ApiResult<DevLogEntry | null>> => ipcRenderer.invoke('devLogs:append', input)
+  },
+
   /**
    * Subscribe to a main→renderer event. Returns an unsubscribe function
    * (call it on unmount). Only the allow-listed event channels work.
    * Payload shape per channel: records:changed → RecordsChangedEvent,
-   * sync:status → SyncStatus, derived:updated → {}.
+   * sync:status → SyncStatus, derived:updated → {},
+   * devLogs:entry → DevLogEntry.
    */
   on: (channel: EventChannel, handler: (payload: unknown) => void): (() => void) => {
     if (!EVENT_CHANNELS.includes(channel)) {

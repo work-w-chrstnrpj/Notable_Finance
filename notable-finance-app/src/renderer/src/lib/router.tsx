@@ -4,10 +4,11 @@
 // With in-window tabs, navigate() updates the *active* tab's section via a listener.
 import { useEffect, useState, type AnchorHTMLAttributes, type ReactNode } from "react";
 import type { FinanceSectionId } from "@/types/finance";
+import { logDevEvent } from "@/lib/dev-log";
 
 const VALID_SECTIONS: FinanceSectionId[] = [
   "dashboard", "accounts", "income", "expense", "monthly-monitoring",
-  "transfer", "credit-card-payment", "alkansya", "receivables", "history", "sync", "settings",
+  "transfer", "credit-card-payment", "alkansya", "receivables", "history", "sync", "chat", "dev-logs", "settings",
 ];
 
 export function parseSection(hrefOrHash: string): FinanceSectionId {
@@ -37,6 +38,13 @@ export function syncHashToSection(section: FinanceSectionId): void {
 
 export function navigate(href: string): void {
   const section = parseSection(href);
+  logDevEvent({
+    kind: "operation",
+    action: "navigate",
+    message: `Navigate to /${section}`,
+    detail: { section, href },
+    ok: true,
+  });
   navigateListener?.(section);
   syncHashToSection(section);
 }

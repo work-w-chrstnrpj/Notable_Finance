@@ -12,6 +12,8 @@ export const financeSections: FinanceSection[] = [
   { id: "receivables", label: "Receivables", group: "workflow" },
   { id: "history", label: "History", group: "system" },
   { id: "sync", label: "Sync Center", shortLabel: "Sync", group: "system" },
+  { id: "chat", label: "Chat", group: "system" },
+  { id: "dev-logs", label: "Dev Logs", group: "system" },
   { id: "settings", label: "Settings", group: "system" },
 ];
 

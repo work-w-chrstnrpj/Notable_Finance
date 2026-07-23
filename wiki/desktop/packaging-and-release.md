@@ -13,6 +13,13 @@ How the desktop app is built, packaged, and distributed. Distribution is **perso
 - Use `electron-builder`'s rebuild (or `@electron/rebuild`) so the SQLite binary matches the packaged Electron ABI.
 - macOS universal builds require the native module available for both arm64 and x64.
 
+## Apple Intelligence helper (`fm-proxy`)
+
+- Dependency: `apple-local-llm` (main process only). Bundled binary: `node_modules/apple-local-llm/bin/fm-proxy`.
+- `electron-builder.yml` unpacks `**/apple-local-llm/bin/**` via `asarUnpack` so Electron can spawn the helper (and may also copy `fm-proxy` under `extraResources`).
+- On quit, main calls `client.shutdown()` so the helper process exits.
+- Gatekeeper / notarization later must allow spawning the helper; Apple Silicon + Apple Intelligence OS settings are required at runtime (see Chat design).
+
 ## Build outputs
 
 | Platform | Artifact |
