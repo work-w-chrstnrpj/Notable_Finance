@@ -1,0 +1,11 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Notable Finance mark: dark squircle border, cream fill, bold black F -->
+  <rect x="16" y="24" width="992" height="976" rx="250" ry="250" fill="#17181c"/>
+  <rect x="74" y="78" width="876" height="864" rx="196" ry="196" fill="#f7f5f0"/>
+  <!-- Bold "F": stem + top arm + middle arm (same fill → renders as one solid letter) -->
+  <g fill="#17181c">
+    <rect x="300" y="182" width="150" height="646" rx="10"/>
+    <rect x="300" y="182" width="392" height="156" rx="10"/>
+    <rect x="300" y="430" width="330" height="150" rx="10"/>
+  </g>
+</svg>

@@ -24,6 +24,7 @@ import {
   pageToIncomeCategoryFields,
   pageToIncomeFields
 } from '../notion/page-extractors'
+import { downloadImageAsDataUri, isCachedDataUri } from '../notion/files'
 import { metaGet, metaSet, META_KEYS } from './meta'
 import { emitStatus, isRunning, setRunning, syncStatus } from './status'
 import { threeWayMerge, type FieldMap } from './merge'
@@ -85,15 +86,29 @@ function upsertReference(
 }
 
 async function pullAccounts(dbId: string, since?: string): Promise<number> {
+  const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
   let n = 0
   for (const page of pages) {
     const f = pageToAccountFields(page)
+    const npid = pageId(page)
+
+    // QR code: cache the image bytes as a data: URI so it works offline forever. Notion's
+    // file URL is a temporary signed link; storing it would break after ~1h and offline.
+    const existing = db
+      .prepare('SELECT qr_code FROM accounts WHERE notion_page_id = ?')
+      .get(npid) as { qr_code: string | null } | undefined
+    let qrCode = existing?.qr_code ?? null
+    if (f.qr_code && !isCachedDataUri(qrCode)) {
+      const cached = await downloadImageAsDataUri(f.qr_code)
+      if (cached) qrCode = cached // only overwrite on a successful download (offline-safe)
+    }
+
     n += upsertReference(
       'accounts',
       ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'qr_code'],
-      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, f.qr_code],
-      pageId(page),
+      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, qrCode],
+      npid,
       pageLastEditedTime(page)
     )
   }
@@ -298,9 +313,13 @@ export async function pullAll(full = false): Promise<PullResult> {
   const passStart = new Date().toISOString() // captured before fetch, so in-flight edits are caught next time
 
   try {
-    if (mapping.accounts) result.referenceUpserted += await pullAccounts(mapping.accounts, since)
-    if (mapping.incomeCategories) result.referenceUpserted += await pullIncomeCategories(mapping.incomeCategories, since)
-    if (mapping.expenseCategories) result.referenceUpserted += await pullExpenseCategories(mapping.expenseCategories, since)
+    // Reference caches (accounts + categories) are small and read-only, so ALWAYS full-refresh
+    // them (ignore the incremental cursor). This keeps QR codes, names, budgets, and credit
+    // limits current on every sync and backfills them without a heavy full record re-pull.
+    // Only the large income/expense tables use the cursor (below).
+    if (mapping.accounts) result.referenceUpserted += await pullAccounts(mapping.accounts)
+    if (mapping.incomeCategories) result.referenceUpserted += await pullIncomeCategories(mapping.incomeCategories)
+    if (mapping.expenseCategories) result.referenceUpserted += await pullExpenseCategories(mapping.expenseCategories)
 
     const accountMap = notionToLocal('accounts')
     const incomeCatMap = notionToLocal('income_categories')

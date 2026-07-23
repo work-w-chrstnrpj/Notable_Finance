@@ -5,6 +5,15 @@ import type { EventChannel, RecordsChangedEvent } from '../../shared/finance.typ
 // Window lifecycle + multi-window management (Phase 1.5). All windows share the single
 // main-process data owner; main→renderer events fan out to every window.
 
+/**
+ * App icon path. In dev, the source PNG; in packaged win/linux builds, electron-builder
+ * bakes the icon into the executable so a window-level icon isn't needed (mac uses the
+ * bundle .icns). Only used for dev/win/linux window + dev dock.
+ */
+export function appIconPath(): string {
+  return join(app.getAppPath(), 'build', 'icon.png')
+}
+
 export function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
     width: 1280,
@@ -14,6 +23,7 @@ export function createWindow(): BrowserWindow {
     show: false,
     autoHideMenuBar: false,
     title: 'Notable Finance',
+    ...(process.platform !== 'darwin' && !app.isPackaged ? { icon: appIconPath() } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       // Renderer is untrusted-by-design (wiki/desktop/security.md + ipc-contract.md):

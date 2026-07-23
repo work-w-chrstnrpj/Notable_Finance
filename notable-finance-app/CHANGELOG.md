@@ -23,8 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     pasabuyPaidPeriod`; 0 when fully received) instead of always ₱0.00, and that column is
     relabelled "Pasabuyer Balance". Gross Price / Installment / Paid / Received amounts are
     ported verbatim from the Notion formulas.
-  - **QR Code** now syncs: the account property is "Qr Code" (not "QR Code" — the old name
-    never matched), with a new `qr_code` column, pull extraction, and DTO field.
+  - **QR Code** now syncs AND works fully offline: the account property is "Qr Code" (not
+    "QR Code" — the old name never matched). During pull the QR image **bytes are downloaded
+    and cached as a `data:` URI** (new `qr_code` column), rather than storing Notion's signed
+    file URL which expires in ~1h and breaks offline. Already-cached QRs are skipped on
+    re-pull; download failures are non-fatal (offline-safe). Backfills existing accounts on
+    the next full "Pull from Notion".
 
 ### Changed
 

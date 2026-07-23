@@ -74,7 +74,17 @@ function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand__mark">N</div>
+        <div className="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <rect x="16" y="24" width="992" height="976" rx="250" fill="#17181c" />
+            <rect x="74" y="78" width="876" height="864" rx="196" fill="#f7f5f0" />
+            <g fill="#17181c">
+              <rect x="300" y="182" width="150" height="646" rx="10" />
+              <rect x="300" y="182" width="392" height="156" rx="10" />
+              <rect x="300" y="430" width="330" height="150" rx="10" />
+            </g>
+          </svg>
+        </div>
         <div>
           <p className="brand__name">Notable Finance</p>
         </div>

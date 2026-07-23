@@ -1,7 +1,7 @@
-import { app } from 'electron'
+import { app, nativeImage } from 'electron'
 import { initDatabase, closeDatabase, listTables } from './db'
 import { registerIpc } from './ipc'
-import { createWindow, installMenu, onActivate } from './windows'
+import { appIconPath, createWindow, installMenu, onActivate } from './windows'
 import { reschedule, stopScheduler } from './sync/scheduler'
 
 // Test hook: redirect userData (DB + keychain token file) to an isolated dir for e2e runs.
@@ -13,6 +13,12 @@ if (process.env.NF_USER_DATA_DIR) {
 // logic, IPC. See wiki/desktop/desktop-architecture.md.
 
 app.whenReady().then(() => {
+  // macOS dock icon in dev (packaged builds get the icon from the app bundle).
+  if (process.platform === 'darwin' && !app.isPackaged) {
+    const icon = nativeImage.createFromPath(appIconPath())
+    if (!icon.isEmpty()) app.dock?.setIcon(icon)
+  }
+
   // Open the local SQLite store and run migrations before any window can request data.
   const { dbPath } = initDatabase()
   console.log(`[notable-finance] db ready at ${dbPath} (${listTables().length} tables)`)
