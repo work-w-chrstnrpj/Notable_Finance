@@ -38,7 +38,12 @@ import type {
 // explicitly allow-listed here; the renderer cannot invoke arbitrary channels.
 // Mirrors wiki/desktop/ipc-contract.md.
 
-const EVENT_CHANNELS: EventChannel[] = ['records:changed', 'derived:updated', 'sync:status']
+const EVENT_CHANNELS: EventChannel[] = [
+  'records:changed',
+  'derived:updated',
+  'sync:status',
+  'tabs:command'
+]
 
 const api = {
   versions: {

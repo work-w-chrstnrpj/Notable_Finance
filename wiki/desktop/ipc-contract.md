@@ -84,6 +84,7 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `sync:status` | `SyncStatus` | Sync starts/progresses/ends; online/offline changes. |
 | `sync:conflict` | `Conflict[]` | A pull produced true conflicts needing resolution. |
 | `derived:updated` | `{ accounts?, categories? }` | Derived values recomputed → live balances/budgets. |
+| `tabs:command` | `{ action: 'new' \| 'close' \| 'next' \| 'prev' }` | Focused window only — File/Window menu accelerators for in-window tabs. |
 
 Renderer subscribes via `window.api.on(channel, handler)` and unsubscribes on unmount.
 

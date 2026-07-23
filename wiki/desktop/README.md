@@ -33,6 +33,6 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 - **Multi-workspace:** bring-your-own-Notion; connection required at first run.
 - **Platforms:** macOS, Linux, Windows; personal/unsigned now, signing later.
 - **At rest:** OS disk encryption; token in OS keychain (safeStorage).
-- **UI:** multi-window; never show stale data without a badge.
+- **UI:** multi-window and in-window tabs; never show stale data without a badge.
 - **Reuse:** copy web logic into desktop (web untouched); pnpm workspaces.
 - **Testing:** full offline + conflict simulations + Electron e2e.

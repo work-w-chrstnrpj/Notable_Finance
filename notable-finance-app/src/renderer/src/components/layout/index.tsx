@@ -56,11 +56,13 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
 function useConflictCount(): number {
   const [count, setCount] = useState(0);
   useEffect(() => {
+    const api = window.api;
+    if (!api?.sync?.status || !api?.on) return;
     let alive = true;
-    void window.api.sync.status().then((r) => {
+    void api.sync.status().then((r) => {
       if (alive && r.ok) setCount(r.data.conflictCount ?? 0);
     });
-    const off = window.api.on("sync:status", (payload) =>
+    const off = api.on("sync:status", (payload) =>
       setCount((payload as { conflictCount?: number }).conflictCount ?? 0),
     );
     return () => {

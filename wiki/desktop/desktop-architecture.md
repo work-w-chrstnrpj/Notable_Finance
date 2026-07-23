@@ -45,7 +45,7 @@ The technical design for **Notable Finance App**, the local-first Electron deskt
 
 - **Main process** owns all data and side effects: the SQLite database, the sync engine, the Notion adapter, the domain/reporting logic, and the encrypted Notion token. It is the only place with filesystem, database, and network access.
 - **Preload** exposes a **typed, allow-listed** API (`window.api.*`) via `contextBridge`. `contextIsolation` is on and `nodeIntegration` is off. See [`ipc-contract.md`](ipc-contract.md).
-- **Renderer** is the React UI. It has no direct access to SQLite, Notion, or Node APIs — it calls `window.api.*` and subscribes to events. Supports **multiple windows**; all windows talk to the single main-process data owner.
+- **Renderer** is the React UI. It has no direct access to SQLite, Notion, or Node APIs — it calls `window.api.*` and subscribes to events. Supports **multiple windows** and **in-window tabs** (each tab is a section view); all windows/tabs talk to the single main-process data owner so data stays live.
 
 ## Layered structure (main process)
 

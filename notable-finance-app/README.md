@@ -36,6 +36,8 @@ app remains the on-the-go, cloud-backed client.
   transport and local-first sync differ.
 - **1.5** — multi-window (File → New Window, Cmd/Ctrl+N): every data change broadcasts
   `records:changed` / `derived:updated` to all windows, which refetch — windows stay consistent.
+- **In-window tabs** — File → New Tab (Cmd/Ctrl+T) opens another section view in the same
+  window; Close Tab (Cmd/Ctrl+W). Tabs share SQLite + the query cache, so edits stay live.
 
 **Phase 2 complete** (2026-07-21) — Notion onboarding + push, in the new **Sync** section:
 

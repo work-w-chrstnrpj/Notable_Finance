@@ -1,9 +1,14 @@
 import { app, shell, BrowserWindow, Menu } from 'electron'
 import { join } from 'node:path'
-import type { EventChannel, RecordsChangedEvent } from '../../shared/finance.types'
+import type {
+  EventChannel,
+  RecordsChangedEvent,
+  TabsCommandEvent
+} from '../../shared/finance.types'
 
 // Window lifecycle + multi-window management (Phase 1.5). All windows share the single
 // main-process data owner; main→renderer events fan out to every window.
+// In-window tabs are renderer-owned; File menu sends tabs:command to the focused window.
 
 /**
  * App icon path. In dev, the source PNG; in packaged win/linux builds, electron-builder
@@ -60,13 +65,31 @@ export function broadcast(channel: EventChannel, payload?: RecordsChangedEvent |
   }
 }
 
-/** App menu with New Window (Cmd/Ctrl+N) — the multi-window entry point. */
+/** Send an event only to the focused window (in-window tab commands). */
+export function sendToFocused(channel: EventChannel, payload?: TabsCommandEvent | object): void {
+  const focused = BrowserWindow.getFocusedWindow()
+  if (!focused || focused.isDestroyed()) return
+  focused.webContents.send(channel, payload ?? {})
+}
+
+/** App menu: in-window tabs + multi-window entry points. */
 export function installMenu(): void {
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
     {
       label: 'File',
       submenu: [
+        {
+          label: 'New Tab',
+          accelerator: 'CmdOrCtrl+T',
+          click: () => sendToFocused('tabs:command', { action: 'new' })
+        },
+        {
+          label: 'Close Tab',
+          accelerator: 'CmdOrCtrl+W',
+          click: () => sendToFocused('tabs:command', { action: 'close' })
+        },
+        { type: 'separator' },
         {
           label: 'New Window',
           accelerator: 'CmdOrCtrl+N',
@@ -75,12 +98,38 @@ export function installMenu(): void {
           }
         },
         { type: 'separator' },
-        process.platform === 'darwin' ? { role: 'close' as const } : { role: 'quit' as const }
+        process.platform === 'darwin'
+          ? {
+              label: 'Close Window',
+              accelerator: 'CmdOrCtrl+Shift+W',
+              role: 'close'
+            }
+          : { role: 'quit' as const }
       ]
     },
     { role: 'editMenu' },
     { role: 'viewMenu' },
-    { role: 'windowMenu' }
+    {
+      label: 'Window',
+      submenu: [
+        {
+          label: 'Next Tab',
+          accelerator: 'Ctrl+Tab',
+          click: () => sendToFocused('tabs:command', { action: 'next' })
+        },
+        {
+          label: 'Previous Tab',
+          accelerator: 'Ctrl+Shift+Tab',
+          click: () => sendToFocused('tabs:command', { action: 'prev' })
+        },
+        { type: 'separator' },
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(process.platform === 'darwin'
+          ? [{ type: 'separator' as const }, { role: 'front' as const }]
+          : [{ role: 'close' as const }])
+      ]
+    }
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }

@@ -480,4 +480,15 @@ export interface RecordsChangedEvent {
   ids: string[]
 }
 
-export type EventChannel = 'records:changed' | 'derived:updated' | 'sync:status'
+export type EventChannel =
+  | 'records:changed'
+  | 'derived:updated'
+  | 'sync:status'
+  /** Focused-window only: File menu / accelerators for in-window tabs. */
+  | 'tabs:command'
+
+export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
+
+export interface TabsCommandEvent {
+  action: TabsCommand
+}

@@ -8,16 +8,18 @@ import { FinanceDataProvider } from "@/lib/finance-data-context";
 import { QueryProvider } from "@/lib/query-provider";
 import { UiSettingsProvider } from "@/lib/ui-settings-context";
 import { FinanceWorkspace } from "@/components/finance-workspace";
-import { useSection } from "@/lib/router";
+import { WorkspaceTabBar } from "@/components/layout/workspace-tab-bar";
+import { AppTabsProvider, useActiveTabSection } from "@/lib/app-tabs-context";
 
 // Desktop entry — mirrors the web root layout (ThemeProvider → AuthProvider →
 // QueryProvider → FinanceDataProvider → FinanceWorkspace). Routing is hash-based
-// (#/section) instead of Next.js paths; everything else is the same tree.
+// (#/section) instead of Next.js paths; in-window tabs each hold a section while
+// sharing one SQLite store via the main process.
 
 /**
  * Bridges main-process events into React Query: when ANY window writes (or a sync pass
  * applies remote changes), main broadcasts records:changed / derived:updated and every
- * window invalidates its query families — this is what keeps multiple windows and
+ * window invalidates its query families — this is what keeps multiple windows / tabs and
  * sync-applied changes live, replacing the web app's per-tab refetching.
  */
 function IpcInvalidationBridge() {
@@ -48,8 +50,17 @@ function IpcInvalidationBridge() {
   return null;
 }
 
+function TabbedWorkspace() {
+  const section = useActiveTabSection();
+  return (
+    <div className="app-shell">
+      <WorkspaceTabBar />
+      <FinanceWorkspace activeSection={section} />
+    </div>
+  );
+}
+
 function App() {
-  const section = useSection();
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -57,7 +68,9 @@ function App() {
           <UiSettingsProvider>
             <FinanceDataProvider>
               <IpcInvalidationBridge />
-              <FinanceWorkspace activeSection={section} />
+              <AppTabsProvider>
+                <TabbedWorkspace />
+              </AppTabsProvider>
             </FinanceDataProvider>
           </UiSettingsProvider>
         </QueryProvider>
