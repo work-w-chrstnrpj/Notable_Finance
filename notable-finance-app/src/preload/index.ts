@@ -14,6 +14,7 @@ import type {
   ExpenseCategoryOption,
   ExpenseRecordDto,
   HealthData,
+  HistoryData,
   IncomeCategoryOption,
   IncomeListParams,
   IncomeRecordDto,
@@ -97,6 +98,12 @@ const api = {
       ipcRenderer.invoke('reports:dashboard', month),
     monthlyMonitoring: (month: string): Promise<ApiResult<MonthlyMonitoringDto>> =>
       ipcRenderer.invoke('reports:monthlyMonitoring', month)
+  },
+
+  history: {
+    /** Returns unsynced items + events from the last `runs` sync passes (default 2). */
+    get: (runs?: number): Promise<ApiResult<HistoryData>> =>
+      ipcRenderer.invoke('history:get', runs)
   },
 
   windows: {

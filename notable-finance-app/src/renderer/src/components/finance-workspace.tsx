@@ -16,6 +16,7 @@ import { IncomePage } from "@/components/pages/income";
 import { ExpensePage } from "@/components/pages/expense";
 import { MonthlyMonitoringPage } from "@/components/pages/monitoring";
 import { WorkflowPage } from "@/components/pages/workflow";
+import { HistoryPage } from "@/components/pages/history";
 import { SyncPage } from "@/components/pages/sync";
 import { SettingsPage } from "@/components/pages/settings";
 
@@ -209,6 +210,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           {isWorkflowSection(activeSection) && (
             <ErrorBoundary sectionLabel={activeSection}>
               <WorkflowPage section={activeSection} selectedMonth={selectedMonth} />
+            </ErrorBoundary>
+          )}
+          {activeSection === "history" && (
+            <ErrorBoundary sectionLabel="History">
+              <HistoryPage />
             </ErrorBoundary>
           )}
           {activeSection === "sync" && (

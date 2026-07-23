@@ -16,6 +16,7 @@ import {
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
@@ -156,6 +157,9 @@ function ExpensePage({
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [massEditOpen, setMassEditOpen] = useState(false);
+  const [massEditSaving, setMassEditSaving] = useState(false);
+  const [massEditError, setMassEditError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
@@ -491,7 +495,122 @@ function ExpensePage({
     });
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+  const massEditFields = useMemo<MassEditFieldOption[]>(
+    () => [
+      { key: "purchaseDate", label: "Purchase Date", kind: "date" },
+      { key: "datePaid", label: "Date Paid", kind: "optionalDate", emptyLabel: "— Clear —" },
+      { key: "amount", label: "Expense Amount", kind: "number" },
+      { key: "interest", label: "Interest", kind: "number" },
+      {
+        key: "accountId",
+        label: "Accounts",
+        kind: "select",
+        options: activeAccounts.map((a) => ({ value: a.id, label: a.name })),
+      },
+      {
+        key: "categoryId",
+        label: "Categories",
+        kind: "select",
+        options: expenseCategories.map((c) => ({ value: c.id, label: c.name })),
+      },
+      {
+        key: "paymentStatus",
+        label: "Payment Status",
+        kind: "select",
+        options: paymentStatusLabels.map((s) => ({ value: s, label: s })),
+      },
+      {
+        key: "paymentFrequency",
+        label: "Payment Frequency",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: paymentFrequencyLabels.map((f) => ({ value: f, label: f })),
+      },
+      { key: "periodCount", label: "Period Count", kind: "optionalNumber" },
+      { key: "paidPeriod", label: "Paid Period", kind: "optionalNumber" },
+      {
+        key: "pasabuyer",
+        label: "Pasabuyer",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: pasabuyerLabels.map((p) => ({ value: p, label: p })),
+      },
+      {
+        key: "pasabuyStatus",
+        label: "Pasabuy Status",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: pasabuyStatusLabels.map((s) => ({ value: s, label: s })),
+      },
+      {
+        key: "pasabuyDateOfPayment",
+        label: "Pasabuy Date of Payment",
+        kind: "optionalDate",
+      },
+      { key: "pasabuyPaidPeriod", label: "Pasabuy Paid Period", kind: "optionalNumber" },
+      {
+        key: "pasabuyAccountReceiverId",
+        label: "Pasabuy Account Receiver",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: activeAccounts.map((a) => ({ value: a.id, label: a.name })),
+      },
+    ],
+    [activeAccounts, expenseCategories],
+  );
+
+  async function applyMassEdit(patch: Record<string, string | number | null>) {
+    const ids = Array.from(selectedIds)
+      .map((idx) => searchFilteredRecords[idx]?.id)
+      .filter((id): id is string => id != null);
+    if (ids.length === 0) {
+      setMassEditOpen(false);
+      setSelectedIds(new Set());
+      return;
+    }
+
+    setMassEditSaving(true);
+    setMassEditError(null);
+    try {
+      const res = await expensesApi.bulkUpdate(ids, patch);
+      if (!res.success) {
+        setMassEditError(res.error.message);
+        return;
+      }
+      const { updated, failed } = res.data;
+      applyLocal((rows) =>
+        rows.map((row) => {
+          const match = updated.find((u) => u.id === row.id);
+          return match ?? row;
+        }),
+      );
+      setMassEditOpen(false);
+      setSelectedIds(new Set());
+      invalidateExpenseFamily();
+      if (failed.length > 0) {
+        setSaveNotice(`${failed.length} of ${ids.length} items failed to update.`);
+      } else {
+        setSaveNotice(`Updated ${updated.length} expense${updated.length === 1 ? "" : "s"}.`);
+      }
+    } catch (err) {
+      setMassEditError(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setMassEditSaving(false);
+    }
+  }
+
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+    if (action === "edit") {
+      if (selectedIds.size === 0) return;
+      setMassEditError(null);
+      setMassEditOpen(true);
+      return;
+    }
+
     if (action === "enable" || action === "disable") {
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
@@ -1232,6 +1351,18 @@ function ExpensePage({
           )}
         </div>
       </FormModal>
+      <MassEditModal
+        open={massEditOpen}
+        title={`Mass edit ${selectedIds.size} expense${selectedIds.size === 1 ? "" : "s"}`}
+        subtitle="Purchase description cannot be mass-edited. Add one or more fields, set the new value, then apply to every selected row."
+        fields={massEditFields}
+        saving={massEditSaving}
+        error={massEditError}
+        onClose={() => {
+          if (!massEditSaving) setMassEditOpen(false);
+        }}
+        onApply={applyMassEdit}
+      />
       {saveError && (
         <Toast message={saveError} onDismiss={() => setSaveError(null)} />
       )}

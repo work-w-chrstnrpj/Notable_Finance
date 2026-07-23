@@ -1,6 +1,7 @@
 // Public sync surface used by the IPC layer.
 import { pushAll } from './push'
 import { pullAll } from './pull'
+import { withSyncRun } from './run'
 import type { SyncNowResult } from '../../shared/finance.types'
 
 export { pushAll } from './push'
@@ -16,7 +17,10 @@ export { listConflicts, resolveConflict } from './conflicts'
  * Push then sends clean dirty records (conflicted records are held until resolved).
  */
 export async function syncNow(): Promise<SyncNowResult> {
-  const pull = await pullAll(false)
-  const push = await pushAll()
-  return { push, pull }
+  // One run id for the whole pass so pull + push events group together in History.
+  return withSyncRun(async () => {
+    const pull = await pullAll(false)
+    const push = await pushAll()
+    return { push, pull }
+  })
 }

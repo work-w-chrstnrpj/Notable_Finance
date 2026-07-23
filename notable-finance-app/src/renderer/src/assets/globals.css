@@ -579,6 +579,7 @@ a {
 }
 
 .nav__item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -631,10 +632,45 @@ a {
   color: var(--ink);
 }
 
+.nav__item {
+  position: relative;
+}
+
 .nav__item--active {
   background: var(--blue);
   color: white;
   font-weight: 600;
+}
+
+/* Red badge for items needing attention (e.g. unresolved sync conflicts).
+   Stays red even on the active Sync item so the count remains obvious. */
+.nav__badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger, #dc2626);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+/* Collapsed sidebar: labels are hidden, so pin the badge as a small corner pill. */
+.workspace--sidebar-collapsed .sidebar .nav__item .nav__badge {
+  display: inline-flex;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 10px;
 }
 
 .sidebar-profile {
@@ -2824,6 +2860,38 @@ tfoot td {
   padding: 18px;
 }
 
+.mass-edit-list {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.mass-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.mass-edit-row__remove {
+  margin-bottom: 2px;
+}
+
+.mass-edit-error {
+  margin: 12px 0 0;
+  color: var(--danger, #dc2626);
+  font-size: 13px;
+}
+
+@media (max-width: 620px) {
+  .mass-edit-row {
+    grid-template-columns: 1fr;
+  }
+  .mass-edit-row__remove {
+    justify-self: end;
+  }
+}
+
 .modal-panel__footer {
   justify-content: flex-end;
   border-top: 1px solid var(--line);
@@ -3431,6 +3499,104 @@ tfoot td {
 }
 .switch--on .switch__thumb {
   transform: translateX(20px);
+}
+
+/* ── Desktop local-first sync panel ───────────────────────────────── */
+.desktop-sync {
+  display: grid;
+  gap: 14px;
+}
+.desktop-sync__lead {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.desktop-sync .settings-row {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.desktop-sync__auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.desktop-sync__interval {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.desktop-sync__interval input {
+  width: 68px;
+  text-align: right;
+}
+.desktop-sync__interval[data-disabled="true"] {
+  opacity: 0.45;
+}
+
+.conflict-group {
+  display: grid;
+  gap: 12px;
+}
+.conflict-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+.conflict-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.conflict-fields {
+  display: grid;
+  gap: 8px;
+}
+.conflict-field {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.conflict-field__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.conflict-field__values b {
+  color: var(--ink);
+  font-weight: 650;
+}
+.conflict-field__actions,
+.conflict-card__actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.conflict-card__actions {
+  justify-content: flex-end;
+}
+@media (max-width: 620px) {
+  .conflict-field {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .conflict-field__actions {
+    justify-content: flex-start;
+  }
 }
 
 /* ── Settings: theme row & color pickers ──────────────────────────── */

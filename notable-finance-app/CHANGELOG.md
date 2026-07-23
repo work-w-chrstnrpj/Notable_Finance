@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Notion archive/trash no longer sticks Unsynced** — if Notion deletes/archives an
+  income/expense page, sync soft-deletes locally and marks it clean (push no longer loops
+  on “Can't edit block that is archived”). A full presence pass on pull catches Notion-only
+  trash even when the local row was still live.
+- **Accounts list (non-credit)** — Card and Table views no longer show **Total Cash Inflow** /
+  **Total Cash Outflow**. Credit cards still show Payment Made / Purchase Expenses.
+- **Account detail modal** — Balances now also include derived **Total Pasabuy** and
+  **Total CC, Debt & Transfer** (same local formula terms as Current Balance).
+
+### Added
+
+- **Mass edit for selected Income/Expense rows** — the bulk toolbar now includes **Edit**.
+  It opens a modal where you can (+) add one or more writable fields (inputs, dropdowns,
+  dates — not formulas, and not Name / Purchase description), set each new value, and
+  apply the same patch to every selected row via `bulkUpdate`.
+- **Notion page icons on push** — every create/update to Notion now sets a native page
+  icon (API `type: "icon"`) so rows are visually typed in the Notion DB:
+  - Expense (non-Pasabuy) → arrow down circle / red
+  - Expense (Pasabuy) → vitruvian man circle / yellow
+  - Income (normal) → arrow up circle / green
+  - Transfer → arrow left right circle / yellow
+  - Credit Card Payment → credit card / red
+  - Receivable (no account) → delivery truck profile / blue
+  Requires Notion-Version `2026-03-11` (bumped from `2022-06-28`) for native icons.
+- **History section** — a new sidebar page (System group) that surfaces the local-first
+  sync journal:
+  - **Unsynced Items**: local changes not yet on Notion (`sync_state` dirty/conflict),
+    **including soft-deleted records**, each tagged Created / Updated / Deleted, with a
+    Conflict badge and "never sent to Notion" hint where relevant.
+  - **Recently Synced**: a sortable **table** (matching the other views) with columns
+    Status / Record / Type / Direction / When. It shows only the **last two sync passes**
+    (the current sync and the one immediately before it), each row tagged with its status
+    (Created / Updated / Deleted) and **direction** — `Notion DB → App` (pull) or
+    `App → Notion DB` (push).
+  - Backed by a new durable `activity_log` table (migrations `0003_reflective_angel` +
+    `0004_massive_maximus`) that the pull and push engines append to on every applied
+    record. Each event carries a `run_id` so History can group by sync pass; one `syncNow`
+    (pull + push) shares a single run id. Unlike `mutation_queue` (cleared on push), the
+    feed persists (capped to the newest 1000 rows) but the UI only surfaces the last two
+    runs. Exposed via a new `history:get` IPC channel.
+  - The old empty **Activity Log** placeholder on the Sync page was removed (History
+    replaces it).
+- **Sync sidebar conflict badge** — a live red number on the Sync nav item showing how
+  many records need conflict resolution. Seeds from `sync.status().conflictCount` and
+  updates on every `sync:status` broadcast (including after resolve). Resolution stays
+  on the Sync page; the badge just surfaces that work is waiting.
+
+### Changed
+
+- **Redesigned the "Local-First Sync (Desktop)" panel** on the Sync page — it was
+  cramped and misaligned (the auto-sync checkbox, interval field, and "seconds" label
+  stacked awkwardly because `.action-list` is a grid). It now uses the standard
+  `settings-row` layout with a proper toggle switch for auto-sync and an inline
+  "every N sec" interval, and conflicts render as clean cards (field label · Mine/Notion
+  values · per-field and bulk resolve actions) instead of overflowing rows.
+- **Pinned `better-sqlite3` to 12.11.1 and Electron to 42.x** so packaging works without a
+  local MSVC toolchain: the better-sqlite3 13.x releases currently ship **no prebuilt
+  binaries**, and no npm-published version has a prebuild for Electron 43's ABI (v148).
+  12.11.1 provides prebuilds for Electron 42 (ABI v146) and Node 24 (ABI v137). Revisit once
+  13.x prebuilds are published.
+
 ### Fixed
 
 - **Account & expense computations now match the Notion formulas exactly** (decoded from the

@@ -296,7 +296,11 @@ function WorkflowPage({
     });
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+    if (action === "edit") {
+      // Mass edit is available on Income / Expense pages; workflows keep duplicate/delete.
+      return;
+    }
     if (action === "enable" || action === "disable") {
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
@@ -421,6 +425,7 @@ function WorkflowPage({
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
+            showBulkEdit={false}
             headers={workflowHeaders}
             rows={workflowRows}
             onRowClick={(rowIndex) => {

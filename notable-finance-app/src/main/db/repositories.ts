@@ -477,7 +477,14 @@ export function listAccounts(includeInactive = false): AccountDto[] {
   const incomes = allIncomeRows().map(mapIncome)
   const expenses = listExpenses({ includeDeleted: true })
   const partial = rows.map((r) =>
-    mapAccount(r, { currentBalance: 0, availableLimit: null, totalIncomes: null, totalExpenses: null })
+    mapAccount(r, {
+      currentBalance: 0,
+      availableLimit: null,
+      totalIncomes: null,
+      totalExpenses: null,
+      totalPasabuy: null,
+      totalCcDebtTransfer: null
+    })
   )
   const balances = computeAccountBalances(partial, incomes, expenses, balanceContext())
   return partial.map((a) => {
@@ -488,7 +495,9 @@ export function listAccounts(includeInactive = false): AccountDto[] {
           currentBalance: b.currentBalance,
           availableLimit: b.availableLimit,
           totalIncomes: b.totalIncomes,
-          totalExpenses: b.totalExpenses
+          totalExpenses: b.totalExpenses,
+          totalPasabuy: b.totalPasabuy,
+          totalCcDebtTransfer: b.totalCcDebtTransfer
         }
       : a
   })

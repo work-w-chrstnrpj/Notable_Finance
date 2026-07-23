@@ -53,7 +53,10 @@ describe('computeAccountBalance — Notion formula (no starting balance, gross i
       expense({ id: 'p1', accountId: 'other', pasabuyAccountReceiverId: 'cash', amount: 150, interest: 0, categoryId: 'pasabuy', periodCount: 1, paidPeriod: 1, pasabuyPaidPeriod: 1 })
     ]
     // 1000 − 200 + 150 (pasabuy) + (−300) (transfer out) = 650
-    expect(computeAccountBalance(acc, incomes, expenses, ctx).currentBalance).toBe(650)
+    const bal = computeAccountBalance(acc, incomes, expenses, ctx)
+    expect(bal.currentBalance).toBe(650)
+    expect(bal.totalPasabuy).toBe(150)
+    expect(bal.totalCcDebtTransfer).toBe(-300)
   })
 })
 

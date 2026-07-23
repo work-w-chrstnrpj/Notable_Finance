@@ -3,7 +3,7 @@
 // (Adapted from the web app's notion-api-client; a full SDK is unnecessary here.)
 // NF_NOTION_BASE_URL overrides the host for mock-server verification.
 
-const NOTION_VERSION = '2022-06-28'
+const NOTION_VERSION = '2026-03-11'
 
 export class NotionApiError extends Error {
   constructor(
@@ -120,18 +120,24 @@ export class NotionClient {
 
   async createPage(
     databaseId: string,
-    properties: Record<string, unknown>
+    properties: Record<string, unknown>,
+    opts?: { icon?: { type: string; icon?: { name: string; color?: string }; emoji?: string } }
   ): Promise<{ id: string }> {
     return this.request('POST', '/v1/pages', {
       parent: { database_id: databaseId },
-      properties
+      properties,
+      ...(opts?.icon ? { icon: opts.icon } : {})
     })
   }
 
   async updatePage(
     pageId: string,
-    properties: Record<string, unknown>
+    properties: Record<string, unknown>,
+    opts?: { icon?: { type: string; icon?: { name: string; color?: string }; emoji?: string } }
   ): Promise<{ id: string }> {
-    return this.request('PATCH', `/v1/pages/${pageId}`, { properties })
+    return this.request('PATCH', `/v1/pages/${pageId}`, {
+      properties,
+      ...(opts?.icon ? { icon: opts.icon } : {})
+    })
   }
 }

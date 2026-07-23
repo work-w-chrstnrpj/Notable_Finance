@@ -45,6 +45,11 @@ Accounts/categories are read-only reference — no create/update/delete.
 ### `window.api.categories`
 `incomeCategories(params)`, `expenseCategories(params)` — read-only selectors.
 
+### `window.api.history`
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `get(runs?)` | `HistoryData` | Unsynced items (dirty/conflict, incl. soft deletes) derived live, plus `activity_log` events from the last `runs` sync passes (default 2) with status + direction, and last pull/push timestamps. |
+
 ### `window.api.sync`
 | Method | Returns | Notes |
 | --- | --- | --- |

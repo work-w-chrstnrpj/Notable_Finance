@@ -14,6 +14,7 @@ import type {
 import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
+import { getHistory } from '../services/history'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
 import {
@@ -156,6 +157,9 @@ export function registerIpc(): void {
       return expense
     })
   )
+
+  // history (unsynced items + completed sync activity feed)
+  ipcMain.handle('history:get', (_e, runs?: number) => result(() => getHistory(runs)))
 
   // reports (computed locally, Phase 1.3)
   ipcMain.handle('reports:dashboard', (_e, month: string) =>

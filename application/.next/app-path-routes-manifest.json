@@ -1,0 +1,9 @@
+{
+  "/[section]/page": "/[section]",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/login/page": "/login",
+  "/notion-connect/page": "/notion-connect",
+  "/page": "/",
+  "/register/page": "/register"
+}

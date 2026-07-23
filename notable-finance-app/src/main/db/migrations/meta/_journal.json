@@ -22,6 +22,20 @@
       "when": 1784705113873,
       "tag": "0002_add_account_qr_code",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784788225072,
+      "tag": "0003_reflective_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1784789441934,
+      "tag": "0004_massive_maximus",
+      "breakpoints": true
     }
   ]
 }

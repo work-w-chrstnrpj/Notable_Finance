@@ -105,6 +105,8 @@ export function mapAccount(
     availableLimit: number | null
     totalIncomes: number | null
     totalExpenses: number | null
+    totalPasabuy: number | null
+    totalCcDebtTransfer: number | null
   }
 ): AccountDto {
   return {
@@ -124,6 +126,8 @@ export function mapAccount(
     // Total Cash Inflow / Outflow (labelled "Payment Made" / "Purchase Made" for credit).
     totalIncomes: balance.totalIncomes,
     totalExpenses: balance.totalExpenses,
+    totalPasabuy: balance.totalPasabuy,
+    totalCcDebtTransfer: balance.totalCcDebtTransfer,
     qrCode: row.qr_code ?? null,
     inactive: row.inactive === 1
   }

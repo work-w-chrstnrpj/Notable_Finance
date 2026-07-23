@@ -16,8 +16,11 @@ allowBuilds:
   # Windows-only Squirrel helper (transitive of electron-builder). We package Windows with
   # NSIS, never build on this machine, and don't need its native binary — deny.
   electron-winstaller: false
+# better-sqlite3 is pinned to 12.11.1: the 13.x releases (and GitHub-only 12.11.2/12.12.0)
+# have no prebuilt binaries yet, and this machine has no MSVC toolchain to compile from
+# source. 12.11.1 ships prebuilds for Electron 42 (ABI v146) and Node 24 (ABI v137).
 minimumReleaseAgeExclude:
-  - better-sqlite3@13.0.1
+  - better-sqlite3@12.11.1
 onlyBuiltDependencies:
   - electron
   - esbuild

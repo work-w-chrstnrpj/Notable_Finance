@@ -9,6 +9,7 @@ import { PageToolbar } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
 import { applyIncomeTag, stripNotionTag, parseNumberInput, getIncomeGrossTotal, getIncomeCapitalExpenditureTotal, getIncomeNetTotal } from "@/lib/finance-helpers";
@@ -55,6 +56,9 @@ function IncomePage({
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [massEditOpen, setMassEditOpen] = useState(false);
+  const [massEditSaving, setMassEditSaving] = useState(false);
+  const [massEditError, setMassEditError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -260,7 +264,79 @@ function IncomePage({
     });
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete") {
+  const massEditFields = useMemo<MassEditFieldOption[]>(
+    () => [
+      { key: "date", label: "Date", kind: "date" },
+      { key: "grossIncome", label: "Gross Income", kind: "number" },
+      { key: "capitalExpenditure", label: "Capital Expenditure", kind: "number" },
+      {
+        key: "accountId",
+        label: "Accounts",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: nonCreditActiveAccounts.map((a) => ({ value: a.id, label: a.name })),
+      },
+      {
+        key: "categoryId",
+        label: "Categories",
+        kind: "select",
+        clearable: true,
+        emptyLabel: "— None —",
+        options: normalIncomeCategories.map((c) => ({ value: c.id, label: c.source })),
+      },
+    ],
+    [nonCreditActiveAccounts, normalIncomeCategories],
+  );
+
+  async function applyMassEdit(patch: Record<string, string | number | null>) {
+    const ids = Array.from(selectedIds)
+      .map((idx) => searchFilteredRecords[idx]?.id)
+      .filter((id): id is string => id != null);
+    if (ids.length === 0) {
+      setMassEditOpen(false);
+      setSelectedIds(new Set());
+      return;
+    }
+
+    setMassEditSaving(true);
+    setMassEditError(null);
+    try {
+      const res = await incomesApi.bulkUpdate(ids, patch);
+      if (!res.success) {
+        setMassEditError(res.error.message);
+        return;
+      }
+      const { updated, failed } = res.data;
+      applyLocal((rows) =>
+        rows.map((row) => {
+          const match = updated.find((u) => u.id === row.id);
+          return match ?? row;
+        }),
+      );
+      setMassEditOpen(false);
+      setSelectedIds(new Set());
+      invalidateIncomeFamily();
+      if (failed.length > 0) {
+        setSaveNotice(`${failed.length} of ${ids.length} items failed to update.`);
+      } else {
+        setSaveNotice(`Updated ${updated.length} income${updated.length === 1 ? "" : "s"}.`);
+      }
+    } catch (err) {
+      setMassEditError(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setMassEditSaving(false);
+    }
+  }
+
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+    if (action === "edit") {
+      if (selectedIds.size === 0) return;
+      setMassEditError(null);
+      setMassEditOpen(true);
+      return;
+    }
+
     if (action === "enable" || action === "disable") {
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
@@ -681,6 +757,18 @@ function IncomePage({
           />
         </div>
       </FormModal>
+      <MassEditModal
+        open={massEditOpen}
+        title={`Mass edit ${selectedIds.size} income${selectedIds.size === 1 ? "" : "s"}`}
+        subtitle="Name cannot be mass-edited. Add one or more fields, set the new value, then apply to every selected row."
+        fields={massEditFields}
+        saving={massEditSaving}
+        error={massEditError}
+        onClose={() => {
+          if (!massEditSaving) setMassEditOpen(false);
+        }}
+        onApply={applyMassEdit}
+      />
       {saveError && (
         <Toast message={saveError} onDismiss={() => setSaveError(null)} />
       )}

@@ -1,0 +1,21 @@
+1:"$Sreact.fragment"
+2:I[14506,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"AuthProvider"]
+3:I[94806,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"default"]
+4:I[68457,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"default"]
+5:I[57642,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js","/_next/static/chunks/1h-5yo3b2qljb.js"],""]
+6:I[90536,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"ClientPageRoot"]
+7:I[45851,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js","/_next/static/chunks/0nybri9-_6qxg.js"],"default"]
+a:I[20099,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"OutletBoundary"]
+b:"$Sreact.suspense"
+e:I[20099,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"ViewportBoundary"]
+10:I[20099,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"MetadataBoundary"]
+12:I[23475,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"default",1]
+:HL["/_next/static/chunks/0wd6y7g9q__cz.css","style"]
+0:{"P":null,"c":["","login"],"q":"","i":false,"f":[[["",{"children":["login",{"children":["__PAGE__",{}]}]},"$undefined","$undefined",16],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0wd6y7g9q__cz.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/1tf7ts1tcb692.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/_next/static/chunks/0kf4mmr3m16hu.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":["$","$L2",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","main",null,{"className":"not-found","children":["$","div",null,{"className":"not-found__panel","children":[["$","p",null,{"className":"eyebrow","children":"Notion Finance"}],["$","h1",null,{"children":"Section not found"}],["$","p",null,{"children":"The requested finance workspace section is not available."}],["$","$L5",null,{"href":"/dashboard","children":"Go to Dashboard"}]]}]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]}]]}],{"children":[["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":[["$","$1","c",{"children":[["$","$L6",null,{"Component":"$7","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@8","$@9"]}}],[["$","script","script-0",{"src":"/_next/static/chunks/0nybri9-_6qxg.js","async":true,"nonce":"$undefined"}]],["$","$La",null,{"children":["$","$b",null,{"name":"Next.MetadataOutlet","children":"$@c"}]}]]}],{},null,false,null]},null,false,"$@d"]},null,false,null],["$","$1","h",{"children":[null,["$","$Le",null,{"children":"$Lf"}],["$","div",null,{"hidden":true,"children":["$","$L10",null,{"children":["$","$b",null,{"name":"Next.Metadata","children":"$L11"}]}]}],null]}],false]],"m":"$undefined","G":["$12",[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0wd6y7g9q__cz.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"h":null,"s":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"_zbIC8m75gaGK2i35nTG0"}
+13:[]
+d:"$W13"
+8:{}
+9:"$0:f:0:1:1:children:1:children:0:props:children:0:props:serverProvidedParams:params"
+f:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+c:null
+11:[["$","title","0",{"children":"Notion Finance"}],["$","meta","1",{"name":"description","content":"A Notion-backed finance encoding and viewing workspace."}]]

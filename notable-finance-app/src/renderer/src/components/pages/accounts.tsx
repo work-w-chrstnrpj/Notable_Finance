@@ -51,7 +51,7 @@ function AccountsPage() {
   const accountTableHeaders =
     accountScope === "credit"
       ? ["Account", "Type", "Balance", "Credit Limit", "Available Balance", "Total Payment Made", "Total Purchase Expenses", "Billing", "Due"]
-      : ["Account", "Type", "Balance", "Total Cash Inflow", "Total Cash Outflow"];
+      : ["Account", "Type", "Balance"];
   const accountTableRows = visibleAccounts.map((account) => {
     const accountCell = (
       <span className="account-cell">
@@ -78,21 +78,11 @@ function AccountsPage() {
       accountCell,
       account.type,
       formatMoney(account.currentBalance),
-      account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
-      account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
     ];
   });
 
   const accountTotalBalance = visibleAccounts.reduce(
     (sum, account) => sum + account.currentBalance,
-    0,
-  );
-  const accountTotalIncome = visibleAccounts.reduce(
-    (sum, account) => sum + (account.totalIncomes ?? 0),
-    0,
-  );
-  const accountTotalExpense = visibleAccounts.reduce(
-    (sum, account) => sum + (account.totalExpenses ?? 0),
     0,
   );
   const accountTableFooterRows =
@@ -103,8 +93,6 @@ function AccountsPage() {
             "Total",
             "",
             formatMoney(accountTotalBalance),
-            formatMoney(accountTotalIncome, { compact: true }),
-            formatMoney(accountTotalExpense, { compact: true }),
           ],
         ];
 
@@ -188,17 +176,11 @@ function AccountsPage() {
               {isCreditLikeAccountType(account.type) && account.availableLimit !== null && (
                 <MoneyLine label="Available Limit" value={account.availableLimit} />
               )}
-              {account.totalIncomes !== null && (
-                <MoneyLine
-                  label={isCreditLikeAccountType(account.type) ? "Total Payment Made" : "Total Cash Inflow"}
-                  value={account.totalIncomes}
-                />
+              {isCreditLikeAccountType(account.type) && account.totalIncomes !== null && (
+                <MoneyLine label="Total Payment Made" value={account.totalIncomes} />
               )}
-              {account.totalExpenses !== null && (
-                <MoneyLine
-                  label={isCreditLikeAccountType(account.type) ? "Total Purchase Expenses" : "Total Cash Outflow"}
-                  value={account.totalExpenses}
-                />
+              {isCreditLikeAccountType(account.type) && account.totalExpenses !== null && (
+                <MoneyLine label="Total Purchase Expenses" value={account.totalExpenses} />
               )}
             </button>
           ))}

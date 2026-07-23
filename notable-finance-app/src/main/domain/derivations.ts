@@ -39,6 +39,10 @@ export interface AccountBalance {
   totalIncomes: number
   /** Total Cash Outflow: Σ gross expense (amount + interest) charged to this account (= "Total Purchase Made"). */
   totalExpenses: number
+  /** Total Pasabuy: Σ Pasabuy Received via Pasabuy Account Receiver. */
+  totalPasabuy: number
+  /** Total CC, Debt & Transfer: Σ Transaction Amount via Transacted Account. */
+  totalCcDebtTransfer: number
 }
 
 /** Category-name lookups needed by the Transaction Amount / Pasabuy Received formulas. */
@@ -107,7 +111,9 @@ export function computeAccountBalance(
     currentBalance,
     availableLimit,
     totalIncomes,
-    totalExpenses: round2(totalExpenseAmount + totalInterest)
+    totalExpenses: round2(totalExpenseAmount + totalInterest),
+    totalPasabuy,
+    totalCcDebtTransfer: totalTransfer
   }
 }
 

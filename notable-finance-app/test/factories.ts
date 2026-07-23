@@ -24,6 +24,8 @@ export function account(over: Partial<AccountDto> = {}): AccountDto {
     dueDay: null,
     totalIncomes: null,
     totalExpenses: null,
+    totalPasabuy: null,
+    totalCcDebtTransfer: null,
     qrCode: null,
     inactive: false,
     ...over

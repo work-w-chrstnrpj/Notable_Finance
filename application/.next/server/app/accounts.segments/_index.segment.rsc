@@ -1,0 +1,7 @@
+1:"$Sreact.fragment"
+2:I[14506,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"AuthProvider"]
+3:I[94806,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"default"]
+4:I[68457,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js"],"default"]
+5:I[57642,["/_next/static/chunks/1tf7ts1tcb692.js","/_next/static/chunks/0kf4mmr3m16hu.js","/_next/static/chunks/1h-5yo3b2qljb.js"],""]
+:HL["/_next/static/chunks/0wd6y7g9q__cz.css","style"]
+0:{"rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0wd6y7g9q__cz.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1tf7ts1tcb692.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/0kf4mmr3m16hu.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":["$","$L2",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[["$","main",null,{"className":"not-found","children":["$","div",null,{"className":"not-found__panel","children":[["$","p",null,{"className":"eyebrow","children":"Notion Finance"}],["$","h1",null,{"children":"Section not found"}],["$","p",null,{"children":"The requested finance workspace section is not available."}],["$","$L5",null,{"href":"/dashboard","children":"Go to Dashboard"}]]}]}],[]]}]}]}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_zbIC8m75gaGK2i35nTG0"}

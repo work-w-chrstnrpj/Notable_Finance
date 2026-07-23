@@ -186,6 +186,22 @@ function AccountDetailModal({
                     <span className="money-value">—</span>
                   )}
                 </div>
+                <div className="account-detail-field">
+                  <span>Total Pasabuy</span>
+                  {account.totalPasabuy !== null ? (
+                    <MoneyValue value={account.totalPasabuy} />
+                  ) : (
+                    <span className="money-value">—</span>
+                  )}
+                </div>
+                <div className="account-detail-field">
+                  <span>Total CC, Debt & Transfer</span>
+                  {account.totalCcDebtTransfer !== null ? (
+                    <MoneyValue value={account.totalCcDebtTransfer} />
+                  ) : (
+                    <span className="money-value">—</span>
+                  )}
+                </div>
               </div>
             </div>
 

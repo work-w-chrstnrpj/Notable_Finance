@@ -36,6 +36,9 @@ import {
   writeIncomeWritable
 } from './writable'
 import { broadcast } from '../windows'
+import { recordActivity } from '../services/history'
+import { withSyncRun } from './run'
+import { acceptNotionGone, localsMissingFromNotion } from './notion-gone'
 import type { PullResult } from '../../shared/finance.types'
 
 const now = (): number => Date.now()
@@ -150,6 +153,7 @@ const emptyOutcome = (): RecordOutcome => ({ inserted: 0, updated: 0, autoMerged
 function applyMerge(
   table: 'incomes' | 'expenses',
   id: string,
+  notionPageId: string,
   base: FieldMap,
   local: FieldMap,
   remote: FieldMap,
@@ -160,6 +164,16 @@ function applyMerge(
   const result = threeWayMerge(base, local, remote)
   const write = table === 'incomes' ? writeIncomeWritable : writeExpenseWritable
   const deletedOf = (w: FieldMap): number => (isDeletedTitle(String(w[titleKey] ?? '')) ? 1 : 0)
+  // Notion DB → App event; the applied Notion data may itself be a soft delete.
+  const logPull = (merged: FieldMap): void =>
+    recordActivity({
+      resource: table,
+      recordId: id,
+      notionPageId,
+      title: (merged[titleKey] as string | null) ?? null,
+      action: deletedOf(merged) ? 'delete' : 'update',
+      direction: 'pull'
+    })
 
   switch (result.outcome) {
     case 'noop':
@@ -169,15 +183,18 @@ function applyMerge(
       break
     case 'pull':
       write(id, result.merged, { base: result.base, syncState: 'clean', notionLastEditedAt: lastEdited, deleted: deletedOf(result.merged) })
+      logPull(result.merged)
       outcome.updated++
       break
     case 'automerge':
       write(id, result.merged, { base: result.base, syncState: 'dirty', notionLastEditedAt: lastEdited, deleted: deletedOf(result.merged) })
+      logPull(result.merged)
       outcome.autoMerged++
       break
     case 'conflict':
       write(id, result.merged, { base: result.base, syncState: 'conflict', notionLastEditedAt: lastEdited, deleted: deletedOf(result.merged) })
       recordConflicts(table, id, result.conflicts)
+      logPull(result.merged)
       outcome.conflicts++
       break
   }
@@ -212,22 +229,31 @@ async function pullIncomes(
       | undefined
 
     if (!existing) {
+      const newId = randomUUID()
       db.prepare(
         `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
            notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,
            account_id, category_id, date, is_transaction, transacted_account_id, cc_payment_covered_id)
          VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
-        randomUUID(), npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
+        newId, npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
         remote.name, remote.grossIncome, remote.capitalExpenditure, remote.accountId, remote.categoryId,
         remote.date, f.is_transaction, remote.transactedAccountId, remote.ccPaymentCoveredId
       )
+      recordActivity({
+        resource: 'incomes',
+        recordId: newId,
+        notionPageId: npid,
+        title: (remote.name as string | null) ?? null,
+        action: isDeletedTitle(f.title) ? 'delete' : 'create',
+        direction: 'pull'
+      })
       outcome.inserted++
       continue
     }
     const base = JSON.parse((existing.base_snapshot as string | null) ?? '{}') as FieldMap
     const local = incomeWritableFromRow(existing)
-    applyMerge('incomes', existing.id as string, base, local, remote, 'name', lastEdited, outcome)
+    applyMerge('incomes', existing.id as string, npid, base, local, remote, 'name', lastEdited, outcome)
   }
   return outcome
 }
@@ -270,6 +296,7 @@ async function pullExpenses(
       | undefined
 
     if (!existing) {
+      const newId = randomUUID()
       db.prepare(
         `INSERT INTO expenses (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
            notion_last_edited_at, deleted, created_at, title, amount, interest, account_id,
@@ -278,26 +305,70 @@ async function pullExpenses(
            pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)
          VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
-        randomUUID(), npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
+        newId, npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
         remote.description, remote.amount, remote.interest, remote.accountId, remote.categoryId,
         remote.purchaseDate, remote.datePaid, remote.paymentStatus, remote.paymentFrequency,
         remote.periodCount, remote.paidPeriod, remote.pasabuyer ? 1 : 0, remote.pasabuyer,
         remote.pasabuyStatus, remote.pasabuyDateOfPayment, remote.pasabuyPaidPeriod,
         remote.pasabuyAccountReceiverId, remote.ccLinkPaymentReceiptId
       )
+      recordActivity({
+        resource: 'expenses',
+        recordId: newId,
+        notionPageId: npid,
+        title: (remote.description as string | null) ?? null,
+        action: isDeletedTitle(f.title) ? 'delete' : 'create',
+        direction: 'pull'
+      })
       outcome.inserted++
       continue
     }
     const base = JSON.parse((existing.base_snapshot as string | null) ?? '{}') as FieldMap
     const local = expenseWritableFromRow(existing)
-    applyMerge('expenses', existing.id as string, base, local, remote, 'description', lastEdited, outcome)
+    applyMerge('expenses', existing.id as string, npid, base, local, remote, 'description', lastEdited, outcome)
   }
   return outcome
+}
+
+/**
+ * Full DB query (no since) → local live incomes/expenses whose Notion page is gone
+ * (archived/trashed) soft-delete cleanly. Incremental pull cannot see archived pages.
+ */
+async function reconcileMissingFromNotion(
+  table: 'incomes' | 'expenses',
+  databaseId: string
+): Promise<number> {
+  const pages = await client().queryDatabase(databaseId)
+  const remoteIds = new Set(pages.map((p) => pageId(p)))
+  const locals = getSqlite()
+    .prepare(
+      `SELECT id, title, notion_page_id, deleted FROM ${table}
+       WHERE notion_page_id IS NOT NULL AND deleted = 0`
+    )
+    .all() as Array<{
+    id: string
+    title: string
+    notion_page_id: string
+    deleted: number
+  }>
+
+  let n = 0
+  for (const row of localsMissingFromNotion(locals, remoteIds)) {
+    acceptNotionGone(table, row, 'pull')
+    n++
+  }
+  return n
 }
 
 // ── the pull pass ───────────────────────────────────────────────────────────
 
 export async function pullAll(full = false): Promise<PullResult> {
+  // Standalone pull (e.g. onboarding Initial Pull) gets its own run; when called from
+  // syncNow the outer run already owns the id, so this nests without a new one.
+  return withSyncRun(() => pullAllInner(full))
+}
+
+async function pullAllInner(full: boolean): Promise<PullResult> {
   const status = syncStatus()
   if (!status.connected) throw new Error('Notion is not connected')
   if (!status.mapped) throw new Error('Databases are not mapped yet')
@@ -334,6 +405,11 @@ export async function pullAll(full = false): Promise<PullResult> {
     }
     if (mapping.incomes) merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap))
     if (mapping.expenses) merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap))
+
+    // Presence pass: Notion trash/archive removes pages from DB query results, so
+    // incremental last_edited filters never surface them — reconcile by full id set.
+    if (mapping.incomes) result.updated += await reconcileMissingFromNotion('incomes', mapping.incomes)
+    if (mapping.expenses) result.updated += await reconcileMissingFromNotion('expenses', mapping.expenses)
 
     metaSet(META_KEYS.lastPullCursor, passStart)
     metaSet(META_KEYS.lastPullAt, String(Date.now()))

@@ -14,9 +14,13 @@ import { client } from '../notion/service'
 import { getMapping } from '../notion/mapping-store'
 import { NotionApiError } from '../notion/client'
 import { expenseDtoToProperties, incomeDtoToProperties } from '../notion/property-mapper'
+import { iconForExpense, iconForIncome } from '../notion/page-icons'
 import { metaSet, META_KEYS } from './meta'
 import { emitStatus, isRunning, setRunning, syncStatus } from './status'
 import { expenseWritableFromRow, incomeWritableFromRow } from './writable'
+import { recordActivity } from '../services/history'
+import { withSyncRun } from './run'
+import { acceptNotionGone, isNotionGoneError } from './notion-gone'
 import type { PushResult } from '../../shared/finance.types'
 
 const THROTTLE_MS = 340
@@ -31,6 +35,15 @@ function notionIdLookup(table: string): Map<string, string> {
     .prepare(`SELECT id, notion_page_id FROM ${table} WHERE notion_page_id IS NOT NULL`)
     .all() as Array<{ id: string; notion_page_id: string }>
   return new Map(rows.map((r) => [r.id, r.notion_page_id]))
+}
+
+/** Local category id → display name (income `source` / expense `name`). */
+function categoryNameLookup(table: 'income_categories' | 'expense_categories'): Map<string, string> {
+  const column = table === 'income_categories' ? 'source' : 'name'
+  const rows = getSqlite()
+    .prepare(`SELECT id, ${column} AS name FROM ${table}`)
+    .all() as Array<{ id: string; name: string }>
+  return new Map(rows.map((r) => [r.id, r.name]))
 }
 
 interface RelationMaps {
@@ -99,6 +112,11 @@ async function sendWithBackoff(
 }
 
 export async function pushAll(): Promise<PushResult> {
+  // Standalone push gets its own run; nested under syncNow it reuses the outer run id.
+  return withSyncRun(() => pushAllInner())
+}
+
+async function pushAllInner(): Promise<PushResult> {
   if (isRunning()) return { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: ['sync already running'] }
   const status = syncStatus()
   if (!status.connected) throw new Error('Notion is not connected')
@@ -117,6 +135,8 @@ export async function pushAll(): Promise<PushResult> {
     expenseCategories: notionIdLookup('expense_categories'),
     incomes: notionIdLookup('incomes')
   }
+  const incomeCategoryNames = categoryNameLookup('income_categories')
+  const expenseCategoryNames = categoryNameLookup('expense_categories')
 
   const tables: Array<{
     table: 'incomes' | 'expenses'
@@ -169,6 +189,14 @@ export async function pushAll(): Promise<PushResult> {
             resourceName,
             row.id
           )
+          recordActivity({
+            resource: resourceName,
+            recordId: row.id,
+            notionPageId: null,
+            title: (row.title as string | null) ?? null,
+            action: 'delete',
+            direction: 'push'
+          })
           result.skipped++
           continue
         }
@@ -186,12 +214,25 @@ export async function pushAll(): Promise<PushResult> {
 
         try {
           const properties = t.toProperties(translated)
+          const icon =
+            t.table === 'incomes'
+              ? iconForIncome({
+                  categorySource: incomeCategoryNames.get(String(row.category_id ?? '')) ?? null,
+                  accountId: (row.account_id as string | null) ?? null
+                })
+              : iconForExpense({
+                  categoryName: expenseCategoryNames.get(String(row.category_id ?? '')) ?? null,
+                  isPasabuy: Number(row.is_pasabuy) === 1
+                })
           let pageId = row.notion_page_id
+          const wasCreate = !pageId
           if (pageId) {
-            await sendWithBackoff(() => c.updatePage(pageId as string, properties))
+            await sendWithBackoff(() => c.updatePage(pageId as string, properties, { icon }))
             result.updated++
           } else {
-            const page = await sendWithBackoff(() => c.createPage(t.databaseId, properties))
+            const page = await sendWithBackoff(() =>
+              c.createPage(t.databaseId, properties, { icon })
+            )
             pageId = page.id
             result.created++
             // New income pages become translatable targets for cc_payment_covered links.
@@ -206,8 +247,26 @@ export async function pushAll(): Promise<PushResult> {
             resourceName,
             row.id
           )
+          // App → Notion event. A soft-deleted row that reached Notion is a 'delete';
+          // otherwise it is the create/update we just performed.
+          recordActivity({
+            resource: resourceName,
+            recordId: row.id,
+            notionPageId: pageId,
+            title: (row.title as string | null) ?? null,
+            action: Number(row.deleted) === 1 ? 'delete' : wasCreate ? 'create' : 'update',
+            direction: 'push'
+          })
           result.pushed++
         } catch (error) {
+          // Notion archive/trash: cannot update the page — accept as remote delete
+          // instead of leaving the row dirty forever.
+          if (isNotionGoneError(error)) {
+            const wasLocalDelete = Number(row.deleted) === 1
+            acceptNotionGone(t.table, row, wasLocalDelete ? 'push' : 'pull')
+            result.skipped++
+            continue
+          }
           result.failed++
           const message = error instanceof Error ? error.message : String(error)
           result.errors.push(`${t.table}/${row.id}: ${message}`)

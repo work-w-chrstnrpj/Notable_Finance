@@ -56,6 +56,10 @@ export interface AccountDto {
   dueDay: number | null
   totalIncomes: number | null
   totalExpenses: number | null
+  /** Derived: Total Pasabuy (Pasabuy Received via Pasabuy Account Receiver). */
+  totalPasabuy: number | null
+  /** Derived: Total CC, Debt & Transfer (Transaction Amount via Transacted Account). */
+  totalCcDebtTransfer: number | null
   qrCode: string | null
   inactive: boolean
 }
@@ -408,6 +412,56 @@ export interface PullResult {
 export interface SyncNowResult {
   push: PushResult
   pull: PullResult
+}
+
+// ── History / activity feed ─────────────────────────────────────────────────
+
+/** Which resources take part in Notion sync (and therefore appear in history). */
+export type SyncedResource = 'incomes' | 'expenses'
+
+/**
+ * Direction of a completed sync event:
+ *  - 'pull' → the data came FROM Notion into the app (Notion DB → App)
+ *  - 'push' → the app's change was uploaded TO Notion (App → Notion DB)
+ */
+export type ActivityDirection = 'pull' | 'push'
+
+/** One completed sync event, newest-first in the History feed. */
+export interface ActivityEntry {
+  id: string
+  resource: SyncedResource
+  recordId: string
+  notionPageId: string | null
+  title: string | null
+  action: MutationAction // create | update | delete
+  direction: ActivityDirection
+  at: number // ms timestamp
+}
+
+/**
+ * A local change made in this app that has not yet been synced to Notion — i.e. a
+ * record whose sync_state is 'dirty' or 'conflict'. Soft-deleted records are included
+ * (they surface with action 'delete').
+ */
+export interface UnsyncedItem {
+  resource: SyncedResource
+  recordId: string
+  title: string | null
+  /** delete when soft-deleted; create when never pushed (no Notion page); else update. */
+  action: MutationAction
+  syncState: 'dirty' | 'conflict'
+  deleted: boolean
+  notionPageId: string | null
+  localUpdatedAt: number
+}
+
+export interface HistoryData {
+  /** Local changes still waiting to reach Notion (includes soft deletes). */
+  unsynced: UnsyncedItem[]
+  /** Most recent completed sync events (newest first). */
+  recent: ActivityEntry[]
+  lastPullAt: number | null
+  lastPushAt: number | null
 }
 
 // ── Events (main → renderer), per ipc-contract.md ───────────────────────────

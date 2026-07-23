@@ -7,6 +7,7 @@ import type {
   ExpenseCategory,
   ExpenseRecord,
   ExpenseSchedulerRecord,
+  HistoryData,
   IncomeCategory,
   IncomeRecord,
   SyncStatus,
@@ -137,6 +138,16 @@ export const incomesApi = {
   update(id: string, body: Record<string, unknown>) {
     return adapt(nfApi().incomes.update(id, body as never)) as Promise<ApiResult<IncomeRecord>>;
   },
+  async bulkUpdate(ids: string[], patch: Record<string, unknown>) {
+    const updated: IncomeRecord[] = [];
+    const failed: { id: string; error: string }[] = [];
+    for (const id of ids) {
+      const r = await this.update(id, patch);
+      if (r.success) updated.push(r.data);
+      else failed.push({ id, error: r.error.message });
+    }
+    return ok({ updated, failed });
+  },
   async delete(id: string): Promise<ApiResult<void>> {
     const r = await nfApi().incomes.softDelete(id);
     return r.ok ? ok(undefined as void) : err(r.error);
@@ -177,6 +188,16 @@ export const expensesApi = {
   },
   update(id: string, body: Record<string, unknown>) {
     return adapt(nfApi().expenses.update(id, body as never)) as Promise<ApiResult<ExpenseRecord>>;
+  },
+  async bulkUpdate(ids: string[], patch: Record<string, unknown>) {
+    const updated: ExpenseRecord[] = [];
+    const failed: { id: string; error: string }[] = [];
+    for (const id of ids) {
+      const r = await this.update(id, patch);
+      if (r.success) updated.push(r.data);
+      else failed.push({ id, error: r.error.message });
+    }
+    return ok({ updated, failed });
   },
   async delete(id: string): Promise<ApiResult<void>> {
     const r = await nfApi().expenses.softDelete(id);
@@ -277,6 +298,14 @@ export const syncApi = {
   // Local writes are already applied; a commit just triggers a sync pass.
   commit(_body: SyncCommitRequest) {
     return adapt(nfApi().sync.now());
+  },
+};
+
+// ── History (unsynced items + completed sync activity feed) ───────────
+export const historyApi = {
+  /** Unsynced items + events from the last `runs` sync passes (default 2). */
+  get(runs?: number) {
+    return adapt(nfApi().history.get(runs)) as Promise<ApiResult<HistoryData>>;
   },
 };
 

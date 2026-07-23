@@ -1,7 +1,7 @@
 
 import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Trash2, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
@@ -51,6 +51,7 @@ function DataTable({
   disabledIds,
   onToggleSelect,
   onBulkAction,
+  showBulkEdit = true,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -77,7 +78,9 @@ function DataTable({
   /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
   onToggleSelect?: (rowIndex: number, selected: boolean) => void;
   /** Callback when a bulk action is triggered from the floating toolbar. */
-  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete") => void;
+  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit") => void;
+  /** Show the mass-edit button in the bulk toolbar (Income/Expense). */
+  showBulkEdit?: boolean;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -159,6 +162,16 @@ function DataTable({
             <Ban size={14} />
             <span>{selectedHasDisabled ? "Enable" : "Disable"}</span>
           </button>
+          {showBulkEdit && (
+            <button
+              type="button"
+              className="bulk-toolbar__btn"
+              onClick={() => onBulkAction?.("edit")}
+            >
+              <Pencil size={14} />
+              <span>Edit</span>
+            </button>
+          )}
           <button
             type="button"
             className="bulk-toolbar__btn"

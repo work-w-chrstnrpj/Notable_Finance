@@ -15,6 +15,7 @@ import {
   expenseCategoriesApi,
   expenseSchedulerApi,
   expensesApi,
+  historyApi,
   incomeCategoriesApi,
   incomesApi,
   monthlyMonitoringApi,
@@ -28,6 +29,7 @@ import type {
   DashboardSummary,
   ExpenseRecord,
   ExpenseSchedulerRecord,
+  HistoryData,
   IncomeCategory,
   IncomeRecord,
   SyncStatus,
@@ -250,6 +252,18 @@ export function useSyncStatus() {
 
 export function useSchemaStatus() {
   return useApiQuery(["schemaStatus"], () => syncApi.schemaStatus());
+}
+
+// ── History hook ──────────────────────────────────────────────────────
+
+export function useHistory(runs = 2) {
+  return useApiQuery<HistoryData>(
+    ["history", runs],
+    () => historyApi.get(runs),
+    {
+      fallback: { unsynced: [], recent: [], lastPullAt: null, lastPushAt: null },
+    },
+  );
 }
 
 // ── Monthly Monitoring hook ───────────────────────────────────────────

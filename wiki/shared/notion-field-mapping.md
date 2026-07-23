@@ -2,6 +2,8 @@
 
 This is the **shared, canonical** classification of every Notion field into `writable`, `computed`, `relation`, or `hidden`. It governs what may be written to Notion by either app and what must be derived or cached. It is sourced from the web app's `mapping.service.ts` / `notion-property-mapper.ts` and verified against the live `Accounts '25` data source.
 
+A full live property dump lives alongside this page as [`notion-schema.json`](notion-schema.json) (exported from the linked Notion databases). Use it to confirm exact property names/types; keep this Markdown as the behavioral classification.
+
 ## The rule (applies to both apps)
 
 > **Only `writable` fields are ever written to Notion. `computed` fields (formulas, rollups) and reverse `relation` fields are read-only: pulled and cached for display, or recomputed locally — never written. System fields (`created_time`, `last_edited_time`) are read-only and used only for sync bookkeeping.**

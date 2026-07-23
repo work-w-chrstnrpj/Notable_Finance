@@ -134,6 +134,21 @@ export const mutationQueue = sqliteTable('mutation_queue', {
   lastError: text('last_error')
 })
 
+// Durable history feed of completed sync events (powers the History section).
+// Unlike mutation_queue (which is cleared on push), rows here persist so the user can
+// see the last synced items with their status and direction.
+export const activityLog = sqliteTable('activity_log', {
+  id: text('id').primaryKey(),
+  runId: text('run_id'), // groups events by the sync pass that produced them
+  resource: text('resource').notNull(), // incomes | expenses
+  recordId: text('record_id').notNull(), // local id
+  notionPageId: text('notion_page_id'), // known once linked
+  title: text('title'), // snapshot of the record title at event time
+  action: text('action').notNull(), // create | update | delete
+  direction: text('direction').notNull(), // pull (Notion DB → App) | push (App → Notion DB)
+  at: integer('at').notNull() // ms timestamp
+})
+
 export const schema = {
   accounts,
   incomeCategories,
@@ -144,5 +159,6 @@ export const schema = {
   conflicts,
   syncMeta,
   appSettings,
-  mutationQueue
+  mutationQueue,
+  activityLog
 }

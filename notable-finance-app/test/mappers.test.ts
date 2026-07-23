@@ -88,7 +88,7 @@ describe('mapAccount', () => {
         annual_fee: null,
         credit_points: null
       },
-      { currentBalance: 750, availableLimit: null }
+      { currentBalance: 750, availableLimit: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null }
     )
     expect(dto.currentBalance).toBe(750)
     expect(dto.inactive).toBe(false)

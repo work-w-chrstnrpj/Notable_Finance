@@ -85,7 +85,10 @@ Key/value: `last_pull_cursor`, last sync timestamps, per-resource cursors.
 Sync mode (`manual` | `auto`), interval seconds, window prefs, onboarding state. The Notion token is **not** here — it lives in the OS keychain (see [`security.md`](security.md)).
 
 ### `mutation_queue` (durability)
-Append-only journal of pending local mutations so offline edits replay in order and survive a crash.
+Append-only journal of pending local mutations so offline edits replay in order and survive a crash. Rows are **cleared on successful push**, so it reflects only *outstanding* work, not history.
+
+### `activity_log` (history feed)
+Durable, newest-first journal of **completed** sync events that powers the History section. Each row records `run_id`, `resource`, `record_id`, `notion_page_id`, `title` (snapshot), `action` (`create` | `update` | `delete`), `direction` (`pull` = Notion DB → App, `push` = App → Notion DB), and `at` (ms). Written by the pull engine (on insert/pull/automerge/conflict) and push engine (on create/update/delete/phantom-delete). The `run_id` groups all events from one sync pass — a single `syncNow` (pull + push) shares one id — so the History table can show just the **last two runs** (the current sync and the one before it). Unlike `mutation_queue`, it is **not** cleared on push and is capped to the newest 1000 rows. Unsynced items shown in History are derived live from `incomes`/`expenses` where `sync_state` is `dirty`/`conflict` (no separate store).
 
 ## Derived values are computed, not stored
 

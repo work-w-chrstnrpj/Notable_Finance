@@ -1,6 +1,6 @@
 
 import Link from "@/lib/router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -11,6 +11,7 @@ import {
   ChevronRight,
   CreditCard,
   Database,
+  History,
   LayoutDashboard,
   Menu,
   PiggyBank,
@@ -43,9 +44,32 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
   "credit-card-payment": CreditCard,
   alkansya: PiggyBank,
   receivables: Banknote,
+  history: History,
   sync: RefreshCw,
   settings: Settings,
 };
+
+/**
+ * Live count of records with unresolved sync conflicts (needs user resolution on the
+ * Sync page). Seeds from sync.status() and updates on every `sync:status` broadcast.
+ */
+function useConflictCount(): number {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    void window.api.sync.status().then((r) => {
+      if (alive && r.ok) setCount(r.data.conflictCount ?? 0);
+    });
+    const off = window.api.on("sync:status", (payload) =>
+      setCount((payload as { conflictCount?: number }).conflictCount ?? 0),
+    );
+    return () => {
+      alive = false;
+      off();
+    };
+  }, []);
+  return count;
+}
 
 function Sidebar({
   activeSection,
@@ -59,6 +83,8 @@ function Sidebar({
   onNavigate?: () => void;
 }) {
   const { user } = useAuth();
+  const conflictCount = useConflictCount();
+  const sectionBadges: Partial<Record<FinanceSectionId, number>> = { sync: conflictCount };
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
@@ -99,9 +125,9 @@ function Sidebar({
         </button>
       </div>
       <nav className="nav" aria-label="Finance sections">
-        <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} />
-        <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} />
-        <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} />
+        <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
       </nav>
       <div className="sidebar-profile">
         <div className="sidebar-profile__avatar">{initials}</div>
@@ -119,26 +145,35 @@ function NavGroup({
   sections,
   activeSection,
   onNavigate,
+  sectionBadges,
 }: {
   title: string;
   sections: FinanceSection[];
   activeSection: FinanceSectionId;
   onNavigate?: () => void;
+  sectionBadges?: Partial<Record<FinanceSectionId, number>>;
 }) {
   return (
     <div className="nav__group">
       <p className="nav__title">{title}</p>
       {sections.map((section) => {
         const Icon = sectionIcons[section.id];
+        const badge = sectionBadges?.[section.id] ?? 0;
         return (
           <Link
             key={section.id}
             href={`/${section.id}`}
             className={cx("nav__item", activeSection === section.id && "nav__item--active")}
             onClick={onNavigate}
+            title={badge > 0 ? `${badge} item${badge > 1 ? "s" : ""} to resolve` : undefined}
           >
             <Icon size={17} />
             <span>{section.shortLabel ?? section.label}</span>
+            {badge > 0 && (
+              <span className="nav__badge" aria-label={`${badge} to resolve`}>
+                {badge}
+              </span>
+            )}
           </Link>
         );
       })}

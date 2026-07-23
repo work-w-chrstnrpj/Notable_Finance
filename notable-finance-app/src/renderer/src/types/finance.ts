@@ -8,6 +8,7 @@ export type FinanceSectionId =
   | "credit-card-payment"
   | "alkansya"
   | "receivables"
+  | "history"
   | "sync"
   | "settings";
 
@@ -71,6 +72,8 @@ export type Account = {
   dueDay: number | null;
   totalIncomes: number | null;
   totalExpenses: number | null;
+  totalPasabuy: number | null;
+  totalCcDebtTransfer: number | null;
   qrCode: string | null;
   inactive: boolean;
 };
@@ -132,12 +135,39 @@ export type ExpenseRecord = {
   pasabuyBalance: number;
 };
 
-export type SyncLogEntry = {
+// ── History section ───────────────────────────────────────────────────
+export type SyncedResource = "incomes" | "expenses";
+export type MutationAction = "create" | "update" | "delete";
+/** pull = Notion DB → App; push = App → Notion DB. */
+export type ActivityDirection = "pull" | "push";
+
+export type ActivityEntry = {
   id: string;
-  type: "pull" | "create" | "update" | "delete" | "conflict" | "error";
-  resource: string;
-  description: string;
-  timestamp: string;
+  resource: SyncedResource;
+  recordId: string;
+  notionPageId: string | null;
+  title: string | null;
+  action: MutationAction;
+  direction: ActivityDirection;
+  at: number;
+};
+
+export type UnsyncedItem = {
+  resource: SyncedResource;
+  recordId: string;
+  title: string | null;
+  action: MutationAction;
+  syncState: "dirty" | "conflict";
+  deleted: boolean;
+  notionPageId: string | null;
+  localUpdatedAt: number;
+};
+
+export type HistoryData = {
+  unsynced: UnsyncedItem[];
+  recent: ActivityEntry[];
+  lastPullAt: number | null;
+  lastPushAt: number | null;
 };
 
 export type WorkflowSectionId =

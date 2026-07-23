@@ -100,7 +100,23 @@ Field-level auto-merge for disjoint edits happens without prompting. Timestamps 
 
 ## Deletes
 
-Deletes follow the shared soft-delete rule: rewrite the title to `[Deleted: Amount]` and clear the amount. A delete therefore travels through sync as an ordinary field change (no tombstone table needed) and is reversible.
+Deletes follow the shared soft-delete rule: rewrite the title to `[Deleted: …]` and clear
+the amount. A delete therefore travels through sync as an ordinary field change (no
+tombstone table needed) and is reversible when the Notion page still exists.
+
+**Notion archive/trash** is also treated as a delete. Archived pages cannot be updated, and
+database queries omit them, so:
+
+1. **Push:** if Notion returns “archived” / object-not-found while updating a dirty
+   income/expense, the app soft-deletes locally (if needed) and marks `sync_state=clean`
+   instead of leaving the row stuck dirty.
+2. **Pull presence:** after the incremental pull, a full id scan of the incomes/expenses
+   databases soft-deletes any still-live local row whose `notion_page_id` is missing from
+   Notion (trashed/archived while the app still showed it live).
+
+Soft-delete **via title rewrite in Notion** (page remains in the DB) continues to flow
+through the normal three-way merge via `isDeletedTitle`. `notion_page_id` is kept either
+way so a later unarchive can still match the row.
 
 ## Reliability
 
