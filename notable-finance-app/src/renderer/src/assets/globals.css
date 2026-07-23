@@ -67,9 +67,9 @@
 }
 
 [data-theme="dark"] .button--danger {
-  background: var(--rose-soft);
-  color: var(--ink);
-  border-color: rgba(225, 29, 72, 0.3);
+  background: #dc2626;
+  color: #fff;
+  border-color: rgba(225, 29, 72, 0.45);
 }
 
 [data-theme="dark"] input,
@@ -1592,9 +1592,18 @@ a {
 }
 
 .button--danger {
-  border-color: rgba(225, 29, 72, 0.22);
-  background: var(--rose-soft);
-  color: var(--rose);
+  border-color: rgba(225, 29, 72, 0.35);
+  background: #dc2626;
+  color: #fff;
+}
+
+.button--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.5);
+}
+
+.button--danger:disabled {
+  opacity: 0.6;
 }
 
 .icon-button {
@@ -1604,6 +1613,14 @@ a {
 
 .icon-button--danger {
   color: var(--rose);
+}
+
+.modal-panel--confirm {
+  max-width: 420px;
+}
+
+.modal-panel__footer--end {
+  justify-content: flex-end;
 }
 
 .select-label,

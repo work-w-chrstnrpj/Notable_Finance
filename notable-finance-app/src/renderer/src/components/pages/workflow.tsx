@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { Panel, Field, ComputedField, MoneyValue, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { useWorkflowRecords, useFinanceInvalidation } from "@/lib/use-data";
 import {
   applyIncomeTag,
@@ -16,6 +16,7 @@ import { getActiveSectionLabel } from "@/lib/finance-data";
 import { calculateNetIncome, getMoneyValueTone, getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
+import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
 
@@ -78,6 +79,10 @@ function WorkflowPage({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
+  const { hardDeleteEnabled } = useUiSettings();
+  const deleteMode = hardDeleteEnabled ? "hard" : "soft";
+  const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
@@ -361,43 +366,37 @@ function WorkflowPage({
         return;
       }
 
-      // Clear selection FIRST so indices don't shift onto wrong rows
-      setSelectedIds(new Set());
-
-      try {
-        const res = await workflowApi.bulkDelete(idsToDelete);
-        if (res.success) {
-          const { deleted } = res.data;
-          applyLocal((rows) => rows.filter((r) => !deleted.includes(r.id)));
-          invalidateIncomeFamily();
-        }
-      } catch {
-        // Silently fail for workflow — no pendingIds pattern here
-      }
+      setDeleteConfirmIds(idsToDelete);
     }
   }
 
-  async function handleDeleteWorkflow() {
-    if (!editingId) return;
-    if (!window.confirm(`Soft-delete this ${label} record in Notion?`)) return;
-    const deletedId = editingId;
+  async function executeDeleteWorkflow(idsToDelete: string[]) {
+    setDeleteConfirmIds(null);
+    setSelectedIds(new Set());
+    setModal(null);
+    setSaveError(null);
     setSaving(true);
     try {
-      const res = await workflowApi.delete(deletedId);
-      if (!res.success) {
+      const res = await workflowApi.bulkDelete(idsToDelete, deleteMode);
+      if (res.success) {
+        const { deleted } = res.data;
+        applyLocal((rows) => rows.filter((r) => !deleted.includes(r.id)));
+        invalidateIncomeFamily();
+      } else {
         setSaveError(res.error.message || "Failed to delete.");
-        return;
+        void refetch();
       }
-      setModal(null);
-      applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-      invalidateIncomeFamily();
     } catch (err) {
-      setSaveError(
-        err instanceof Error ? err.message : "Network error. Please try again.",
-      );
+      setSaveError(err instanceof Error ? err.message : "Network error. Please try again.");
+      void refetch();
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleDeleteWorkflow() {
+    if (!editingId) return;
+    setDeleteConfirmIds([editingId]);
   }
 
   return (
@@ -426,6 +425,8 @@ function WorkflowPage({
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
             showBulkEdit={false}
+            bulkDeleteLabel={deleteLabel}
+            bulkDeleteDanger={hardDeleteEnabled}
             headers={workflowHeaders}
             rows={workflowRows}
             onRowClick={(rowIndex) => {
@@ -450,7 +451,8 @@ function WorkflowPage({
       </Panel>
 
       <FormModal
-        deleteLabel="Soft Delete"
+        deleteLabel={deleteLabel}
+        deleteDanger={hardDeleteEnabled}
         modal={modal}
         editing={editing}
         saving={saving}
@@ -534,6 +536,17 @@ function WorkflowPage({
           )}
         </div>
       </FormModal>
+      {deleteConfirmIds && (
+        <ConfirmModal
+          {...deleteConfirmCopy(hardDeleteEnabled, deleteConfirmIds.length)}
+          danger={hardDeleteEnabled}
+          busy={saving}
+          onCancel={() => setDeleteConfirmIds(null)}
+          onConfirm={() => {
+            void executeDeleteWorkflow(deleteConfirmIds);
+          }}
+        />
+      )}
     </div>
   );
 }

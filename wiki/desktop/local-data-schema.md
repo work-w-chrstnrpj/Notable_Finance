@@ -7,7 +7,7 @@ The local-first store for the desktop app. SQLite (via `better-sqlite3` + `drizz
 1. **Every finance row carries sync bookkeeping** (`id`, `notion_page_id`, `base_snapshot`, `sync_state`, timestamps) — see below.
 2. **Local UUID primary keys.** Records created offline get a local UUID before Notion knows about them; `notion_page_id` is filled after first push.
 3. **Keep all history forever.** No retention cap; SQLite handles this trivially.
-4. **Soft delete, never hard delete** for incomes/expenses (a `deleted` flag + title rewrite).
+4. **Soft delete by default** for incomes/expenses (`deleted` flag + title rewrite). Optional **hard delete** (Settings → Hard delete) removes the local row and queues a Notion page archive (trash) for push.
 5. **Reference data is cached read-only** (accounts, categories) — pulled from Notion, not user-editable.
 6. **Writable vs computed** columns are tagged per the [canonical mapping](../shared/notion-field-mapping.md).
 

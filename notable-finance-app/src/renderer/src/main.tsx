@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { FinanceDataProvider } from "@/lib/finance-data-context";
 import { QueryProvider } from "@/lib/query-provider";
+import { UiSettingsProvider } from "@/lib/ui-settings-context";
 import { FinanceWorkspace } from "@/components/finance-workspace";
 import { useSection } from "@/lib/router";
 
@@ -22,6 +23,8 @@ import { useSection } from "@/lib/router";
 function IpcInvalidationBridge() {
   const queryClient = useQueryClient();
   useEffect(() => {
+    const api = window.api
+    if (!api?.on) return
     const invalidateAll = () => {
       for (const key of [
         ["incomes"], ["expenses"], ["workflow"], ["dashboard"],
@@ -31,9 +34,9 @@ function IpcInvalidationBridge() {
         void queryClient.invalidateQueries({ queryKey: key });
       }
     };
-    const offRecords = window.api.on("records:changed", invalidateAll);
-    const offDerived = window.api.on("derived:updated", invalidateAll);
-    const offSync = window.api.on("sync:status", () => {
+    const offRecords = api.on("records:changed", invalidateAll);
+    const offDerived = api.on("derived:updated", invalidateAll);
+    const offSync = api.on("sync:status", () => {
       void queryClient.invalidateQueries({ queryKey: ["syncStatus"] });
     });
     return () => {
@@ -51,10 +54,12 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <QueryProvider>
-          <FinanceDataProvider>
-            <IpcInvalidationBridge />
-            <FinanceWorkspace activeSection={section} />
-          </FinanceDataProvider>
+          <UiSettingsProvider>
+            <FinanceDataProvider>
+              <IpcInvalidationBridge />
+              <FinanceWorkspace activeSection={section} />
+            </FinanceDataProvider>
+          </UiSettingsProvider>
         </QueryProvider>
       </AuthProvider>
     </ThemeProvider>

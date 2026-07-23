@@ -148,15 +148,18 @@ export const incomesApi = {
     }
     return ok({ updated, failed });
   },
-  async delete(id: string): Promise<ApiResult<void>> {
-    const r = await nfApi().incomes.softDelete(id);
+  async delete(id: string, mode: "soft" | "hard" = "soft"): Promise<ApiResult<void>> {
+    const r =
+      mode === "hard"
+        ? await nfApi().incomes.hardDelete(id)
+        : await nfApi().incomes.softDelete(id);
     return r.ok ? ok(undefined as void) : err(r.error);
   },
-  async bulkDelete(ids: string[]) {
+  async bulkDelete(ids: string[], mode: "soft" | "hard" = "soft") {
     const deleted: string[] = [];
     const failed: { id: string; error: string }[] = [];
     for (const id of ids) {
-      const r = await this.delete(id);
+      const r = await this.delete(id, mode);
       if (r.success) deleted.push(id);
       else failed.push({ id, error: r.error.message });
     }
@@ -199,15 +202,18 @@ export const expensesApi = {
     }
     return ok({ updated, failed });
   },
-  async delete(id: string): Promise<ApiResult<void>> {
-    const r = await nfApi().expenses.softDelete(id);
+  async delete(id: string, mode: "soft" | "hard" = "soft"): Promise<ApiResult<void>> {
+    const r =
+      mode === "hard"
+        ? await nfApi().expenses.hardDelete(id)
+        : await nfApi().expenses.softDelete(id);
     return r.ok ? ok(undefined as void) : err(r.error);
   },
-  async bulkDelete(ids: string[]) {
+  async bulkDelete(ids: string[], mode: "soft" | "hard" = "soft") {
     const deleted: string[] = [];
     const failed: { id: string; error: string }[] = [];
     for (const id of ids) {
-      const r = await this.delete(id);
+      const r = await this.delete(id, mode);
       if (r.success) deleted.push(id);
       else failed.push({ id, error: r.error.message });
     }
@@ -227,8 +233,8 @@ function workflowApi(view: "transfers" | "creditCardPayments" | "alkansya" | "re
     create: (body: Record<string, unknown>) => incomesApi.create(body),
     bulkCreate: (items: Record<string, unknown>[]) => incomesApi.bulkCreate(items),
     update: (id: string, body: Record<string, unknown>) => incomesApi.update(id, body),
-    delete: (id: string) => incomesApi.delete(id),
-    bulkDelete: (ids: string[]) => incomesApi.bulkDelete(ids),
+    delete: (id: string, mode: "soft" | "hard" = "soft") => incomesApi.delete(id, mode),
+    bulkDelete: (ids: string[], mode: "soft" | "hard" = "soft") => incomesApi.bulkDelete(ids, mode),
   };
 }
 

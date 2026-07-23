@@ -179,4 +179,9 @@ export class NotionClient {
       ...(opts?.icon ? { icon: opts.icon } : {})
     })
   }
+
+  /** Move a page to Notion trash (archived). */
+  async archivePage(pageId: string): Promise<{ id: string }> {
+    return this.request('PATCH', `/v1/pages/${pageId}`, { archived: true })
+  }
 }

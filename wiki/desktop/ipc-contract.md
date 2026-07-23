@@ -29,12 +29,13 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `create(dto)` | `IncomeRecord` (instant local write, `dirty`) |
 | `update(id, dto)` | `IncomeRecord` |
 | `softDelete(id)` | `IncomeRecord` (title rewrite + amount cleared) |
+| `hardDelete(id)` | `true` (local row removed; Notion page queued for trash/archive on push) |
 
 ### `window.api.expenses`
-`list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields).
+`list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields).
 
 ### `window.api.expenseScheduler`
-`list()`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `generate(id)` (materialize a scheduled expense).
+`list()`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)`, `generate(id)` (materialize a scheduled expense).
 
 ### `window.api.reports`
 | Method | Returns | Notes |
@@ -72,7 +73,7 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `saveMapping(mapping)` | `void` | Persist per-workspace db/property mapping. |
 
 ### `window.api.settings`
-`get()`, `update(patch)` — sync mode/interval, window prefs, theme. Never touches the token.
+`get()`, `update(patch)` — UI prefs including `hardDeleteEnabled` (default off). Soft delete remains the default; hard delete removes the local row and archives the Notion page to trash on push. Sync mode/interval live under `window.api.sync`.
 
 ## Events (main → renderer)
 

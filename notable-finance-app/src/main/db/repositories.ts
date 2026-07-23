@@ -200,6 +200,14 @@ export function softDeleteIncome(id: string): IncomeRecordDto {
   return getIncome(id)
 }
 
+/**
+ * Permanently remove a local income. If it was linked to Notion, queue an archive
+ * (trash) so the next push moves the page to Notion trash.
+ */
+export function hardDeleteIncome(id: string): void {
+  hardDeleteRecord('incomes', id)
+}
+
 // ── expenses ────────────────────────────────────────────────────────────────
 
 const EXPENSE_COLS = `id, title, purchase_date, date_paid, amount, interest, account_id,
@@ -364,6 +372,11 @@ export function softDeleteExpense(id: string): ExpenseRecordDto {
   return getExpense(id)
 }
 
+/** Permanently remove a local expense; queue Notion trash if linked. */
+export function hardDeleteExpense(id: string): void {
+  hardDeleteRecord('expenses', id)
+}
+
 // ── expense scheduler ───────────────────────────────────────────────────────
 
 const SCHEDULER_COLS = `id, title, amount, account_id, category_id, frequency, next_run_date, active, deleted`
@@ -438,6 +451,40 @@ export function softDeleteScheduler(id: string): SchedulerRecordDto {
     .run(`[Deleted: ${current.title}]`, t, id)
   journal('expenseScheduler', 'delete', id, { title: current.title })
   return getScheduler(id)
+}
+
+/** Permanently remove a local scheduler row; queue Notion trash if linked. */
+export function hardDeleteScheduler(id: string): void {
+  hardDeleteRecord('expense_scheduler', id, 'expenseScheduler')
+}
+
+/**
+ * Hard-delete: drop the local row immediately. If Notion-linked, keep a
+ * `hardDelete` mutation so push can archive (trash) the page later.
+ */
+function hardDeleteRecord(
+  table: 'incomes' | 'expenses' | 'expense_scheduler',
+  id: string,
+  resourceName: string = table
+): void {
+  const row = getSqlite()
+    .prepare(`SELECT id, title, notion_page_id FROM ${table} WHERE id = ?`)
+    .get(id) as { id: string; title: string; notion_page_id: string | null } | undefined
+  if (!row) throw new ValidationError(`${resourceName} ${id} not found`)
+
+  // Drop any prior queued mutations for this row; replace with a single trash intent.
+  getSqlite()
+    .prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?')
+    .run(resourceName, id)
+
+  if (row.notion_page_id) {
+    journal(resourceName, 'hardDelete', id, {
+      notionPageId: row.notion_page_id,
+      title: row.title
+    })
+  }
+
+  getSqlite().prepare(`DELETE FROM ${table} WHERE id = ?`).run(id)
 }
 
 /** Materialize a scheduled expense into a real (unpaid) expense and advance next_run_date. */

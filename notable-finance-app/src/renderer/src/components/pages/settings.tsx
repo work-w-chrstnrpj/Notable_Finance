@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import { Database, Palette } from "lucide-react";
+import { Database, Palette, Trash2 } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import { useUiSettings } from "@/lib/ui-settings-context";
 import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
@@ -23,6 +24,7 @@ function SettingsPage({
   onShowFabChange: (next: boolean) => void;
 }) {
   const [modal, setModal] = useState<SettingsModalKind>(null);
+  const { hardDeleteEnabled, setHardDeleteEnabled } = useUiSettings();
   useTheme(); // theme context is exercised by the modal
 
   return (
@@ -48,6 +50,39 @@ function SettingsPage({
             <span className="switch__track"><span className="switch__thumb" /></span>
           </label>
         </div>
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Hard delete</p>
+            <p className="settings-toggle__hint">
+              When on, Soft Delete becomes Hard Delete (red). Confirmed deletes
+              remove the record locally and move the Notion page to trash on the
+              next sync. Soft delete (default) still clears the amount and marks
+              the title as deleted.
+            </p>
+          </div>
+          <label
+            className={cx("switch", hardDeleteEnabled && "switch--on")}
+            aria-label="Toggle hard delete"
+          >
+            <input
+              type="checkbox"
+              checked={hardDeleteEnabled}
+              onChange={(event) => {
+                void setHardDeleteEnabled(event.target.checked);
+              }}
+            />
+            <span className="switch__track"><span className="switch__thumb" /></span>
+          </label>
+        </div>
+        {hardDeleteEnabled && (
+          <div className="settings-row settings-row--danger">
+            <p>
+              <Trash2 size={14} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
+              Hard delete is on. Use Confirm carefully — trashed Notion pages can
+              be restored from Notion trash, but local rows are removed immediately.
+            </p>
+          </div>
+        )}
       </Panel>
       <Panel title="Theme">
         <div className="settings-row">

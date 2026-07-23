@@ -349,6 +349,12 @@ export interface SyncSettings {
   intervalSeconds: number
 }
 
+/** App UI preferences persisted in `app_settings` (not Notion). */
+export interface UiSettings {
+  /** When true, delete actions permanently remove local rows and archive Notion pages to trash. */
+  hardDeleteEnabled: boolean
+}
+
 export interface SyncStatus {
   connected: boolean
   mapped: boolean

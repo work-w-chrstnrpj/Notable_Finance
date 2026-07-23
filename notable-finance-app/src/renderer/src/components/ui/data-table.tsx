@@ -52,6 +52,8 @@ function DataTable({
   onToggleSelect,
   onBulkAction,
   showBulkEdit = true,
+  bulkDeleteLabel = "Soft Delete",
+  bulkDeleteDanger = false,
 }: {
   headers: string[];
   rows: ReactNode[][];
@@ -81,6 +83,10 @@ function DataTable({
   onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit") => void;
   /** Show the mass-edit button in the bulk toolbar (Income/Expense). */
   showBulkEdit?: boolean;
+  /** Soft Delete / Hard Delete label for the selection toolbar. */
+  bulkDeleteLabel?: string;
+  /** Red danger styling when hard-delete mode is on. */
+  bulkDeleteDanger?: boolean;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -182,11 +188,14 @@ function DataTable({
           </button>
           <button
             type="button"
-            className="bulk-toolbar__btn bulk-toolbar__btn--danger"
+            className={cx(
+              "bulk-toolbar__btn",
+              bulkDeleteDanger ? "bulk-toolbar__btn--danger" : undefined,
+            )}
             onClick={() => onBulkAction?.("delete")}
           >
             <Trash2 size={14} />
-            <span>Delete</span>
+            <span>{bulkDeleteLabel}</span>
           </button>
         </div>
       )}

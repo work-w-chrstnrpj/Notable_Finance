@@ -8,7 +8,7 @@ import { Panel, Field, ComputedField, MoneyValue, FilterSelect, LoadingBlock, Se
 import { PageToolbar } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
@@ -19,6 +19,7 @@ import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 import { incomesApi } from "@/lib/api-client";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
+import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import type { AnnualGroupBy } from "@/components/constants";
 import type { IncomeViewMode, IncomeRecord } from "@/types/finance";
 
@@ -56,6 +57,10 @@ function IncomePage({
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
+  const { hardDeleteEnabled } = useUiSettings();
+  const deleteMode = hardDeleteEnabled ? "hard" : "soft";
+  const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
@@ -438,95 +443,72 @@ function IncomePage({
         return;
       }
 
-      // Clear selection FIRST so indices don't shift onto wrong rows
-      setSelectedIds(new Set());
-
-      // Optimistic: remove all selected from the visible list
-      for (const idx of selectedIds) {
-        const record = visibleIncomeRecords[idx];
-        if (record) setPendingIds((prev) => new Set(prev).add(record.id));
-      }
-      applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
-
-      try {
-        const res = await incomesApi.bulkDelete(idsToDelete);
-        if (!res.success) {
-          // Restore all on total failure
-          for (const id of idsToDelete) {
-            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
-          }
-          void refetch();
-          setSaveNotice(`Bulk delete failed: ${res.error.message}`);
-        } else {
-          const { deleted, failed } = res.data;
-          // Clear pending for successfully deleted
-          for (const id of deleted) {
-            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
-          }
-          // Restore failed ones
-          if (failed.length > 0) {
-            for (const f of failed) {
-              setPendingIds((prev) => { const n = new Set(prev); n.delete(f.id); return n; });
-            }
-            void refetch();
-            setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
-          }
-          invalidateIncomeFamily();
-        }
-      } catch (err) {
-        for (const id of idsToDelete) {
-          setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
-        }
-        void refetch();
-        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
-      }
+      setDeleteConfirmIds(idsToDelete);
     }
   }
 
-  async function handleDeleteIncome() {
-    if (!editingId) return;
-    if (!window.confirm("Soft-delete this income in Notion?")) return;
-    const deletedId = editingId;
+  async function executeDeleteIncomes(idsToDelete: string[]) {
+    setDeleteConfirmIds(null);
+    setSelectedIds(new Set());
+    setModal(null);
     setSaveError(null);
     setSaveNotice(null);
 
-    // Close modal immediately
-    setModal(null);
-
-    // Show the row as dimmed/pending
-    setPendingIds((prev) => new Set(prev).add(deletedId));
-
-    // Remove from the visible list optimistically
-    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
+    for (const id of idsToDelete) {
+      setPendingIds((prev) => new Set(prev).add(id));
+    }
+    applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
 
     try {
-      const res = await incomesApi.delete(deletedId);
+      const res = await incomesApi.bulkDelete(idsToDelete, deleteMode);
       if (!res.success) {
-        // Restore the item since delete failed — refetch from server
-        setPendingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(deletedId);
-          return next;
-        });
+        for (const id of idsToDelete) {
+          setPendingIds((prev) => {
+            const n = new Set(prev);
+            n.delete(id);
+            return n;
+          });
+        }
         void refetch();
-        setSaveNotice(`Delete failed: ${res.error.message}`);
-        return;
+        setSaveNotice(`Bulk delete failed: ${res.error.message}`);
+      } else {
+        const { deleted, failed } = res.data;
+        for (const id of deleted) {
+          setPendingIds((prev) => {
+            const n = new Set(prev);
+            n.delete(id);
+            return n;
+          });
+        }
+        if (failed.length > 0) {
+          for (const f of failed) {
+            setPendingIds((prev) => {
+              const n = new Set(prev);
+              n.delete(f.id);
+              return n;
+            });
+          }
+          void refetch();
+          setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
+        }
+        invalidateIncomeFamily();
       }
-      setPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(deletedId);
-        return next;
-      });
-      invalidateIncomeFamily();
     } catch (err) {
-      setPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(deletedId);
-        return next;
-      });
+      for (const id of idsToDelete) {
+        setPendingIds((prev) => {
+          const n = new Set(prev);
+          n.delete(id);
+          return n;
+        });
+      }
       void refetch();
       setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
+  }
+
+  function handleDeleteIncome() {
+    if (!editingId) return;
+    setDeleteConfirmIds([editingId]);
   }
 
   const enabledIncomeRecords = searchFilteredRecords.filter(
@@ -637,6 +619,8 @@ function IncomePage({
           disabledIds={disabledIds}
           onToggleSelect={toggleRowSelect}
           onBulkAction={handleBulkAction}
+          bulkDeleteLabel={deleteLabel}
+          bulkDeleteDanger={hardDeleteEnabled}
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
           rowClassName={(rowIndex) => {
             const record = visibleIncomeRecords[rowIndex];
@@ -689,7 +673,8 @@ function IncomePage({
       )}
 
       <FormModal
-        deleteLabel="Soft Delete"
+        deleteLabel={deleteLabel}
+        deleteDanger={hardDeleteEnabled}
         modal={modal}
         editing={editing}
         saving={false}
@@ -769,6 +754,16 @@ function IncomePage({
         }}
         onApply={applyMassEdit}
       />
+      {deleteConfirmIds && (
+        <ConfirmModal
+          {...deleteConfirmCopy(hardDeleteEnabled, deleteConfirmIds.length)}
+          danger={hardDeleteEnabled}
+          onCancel={() => setDeleteConfirmIds(null)}
+          onConfirm={() => {
+            void executeDeleteIncomes(deleteConfirmIds);
+          }}
+        />
+      )}
       {saveError && (
         <Toast message={saveError} onDismiss={() => setSaveError(null)} />
       )}

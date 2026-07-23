@@ -28,6 +28,11 @@ export function syncStatus(): SyncStatus {
   const settings = getSyncSettings()
   const lastPushAt = metaGet(META_KEYS.lastPushAt)
   const lastPullAt = metaGet(META_KEYS.lastPullAt)
+  const pendingHardDeletes = (
+    db.prepare(`SELECT COUNT(*) AS n FROM mutation_queue WHERE action = 'hardDelete'`).get() as {
+      n: number
+    }
+  ).n
   return {
     connected: isConnected(),
     mapped: isMapped(),
@@ -35,7 +40,7 @@ export function syncStatus(): SyncStatus {
     running,
     mode: settings.mode,
     intervalSeconds: settings.intervalSeconds,
-    dirtyCount: count('incomes', 'dirty') + count('expenses', 'dirty'),
+    dirtyCount: count('incomes', 'dirty') + count('expenses', 'dirty') + pendingHardDeletes,
     conflictCount: count('incomes', 'conflict') + count('expenses', 'conflict'),
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
     lastPullAt: lastPullAt ? Number(lastPullAt) : null,

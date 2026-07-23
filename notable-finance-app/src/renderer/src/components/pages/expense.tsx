@@ -15,7 +15,7 @@ import {
 } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { DataTable } from "@/components/ui/data-table";
-import { FormModal, type ModalState } from "@/components/ui/form-modals";
+import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
@@ -39,6 +39,7 @@ import {
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 import { expensesApi } from "@/lib/api-client";
+import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { parseNumberInput, parseOptionalNumberInput, getExpenseTotal } from "@/lib/finance-helpers";
 import {
@@ -157,6 +158,10 @@ function ExpensePage({
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
+  const { hardDeleteEnabled } = useUiSettings();
+  const deleteMode = hardDeleteEnabled ? "hard" : "soft";
+  const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
@@ -435,47 +440,7 @@ function ExpensePage({
 
   async function handleDeleteExpense() {
     if (!editingId) return;
-    if (!window.confirm("Soft-delete this expense in Notion?")) return;
-    const deletedId = editingId;
-    setSaveError(null);
-    setSaveNotice(null);
-
-    // Close modal immediately
-    setModal(null);
-
-    // Show the row as dimmed/pending
-    setPendingIds((prev) => new Set(prev).add(deletedId));
-
-    // Remove from the visible list optimistically
-    applyLocal((rows) => rows.filter((r) => r.id !== deletedId));
-
-    try {
-      const res = await expensesApi.delete(deletedId);
-      if (!res.success) {
-        setPendingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(deletedId);
-          return next;
-        });
-        void refetch();
-        setSaveNotice(`Delete failed: ${res.error.message}`);
-        return;
-      }
-      setPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(deletedId);
-        return next;
-      });
-      invalidateExpenseFamily();
-    } catch (err) {
-      setPendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(deletedId);
-        return next;
-      });
-      void refetch();
-      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
-    }
+    setDeleteConfirmIds([editingId]);
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
@@ -718,44 +683,66 @@ function ExpensePage({
         return;
       }
 
-      // Clear selection FIRST so indices don't shift onto wrong rows
-      setSelectedIds(new Set());
+      setDeleteConfirmIds(idsToDelete);
+    }
+  }
 
-      for (const idx of selectedIds) {
-        const record = visibleExpenseRecords[idx];
-        if (record) setPendingIds((prev) => new Set(prev).add(record.id));
-      }
-      applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
+  async function executeDeleteExpenses(idsToDelete: string[]) {
+    setDeleteConfirmIds(null);
+    setSelectedIds(new Set());
+    setModal(null);
+    setSaveError(null);
+    setSaveNotice(null);
 
-      try {
-        const res = await expensesApi.bulkDelete(idsToDelete);
-        if (!res.success) {
-          for (const id of idsToDelete) {
-            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
-          }
-          void refetch();
-          setSaveNotice(`Bulk delete failed: ${res.error.message}`);
-        } else {
-          const { deleted, failed } = res.data;
-          for (const id of deleted) {
-            setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
-          }
-          if (failed.length > 0) {
-            for (const f of failed) {
-              setPendingIds((prev) => { const n = new Set(prev); n.delete(f.id); return n; });
-            }
-            void refetch();
-            setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
-          }
-          invalidateExpenseFamily();
-        }
-      } catch (err) {
+    for (const id of idsToDelete) {
+      setPendingIds((prev) => new Set(prev).add(id));
+    }
+    applyLocal((rows) => rows.filter((r) => !idsToDelete.includes(r.id)));
+
+    try {
+      const res = await expensesApi.bulkDelete(idsToDelete, deleteMode);
+      if (!res.success) {
         for (const id of idsToDelete) {
-          setPendingIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+          setPendingIds((prev) => {
+            const n = new Set(prev);
+            n.delete(id);
+            return n;
+          });
         }
         void refetch();
-        setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
+        setSaveNotice(`Bulk delete failed: ${res.error.message}`);
+      } else {
+        const { deleted, failed } = res.data;
+        for (const id of deleted) {
+          setPendingIds((prev) => {
+            const n = new Set(prev);
+            n.delete(id);
+            return n;
+          });
+        }
+        if (failed.length > 0) {
+          for (const f of failed) {
+            setPendingIds((prev) => {
+              const n = new Set(prev);
+              n.delete(f.id);
+              return n;
+            });
+          }
+          void refetch();
+          setSaveNotice(`${failed.length} of ${idsToDelete.length} items failed to delete.`);
+        }
+        invalidateExpenseFamily();
       }
+    } catch (err) {
+      for (const id of idsToDelete) {
+        setPendingIds((prev) => {
+          const n = new Set(prev);
+          n.delete(id);
+          return n;
+        });
+      }
+      void refetch();
+      setSaveNotice(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
     }
   }
 
@@ -939,6 +926,8 @@ function ExpensePage({
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
+          bulkDeleteLabel={deleteLabel}
+          bulkDeleteDanger={hardDeleteEnabled}
             wide
             headers={["Date", "Name", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
@@ -982,6 +971,8 @@ function ExpensePage({
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
+          bulkDeleteLabel={deleteLabel}
+          bulkDeleteDanger={hardDeleteEnabled}
             wide
             headers={[
               "Date",
@@ -1050,6 +1041,8 @@ function ExpensePage({
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
+          bulkDeleteLabel={deleteLabel}
+          bulkDeleteDanger={hardDeleteEnabled}
             wide
             headers={[
               "Date",
@@ -1128,6 +1121,8 @@ function ExpensePage({
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
+          bulkDeleteLabel={deleteLabel}
+          bulkDeleteDanger={hardDeleteEnabled}
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rowClassName={expenseRowClassName}
@@ -1177,7 +1172,8 @@ function ExpensePage({
       )}
 
       <FormModal
-        deleteLabel="Soft Delete"
+        deleteLabel={deleteLabel}
+        deleteDanger={hardDeleteEnabled}
         modal={modal}
         editing={editing}
         saving={false}
@@ -1363,6 +1359,16 @@ function ExpensePage({
         }}
         onApply={applyMassEdit}
       />
+      {deleteConfirmIds && (
+        <ConfirmModal
+          {...deleteConfirmCopy(hardDeleteEnabled, deleteConfirmIds.length)}
+          danger={hardDeleteEnabled}
+          onCancel={() => setDeleteConfirmIds(null)}
+          onConfirm={() => {
+            void executeDeleteExpenses(deleteConfirmIds);
+          }}
+        />
+      )}
       {saveError && (
         <Toast message={saveError} onDismiss={() => setSaveError(null)} />
       )}

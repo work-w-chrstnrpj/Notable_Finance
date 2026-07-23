@@ -88,6 +88,84 @@ export function isPhantomDelete(row: { notion_page_id: string | null; deleted: n
   return !row.notion_page_id && row.deleted === 1
 }
 
+type HardDeleteQueueRow = {
+  id: string
+  resource: string
+  record_id: string
+  payload: string
+}
+
+/** Archive Notion pages queued by local hard-delete. */
+async function pushPendingHardDeletes(
+  c: ReturnType<typeof client>,
+  result: PushResult
+): Promise<void> {
+  const db = getSqlite()
+  const rows = db
+    .prepare(`SELECT id, resource, record_id, payload FROM mutation_queue WHERE action = 'hardDelete' ORDER BY created_at`)
+    .all() as HardDeleteQueueRow[]
+
+  for (const row of rows) {
+    let notionPageId: string | null = null
+    let title: string | null = null
+    try {
+      const payload = JSON.parse(row.payload) as { notionPageId?: string; title?: string }
+      notionPageId = payload.notionPageId ?? null
+      title = payload.title ?? null
+    } catch {
+      db.prepare('DELETE FROM mutation_queue WHERE id = ?').run(row.id)
+      result.skipped++
+      continue
+    }
+
+    if (!notionPageId) {
+      db.prepare('DELETE FROM mutation_queue WHERE id = ?').run(row.id)
+      result.skipped++
+      continue
+    }
+
+    try {
+      await sendWithBackoff(() => c.archivePage(notionPageId as string))
+      db.prepare('DELETE FROM mutation_queue WHERE id = ?').run(row.id)
+      if (row.resource === 'incomes' || row.resource === 'expenses') {
+        recordActivity({
+          resource: row.resource,
+          recordId: row.record_id,
+          notionPageId,
+          title,
+          action: 'delete',
+          direction: 'push'
+        })
+      }
+      result.pushed++
+      result.updated++
+    } catch (error) {
+      if (isNotionGoneError(error)) {
+        // Already trashed/gone — treat as success.
+        db.prepare('DELETE FROM mutation_queue WHERE id = ?').run(row.id)
+        if (row.resource === 'incomes' || row.resource === 'expenses') {
+          recordActivity({
+            resource: row.resource,
+            recordId: row.record_id,
+            notionPageId,
+            title,
+            action: 'delete',
+            direction: 'push'
+          })
+        }
+        result.skipped++
+      } else {
+        result.failed++
+        const message = error instanceof Error ? error.message : String(error)
+        result.errors.push(`hardDelete/${row.resource}/${row.record_id}: ${message}`)
+      }
+    }
+
+    emitStatus()
+    await sleep(THROTTLE_MS)
+  }
+}
+
 // ── the push pass ───────────────────────────────────────────────────────────
 
 async function sendWithBackoff(
@@ -174,6 +252,9 @@ async function pushAllInner(): Promise<PushResult> {
   ]
 
   try {
+    // Pending Notion trash archives from hard-delete (local rows already gone).
+    await pushPendingHardDeletes(c, result)
+
     for (const t of tables) {
       const dirtyRows = db
         .prepare(`SELECT * FROM ${t.table} WHERE sync_state = 'dirty' ORDER BY local_updated_at`)

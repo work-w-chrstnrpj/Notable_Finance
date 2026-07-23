@@ -1,6 +1,7 @@
 
 import type { ReactNode } from "react";
 import { Copy, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { cx } from "@/lib/finance-helpers";
 
 export type ModalState = {
   mode: "new" | "edit";
@@ -11,6 +12,7 @@ function FormModal({
   modal,
   subtitle,
   deleteLabel,
+  deleteDanger,
   editing,
   saving,
   error,
@@ -24,6 +26,8 @@ function FormModal({
   modal: ModalState;
   subtitle: string;
   deleteLabel: string;
+  /** Red danger styling for hard-delete mode. */
+  deleteDanger?: boolean;
   /** True when inputs are active. New items start editing; edits start read-only. */
   editing: boolean;
   saving: boolean;
@@ -72,7 +76,12 @@ function FormModal({
         </div>
         <div className="modal-panel__footer">
           {modal.mode === "edit" && (
-            <button type="button" className="button" onClick={onDelete} disabled={saving}>
+            <button
+              type="button"
+              className={cx("button", deleteDanger && "button--danger")}
+              onClick={onDelete}
+              disabled={saving}
+            >
               <Trash2 size={16} />
               {deleteLabel}
             </button>
@@ -142,4 +151,70 @@ function SettingsModal({
   );
 }
 
-export { FormModal, SettingsModal };
+function ConfirmModal({
+  title,
+  message,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  danger,
+  busy,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  busy?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+    >
+      <section
+        className="modal-panel modal-panel--confirm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+      >
+        <div className="modal-panel__header">
+          <div>
+            <h2 id="confirm-modal-title">{title}</h2>
+            <p>{message}</p>
+          </div>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Close"
+            onClick={onCancel}
+            disabled={busy}
+          >
+            <X size={17} />
+          </button>
+        </div>
+        <div className="modal-panel__footer modal-panel__footer--end">
+          <button type="button" className="button" onClick={onCancel} disabled={busy}>
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            className={cx("button", danger ? "button--danger" : "button--primary")}
+            onClick={onConfirm}
+            disabled={busy}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export { FormModal, SettingsModal, ConfirmModal };

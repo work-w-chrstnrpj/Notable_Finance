@@ -33,8 +33,10 @@ import { ValidationError } from '../domain/validation'
 import type {
   ConflictResolution,
   NotionMapping,
-  SyncSettings
+  SyncSettings,
+  UiSettings
 } from '../../shared/finance.types'
+import { getUiSettings, setUiSettings } from '../settings/ui'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
@@ -100,6 +102,13 @@ export function registerIpc(): void {
       return record
     })
   )
+  ipcMain.handle('incomes:hardDelete', (_e, id: string) =>
+    result(() => {
+      repo.hardDeleteIncome(id)
+      changed('incomes', [id])
+      return true
+    })
+  )
 
   // expenses
   ipcMain.handle('expenses:list', (_e, params?: ExpenseListParams) =>
@@ -126,6 +135,13 @@ export function registerIpc(): void {
       return record
     })
   )
+  ipcMain.handle('expenses:hardDelete', (_e, id: string) =>
+    result(() => {
+      repo.hardDeleteExpense(id)
+      changed('expenses', [id])
+      return true
+    })
+  )
 
   // expense scheduler
   ipcMain.handle('scheduler:list', () => result(() => repo.listScheduler()))
@@ -148,6 +164,13 @@ export function registerIpc(): void {
       const record = repo.softDeleteScheduler(id)
       changed('expenseScheduler', [id])
       return record
+    })
+  )
+  ipcMain.handle('scheduler:hardDelete', (_e, id: string) =>
+    result(() => {
+      repo.hardDeleteScheduler(id)
+      changed('expenseScheduler', [id])
+      return true
     })
   )
   ipcMain.handle('scheduler:generate', (_e, id: string) =>
@@ -223,5 +246,11 @@ export function registerIpc(): void {
       broadcast('sync:status', syncStatus())
       return listConflicts()
     })
+  )
+
+  // UI settings (hard-delete mode, etc.)
+  ipcMain.handle('settings:get', () => result(() => getUiSettings()))
+  ipcMain.handle('settings:update', (_e, patch: Partial<UiSettings>) =>
+    result(() => setUiSettings(patch))
   )
 }

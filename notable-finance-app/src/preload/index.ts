@@ -30,7 +30,8 @@ import type {
   SyncStatus,
   UpdateExpenseInput,
   UpdateIncomeInput,
-  UpdateSchedulerInput
+  UpdateSchedulerInput,
+  UiSettings
 } from '../shared/finance.types'
 
 // Preload — the ONLY bridge between the sandboxed renderer and main. Channels are
@@ -68,7 +69,9 @@ const api = {
     update: (id: string, patch: UpdateIncomeInput): Promise<ApiResult<IncomeRecordDto>> =>
       ipcRenderer.invoke('incomes:update', id, patch),
     softDelete: (id: string): Promise<ApiResult<IncomeRecordDto>> =>
-      ipcRenderer.invoke('incomes:softDelete', id)
+      ipcRenderer.invoke('incomes:softDelete', id),
+    hardDelete: (id: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('incomes:hardDelete', id)
   },
 
   expenses: {
@@ -79,7 +82,9 @@ const api = {
     update: (id: string, patch: UpdateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
       ipcRenderer.invoke('expenses:update', id, patch),
     softDelete: (id: string): Promise<ApiResult<ExpenseRecordDto>> =>
-      ipcRenderer.invoke('expenses:softDelete', id)
+      ipcRenderer.invoke('expenses:softDelete', id),
+    hardDelete: (id: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('expenses:hardDelete', id)
   },
 
   expenseScheduler: {
@@ -90,6 +95,8 @@ const api = {
       ipcRenderer.invoke('scheduler:update', id, patch),
     softDelete: (id: string): Promise<ApiResult<SchedulerRecordDto>> =>
       ipcRenderer.invoke('scheduler:softDelete', id),
+    hardDelete: (id: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('scheduler:hardDelete', id),
     generate: (id: string): Promise<ApiResult<ExpenseRecordDto>> =>
       ipcRenderer.invoke('scheduler:generate', id)
   },
@@ -146,6 +153,12 @@ const api = {
       resolution: ConflictResolution
     ): Promise<ApiResult<ConflictGroup[]>> =>
       ipcRenderer.invoke('sync:resolveConflict', table, id, resolution)
+  },
+
+  settings: {
+    get: (): Promise<ApiResult<UiSettings>> => ipcRenderer.invoke('settings:get'),
+    update: (patch: Partial<UiSettings>): Promise<ApiResult<UiSettings>> =>
+      ipcRenderer.invoke('settings:update', patch)
   },
 
   /**
