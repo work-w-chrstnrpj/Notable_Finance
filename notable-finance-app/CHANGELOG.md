@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   income/expense page, sync soft-deletes locally and marks it clean (push no longer loops
   on “Can't edit block that is archived”). A full presence pass on pull catches Notion-only
   trash even when the local row was still live.
+- **Pull restored for Notion-Version `2026-03-11`** — database query/create/schema now use
+  the data-sources API (`/v1/data_sources/...`). The old `/v1/databases/.../query` path is
+  deprecated on this version, which left Last Pull stuck while push still worked.
+- **Sync Actions: Pull / Push / Full** — Commit Queue is replaced by three buttons (pull-only,
+  push-only, full sync). The top-header Sync button remains full sync. Spacing between Verify
+  Schema and Refresh Source is fixed.
 - **Accounts list (non-credit)** — Card and Table views no longer show **Total Cash Inflow** /
   **Total Cash Outflow**. Credit cards still show Payment Made / Purchase Expenses.
 - **Account detail modal** — Balances now also include derived **Total Pasabuy** and

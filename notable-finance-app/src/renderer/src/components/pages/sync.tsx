@@ -1,6 +1,14 @@
-
 import { useEffect, useState } from "react";
-import { AlertTriangle, ClipboardCheck, CloudDownload, Database, GitMerge, RefreshCw, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  ClipboardCheck,
+  CloudDownload,
+  CloudUpload,
+  Database,
+  GitMerge,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
 import { MetricCard, Panel, Badge, ErrorRow } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
 import { useSyncStatus } from "@/lib/use-data";
@@ -176,17 +184,24 @@ function SyncPage({
   pendingOperations,
   schemaHealth,
   syncState,
+  activeSyncKind,
   onSchemaVerify,
+  onPullSync,
+  onPushSync,
   onSync,
 }: {
   lastSync: string;
   pendingOperations: number;
   schemaHealth: SchemaHealth;
   syncState: SyncState;
+  activeSyncKind: "full" | "pull" | "push" | null;
   onSchemaVerify: () => void;
+  onPullSync: () => void;
+  onPushSync: () => void;
   onSync: () => void;
 }) {
   const { state: syncStatusState } = useSyncStatus();
+  const syncing = syncState === "syncing";
 
   // Use API sync status when available, fall back to parent props
   const apiStatus =
@@ -208,19 +223,56 @@ function SyncPage({
       </section>
       <section className="two-column">
         <Panel title="Sync Actions" action={<StatusPill syncState={syncState} schemaHealth={schemaHealth} />}>
-          <div className="action-list">
-            <button type="button" className="button button--primary" onClick={onSync}>
-              <RefreshCw size={16} className={syncState === "syncing" ? "spin" : undefined} />
-              Commit Queue
-            </button>
-            <button type="button" className="button" onClick={onSchemaVerify}>
-              <ShieldCheck size={16} />
-              Verify Schema
-            </button>
-          </div>
-          <div className="snapshot-card">
-            <p className="snapshot-card__title">Refresh Source</p>
-            <p>Local optimistic state is replaced by the fresh backend snapshot after direct-save or queued sync.</p>
+          <div className="sync-actions">
+            <div className="action-list action-list--sync">
+              <button
+                type="button"
+                className="button"
+                onClick={onPullSync}
+                disabled={syncing}
+              >
+                <CloudDownload
+                  size={16}
+                  className={activeSyncKind === "pull" ? "icon-busy" : undefined}
+                />
+                {activeSyncKind === "pull" ? "Pulling…" : "Pull sync only"}
+              </button>
+              <button
+                type="button"
+                className="button"
+                onClick={onPushSync}
+                disabled={syncing}
+              >
+                <CloudUpload
+                  size={16}
+                  className={activeSyncKind === "push" ? "icon-busy" : undefined}
+                />
+                {activeSyncKind === "push" ? "Pushing…" : "Push sync only"}
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={onSync}
+                disabled={syncing}
+              >
+                <RefreshCw
+                  size={16}
+                  className={activeSyncKind === "full" ? "spin" : undefined}
+                />
+                {activeSyncKind === "full" ? "Syncing…" : "Full sync"}
+              </button>
+              <button type="button" className="button" onClick={onSchemaVerify} disabled={syncing}>
+                <ShieldCheck size={16} />
+                Verify Schema
+              </button>
+            </div>
+            <div className="snapshot-card">
+              <p className="snapshot-card__title">Refresh Source</p>
+              <p>
+                Pull brings Notion → App. Push sends dirty local changes → Notion. Full sync runs
+                pull then push (same as the header Sync button).
+              </p>
+            </div>
           </div>
         </Panel>
         <Panel title="Errors" action={<Badge tone="amber">User safe</Badge>}>

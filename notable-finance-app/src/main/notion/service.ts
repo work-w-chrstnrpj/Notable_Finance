@@ -36,14 +36,23 @@ export function disconnect(): void {
 }
 
 function extractDbTitle(db: Record<string, unknown>): string {
+  // Data-source search results expose `name`; legacy database objects used `title`.
+  if (typeof db.name === 'string' && db.name.trim()) return db.name
   const title = db.title as Array<{ plain_text?: string }> | undefined
   return title?.map((t) => t.plain_text ?? '').join('') || '(untitled)'
+}
+
+/** Prefer the parent database id so mapping stays database-scoped (data source resolved at query time). */
+function extractMappableId(entry: Record<string, unknown>): string {
+  const parent = entry.parent as { type?: string; database_id?: string } | undefined
+  if (parent?.type === 'database_id' && parent.database_id) return parent.database_id
+  return entry.id as string
 }
 
 export async function discoverDatabases(): Promise<DiscoveredDb[]> {
   const dbs = await client().searchDatabases()
   return dbs.map((db) => ({
-    id: db.id as string,
+    id: extractMappableId(db),
     title: extractDbTitle(db),
     propertyCount: Object.keys((db.properties as Record<string, unknown>) ?? {}).length
   }))
@@ -70,8 +79,8 @@ export async function verifySchema(): Promise<SchemaReport> {
       continue
     }
     try {
-      const db = await c.getDatabase(databaseId)
-      const actual = (db.properties as Record<string, { type: string }>) ?? {}
+      const dataSource = await c.getDataSourceSchema(databaseId)
+      const actual = (dataSource.properties as Record<string, { type: string }>) ?? {}
       const { errors, warnings } = compareSchema(EXPECTED_SCHEMA[resource], actual)
       resources.push({ resource, databaseId, ok: errors.length === 0, errors, warnings })
     } catch (error) {

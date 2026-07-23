@@ -2602,6 +2602,21 @@ tfoot td {
   gap: 10px;
 }
 
+.sync-actions {
+  display: grid;
+  gap: 14px;
+}
+
+.action-list--sync {
+  display: grid;
+  gap: 10px;
+}
+
+.action-list--sync .button {
+  width: 100%;
+  justify-content: center;
+}
+
 .budget-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -2976,6 +2991,28 @@ tfoot td {
   animation: spin 0.9s linear infinite;
 }
 
+.icon-busy {
+  animation: icon-busy-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes icon-busy-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translateY(1px);
+  }
+}
+
 .not-found {
   display: grid;
   min-height: 100vh;
@@ -2995,12 +3032,6 @@ tfoot td {
 .not-found__panel a {
   color: var(--blue);
   font-weight: 750;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ── Small tablets & phones: metrics drop to 2-up. Laptops (11"+) keep

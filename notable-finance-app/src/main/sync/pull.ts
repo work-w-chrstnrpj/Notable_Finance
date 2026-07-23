@@ -406,10 +406,21 @@ async function pullAllInner(full: boolean): Promise<PullResult> {
     if (mapping.incomes) merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap))
     if (mapping.expenses) merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap))
 
-    // Presence pass: Notion trash/archive removes pages from DB query results, so
+    // Presence pass: Notion trash/archive removes pages from query results, so
     // incremental last_edited filters never surface them — reconcile by full id set.
-    if (mapping.incomes) result.updated += await reconcileMissingFromNotion('incomes', mapping.incomes)
-    if (mapping.expenses) result.updated += await reconcileMissingFromNotion('expenses', mapping.expenses)
+    // Failures here must not block cursor advance (incremental pull already applied).
+    try {
+      if (mapping.incomes) {
+        result.updated += await reconcileMissingFromNotion('incomes', mapping.incomes)
+      }
+      if (mapping.expenses) {
+        result.updated += await reconcileMissingFromNotion('expenses', mapping.expenses)
+      }
+    } catch (error) {
+      result.errors.push(
+        `presence reconcile: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
 
     metaSet(META_KEYS.lastPullCursor, passStart)
     metaSet(META_KEYS.lastPullAt, String(Date.now()))

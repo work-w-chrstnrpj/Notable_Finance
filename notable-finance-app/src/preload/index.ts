@@ -22,6 +22,7 @@ import type {
   MonthlyMonitoringDto,
   NotionMapping,
   PullResult,
+  PushResult,
   SchedulerRecordDto,
   SchemaReport,
   SyncNowResult,
@@ -128,6 +129,10 @@ const api = {
     status: (): Promise<ApiResult<SyncStatus>> => ipcRenderer.invoke('sync:status'),
     /** Reconcile (pull) then push. */
     now: (): Promise<ApiResult<SyncNowResult>> => ipcRenderer.invoke('sync:now'),
+    /** Notion → App only (incremental). */
+    pull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:pull'),
+    /** App → Notion only (dirty records). */
+    push: (): Promise<ApiResult<PushResult>> => ipcRenderer.invoke('sync:push'),
     /** Full pull from Notion (onboarding / first sync). */
     initialPull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:initialPull'),
     getSettings: (): Promise<ApiResult<SyncSettings>> => ipcRenderer.invoke('sync:getSettings'),

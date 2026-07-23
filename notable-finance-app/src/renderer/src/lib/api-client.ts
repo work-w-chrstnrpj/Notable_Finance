@@ -291,11 +291,23 @@ export const syncApi = {
   schemaStatus() {
     return adapt(nfApi().notion.verifySchema());
   },
+  /** Full sync: pull then push (header Sync button default). */
+  fullSync() {
+    return adapt(nfApi().sync.now());
+  },
+  /** Notion → App only. */
+  pullOnly() {
+    return adapt(nfApi().sync.pull());
+  },
+  /** App → Notion only. */
+  pushOnly() {
+    return adapt(nfApi().sync.push());
+  },
   // Desktop reads/writes are local-first; "pull latest" runs a full reconcile (pull+push).
   pullLatest(_options: PullLatestOptions) {
     return adapt(nfApi().sync.now());
   },
-  // Local writes are already applied; a commit just triggers a sync pass.
+  // Local writes are already applied; a commit just triggers a full sync pass.
   commit(_body: SyncCommitRequest) {
     return adapt(nfApi().sync.now());
   },

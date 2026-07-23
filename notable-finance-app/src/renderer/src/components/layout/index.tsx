@@ -188,6 +188,7 @@ function TopBar({
   selectedDate,
   selectorUnit,
   syncState,
+  activeSyncKind = null,
   onDateChange,
   onSchemaVerify,
   onSync,
@@ -202,6 +203,7 @@ function TopBar({
   selectedDate: string;
   selectorUnit: ViewUnit | null;
   syncState: SyncState;
+  activeSyncKind?: "full" | "pull" | "push" | null;
   onDateChange: (isoDate: string) => void;
   onSchemaVerify: () => void;
   onSync: () => void;
@@ -243,8 +245,8 @@ function TopBar({
           Schema Check
         </button>
         <div className="sync-btn-wrapper">
-          <button type="button" className="button button--primary" onClick={onSync}>
-            <RefreshCw size={12} className={syncState === "syncing" ? "spin" : undefined} />
+          <button type="button" className="button button--primary" onClick={onSync} disabled={syncState === "syncing"}>
+            <RefreshCw size={12} className={activeSyncKind === "full" ? "spin" : undefined} />
             Sync
           </button>
         </div>

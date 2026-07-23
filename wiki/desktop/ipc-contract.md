@@ -54,8 +54,11 @@ Accounts/categories are read-only reference — no create/update/delete.
 | Method | Returns | Notes |
 | --- | --- | --- |
 | `status()` | `SyncStatus` | mode, interval, last push/pull, dirty count, conflict count, online. |
-| `now()` | `SyncResult` | Trigger a manual push+pull pass. |
-| `setMode({ mode, intervalSeconds })` | `SyncStatus` | `manual` \| `auto`. |
+| `now()` | `SyncNowResult` | Full sync: pull then push. |
+| `pull()` | `PullResult` | Notion → App only (incremental). |
+| `push()` | `PushResult` | App → Notion only (dirty records). |
+| `initialPull()` | `PullResult` | Full pull (onboarding). |
+| `setMode({ mode, intervalSeconds })` | `SyncSettings` | `manual` \| `auto`. |
 | `listConflicts()` | `Conflict[]` | Unresolved conflicts. |
 | `resolveConflict(id, resolution)` | `Conflict` | `resolution`: per-field `local`/`remote` choices, or `keepLocal`/`keepRemote`. |
 

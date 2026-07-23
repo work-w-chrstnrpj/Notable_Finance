@@ -93,22 +93,21 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     }
   }
 
+  const [activeSyncKind, setActiveSyncKind] = useState<"full" | "pull" | "push" | null>(null);
+
   const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode);
 
-  async function runSync() {
+  async function runSyncPass(kind: "full" | "pull" | "push") {
+    setActiveSyncKind(kind);
     setSyncState("syncing");
     try {
-      const pullResult = await syncApi.pullLatest({
-        resources: [
-          "accounts",
-          "incomeCategories",
-          "expenseCategories",
-          "incomes",
-          "expenses",
-        ],
-        month: selectedMonth,
-      });
-      if (pullResult.success) {
+      const result =
+        kind === "pull"
+          ? await syncApi.pullOnly()
+          : kind === "push"
+            ? await syncApi.pushOnly()
+            : await syncApi.fullSync();
+      if (result.success) {
         setSyncState("fresh");
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
@@ -118,8 +117,13 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
       }
     } catch {
       setSyncState("error");
+    } finally {
+      setActiveSyncKind(null);
     }
   }
+
+  /** Header Sync button — always full sync (pull then push). */
+  const runSync = () => void runSyncPass("full");
 
   async function verifySchema() {
     try {
@@ -165,6 +169,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           selectedDate={selectedDate}
           selectorUnit={selectorUnit}
           syncState={syncState}
+          activeSyncKind={activeSyncKind}
           onDateChange={setSelectedDate}
           onSchemaVerify={verifySchema}
           onSync={runSync}
@@ -224,7 +229,10 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
                 pendingOperations={pendingOperations}
                 schemaHealth={schemaHealth}
                 syncState={syncState}
+                activeSyncKind={activeSyncKind}
                 onSchemaVerify={verifySchema}
+                onPullSync={() => void runSyncPass("pull")}
+                onPushSync={() => void runSyncPass("push")}
                 onSync={runSync}
               />
             </ErrorBoundary>

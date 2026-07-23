@@ -124,6 +124,7 @@ way so a later unarchive can still match the row.
 - **Rate-limit safety:** the push/pull queue caps at ~3 req/s with exponential backoff on 429.
 - **Idempotent push:** a record with a `notion_page_id` updates rather than re-creates, so a retried push cannot duplicate.
 - **Cursor persistence:** `last_pull_cursor` is stored so pulls are incremental across restarts.
+- **Notion API ≥ 2025-09-03:** query/create/schema use the primary **data source** under each mapped database id (`/v1/data_sources/...`). Mapping still stores database ids.
 
 ## Reused from the web app
 
