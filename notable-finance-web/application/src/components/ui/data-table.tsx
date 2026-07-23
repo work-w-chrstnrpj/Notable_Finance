@@ -42,7 +42,7 @@ function DataTable({
   footerRows = [],
   onRowClick,
   unsortableColumns = [],
-  wide = false,
+  wide = true,
   pageSize = 0,
   pageSizeOptions = [10, 25, 50, 100],
   pageSummary,
