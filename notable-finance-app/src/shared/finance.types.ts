@@ -446,19 +446,22 @@ export interface ActivityEntry {
 
 /**
  * A local change made in this app that has not yet been synced to Notion — i.e. a
- * record whose sync_state is 'dirty' or 'conflict'. Soft-deleted records are included
- * (they surface with action 'delete').
+ * record whose sync_state is 'dirty' or 'conflict', or a pending hard-delete in
+ * `mutation_queue` (local row already removed; Notion trash still outstanding).
+ * Soft-deleted and hard-deleted records surface with action 'delete'.
  */
 export interface UnsyncedItem {
   resource: SyncedResource
   recordId: string
   title: string | null
-  /** delete when soft-deleted; create when never pushed (no Notion page); else update. */
+  /** delete when soft/hard-deleted; create when never pushed (no Notion page); else update. */
   action: MutationAction
   syncState: 'dirty' | 'conflict'
   deleted: boolean
   notionPageId: string | null
   localUpdatedAt: number
+  /** True when the local row was hard-deleted and only a Notion-trash intent remains. */
+  pendingHardDelete?: boolean
 }
 
 export interface HistoryData {

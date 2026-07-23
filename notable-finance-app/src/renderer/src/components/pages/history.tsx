@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Clock,
@@ -8,16 +8,20 @@ import {
   PlusCircle,
   PenLine,
   Trash2,
+  X,
 } from "lucide-react";
 import { Badge, EmptyState, MetricCard, Panel } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
-import { useHistory } from "@/lib/use-data";
+import { ConfirmModal } from "@/components/ui/form-modals";
+import { useHistory, useFinanceInvalidation } from "@/lib/use-data";
+import { historyApi } from "@/lib/api-client";
 import type { MutationAction, SyncedResource, UnsyncedItem } from "@/types/finance";
 
 // ── History section ────────────────────────────────────────────────────────
 // Two feeds backed by the local store:
-//   1. Unsynced Items — local changes (incl. soft deletes) still waiting to reach
-//      Notion (sync_state dirty/conflict).
+//   1. Unsynced Items — local changes (soft deletes + pending hard-delete trash) still
+//      waiting to reach Notion. Each row can be discarded (×): cancel never-synced
+//      creates, or restore the last synced state for edits/deletes.
 //   2. Recently Synced — the durable activity_log of completed sync events, showing
 //      the status (Created/Updated/Deleted) and direction (Notion DB → App / App →
 //      Notion DB) of each.
@@ -64,6 +68,7 @@ function formatWhen(ms: number | null): string {
 
 function StateCell({ item }: { item: UnsyncedItem }) {
   if (item.syncState === "conflict") return <Badge tone="amber">Conflict</Badge>;
+  if (item.pendingHardDelete) return <Badge tone="rose">Hard delete</Badge>;
   if (!item.notionPageId) return <Badge tone="blue">Never sent</Badge>;
   return <Badge tone="neutral">Pending</Badge>;
 }
@@ -80,15 +85,41 @@ function DirectionCell({ direction }: { direction: "pull" | "push" }) {
   );
 }
 
+function discardCopy(item: UnsyncedItem): { title: string; message: string } {
+  const name = cleanTitle(item.title);
+  if (item.action === "create" || (!item.notionPageId && !item.pendingHardDelete)) {
+    return {
+      title: "Cancel this creation?",
+      message: `"${name}" was never sent to Notion. Discarding removes it from this app.`,
+    };
+  }
+  if (item.pendingHardDelete || item.action === "delete") {
+    return {
+      title: "Undo this deletion?",
+      message: `"${name}" will be restored to its last synced state and will not be deleted in Notion on the next push.`,
+    };
+  }
+  return {
+    title: "Discard these changes?",
+    message: `"${name}" will be restored to its last synced state. Your unsynced edits will be lost.`,
+  };
+}
+
 function HistoryPage() {
   const { state, refetch } = useHistory();
+  const { invalidateIncomeFamily, invalidateExpenseFamily } = useFinanceInvalidation();
+  const [discardItem, setDiscardItem] = useState<UnsyncedItem | null>(null);
+  const [discarding, setDiscarding] = useState(false);
+  const [discardError, setDiscardError] = useState<string | null>(null);
 
   // Refresh when local records change or a sync completes, so the feeds stay live.
   useEffect(() => {
+    const api = window.api;
+    if (!api?.on) return;
     const off = [
-      window.api.on("records:changed", () => void refetch()),
-      window.api.on("derived:updated", () => void refetch()),
-      window.api.on("sync:status", () => void refetch()),
+      api.on("records:changed", () => void refetch()),
+      api.on("derived:updated", () => void refetch()),
+      api.on("sync:status", () => void refetch()),
     ];
     return () => off.forEach((fn) => fn());
   }, [refetch]);
@@ -99,6 +130,27 @@ function HistoryPage() {
       : { unsynced: [], recent: [], lastPullAt: null, lastPushAt: null };
 
   const deletedPending = data.unsynced.filter((i) => i.deleted).length;
+
+  async function confirmDiscard() {
+    if (!discardItem) return;
+    setDiscarding(true);
+    setDiscardError(null);
+    try {
+      const res = await historyApi.discardUnsynced(discardItem.resource, discardItem.recordId);
+      if (!res.success) {
+        setDiscardError(res.error.message || "Could not discard this change.");
+        return;
+      }
+      setDiscardItem(null);
+      void refetch();
+      if (discardItem.resource === "incomes") invalidateIncomeFamily();
+      else invalidateExpenseFamily();
+    } catch (err) {
+      setDiscardError(err instanceof Error ? err.message : "Could not discard this change.");
+    } finally {
+      setDiscarding(false);
+    }
+  }
 
   return (
     <div className="page-stack">
@@ -113,7 +165,7 @@ function HistoryPage() {
         <MetricCard
           title="Pending Deletions"
           value={`${deletedPending}`}
-          detail="Soft-deleted, not yet synced"
+          detail="Soft/hard deletes waiting to sync"
           icon={Trash2}
           tone="rose"
         />
@@ -144,12 +196,12 @@ function HistoryPage() {
         {data.unsynced.length === 0 ? (
           <EmptyState
             title="Everything is synced"
-            detail="Changes you make in this app appear here until they reach Notion."
+            detail="Changes you make in this app appear here until they reach Notion. Use × to discard an unsynced change."
           />
         ) : (
           <DataTable
-            headers={["Status", "Record", "Type", "State", "Changed"]}
-            unsortableColumns={[3]}
+            headers={["Status", "Record", "Type", "State", "Changed", ""]}
+            unsortableColumns={[3, 5]}
             rows={data.unsynced.map((item) => [
               <Badge tone={ACTION_TONE[item.action]} key="s">
                 <ActionIcon action={item.action} /> {ACTION_LABEL[item.action]}
@@ -158,6 +210,26 @@ function HistoryPage() {
               RESOURCE_LABEL[item.resource],
               <StateCell item={item} key="st" />,
               formatWhen(item.localUpdatedAt),
+              <button
+                key="discard"
+                type="button"
+                className="icon-button"
+                aria-label={`Discard unsynced ${ACTION_LABEL[item.action].toLowerCase()} for ${cleanTitle(item.title)}`}
+                title={
+                  item.action === "create"
+                    ? "Cancel creation"
+                    : item.action === "delete"
+                      ? "Undo deletion"
+                      : "Discard changes"
+                }
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setDiscardError(null);
+                  setDiscardItem(item);
+                }}
+              >
+                <X size={15} />
+              </button>,
             ])}
           />
         )}
@@ -193,6 +265,29 @@ function HistoryPage() {
           />
         )}
       </Panel>
+
+      {discardItem && (
+        <ConfirmModal
+          {...discardCopy(discardItem)}
+          confirmLabel="Discard"
+          danger
+          busy={discarding}
+          onCancel={() => {
+            if (!discarding) {
+              setDiscardItem(null);
+              setDiscardError(null);
+            }
+          }}
+          onConfirm={() => {
+            void confirmDiscard();
+          }}
+        />
+      )}
+      {discardError && (
+        <div className="save-notice" role="alert" style={{ marginTop: "0.5rem" }}>
+          {discardError}
+        </div>
+      )}
     </div>
   );
 }

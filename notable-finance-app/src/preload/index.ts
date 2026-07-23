@@ -111,7 +111,12 @@ const api = {
   history: {
     /** Returns unsynced items + events from the last `runs` sync passes (default 2). */
     get: (runs?: number): Promise<ApiResult<HistoryData>> =>
-      ipcRenderer.invoke('history:get', runs)
+      ipcRenderer.invoke('history:get', runs),
+    /** Cancel a never-synced create, or restore the last synced state for an unsynced edit/delete. */
+    discardUnsynced: (
+      resource: 'incomes' | 'expenses',
+      recordId: string
+    ): Promise<ApiResult<true>> => ipcRenderer.invoke('history:discardUnsynced', resource, recordId)
   },
 
   windows: {

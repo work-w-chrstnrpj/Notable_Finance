@@ -49,7 +49,8 @@ Accounts/categories are read-only reference — no create/update/delete.
 ### `window.api.history`
 | Method | Returns | Notes |
 | --- | --- | --- |
-| `get(runs?)` | `HistoryData` | Unsynced items (dirty/conflict, incl. soft deletes) derived live, plus `activity_log` events from the last `runs` sync passes (default 2) with status + direction, and last pull/push timestamps. |
+| `get(runs?)` | `HistoryData` | Unsynced items (dirty/conflict, incl. soft deletes + pending hard-deletes) derived live, plus `activity_log` events from the last `runs` sync passes (default 2) with status + direction, and last pull/push timestamps. |
+| `discardUnsynced(resource, id)` | `true` | Cancel a never-synced create, or restore the last synced state for an unsynced edit/soft-delete/hard-delete (drops Notion-trash intent). |
 
 ### `window.api.sync`
 | Method | Returns | Notes |

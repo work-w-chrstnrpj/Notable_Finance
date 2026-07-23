@@ -325,6 +325,9 @@ export const historyApi = {
   get(runs?: number) {
     return adapt(nfApi().history.get(runs)) as Promise<ApiResult<HistoryData>>;
   },
+  discardUnsynced(resource: "incomes" | "expenses", recordId: string) {
+    return adapt(nfApi().history.discardUnsynced(resource, recordId)) as Promise<ApiResult<true>>;
+  },
 };
 
 // ── Preferences (stored locally; no cloud account) ────────────────────

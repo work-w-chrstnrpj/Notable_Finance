@@ -14,6 +14,11 @@ describe('isNotionGoneError', () => {
     ).toBe(true)
   })
 
+  it('detects trash-related messages', () => {
+    expect(isNotionGoneError(new Error('Page is in_trash and cannot be edited'))).toBe(true)
+    expect(isNotionGoneError(new Error('This page has been trashed'))).toBe(true)
+  })
+
   it('detects NotionApiError 404 / object_not_found', () => {
     expect(isNotionGoneError(new NotionApiError('missing', 404, 'object_not_found'))).toBe(true)
     expect(isNotionGoneError(new NotionApiError('gone', 400, 'object_not_found'))).toBe(true)

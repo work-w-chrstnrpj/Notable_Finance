@@ -161,6 +161,7 @@ export type UnsyncedItem = {
   deleted: boolean;
   notionPageId: string | null;
   localUpdatedAt: number;
+  pendingHardDelete?: boolean;
 };
 
 export type HistoryData = {

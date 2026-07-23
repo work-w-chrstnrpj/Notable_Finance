@@ -49,6 +49,7 @@ import {
   validateUpdateScheduler,
   ValidationError
 } from '../domain/validation'
+import { buildHardDeletePayload } from '../services/discard-unsynced'
 
 const now = (): number => Date.now()
 
@@ -460,7 +461,8 @@ export function hardDeleteScheduler(id: string): void {
 
 /**
  * Hard-delete: drop the local row immediately. If Notion-linked, keep a
- * `hardDelete` mutation so push can archive (trash) the page later.
+ * `hardDelete` mutation so push can trash the page later (payload includes a
+ * restore snapshot for History discard).
  */
 function hardDeleteRecord(
   table: 'incomes' | 'expenses' | 'expense_scheduler',
@@ -468,8 +470,8 @@ function hardDeleteRecord(
   resourceName: string = table
 ): void {
   const row = getSqlite()
-    .prepare(`SELECT id, title, notion_page_id FROM ${table} WHERE id = ?`)
-    .get(id) as { id: string; title: string; notion_page_id: string | null } | undefined
+    .prepare(`SELECT * FROM ${table} WHERE id = ?`)
+    .get(id) as Record<string, unknown> | undefined
   if (!row) throw new ValidationError(`${resourceName} ${id} not found`)
 
   // Drop any prior queued mutations for this row; replace with a single trash intent.
@@ -477,10 +479,13 @@ function hardDeleteRecord(
     .prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?')
     .run(resourceName, id)
 
-  if (row.notion_page_id) {
+  const notionPageId = (row.notion_page_id as string | null) ?? null
+  if (notionPageId && (table === 'incomes' || table === 'expenses')) {
+    journal(resourceName, 'hardDelete', id, buildHardDeletePayload(table, row))
+  } else if (notionPageId) {
     journal(resourceName, 'hardDelete', id, {
-      notionPageId: row.notion_page_id,
-      title: row.title
+      notionPageId,
+      title: String(row.title ?? '')
     })
   }
 

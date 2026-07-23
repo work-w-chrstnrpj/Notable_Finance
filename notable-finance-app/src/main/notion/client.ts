@@ -180,8 +180,8 @@ export class NotionClient {
     })
   }
 
-  /** Move a page to Notion trash (archived). */
+  /** Move a page to Notion trash (`in_trash` — required on Notion-Version ≥ 2026-03-11). */
   async archivePage(pageId: string): Promise<{ id: string }> {
-    return this.request('PATCH', `/v1/pages/${pageId}`, { archived: true })
+    return this.request('PATCH', `/v1/pages/${pageId}`, { in_trash: true })
   }
 }

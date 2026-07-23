@@ -15,6 +15,7 @@ import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
 import { getHistory } from '../services/history'
+import { discardUnsynced } from '../services/discard-unsynced'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
 import {
@@ -59,6 +60,7 @@ async function result<T>(fn: () => T | Promise<T>): Promise<ApiResult<T>> {
 function changed(resource: 'incomes' | 'expenses' | 'expenseScheduler', ids: string[]): void {
   broadcast('records:changed', { resource, ids })
   broadcast('derived:updated', {})
+  broadcast('sync:status', syncStatus())
 }
 
 export function registerIpc(): void {
@@ -184,6 +186,15 @@ export function registerIpc(): void {
 
   // history (unsynced items + completed sync activity feed)
   ipcMain.handle('history:get', (_e, runs?: number) => result(() => getHistory(runs)))
+  ipcMain.handle(
+    'history:discardUnsynced',
+    (_e, resource: 'incomes' | 'expenses', recordId: string) =>
+      result(() => {
+        discardUnsynced(resource, recordId)
+        changed(resource, [recordId])
+        return true
+      })
+  )
 
   // reports (computed locally, Phase 1.3)
   ipcMain.handle('reports:dashboard', (_e, month: string) =>

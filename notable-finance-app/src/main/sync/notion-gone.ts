@@ -20,6 +20,8 @@ export function isNotionGoneError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
   const message = error.message.toLowerCase()
   if (message.includes('archived')) return true
+  if (message.includes('in_trash') || message.includes('in trash')) return true
+  if (message.includes('trashed')) return true
   if (message.includes('object_not_found')) return true
   if (message.includes('could not find')) return true
 

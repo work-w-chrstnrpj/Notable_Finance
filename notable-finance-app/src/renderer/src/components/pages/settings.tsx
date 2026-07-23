@@ -1,12 +1,15 @@
 
 import { useState } from "react";
-import { Database, Palette, Trash2 } from "lucide-react";
+import { Database, Palette, SlidersHorizontal } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
-import { useUiSettings } from "@/lib/ui-settings-context";
-import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
-import { SettingsModalKind, ThemeCustomizeModal, NotionConfigModal } from "@/components/pages/settings-modals";
+import {
+  SettingsModalKind,
+  ThemeCustomizeModal,
+  NotionConfigModal,
+  InterfaceManageModal,
+} from "@/components/pages/settings-modals";
 import type { SchemaHealth } from "@/types/finance";
 
 // Desktop settings — identical to the web page minus login/account management
@@ -24,7 +27,6 @@ function SettingsPage({
   onShowFabChange: (next: boolean) => void;
 }) {
   const [modal, setModal] = useState<SettingsModalKind>(null);
-  const { hardDeleteEnabled, setHardDeleteEnabled } = useUiSettings();
   useTheme(); // theme context is exercised by the modal
 
   return (
@@ -32,57 +34,28 @@ function SettingsPage({
       <Panel title="Interface">
         <div className="settings-row">
           <div>
-            <p className="settings-toggle__title">Quick-action button</p>
+            <p className="settings-toggle__title">Quick actions &amp; delete</p>
             <p className="settings-toggle__hint">
-              Show a floating button for adding income/expense and printing
-              receipts or monthly insights.
+              Click here to{" "}
+              <button
+                type="button"
+                className="settings-inline-link"
+                onClick={() => setModal("interface")}
+              >
+                manage
+              </button>{" "}
+              the floating quick-action button and hard-delete behavior.
             </p>
           </div>
-          <label
-            className={cx("switch", showFab && "switch--on")}
-            aria-label="Toggle quick-action button"
+          <button
+            type="button"
+            className="button"
+            onClick={() => setModal("interface")}
           >
-            <input
-              type="checkbox"
-              checked={showFab}
-              onChange={(event) => onShowFabChange(event.target.checked)}
-            />
-            <span className="switch__track"><span className="switch__thumb" /></span>
-          </label>
+            <SlidersHorizontal size={16} />
+            Manage
+          </button>
         </div>
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Hard delete</p>
-            <p className="settings-toggle__hint">
-              When on, Soft Delete becomes Hard Delete (red). Confirmed deletes
-              remove the record locally and move the Notion page to trash on the
-              next sync. Soft delete (default) still clears the amount and marks
-              the title as deleted.
-            </p>
-          </div>
-          <label
-            className={cx("switch", hardDeleteEnabled && "switch--on")}
-            aria-label="Toggle hard delete"
-          >
-            <input
-              type="checkbox"
-              checked={hardDeleteEnabled}
-              onChange={(event) => {
-                void setHardDeleteEnabled(event.target.checked);
-              }}
-            />
-            <span className="switch__track"><span className="switch__thumb" /></span>
-          </label>
-        </div>
-        {hardDeleteEnabled && (
-          <div className="settings-row settings-row--danger">
-            <p>
-              <Trash2 size={14} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
-              Hard delete is on. Use Confirm carefully — trashed Notion pages can
-              be restored from Notion trash, but local rows are removed immediately.
-            </p>
-          </div>
-        )}
       </Panel>
       <Panel title="Theme">
         <div className="settings-row">
@@ -144,6 +117,13 @@ function SettingsPage({
 
       {modal === "notion" && <NotionConfigModal onClose={() => setModal(null)} />}
       {modal === "theme" && <ThemeCustomizeModal onClose={() => setModal(null)} />}
+      {modal === "interface" && (
+        <InterfaceManageModal
+          onClose={() => setModal(null)}
+          showFab={showFab}
+          onShowFabChange={onShowFabChange}
+        />
+      )}
     </div>
   );
 }

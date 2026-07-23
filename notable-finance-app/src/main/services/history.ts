@@ -2,8 +2,8 @@
 //
 // Two data sources:
 //  1. Unsynced items: incomes/expenses rows whose sync_state is 'dirty' or 'conflict'
-//     (local changes not yet on Notion, soft deletes included). Derived live from the
-//     finance tables — no separate store needed.
+//     (local changes not yet on Notion, soft deletes included), PLUS pending hard-delete
+//     intents in mutation_queue (local row already removed; Notion trash still outstanding).
 //  2. Activity feed: the `activity_log` table, a durable record of completed sync events
 //     (what was pulled from Notion vs pushed to Notion, with create/update/delete status).
 //     Written by the pull/push engines via recordActivity(); persists across syncs, unlike
@@ -73,9 +73,10 @@ interface UnsyncedRow {
   local_updated_at: number
 }
 
-/** Local changes not yet synced to Notion (dirty/conflict), soft deletes included. */
+/** Local changes not yet synced to Notion (dirty/conflict + pending hard-deletes). */
 export function listUnsynced(): UnsyncedItem[] {
-  const rows = getSqlite()
+  const db = getSqlite()
+  const rows = db
     .prepare(
       `SELECT 'incomes' AS resource, id AS record_id, title, deleted, sync_state,
               notion_page_id, local_updated_at
@@ -88,7 +89,7 @@ export function listUnsynced(): UnsyncedItem[] {
     )
     .all() as UnsyncedRow[]
 
-  return rows.map((r) => ({
+  const fromRows: UnsyncedItem[] = rows.map((r) => ({
     resource: r.resource,
     recordId: r.record_id,
     title: r.title,
@@ -98,6 +99,52 @@ export function listUnsynced(): UnsyncedItem[] {
     notionPageId: r.notion_page_id,
     localUpdatedAt: r.local_updated_at
   }))
+
+  // Hard deletes remove the finance row immediately and only leave a mutation_queue
+  // trash intent — include those so History "Unsynced Items" stays accurate.
+  const hardRows = db
+    .prepare(
+      `SELECT resource, record_id, payload, created_at
+         FROM mutation_queue
+        WHERE action = 'hardDelete'
+        ORDER BY created_at DESC`
+    )
+    .all() as Array<{
+    resource: string
+    record_id: string
+    payload: string | null
+    created_at: number
+  }>
+
+  const fromHard: UnsyncedItem[] = []
+  for (const row of hardRows) {
+    if (row.resource !== 'incomes' && row.resource !== 'expenses') continue
+    let title: string | null = null
+    let notionPageId: string | null = null
+    try {
+      const payload = JSON.parse(row.payload ?? '{}') as {
+        title?: string
+        notionPageId?: string
+      }
+      title = payload.title ?? null
+      notionPageId = payload.notionPageId ?? null
+    } catch {
+      /* keep nulls */
+    }
+    fromHard.push({
+      resource: row.resource,
+      recordId: row.record_id,
+      title,
+      action: 'delete',
+      syncState: 'dirty',
+      deleted: true,
+      notionPageId,
+      localUpdatedAt: row.created_at,
+      pendingHardDelete: true
+    })
+  }
+
+  return [...fromRows, ...fromHard].sort((a, b) => b.localUpdatedAt - a.localUpdatedAt)
 }
 
 interface ActivityRow {
