@@ -8,7 +8,7 @@ import { ColorPicker } from "@/components/color-picker";
 import { userNotionConfigApi } from "@/lib/api-client";
 import { Field, FormSectionDivider } from "@/components/ui";
 import { SettingsModal } from "@/components/ui/form-modals";
-import { Database, KeyRound, LogOut, Mail, Palette, Save, Trash2 } from "lucide-react";
+import { Database, Download, KeyRound, LogOut, Mail, Palette, Save, Trash2, Upload } from "lucide-react";
 
 const KNOWN_DB_ID_KEYS = [
   { key: "accounts", label: "Accounts" },
@@ -128,6 +128,43 @@ function NotionConfigModal({ onClose }: { onClose: () => void }) {
     }
   }
 
+  function handleExport() {
+    const data = JSON.stringify(dbIds, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "notion-db-ids.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImport() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target?.result as string);
+          if (typeof imported !== "object" || imported === null) {
+            setError("Invalid file format.");
+            return;
+          }
+          setDbIds(imported);
+          setNotice("Database IDs imported. Click Save to apply.");
+        } catch {
+          setError("Failed to parse JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
   return (
     <SettingsModal
       title="Notion Configuration"
@@ -135,6 +172,16 @@ function NotionConfigModal({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       footer={
         <>
+          <div className="modal-footer-left">
+            <button type="button" className="button" onClick={handleImport} disabled={saving}>
+              <Upload size={16} />
+              Import
+            </button>
+            <button type="button" className="button" onClick={handleExport} disabled={saving || Object.keys(dbIds).length === 0}>
+              <Download size={16} />
+              Export
+            </button>
+          </div>
           <button type="button" className="button" onClick={handleRemove} disabled={saving}>
             <Trash2 size={16} />
             Remove
