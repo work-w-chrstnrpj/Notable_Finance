@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { app } from 'electron'
 import type { DevLogEntry, DevLogKind } from '../../shared/finance.types'
 import { getUiSettings } from '../settings/ui'
 import { broadcast } from '../windows'
@@ -71,6 +72,13 @@ export function appendDevLog(input: {
   durationMs?: number | null
   ok?: boolean | null
 }): DevLogEntry | null {
+  // Chat diagnostics also go to stdout in development so provider/tool problems
+  // are visible in the dev terminal without enabling Dev Mode in the UI.
+  if (input.action.startsWith('chat') && !app.isPackaged) {
+    console.log(
+      `[chat-diag] ${input.ok === false ? 'FAIL' : 'ok'} ${input.action} :: ${input.message}`
+    )
+  }
   if (!isDevModeEnabled()) return null
 
   const entry: DevLogEntry = {

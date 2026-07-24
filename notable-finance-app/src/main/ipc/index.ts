@@ -397,6 +397,14 @@ export function registerIpc(): void {
       return models.map((m) => ({ id: m.id, label: m.label, free: m.free === true }))
     })
   )
+  // Live model list straight from the key's own host (GET {base}/models).
+  // Renderer falls back to the curated catalogue when this fails.
+  ipcMain.handle('chat:remoteModels', (_e, credentialId: string) =>
+    result(() => chat.listRemoteModels(credentialId))
+  )
+  ipcMain.handle('chat:detectProvider', (_e, apiKey: string) =>
+    result(() => chat.detectProviderFromKey(apiKey))
+  )
   ipcMain.handle('chat:overlays', () => result(() => chat.CHAT_SLASH_OVERLAYS))
   ipcMain.handle('chat:isAppleOs', () => result(() => chat.isAppleOs()))
 

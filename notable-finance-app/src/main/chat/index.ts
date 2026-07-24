@@ -1,6 +1,7 @@
 export {
   getChatStatus,
   isAppleOs,
+  listRemoteModels,
   sendChatMessage
 } from './orchestrator'
 export {
@@ -36,7 +37,10 @@ export {
   baseUrlForProviderPreset,
   modelsForProvider,
   coerceModelForProvider,
-  defaultModelForProvider
+  pickModelForProviderList,
+  defaultModelForProvider,
+  detectProviderFromKey,
+  decorateRemoteModels
 } from './models'
 export {
   READ_TOOL_DEFINITIONS,

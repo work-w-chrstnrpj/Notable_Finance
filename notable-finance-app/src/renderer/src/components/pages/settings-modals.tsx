@@ -425,6 +425,9 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
   const [formKey, setFormKey] = useState("");
   const [formProvider, setFormProvider] = useState("gemini");
   const [formCustomBaseUrl, setFormCustomBaseUrl] = useState("");
+  /** Provider guessed from the key prefix; only auto-applies until the user picks one. */
+  const [detectedProvider, setDetectedProvider] = useState<string | null>(null);
+  const [providerTouched, setProviderTouched] = useState(false);
   const [providers, setProviders] = useState<ChatProviderCatalogDto[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -471,6 +474,21 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
     setFormKey("");
     setFormProvider("gemini");
     setFormCustomBaseUrl("");
+    setDetectedProvider(null);
+    setProviderTouched(false);
+  }
+
+  /** Guess the host from the key prefix so the Name field can't mislead routing. */
+  async function detectProviderFromKeyInput(key: string) {
+    const trimmed = key.trim();
+    if (!trimmed || !window.api?.chat?.detectProvider) return;
+    const res = await window.api.chat.detectProvider(trimmed);
+    if (!res.ok || !res.data) {
+      setDetectedProvider(null);
+      return;
+    }
+    setDetectedProvider(res.data);
+    if (!providerTouched) setFormProvider(res.data);
   }
 
   function providerLabel(c: ChatCredentialDto): string {
@@ -522,7 +540,18 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
         if (!res.ok) throw new Error(res.error.message);
       }
       if (selectedProvider?.defaultModelId) {
-        void updateSettings({ chatDefaultModel: selectedProvider.defaultModelId });
+        // Only nudge the global default when saving a key that becomes/is default.
+        const list = await window.api.chat.listCredentials();
+        const savedDefault =
+          list.ok &&
+          list.data.some(
+            (c) =>
+              c.isDefault &&
+              (c.providerId ?? "") === formProvider
+          );
+        if (savedDefault) {
+          void updateSettings({ chatDefaultModel: selectedProvider.defaultModelId });
+        }
       }
       resetForm();
       await refresh();
@@ -730,12 +759,10 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
               value={formProvider}
               onChange={(e) => {
                 const id = e.target.value;
+                setProviderTouched(true);
                 setFormProvider(id);
                 const p = providers.find((x) => x.id === id);
                 if (p && !formName.trim()) setFormName(p.label);
-                if (p?.defaultModelId) {
-                  void updateSettings({ chatDefaultModel: p.defaultModelId });
-                }
               }}
               aria-label="API provider"
             >
@@ -802,6 +829,7 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
               type="password"
               value={formKey}
               onChange={(e) => setFormKey(e.target.value)}
+              onBlur={(e) => void detectProviderFromKeyInput(e.target.value)}
               placeholder={
                 editingId
                   ? "Leave blank to keep current key"
@@ -810,6 +838,13 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
               autoComplete="off"
             />
           </Field>
+          {detectedProvider && (
+            <p className="settings-toggle__hint">
+              {detectedProvider === formProvider
+                ? `Key looks like ${providers.find((p) => p.id === detectedProvider)?.label ?? detectedProvider} — Provider matches.`
+                : `Heads up: this key looks like ${providers.find((p) => p.id === detectedProvider)?.label ?? detectedProvider}, but Provider is set to ${selectedProvider?.label ?? formProvider}. The Provider picks the host that's actually called — the Name is only a label.`}
+            </p>
+          )}
           <div className="chat-cred-form-actions">
             {editingId && (
               <button type="button" className="button" onClick={resetForm} disabled={busy}>
@@ -831,32 +866,33 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
         <div className="theme-modal-section">
           <p className="settings-toggle__title">Default model</p>
           <p className="settings-toggle__hint">
-            Used for new chats. Chat also filters this list to models that match the selected key’s
-            provider.
+            Preference for new chats. In Chat, the Model list still follows the selected{" "}
+            <strong>Key</strong> (so a Gemini key only shows Gemini models). Switch Key to use
+            another provider.
           </p>
           <Field label="Model for new chats">
-            {selectedProvider && selectedProvider.models.length > 0 ? (
+            {providers.length > 0 ? (
               <select
                 className="settings-select"
-                value={
-                  selectedProvider.models.some((m) => m.id === settings.chatDefaultModel)
-                    ? settings.chatDefaultModel
-                    : selectedProvider.defaultModelId
-                }
+                value={settings.chatDefaultModel}
                 onChange={(e) => void updateSettings({ chatDefaultModel: e.target.value })}
               >
-                {selectedProvider.models.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label}
-                    {m.free ? " (free)" : ""}
-                  </option>
+                {providers.map((p) => (
+                  <optgroup key={p.id} label={p.label}>
+                    {p.models.map((m) => (
+                      <option key={`${p.id}:${m.id}`} value={m.id}>
+                        {m.label}
+                        {m.free ? " (free)" : ""}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             ) : (
               <input
                 value={settings.chatDefaultModel}
                 onChange={(e) => void updateSettings({ chatDefaultModel: e.target.value })}
-                placeholder="gemini-2.5-flash"
+                placeholder="model id"
                 spellCheck={false}
               />
             )}

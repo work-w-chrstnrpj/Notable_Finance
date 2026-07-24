@@ -507,6 +507,22 @@ export type ChatDraftResource = 'incomes' | 'expenses'
 export type ChatDraftAction = 'create' | 'update'
 export type ChatDraftStatus = 'needs_input' | 'ready' | 'applied' | 'cancelled'
 
+/** Resolved, human-readable values for the confirm card (names, not ids). */
+export interface ChatDraftDisplay {
+  title: string
+  amount?: number | null
+  currency?: string
+  date?: string | null
+  /** Source side — account for expenses, source account for transfers. */
+  from?: string | null
+  fromLabel?: string
+  /** Destination side — category for expenses, destination account for transfers. */
+  to?: string | null
+  toLabel?: string
+  /** Extra line (interest / installment / pasabuyer). */
+  note?: string | null
+}
+
 export interface ChatDraftDto {
   id: string
   threadId: string
@@ -523,6 +539,8 @@ export interface ChatDraftDto {
   /** For mass update — target ids (cap 50). */
   targetIds?: string[]
   computedPreview?: Record<string, unknown> | null
+  /** Presentation-only mirror of payload for the confirm card. */
+  display?: ChatDraftDisplay | null
   createdAt: number
 }
 

@@ -24,6 +24,7 @@ type DraftRow = {
   payload: string
   target_ids: string | null
   computed_preview: string | null
+  display: string | null
   created_at: number
 }
 
@@ -61,7 +62,8 @@ function rowToDraft(row: DraftRow): ChatDraftDto {
     targetIds: row.target_ids ? parseJson<string[]>(row.target_ids, []) : undefined,
     computedPreview: row.computed_preview
       ? parseJson<ChatDraftDto['computedPreview']>(row.computed_preview, null)
-      : null
+      : null,
+    display: row.display ? parseJson<ChatDraftDto['display']>(row.display, null) : null
   }
 }
 
@@ -72,8 +74,8 @@ function persist(draft: ChatDraftDto): void {
     db.prepare(
       `INSERT INTO chat_drafts
          (id, thread_id, resource, action, kind, status, summary,
-          missing_required, warnings, payload, target_ids, computed_preview, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          missing_required, warnings, payload, target_ids, computed_preview, display, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          status = excluded.status,
          summary = excluded.summary,
@@ -81,7 +83,8 @@ function persist(draft: ChatDraftDto): void {
          warnings = excluded.warnings,
          payload = excluded.payload,
          target_ids = excluded.target_ids,
-         computed_preview = excluded.computed_preview`
+         computed_preview = excluded.computed_preview,
+         display = excluded.display`
     ).run(
       draft.id,
       draft.threadId,
@@ -95,11 +98,51 @@ function persist(draft: ChatDraftDto): void {
       JSON.stringify(draft.payload),
       draft.targetIds ? JSON.stringify(draft.targetIds) : null,
       draft.computedPreview != null ? JSON.stringify(draft.computedPreview) : null,
+      draft.display != null ? JSON.stringify(draft.display) : null,
       draft.createdAt
     )
   } catch {
     // Best-effort: never fail a propose/approve because persistence is unavailable
     // (e.g. an older DB where migration 0006 hasn't run yet — resolves on restart).
+  }
+}
+
+/** A confirm card older than this is stale — never resurrect it on restart. */
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000
+
+function isPending(d: ChatDraftDto): boolean {
+  return d.status === 'needs_input' || d.status === 'ready'
+}
+
+/**
+ * Collapse pending drafts to the newest one per (thread, kind) and retire
+ * anything past the TTL. Persistence means a backlog of proposals from earlier
+ * sessions would otherwise all come back as confirm cards at once.
+ */
+function reconcilePending(): void {
+  const newestByGroup = new Map<string, ChatDraftDto>()
+  const now = Date.now()
+
+  for (const draft of drafts.values()) {
+    if (!isPending(draft)) continue
+    if (now - draft.createdAt > DRAFT_TTL_MS) {
+      const expired: ChatDraftDto = { ...draft, status: 'cancelled' }
+      drafts.set(draft.id, expired)
+      persist(expired)
+      continue
+    }
+    const group = `${draft.threadId}::${draft.kind}`
+    const incumbent = newestByGroup.get(group)
+    if (!incumbent) {
+      newestByGroup.set(group, draft)
+      continue
+    }
+    const loser = draft.createdAt >= incumbent.createdAt ? incumbent : draft
+    const winner = draft.createdAt >= incumbent.createdAt ? draft : incumbent
+    const superseded: ChatDraftDto = { ...loser, status: 'cancelled' }
+    drafts.set(loser.id, superseded)
+    persist(superseded)
+    newestByGroup.set(group, winner)
   }
 }
 
@@ -119,6 +162,8 @@ function hydrate(): void {
     for (const row of rows) {
       if (!drafts.has(row.id)) drafts.set(row.id, rowToDraft(row))
     }
+    // Retire the backlog so a restart shows one card per kind, not a pile.
+    reconcilePending()
   } catch {
     // Table may not exist on a pre-0006 DB; nothing to hydrate.
   }
@@ -143,8 +188,25 @@ export function putDraft(
     warnings: input.warnings,
     payload: input.payload,
     targetIds: input.targetIds,
-    computedPreview: input.computedPreview ?? null
+    computedPreview: input.computedPreview ?? null,
+    display: input.display ?? null
   }
+
+  // Supersede earlier pending drafts of the same kind in this thread. Without
+  // this, a model that proposes repeatedly (or across retries) leaves a pile of
+  // stale confirm cards, since listDrafts returns every pending draft.
+  for (const [id, existing] of drafts) {
+    if (
+      existing.threadId === draft.threadId &&
+      existing.kind === draft.kind &&
+      (existing.status === 'needs_input' || existing.status === 'ready')
+    ) {
+      const superseded: ChatDraftDto = { ...existing, status: 'cancelled' }
+      drafts.set(id, superseded)
+      persist(superseded)
+    }
+  }
+
   drafts.set(draft.id, draft)
   persist(draft)
   return draft
@@ -157,11 +219,23 @@ export function getDraft(id: string): ChatDraftDto | null {
 
 export function listDrafts(threadId?: string): ChatDraftDto[] {
   hydrate()
-  const all = [...drafts.values()].filter(
-    (d) => d.status === 'needs_input' || d.status === 'ready'
-  )
-  if (!threadId) return all.sort((a, b) => b.createdAt - a.createdAt)
-  return all.filter((d) => d.threadId === threadId).sort((a, b) => b.createdAt - a.createdAt)
+  const now = Date.now()
+  const pending = [...drafts.values()]
+    .filter((d) => isPending(d) && now - d.createdAt <= DRAFT_TTL_MS)
+    .filter((d) => (threadId ? d.threadId === threadId : true))
+    .sort((a, b) => b.createdAt - a.createdAt)
+
+  // Newest wins per (thread, kind). Defensive: the UI must never render a pile
+  // of confirm cards even if legacy rows predate supersede-on-write.
+  const seen = new Set<string>()
+  const out: ChatDraftDto[] = []
+  for (const d of pending) {
+    const group = `${d.threadId}::${d.kind}`
+    if (seen.has(group)) continue
+    seen.add(group)
+    out.push(d)
+  }
+  return out
 }
 
 export function markDraft(id: string, status: 'applied' | 'cancelled'): ChatDraftDto {

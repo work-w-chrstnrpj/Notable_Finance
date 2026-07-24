@@ -192,6 +192,7 @@ export const chatDrafts = sqliteTable('chat_drafts', {
   payload: text('payload').notNull(), // JSON object
   targetIds: text('target_ids'), // JSON string[] | null
   computedPreview: text('computed_preview'), // JSON | null
+  display: text('display'), // JSON ChatDraftDisplay | null
   createdAt: integer('created_at').notNull()
 })
 

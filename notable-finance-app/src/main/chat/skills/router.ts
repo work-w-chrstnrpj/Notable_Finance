@@ -13,6 +13,18 @@ export type ChatSkillId =
   | 'workflow-receivables'
   | 'general'
 
+// Write-intent vocabulary — English + Taglish. Filipinos commonly say
+// "gawa/gumawa" (make), "lagay/ilagay" (put), "dagdag" (add), "ilista/itala"
+// (record) instead of the English verbs, so a keyword router that only knows
+// English silently drops these into the read path.
+const WRITE_VERB =
+  /\b(add|log|create|record|encode|input)\b|\b(gawa|gumawa|lagay|ilagay|maglagay|magdagdag|dagdag|idagdag|maglista|ilista|itala|magtala)\b|\bi-?(log|record|encode|lista|dagdag)\b/
+const SPEND_VERB =
+  /\b(spent|spend|bayad|magbayad|bayaran|gastos|gumastos|bumili|bili|binili|swiped)\b/
+const INCOME_NOUN = /\b(income|salary|sahod|suweldo|sweldo|kita|kinita|payroll)\b/
+const EXPENSE_NOUN =
+  /\b(expense|gastos|gastusin|pasabuy|dating|food|pagkain|grocery|bill|bayarin|purchase|bili|binili|swiped)\b/
+
 export function routeChatSkill(userText: string): ChatSkillId {
   const t = userText.toLowerCase()
 
@@ -48,34 +60,34 @@ export function routeChatSkill(userText: string): ChatSkillId {
 
   // Workflows before generic ask-app / ask-data
   if (
-    /\btransfer\b/.test(t) &&
-    /\b(from|to|→|->|galing|papunta|move\s+money|ilipat)\b/.test(t)
+    /\b(transfer|ilipat|maglipat)\b/.test(t) &&
+    /\b(from|to|→|->|galing|papunta|mula|move\s+money)\b/.test(t)
   ) {
     return 'workflow-transfer'
   }
   if (
     /\b(cc\s*payment|credit\s*card\s*payment)\b/.test(t) ||
-    /\b(bayad|pay)\b/.test(t) && /\b(cc|credit(\s*card)?)\b/.test(t)
+    (/\b(bayad|bayaran|magbayad|pay)\b/.test(t) && /\b(cc|credit(\s*card)?)\b/.test(t))
   ) {
     return 'workflow-cc-payment'
   }
-  if (/\b(alkansya|mag-?ipon|savings\s+set\s+aside)\b/.test(t)) {
+  if (/\b(alkansya|mag-?ipon|nag-?ipon|savings\s+set\s+aside|set\s+aside)\b/.test(t)) {
     return 'workflow-alkansya'
   }
-  if (/\b(receivable|utang\s+sa\s+akin|iou\s+collect)\b/.test(t)) {
+  if (/\b(receivable|utang\s+sa\s+akin|iou\s+collect|pautang)\b/.test(t)) {
     return 'workflow-receivables'
   }
 
-  if (
-    /\b(add|log|create|record|encode)\b/.test(t) &&
-    /\bincome|salary|sahod|payroll\b/.test(t)
-  ) {
+  if (WRITE_VERB.test(t) && INCOME_NOUN.test(t)) {
     return 'log-income'
   }
 
+  // Explicit write verb + expense noun, OR a spend verb with an amount ("gastos
+  // 150 pagkain"). The amount guard keeps read questions like "magkano gastos
+  // ko" — where "gastos" is a noun, not a command — on the ask-data path.
   if (
-    /\b(add|log|create|record|encode|spent|bayad|gastos)\b/.test(t) &&
-    /\bexpense|gastos|pasabuy|dating|food|swiped|purchase\b/.test(t)
+    (WRITE_VERB.test(t) && EXPENSE_NOUN.test(t)) ||
+    (SPEND_VERB.test(t) && /\d/.test(t))
   ) {
     return 'log-expense'
   }
@@ -98,7 +110,7 @@ export function routeChatSkill(userText: string): ChatSkillId {
   }
 
   if (
-    /how\s+much|what.?s\s+left|summary|list\s+my|compare|budget|spent|spending|income|expense|unpaid|pasabuy|account/.test(
+    /how\s+much|what.?s\s+left|summary|list\s+my|compare|budget|spent|spending|income|expense|unpaid|pasabuy|account|magkano|ilan|gastos|kita/.test(
       t
     )
   ) {

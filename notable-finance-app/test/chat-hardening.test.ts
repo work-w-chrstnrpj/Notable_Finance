@@ -359,3 +359,34 @@ describe('refuse-delete routing (6.6)', () => {
     expect(routeChatSkill('delete chat history')).not.toBe('refuse-delete')
   })
 })
+
+describe('write-intent routing — English + Taglish (6.8)', () => {
+  it('routes Taglish "make me a new income" phrasing to log-income', () => {
+    expect(
+      routeChatSkill(
+        'gawa mo naman ako ng bagong income, lagay mo: sahod, salary category, 100 pesos, home wallet, date is today'
+      )
+    ).toBe('log-income')
+    expect(routeChatSkill('add income salary 5000 today GCash')).toBe('log-income')
+    expect(routeChatSkill('ilagay mo ang sahod ko 20000')).toBe('log-income')
+  })
+
+  it('routes Taglish/English expense logging to log-expense', () => {
+    expect(routeChatSkill('lagay mo expense 300 food kahapon')).toBe('log-expense')
+    expect(routeChatSkill('gawa ng expense, 200, groceries')).toBe('log-expense')
+    expect(routeChatSkill('gumastos ako 150 pagkain')).toBe('log-expense')
+    expect(routeChatSkill('Log expense, 300 pesos, dating, yesterday')).toBe('log-expense')
+  })
+
+  it('routes Taglish transfer / cc-payment workflows', () => {
+    expect(routeChatSkill('ilipat 1000 galing GCash papunta Maya')).toBe('workflow-transfer')
+    expect(routeChatSkill('transfer 1000 from GCash to Maya today')).toBe('workflow-transfer')
+    expect(routeChatSkill('bayaran ang credit card 5000 galing GCash')).toBe('workflow-cc-payment')
+  })
+
+  it('keeps read questions on the ask-data path (no false write drafts)', () => {
+    expect(routeChatSkill('magkano gastos ko this month')).toBe('ask-data')
+    expect(routeChatSkill('how much income did I get in July')).toBe('ask-data')
+    expect(routeChatSkill("what's my expense summary")).toBe('ask-data')
+  })
+})

@@ -261,6 +261,66 @@ export function normalizeChatModelId(model: string): string {
   return t
 }
 
+/**
+ * Keep the current model when it is still in the provider list; otherwise prefer
+ * a free-tier option, then the first curated id, then an explicit fallback.
+ */
+export function pickModelForProviderList(
+  currentId: string,
+  models: ChatModelOption[],
+  fallbackId?: string
+): string {
+  if (currentId && models.some((m) => m.id === currentId)) return currentId
+  const free = models.find((m) => m.free)
+  return free?.id ?? models[0]?.id ?? fallbackId ?? currentId
+}
+
+/**
+ * Guess the provider from the API key's prefix so users don't have to know that
+ * the Name field is cosmetic and the Provider dropdown is what actually picks
+ * the host. Mistral keys have no distinctive prefix — the dropdown stays the
+ * override for those.
+ */
+export function detectProviderFromKey(apiKey: string): ChatProviderId | null {
+  const k = (apiKey ?? '').trim()
+  if (!k) return null
+  if (k.startsWith('AIza') || k.startsWith('AQ.')) return 'gemini'
+  if (k.startsWith('gsk_')) return 'groq'
+  if (k.startsWith('sk-or-')) return 'openrouter'
+  if (k.startsWith('sk-ant-')) return 'claude'
+  if (k.startsWith('csk-')) return 'cerebras'
+  if (k.startsWith('sk-')) return 'openai'
+  return null
+}
+
+/**
+ * Turn raw ids from GET /models into pickable options, reusing curated labels /
+ * free flags where we recognise the id. Free + known first (remote lists such as
+ * OpenRouter's run to hundreds of entries).
+ */
+export function decorateRemoteModels(
+  ids: string[],
+  providerId?: string | null
+): ChatModelOption[] {
+  const known = new Map<string, ChatModelOption>()
+  for (const m of CHAT_CURATED_MODELS) known.set(m.id, m)
+  for (const m of modelsForProvider(providerId)) known.set(m.id, m)
+
+  return ids
+    .map((id) => {
+      const hit = known.get(id)
+      return {
+        id,
+        label: hit?.label ?? id,
+        free: hit?.free === true || /:free$/.test(id)
+      }
+    })
+    .sort((a, b) => {
+      if (a.free !== b.free) return a.free ? -1 : 1
+      return a.id.localeCompare(b.id)
+    })
+}
+
 /** Pick a valid model for a provider when the current id is wrong/mismatched. */
 export function coerceModelForProvider(
   providerId: string | null | undefined,
@@ -268,7 +328,6 @@ export function coerceModelForProvider(
 ): string {
   const models = modelsForProvider(providerId)
   const normalized = normalizeChatModelId(modelId ?? '')
-  if (normalized && models.some((m) => m.id === normalized)) return normalized
-  if (normalized && providerId === 'custom') return normalized
-  return defaultModelForProvider(providerId)
+  if (normalized && providerId === 'custom' && normalized) return normalized
+  return pickModelForProviderList(normalized, models, defaultModelForProvider(providerId))
 }

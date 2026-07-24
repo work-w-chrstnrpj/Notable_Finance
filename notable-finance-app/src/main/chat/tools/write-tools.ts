@@ -142,6 +142,17 @@ export function proposeCreateIncome(args: unknown, ctx: WriteToolContext) {
     missingRequired: missing,
     warnings,
     payload,
+    display: {
+      title: name || 'New income',
+      amount: grossIncome ?? null,
+      currency: 'PHP',
+      date: date ?? null,
+      from: cat && !cat.auxiliary ? cat.source : null,
+      fromLabel: 'Category',
+      to: account?.name ?? null,
+      toLabel: 'Account',
+      note: capitalExpenditure ? `Capital expenditure ₱${capitalExpenditure}` : null
+    },
     summary: `Create income: ${name ?? '?'} · ₱${grossIncome ?? '?'} · ${date ?? '?'} · ${account?.name ?? '?'} · ${cat?.source ?? '?'}`
   })
   return draftResult(draft)
@@ -245,6 +256,21 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
     warnings,
     payload,
     computedPreview,
+    display: {
+      title: description || 'New expense',
+      amount: amount ?? null,
+      currency: 'PHP',
+      date: purchaseDate ?? null,
+      from: account?.name ?? null,
+      fromLabel: 'Account',
+      to: cat?.name ?? null,
+      toLabel: 'Category',
+      note: creditCard
+        ? `Credit card${paymentStatus ? ` · ${paymentStatus}` : ''}${interest ? ` · interest ₱${interest}` : ''}`
+        : pasabuy
+          ? `Pasabuy${pasabuyer ? ` · ${pasabuyer}` : ''}`
+          : null
+    },
     summary: `Create expense (${creditCard ? 'CC' : pasabuy ? 'Pasabuy' : 'base'}): ${description ?? '?'} · ₱${amount ?? '?'} · ${purchaseDate ?? '?'} · ${account?.name ?? '?'} · ${cat?.name ?? '?'}`
   })
   return draftResult(draft)
@@ -340,6 +366,13 @@ function proposeWorkflowIncome(
     notes: str(a.notes) ?? null
   }
 
+  const WORKFLOW_TITLES: Record<string, string> = {
+    proposeCreateTransfer: 'Transfer',
+    proposeCreateCcPayment: 'Credit card payment',
+    proposeCreateAlkansya: 'Alkansya (savings)',
+    proposeCreateReceivable: 'Receivable'
+  }
+
   const draft = putDraft({
     threadId: ctx.threadId,
     resource: 'incomes',
@@ -348,6 +381,17 @@ function proposeWorkflowIncome(
     missingRequired: missing,
     warnings,
     payload,
+    display: {
+      title: name || WORKFLOW_TITLES[kind] || 'New record',
+      amount: grossIncome ?? null,
+      currency: 'PHP',
+      date: date ?? null,
+      from: source?.name ?? null,
+      fromLabel: opts.sourceMustBeCredit ? 'Credit card' : 'From',
+      to: transacted?.name ?? cat?.source ?? null,
+      toLabel: transacted ? 'To' : 'Category',
+      note: WORKFLOW_TITLES[kind] ?? null
+    },
     summary: `${kind}: ${name ?? '?'} · ₱${grossIncome ?? '?'} · ${date ?? '?'} · ${source?.name ?? '—'} → ${transacted?.name ?? '—'}`
   })
   return draftResult(draft)
@@ -437,6 +481,17 @@ export function proposeUpdateIncome(args: unknown, ctx: WriteToolContext) {
     warnings: [],
     payload: { id, ...patch },
     targetIds: id ? [id] : [],
+    display: {
+      title: (patch.name as string) || 'Update income',
+      amount: typeof patch.grossIncome === 'number' ? patch.grossIncome : null,
+      currency: 'PHP',
+      date: (patch.date as string) ?? null,
+      from: categoryIncomeLabel(patch.categoryId as string | undefined),
+      fromLabel: 'Category',
+      to: accountLabel(patch.accountId as string | undefined),
+      toLabel: 'Account',
+      note: `Changing: ${Object.keys(patch).join(', ') || '—'}`
+    },
     summary: `Update income ${id ?? '?'}: ${Object.keys(patch).join(', ') || '—'}`
   })
   return draftResult(draft)
@@ -482,6 +537,17 @@ export function proposeUpdateExpense(args: unknown, ctx: WriteToolContext) {
     warnings: [],
     payload: { id, ...patch },
     targetIds: id ? [id] : [],
+    display: {
+      title: (patch.description as string) || 'Update expense',
+      amount: typeof patch.amount === 'number' ? patch.amount : null,
+      currency: 'PHP',
+      date: (patch.purchaseDate as string) ?? null,
+      from: accountLabel(patch.accountId as string | undefined),
+      fromLabel: 'Account',
+      to: categoryExpenseLabel(patch.categoryId as string | undefined),
+      toLabel: 'Category',
+      note: `Changing: ${Object.keys(patch).join(', ') || '—'}`
+    },
     summary: `Update expense ${id ?? '?'}: ${Object.keys(patch).join(', ') || '—'}`
   })
   return draftResult(draft)

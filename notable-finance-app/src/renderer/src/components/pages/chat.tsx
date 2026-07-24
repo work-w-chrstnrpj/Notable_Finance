@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowDown,
+  ArrowDownLeft,
   ArrowLeft,
-  FileText,
+  ArrowUpRight,
+  Check,
   MessageSquarePlus,
   Pencil,
   Send,
@@ -9,6 +12,7 @@ import {
   Sparkles,
   Trash2,
   User,
+  X,
 } from "lucide-react";
 import { navigate } from "@/lib/router";
 import { useUiSettings } from "@/lib/ui-settings-context";
@@ -19,6 +23,7 @@ import type {
   ChatDraftDto,
   ChatMessageDto,
   ChatOverlayId,
+  ChatProviderCatalogDto,
   ChatThreadDto,
 } from "@shared/finance.types";
 
@@ -34,6 +39,24 @@ const FALLBACK_OVERLAYS: Array<{
   { id: "strict", slash: "/strict", label: "Strict", hint: "Facts only" },
   { id: "quiet", slash: "/quiet", label: "Quiet", hint: "Minimal acks" },
 ];
+
+/** Prefer current id when still valid; else free-tier, else first, else fallback. */
+function pickModelForList(
+  currentId: string,
+  list: Array<{ id: string; free?: boolean }>,
+  fallbackId?: string,
+): string {
+  if (currentId && list.some((m) => m.id === currentId)) return currentId;
+  const free = list.find((m) => m.free);
+  return free?.id ?? list[0]?.id ?? fallbackId ?? currentId;
+}
+
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function startOfDay(ts: number): number {
   const d = new Date(ts);
@@ -54,6 +77,7 @@ function ChatModePage() {
   const { settings, chatEnabled } = useUiSettings();
   const [threads, setThreads] = useState<ChatThreadDto[]>([]);
   const [credentials, setCredentials] = useState<ChatCredentialDto[]>([]);
+  const [providers, setProviders] = useState<ChatProviderCatalogDto[]>([]);
   const [models, setModels] = useState<Array<{ id: string; label: string; free?: boolean }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
@@ -73,6 +97,10 @@ function ChatModePage() {
   const [overlays, setOverlays] = useState(FALLBACK_OVERLAYS);
   const [activeOverlay, setActiveOverlay] = useState<ChatOverlayId>("default");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  /** Ignore stale chat:models responses when Key changes quickly. */
+  const modelsFetchGen = useRef(0);
+  const modelIdRef = useRef(modelId);
+  modelIdRef.current = modelId;
 
   /** Ask/summarize allowed without BYOK when Prefer Apple is on (Mac on-device path). */
   const canChatWithoutKey = appleReadOnlyReady;
@@ -91,19 +119,68 @@ function ChatModePage() {
     if (res.ok) setThreads(res.data);
   }, []);
 
-  const refreshModelsForCredential = useCallback(async (credId: string) => {
-    const api = window.api?.chat;
-    if (!api) return;
-    const modelsRes = await api.models(credId || null);
-    if (!modelsRes.ok) return;
-    setModels(modelsRes.data);
-    setModelId((prev) => {
-      if (modelsRes.data.some((m) => m.id === prev)) return prev;
-      const free = modelsRes.data.find((m) => m.free);
-      return free?.id ?? modelsRes.data[0]?.id ?? prev;
-    });
-    setCustomModel(false);
-  }, []);
+  const activeCredential = credentials.find((c) => c.id === credentialId) ?? null;
+  const activeIdRef = useRef(activeId);
+  activeIdRef.current = activeId;
+
+  const applyModelsForCredential = useCallback(
+    (credId: string, opts?: { preferModelId?: string | null; persistThreadId?: string | null }) => {
+      const cred = credentials.find((c) => c.id === credId) ?? null;
+      const catalog = providers.find((p) => p.id === (cred?.providerId ?? ""));
+      const prefer = opts?.preferModelId ?? modelIdRef.current;
+
+      if (catalog?.models?.length) {
+        const list = catalog.models.map((m) => ({
+          id: m.id,
+          label: m.label,
+          free: m.free,
+        }));
+        setModels(list);
+        const optimistic = pickModelForList(prefer || "", list, catalog.defaultModelId);
+        setModelId(optimistic);
+        setCustomModel(false);
+      }
+
+      const gen = ++modelsFetchGen.current;
+      const persistThreadId = opts?.persistThreadId ?? null;
+      void (async () => {
+        const api = window.api?.chat;
+        if (!api) return;
+        const modelsRes = await api.models(credId || null);
+        if (gen !== modelsFetchGen.current || !modelsRes.ok) return;
+
+        // Prefer the key's own catalogue (GET {base}/models) so the list always
+        // matches the provider this key actually talks to. Curated list is the
+        // fallback for hosts that don't expose it or reject the key.
+        let list = modelsRes.data;
+        if (credId && api.remoteModels) {
+          const remote = await api.remoteModels(credId);
+          if (gen !== modelsFetchGen.current) return;
+          if (remote.ok && remote.data.length > 0) list = remote.data;
+        }
+
+        setModels(list);
+        const picked = pickModelForList(
+          modelIdRef.current,
+          list,
+          catalog?.defaultModelId,
+        );
+        setModelId(picked);
+        setCustomModel(false);
+        if (persistThreadId) {
+          void api
+            .updateThread(persistThreadId, {
+              credentialId: credId || null,
+              modelId: picked || null,
+            })
+            .then((r) => {
+              if (r.ok) void refreshThreads();
+            });
+        }
+      })();
+    },
+    [credentials, providers, refreshThreads],
+  );
 
   const refreshCredentials = useCallback(async () => {
     const api = window.api?.chat;
@@ -129,6 +206,27 @@ function ChatModePage() {
     if (res.ok) setPendingDrafts(res.data);
   }, []);
 
+  const onSelectCredential = useCallback((nextCredId: string) => {
+    setCredentialId(nextCredId);
+  }, []);
+
+  const onSelectModel = useCallback(
+    (nextModelId: string) => {
+      setCustomModel(false);
+      setModelId(nextModelId);
+      if (!activeId) return;
+      void window.api.chat
+        .updateThread(activeId, {
+          credentialId: credentialId || null,
+          modelId: nextModelId || null,
+        })
+        .then((r) => {
+          if (r.ok) void refreshThreads();
+        });
+    },
+    [activeId, credentialId, refreshThreads],
+  );
+
   useEffect(() => {
     if (!chatEnabled) {
       goBackToMain();
@@ -137,6 +235,10 @@ function ChatModePage() {
     void (async () => {
       const api = window.api?.chat;
       if (!api) return;
+      if (api.providers) {
+        const providersRes = await api.providers();
+        if (providersRes.ok && providersRes.data.length > 0) setProviders(providersRes.data);
+      }
       if (api.overlays) {
         const overlaysRes = await api.overlays();
         if (overlaysRes.ok && overlaysRes.data.length > 0) setOverlays(overlaysRes.data);
@@ -156,15 +258,23 @@ function ChatModePage() {
     })();
   }, [chatEnabled, goBackToMain, refreshCredentials, refreshThreads, settings.chatPreferAppleReadOnly]);
 
+  // Race-safe model list refresh when Key changes (including default credential load).
+  // Persist onto the active thread so re-opening the chat does not snap back to Gemini.
   useEffect(() => {
     if (!credentialId) {
+      const gen = ++modelsFetchGen.current;
       void window.api?.chat?.models(null).then((r) => {
-        if (r.ok) setModels(r.data);
+        if (gen !== modelsFetchGen.current || !r.ok) return;
+        setModels(r.data);
       });
       return;
     }
-    void refreshModelsForCredential(credentialId);
-  }, [credentialId, refreshModelsForCredential]);
+    applyModelsForCredential(credentialId, {
+      persistThreadId: activeIdRef.current,
+    });
+    // Intentionally omit applyModelsForCredential identity — only re-run on Key id.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- credential switch only
+  }, [credentialId]);
 
   useEffect(() => {
     if (!activeId) {
@@ -178,22 +288,30 @@ function ChatModePage() {
       if (cancelled || !res.ok) return;
       setMessages(res.data);
       await refreshDrafts(activeId);
-      const thread = threads.find((t) => t.id === activeId);
-      if (thread?.credentialId) setCredentialId(thread.credentialId);
-      if (thread?.modelId) {
-        const known = models.some((m) => m.id === thread.modelId);
-        setCustomModel(!known);
-        setModelId(thread.modelId);
-      }
-      const overlayId = (thread?.overlay ?? "default") as ChatOverlayId;
-      setActiveOverlay(
-        FALLBACK_OVERLAYS.some((o) => o.id === overlayId) ? overlayId : "default",
-      );
     })();
     return () => {
       cancelled = true;
     };
-  }, [activeId, threads, models, refreshDrafts]);
+  }, [activeId, refreshDrafts]);
+
+  // Apply thread key/model only when switching chats — not when the model list
+  // refreshes (that was snapping Key back to the thread's old Gemini credential).
+  useEffect(() => {
+    if (!activeId) return;
+    const thread = threads.find((t) => t.id === activeId);
+    if (!thread) return;
+    if (thread.credentialId) setCredentialId(thread.credentialId);
+    if (thread.modelId) {
+      setModelId(thread.modelId);
+      setCustomModel(false);
+    }
+    const overlayId = (thread.overlay ?? "default") as ChatOverlayId;
+    setActiveOverlay(
+      FALLBACK_OVERLAYS.some((o) => o.id === overlayId) ? overlayId : "default",
+    );
+    // intentionally only activeId — not threads/models
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- thread switch only
+  }, [activeId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -443,63 +561,43 @@ function ChatModePage() {
 
       <section className="chat-mode__pane">
         <header className="chat-mode__toolbar">
-          <label className="chat-mode__picker">
-            <span>Key</span>
-            <select
-              value={credentialId}
-              onChange={(e) => setCredentialId(e.target.value)}
-              disabled={credentials.length === 0}
+          <div className="chat-mode__identity">
+            <div className="chat-mode__identity-badge" aria-hidden="true">
+              <Sparkles size={15} />
+            </div>
+            <div className="chat-mode__identity-text">
+              <p className="chat-mode__identity-title">Finance Copilot</p>
+              <p className="chat-mode__identity-status">
+                <span
+                  className={cx(
+                    "chat-mode__status-dot",
+                    !composerUnlocked && "chat-mode__status-dot--off",
+                  )}
+                />
+                {composerUnlocked
+                  ? `Active · ${activeCredential?.name ?? "on-device"}`
+                  : "Needs an API key"}
+              </p>
+            </div>
+          </div>
+          <div className="chat-mode__toolbar-right">
+            {pendingDrafts.length > 0 && (
+              <span className="chat-mode__pending-pill">
+                <span className="chat-mode__pending-dot" />
+                {pendingDrafts.length} pending{" "}
+                {pendingDrafts.length === 1 ? "action" : "actions"}
+              </span>
+            )}
+            <button
+              type="button"
+              className="button"
+              onClick={() => setShowConfig(true)}
+              title="Configure AI"
             >
-              {credentials.length === 0 && <option value="">No keys saved</option>}
-              {credentials.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.providerId ? ` · ${c.providerId}` : ""}
-                  {c.isDefault ? " (default)" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="chat-mode__picker">
-            <span>Model</span>
-            <select
-              value={showCustom ? "__custom__" : modelId}
-              onChange={(e) => {
-                if (e.target.value === "__custom__") {
-                  setCustomModel(true);
-                  return;
-                }
-                setCustomModel(false);
-                setModelId(e.target.value);
-              }}
-            >
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                  {m.free ? " (free)" : ""}
-                </option>
-              ))}
-              <option value="__custom__">Custom…</option>
-            </select>
-          </label>
-          {showCustom && (
-            <input
-              className="chat-mode__custom-model"
-              value={modelId}
-              onChange={(e) => setModelId(e.target.value)}
-              placeholder="model id"
-              spellCheck={false}
-            />
-          )}
-          <button
-            type="button"
-            className="button"
-            onClick={() => setShowConfig(true)}
-            title="Configure AI"
-          >
-            <Settings2 size={16} />
-            Configure
-          </button>
+              <Settings2 size={16} />
+              Configure
+            </button>
+          </div>
         </header>
 
         {(needsKey || error || (applePreferOn && !appleReadOnlyReady && credentials.length === 0)) && (
@@ -578,62 +676,110 @@ function ChatModePage() {
                 <div className="chat-msg__main">
                   <span className="chat-msg__role">{isUser ? "You" : "Copilot"}</span>
                   <div className="chat-msg__bubble">{m.content}</div>
+                  <span className="chat-msg__time">{formatTime(m.createdAt)}</span>
                 </div>
               </div>
             );
           })}
-          {pendingDrafts.map((d) => (
-            <div key={d.id} className="chat-draft-card" data-status={d.status}>
-              <div className="chat-draft-card__header">
-                <FileText size={14} />
-                <strong>
-                  {d.action === "create" ? "New" : "Update"}{" "}
-                  {d.resource === "incomes" ? "income" : "expense"}
-                </strong>
-                <span className="chat-draft-card__badge">
-                  {d.status === "ready" ? "Ready to approve" : "Needs info"}
-                </span>
+          {pendingDrafts.map((d) => {
+            const dsp = d.display ?? null;
+            const isIncome = d.resource === "incomes";
+            const ready = d.status === "ready" && d.missingRequired.length === 0;
+            return (
+              <div key={d.id} className="chat-action-card" data-status={d.status}>
+                <div className="chat-action-card__head">
+                  <div className="chat-action-card__icon" aria-hidden="true">
+                    {isIncome ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
+                  </div>
+                  <div className="chat-action-card__heading">
+                    <p className="chat-action-card__title">{dsp?.title || d.summary}</p>
+                    <p className="chat-action-card__ref">
+                      {d.action === "create" ? "New" : "Update"} ·{" "}
+                      {isIncome ? "Income" : "Expense"}
+                      {dsp?.note ? ` · ${dsp.note}` : ""}
+                    </p>
+                  </div>
+                  <span
+                    className={cx(
+                      "chat-action-card__badge",
+                      ready
+                        ? "chat-action-card__badge--ready"
+                        : "chat-action-card__badge--blocked",
+                    )}
+                  >
+                    {ready ? "Ready" : "Needs info"}
+                  </span>
+                </div>
+
+                <div className="chat-action-card__body">
+                  <div className="chat-action-card__amount-row">
+                    <span className="chat-action-card__label">Amount</span>
+                    <span className="chat-action-card__amount">
+                      <span className="chat-action-card__currency">PHP</span>
+                      {typeof dsp?.amount === "number"
+                        ? dsp.amount.toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        : "—"}
+                    </span>
+                  </div>
+
+                  <div className="chat-action-card__flow">
+                    <div className="chat-action-card__flow-row">
+                      <span className="chat-action-card__label">
+                        {dsp?.fromLabel ?? "From"}
+                      </span>
+                      <span className="chat-action-card__value">{dsp?.from ?? "—"}</span>
+                    </div>
+                    <div className="chat-action-card__flow-arrow" aria-hidden="true">
+                      <ArrowDown size={12} />
+                    </div>
+                    <div className="chat-action-card__flow-row">
+                      <span className="chat-action-card__label">{dsp?.toLabel ?? "To"}</span>
+                      <span className="chat-action-card__value">{dsp?.to ?? "—"}</span>
+                    </div>
+                  </div>
+
+                  <div className="chat-action-card__meta">
+                    <span className="chat-action-card__label">Date</span>
+                    <span className="chat-action-card__meta-value">{dsp?.date ?? "—"}</span>
+                  </div>
+
+                  {d.missingRequired.length > 0 && (
+                    <p className="chat-action-card__missing">
+                      Missing: {d.missingRequired.join(", ")}
+                    </p>
+                  )}
+                  {d.warnings.length > 0 && (
+                    <p className="chat-action-card__warn">{d.warnings.join(" · ")}</p>
+                  )}
+                </div>
+
+                <div className="chat-action-card__foot">
+                  <button
+                    type="button"
+                    className="chat-action-card__approve"
+                    disabled={!ready || draftBusyId === d.id || needsKey}
+                    title={needsKey ? "Add an API key to Approve writes" : undefined}
+                    onClick={() => void onApproveDraft(d.id)}
+                  >
+                    <Check size={15} />
+                    Approve
+                  </button>
+                  <button
+                    type="button"
+                    className="chat-action-card__deny"
+                    disabled={draftBusyId === d.id}
+                    onClick={() => void onCancelDraft(d.id)}
+                  >
+                    <X size={15} />
+                    Cancel
+                  </button>
+                </div>
               </div>
-              <p className="chat-draft-card__summary">{d.summary}</p>
-              {d.missingRequired.length > 0 && (
-                <p className="chat-draft-card__missing">
-                  Missing: {d.missingRequired.join(", ")}
-                </p>
-              )}
-              {d.warnings.length > 0 && (
-                <p className="chat-draft-card__warn">{d.warnings.join(" · ")}</p>
-              )}
-              {d.computedPreview && (
-                <pre className="chat-draft-card__preview">
-                  {JSON.stringify(d.computedPreview, null, 2)}
-                </pre>
-              )}
-              <div className="chat-draft-card__actions">
-                <button
-                  type="button"
-                  className="button button--primary"
-                  disabled={
-                    d.status !== "ready" ||
-                    d.missingRequired.length > 0 ||
-                    draftBusyId === d.id ||
-                    needsKey
-                  }
-                  title={needsKey ? "Add an API key to Approve writes" : undefined}
-                  onClick={() => void onApproveDraft(d.id)}
-                >
-                  Approve
-                </button>
-                <button
-                  type="button"
-                  className="button"
-                  disabled={draftBusyId === d.id}
-                  onClick={() => void onCancelDraft(d.id)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {busy && (
             <div className="chat-msg chat-msg--assistant" aria-live="polite">
               <div className="chat-msg__avatar" aria-hidden="true">
@@ -700,6 +846,62 @@ function ChatModePage() {
             >
               <Send size={17} />
             </button>
+          </div>
+
+          {/* Model configuration lives with the composer, not the top bar. */}
+          <div className="chat-mode__composer-meta">
+            <span className="chat-mode__composer-hint">
+              ⏎ to send · ⇧⏎ for newline
+            </span>
+            <div className="chat-mode__model-config">
+              <select
+                className="chat-mode__mini-select"
+                aria-label="API key"
+                value={credentialId}
+                onChange={(e) => onSelectCredential(e.target.value)}
+                disabled={credentials.length === 0}
+              >
+                {credentials.length === 0 && <option value="">No keys saved</option>}
+                {credentials.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.isDefault ? " (default)" : ""}
+                  </option>
+                ))}
+              </select>
+              <span className="chat-mode__model-sep" aria-hidden="true">
+                ·
+              </span>
+              <select
+                className="chat-mode__mini-select"
+                aria-label="Model"
+                value={showCustom ? "__custom__" : modelId}
+                onChange={(e) => {
+                  if (e.target.value === "__custom__") {
+                    setCustomModel(true);
+                    return;
+                  }
+                  onSelectModel(e.target.value);
+                }}
+              >
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                    {m.free ? " (free)" : ""}
+                  </option>
+                ))}
+                <option value="__custom__">Custom…</option>
+              </select>
+              {showCustom && (
+                <input
+                  className="chat-mode__custom-model"
+                  value={modelId}
+                  onChange={(e) => setModelId(e.target.value)}
+                  placeholder="model id"
+                  spellCheck={false}
+                />
+              )}
+            </div>
           </div>
         </footer>
       </section>

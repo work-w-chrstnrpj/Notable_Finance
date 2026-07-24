@@ -19,12 +19,15 @@ import { currentMonth, todayIso } from './dates'
 import {
   DEFAULT_CHAT_MODEL,
   coerceModelForProvider,
+  decorateRemoteModels,
   headersForProvider,
   normalizeChatModelId,
-  providerPresetFromBaseUrl
+  providerPresetFromBaseUrl,
+  type ChatModelOption
 } from './models'
 import {
   completeChat,
+  fetchRemoteModelIds,
   type ChatCompletionMessage,
   type ChatCompletionResult,
   type ChatToolCall
@@ -55,7 +58,9 @@ import {
 import { appendDevLog } from '../dev-logs/store'
 
 const MAX_TURNS = 20
-const MAX_TOOL_ROUNDS = 8
+// Each round is one provider request. Free tiers rate-limit hard (429), so keep
+// the ceiling low — real flows resolve in 2–3 rounds.
+const MAX_TOOL_ROUNDS = 4
 
 const PHASE_65_SYSTEM = `You are Notable Finance's Finance Copilot (Phase 6.5+ — overlays + confirm-gated writes + Apple/on-device read-only option).
 
@@ -106,6 +111,23 @@ export async function getChatStatus(opts?: { forceRefresh?: boolean }): Promise<
 
 export function isAppleOs(): boolean {
   return platform() === 'darwin'
+}
+
+/**
+ * Live model list for a saved key (GET {base}/models). Callers fall back to the
+ * curated catalogue when a host doesn't support it or the key is rejected.
+ */
+export async function listRemoteModels(credentialId: string): Promise<ChatModelOption[]> {
+  if (!getCredential(credentialId)) throw new Error('Credential not found')
+  const apiKey = readChatApiKey(credentialId)
+  const baseUrl = readChatBaseUrl(credentialId)
+  const providerId = readChatProviderId(credentialId) ?? providerPresetFromBaseUrl(baseUrl)
+  const ids = await fetchRemoteModelIds({
+    apiKey,
+    baseUrl,
+    headers: headersForProvider(providerId)
+  })
+  return decorateRemoteModels(ids, providerId)
 }
 
 const MEMO_REPLAY_TURNS = 2
@@ -271,20 +293,31 @@ async function runToolLoop(input: {
       tool_calls: result.toolCalls
     })
 
+    // Weak models can emit the SAME call many times in one response (we saw 10
+    // identical proposeCreateIncome → 10 confirm cards). Execute each distinct
+    // call once and reuse its result; the protocol still requires one tool
+    // message per tool_call_id, so every id is answered.
+    const roundCache = new Map<string, unknown>()
     for (const call of result.toolCalls as ChatToolCall[]) {
+      const cacheKey = `${call.function.name}:${call.function.arguments}`
       let payload: unknown
-      try {
-        payload = executeChatTool(call.function.name, call.function.arguments, {
-          threadId: input.threadId
-        })
-      } catch (err) {
-        payload = {
-          error: err instanceof Error ? err.message : String(err)
+      if (roundCache.has(cacheKey)) {
+        payload = roundCache.get(cacheKey)
+      } else {
+        try {
+          payload = executeChatTool(call.function.name, call.function.arguments, {
+            threadId: input.threadId
+          })
+        } catch (err) {
+          payload = {
+            error: err instanceof Error ? err.message : String(err)
+          }
         }
+        roundCache.set(cacheKey, payload)
+        toolResults.push(payload)
+        toolNames.push(call.function.name)
+        collectDraft(payload, drafts)
       }
-      toolResults.push(payload)
-      toolNames.push(call.function.name)
-      collectDraft(payload, drafts)
       messages.push({
         role: 'tool',
         tool_call_id: call.id,
@@ -455,13 +488,23 @@ export async function sendChatMessage(input: {
   const baseUrl = readChatBaseUrl(credentialId)
   const providerId =
     readChatProviderId(credentialId) ?? providerPresetFromBaseUrl(baseUrl)
-  const modelId = coerceModelForProvider(
-    providerId,
-    normalizeChatModelId(
-      (input.modelId ?? thread.modelId ?? ui.chatDefaultModel ?? DEFAULT_CHAT_MODEL).trim() ||
-        DEFAULT_CHAT_MODEL
-    )
+  const requestedModel = normalizeChatModelId(
+    (input.modelId ?? thread.modelId ?? ui.chatDefaultModel ?? DEFAULT_CHAT_MODEL).trim() ||
+      DEFAULT_CHAT_MODEL
   )
+  const modelId = coerceModelForProvider(providerId, requestedModel)
+  if (modelId !== requestedModel) {
+    // Silent swaps are why "the model doesn't match my key" is so confusing —
+    // make the mismatch visible in Dev Logs.
+    appendDevLog({
+      kind: 'api',
+      source: 'main',
+      action: 'chat.model.coerced',
+      message: `"${requestedModel}" is not valid for provider "${providerId}" — using "${modelId}"`,
+      detail: { providerId, requestedModel, resolvedModel: modelId },
+      ok: false
+    })
+  }
 
   if (thread.credentialId !== credentialId || thread.modelId !== modelId) {
     thread = updateThread(thread.id, { credentialId, modelId })

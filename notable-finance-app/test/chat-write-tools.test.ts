@@ -73,4 +73,78 @@ describe('draft store + cancel', () => {
   it('exports mass edit cap of 50', () => {
     expect(MASS_EDIT_CAP).toBe(50)
   })
+
+  it('supersedes earlier pending drafts of the same kind in a thread', () => {
+    const base = {
+      threadId: 'thread-supersede',
+      resource: 'expenses' as const,
+      action: 'create' as const,
+      kind: 'proposeCreateExpense',
+      warnings: [],
+      missingRequired: []
+    }
+    const first = putDraft({ ...base, summary: 'first', payload: { amount: 1 } })
+    const second = putDraft({ ...base, summary: 'second', payload: { amount: 2 } })
+    const third = putDraft({ ...base, summary: 'third', payload: { amount: 3 } })
+
+    // Only the newest stays pending — no pile of stale confirm cards.
+    const pending = listDrafts('thread-supersede')
+    expect(pending).toHaveLength(1)
+    expect(pending[0]!.id).toBe(third.id)
+    expect(getDraft(first.id)?.status).toBe('cancelled')
+    expect(getDraft(second.id)?.status).toBe('cancelled')
+  })
+
+  it('round-trips the display block through putDraft', () => {
+    const draft = putDraft({
+      threadId: 'thread-display',
+      resource: 'expenses',
+      action: 'create',
+      kind: 'proposeCreateExpense',
+      summary: 'Create expense: spaghetti · ₱1',
+      missingRequired: [],
+      warnings: [],
+      payload: { amount: 1 },
+      display: {
+        title: 'spaghetti',
+        amount: 1,
+        currency: 'PHP',
+        date: '2026-07-24',
+        from: 'Home Wallet',
+        fromLabel: 'Account',
+        to: 'Food',
+        toLabel: 'Category'
+      }
+    })
+    expect(draft.display?.title).toBe('spaghetti')
+    expect(getDraft(draft.id)?.display?.from).toBe('Home Wallet')
+    expect(getDraft(draft.id)?.display?.amount).toBe(1)
+  })
+
+  it('does not supersede a different kind or a different thread', () => {
+    const income = putDraft({
+      threadId: 'thread-mixed',
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      summary: 'income',
+      missingRequired: [],
+      warnings: [],
+      payload: {}
+    })
+    const expense = putDraft({
+      threadId: 'thread-mixed',
+      resource: 'expenses',
+      action: 'create',
+      kind: 'proposeCreateExpense',
+      summary: 'expense',
+      missingRequired: [],
+      warnings: [],
+      payload: {}
+    })
+    expect(getDraft(income.id)?.status).toBe('ready')
+    expect(listDrafts('thread-mixed').map((d) => d.id).sort()).toEqual(
+      [income.id, expense.id].sort()
+    )
+  })
 })

@@ -30,6 +30,32 @@ function looksLikeAnthropicKey(apiKey: string): boolean {
   return apiKey.trim().startsWith('sk-ant-')
 }
 
+/** Retries for transient provider failures (rate limit / overloaded). */
+const RATE_LIMIT_MAX_RETRIES = 3
+
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 504
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/** Honour Retry-After when present, else exponential backoff (1s, 2s, 4s…). */
+function retryDelayMs(res: Response, attempt: number): number {
+  const header = res.headers.get('retry-after')
+  if (header) {
+    const seconds = Number(header)
+    if (Number.isFinite(seconds) && seconds > 0) return Math.min(seconds * 1000, 30_000)
+    const asDate = Date.parse(header)
+    if (Number.isFinite(asDate)) {
+      const delta = asDate - Date.now()
+      if (delta > 0) return Math.min(delta, 30_000)
+    }
+  }
+  return Math.min(1000 * 2 ** attempt, 8000)
+}
+
 /**
  * OpenAI reasoning models (o1/o3/o4-…, and gpt-5 reasoning tiers) reject any
  * `temperature` other than the default and 400 the whole request. Omit the
@@ -62,25 +88,43 @@ async function postChatCompletions(input: {
     body.tool_choice = input.toolChoice ?? 'auto'
   }
 
-  const res = await fetch(`${base}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${input.apiKey}`,
-      ...(input.headers ?? {})
-    },
-    body: JSON.stringify(body)
-  })
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${base}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${input.apiKey}`,
+        ...(input.headers ?? {})
+      },
+      body: JSON.stringify(body)
+    })
 
-  const text = await res.text()
-  let parsed: unknown
-  try {
-    parsed = text ? JSON.parse(text) : null
-  } catch {
-    parsed = null
-  }
+    const text = await res.text()
+    let parsed: unknown
+    try {
+      parsed = text ? JSON.parse(text) : null
+    } catch {
+      parsed = null
+    }
 
-  if (!res.ok) {
+    if (res.ok) return parsed
+
+    // Free tiers (Gemini/Groq/OpenRouter) rate-limit aggressively and a single
+    // agent turn can issue several requests. Back off and retry before failing.
+    if (isRetryableStatus(res.status) && attempt < RATE_LIMIT_MAX_RETRIES) {
+      const waitMs = retryDelayMs(res, attempt)
+      appendDevLog({
+        kind: 'api',
+        source: 'main',
+        action: 'chat.provider.retry',
+        message: `${input.model} → HTTP ${res.status}, retrying in ${waitMs}ms (attempt ${attempt + 1}/${RATE_LIMIT_MAX_RETRIES})`,
+        detail: { model: input.model, status: res.status, waitMs },
+        ok: false
+      })
+      await sleep(waitMs)
+      continue
+    }
+
     let errMsg =
       parsed &&
       typeof parsed === 'object' &&
@@ -90,7 +134,9 @@ async function postChatCompletions(input: {
         ? (parsed as { error: { message: string } }).error.message
         : `Provider error (${res.status})`
 
-    if (
+    if (res.status === 429) {
+      errMsg = `Rate limit reached (429) on ${input.model}. Free tiers allow only a few requests per minute and one chat turn can use several. Wait ~30–60s, or switch to a different model/provider in Configure AI. Provider said: ${errMsg}`
+    } else if (
       base === DEFAULT_CHAT_BASE_URL &&
       looksLikeGeminiKey(input.apiKey) &&
       /incorrect api key|invalid.*api.?key|platform\.openai/i.test(errMsg)
@@ -102,12 +148,12 @@ async function postChatCompletions(input: {
       /incorrect api key|invalid.*api.?key|platform\.openai/i.test(errMsg)
     ) {
       errMsg = `${errMsg} This looks like an Anthropic key sent to OpenAI. In Configure AI, set Provider to Claude (or use OpenRouter for free Claude-class models).`
+    } else if (res.status === 404 && /model/i.test(errMsg)) {
+      errMsg = `${errMsg} — the model "${input.model}" isn't available for this key's provider. Pick a listed model in the Model dropdown.`
     }
 
     throw new Error(errMsg)
   }
-
-  return parsed
 }
 
 export async function completeChat(input: {
@@ -191,6 +237,57 @@ export async function completeChat(input: {
   })
 
   return { content, toolCalls }
+}
+
+/**
+ * Live model discovery: every OpenAI-compatible host exposes GET {base}/models.
+ * Using the key's own catalogue avoids the stale hardcoded list (and the silent
+ * model coercion that made "the model doesn't match my key" so confusing).
+ */
+export async function fetchRemoteModelIds(input: {
+  apiKey: string
+  baseUrl?: string | null
+  headers?: Record<string, string>
+}): Promise<string[]> {
+  const base = resolveChatBaseUrl(input.baseUrl)
+  const res = await fetch(`${base}/models`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${input.apiKey}`,
+      ...(input.headers ?? {})
+    }
+  })
+
+  const text = await res.text()
+  let parsed: unknown = null
+  try {
+    parsed = text ? JSON.parse(text) : null
+  } catch {
+    parsed = null
+  }
+
+  if (!res.ok) {
+    const msg =
+      parsed &&
+      typeof parsed === 'object' &&
+      'error' in parsed &&
+      typeof (parsed as { error?: { message?: unknown } }).error?.message === 'string'
+        ? (parsed as { error: { message: string } }).error.message
+        : `Could not list models (HTTP ${res.status})`
+    throw new Error(msg)
+  }
+
+  const data = (parsed as { data?: Array<{ id?: unknown }> } | null)?.data
+  if (!Array.isArray(data)) return []
+
+  const ids: string[] = []
+  for (const row of data) {
+    if (typeof row?.id !== 'string') continue
+    // Gemini's compat layer returns "models/gemini-2.5-flash" — normalise.
+    const id = row.id.replace(/^models\//, '').trim()
+    if (id && !ids.includes(id)) ids.push(id)
+  }
+  return ids
 }
 
 /** Convenience for non-tool replies (legacy). */

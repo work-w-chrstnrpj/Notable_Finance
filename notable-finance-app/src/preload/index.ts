@@ -249,6 +249,12 @@ const api = {
     ): Promise<
       ApiResult<ChatDraftDto & { quip?: string; assistantMessage?: ChatMessageDto | null }>
     > => ipcRenderer.invoke('chat:cancelDraft', draftId),
+    remoteModels: (
+      credentialId: string
+    ): Promise<ApiResult<Array<{ id: string; label: string; free?: boolean }>>> =>
+      ipcRenderer.invoke('chat:remoteModels', credentialId),
+    detectProvider: (apiKey: string): Promise<ApiResult<string | null>> =>
+      ipcRenderer.invoke('chat:detectProvider', apiKey),
     overlays: (): Promise<
       ApiResult<Array<{ id: ChatOverlayId; slash: string; label: string; hint: string }>>
     > => ipcRenderer.invoke('chat:overlays')
