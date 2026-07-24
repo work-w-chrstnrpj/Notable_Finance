@@ -200,12 +200,16 @@ function ExpensePage({
   const { state: expensesState, refetch, applyLocal } = useExpenses({
     rangeStart: expenseRange?.start,
     rangeEnd: expenseRange?.end,
-    accountId: accountFilterId || undefined,
-    categoryId: isSpecificExpenseCategoryFilter(expenseCategoryFilter)
-      ? expenseCategoryFilter
-      : undefined,
+    // Account/category/pasabuyer filters only apply while the filter panel is
+    // active. Otherwise a value left selected before toggling the panel off
+    // would silently hide records with the control hidden from view.
+    accountId: filterActive ? accountFilterId || undefined : undefined,
+    categoryId:
+      filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
+        ? expenseCategoryFilter
+        : undefined,
     paymentStatus: undefined,
-    pasabuyer: pasabuyerFilter || undefined,
+    pasabuyer: filterActive ? pasabuyerFilter || undefined : undefined,
     expenseViewMode: viewMode,
   });
   const { invalidateExpenseFamily } = useFinanceInvalidation();

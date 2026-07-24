@@ -79,6 +79,35 @@ function useConflictCount(): number {
   return count;
 }
 
+/**
+ * Live count of local changes not yet pushed to Notion (dirty incomes/expenses
+ * + pending hard-deletes). Drives the amber badge on the History nav item and
+ * updates on every `sync:status` broadcast and after any local write.
+ */
+function useDirtyCount(): number {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const api = window.api;
+    if (!api?.sync?.status || !api?.on) return;
+    let alive = true;
+    const refresh = () =>
+      void api.sync!.status().then((r) => {
+        if (alive && r.ok) setCount(r.data.dirtyCount ?? 0);
+      });
+    refresh();
+    const offStatus = api.on("sync:status", (payload) =>
+      setCount((payload as { dirtyCount?: number }).dirtyCount ?? 0),
+    );
+    const offRecords = api.on("records:changed", refresh);
+    return () => {
+      alive = false;
+      offStatus();
+      offRecords();
+    };
+  }, []);
+  return count;
+}
+
 function Sidebar({
   activeSection,
   collapsed,
@@ -93,7 +122,11 @@ function Sidebar({
   const { user } = useAuth();
   const { chatEnabled, devModeEnabled } = useUiSettings();
   const conflictCount = useConflictCount();
-  const sectionBadges: Partial<Record<FinanceSectionId, number>> = { sync: conflictCount };
+  const dirtyCount = useDirtyCount();
+  const sectionBadges: Partial<Record<FinanceSectionId, number>> = {
+    sync: conflictCount,
+    history: dirtyCount,
+  };
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
@@ -177,18 +210,27 @@ function NavGroup({
       {sections.map((section) => {
         const Icon = sectionIcons[section.id];
         const badge = sectionBadges?.[section.id] ?? 0;
+        // History shows pending-to-push (amber, informational); Sync shows
+        // conflicts that need resolving (red, in the default badge style).
+        const isHistory = section.id === "history";
+        const badgeHint = isHistory
+          ? `${badge} item${badge > 1 ? "s" : ""} waiting to sync`
+          : `${badge} item${badge > 1 ? "s" : ""} to resolve`;
         return (
           <Link
             key={section.id}
             href={`/${section.id}`}
             className={cx("nav__item", activeSection === section.id && "nav__item--active")}
             onClick={onNavigate}
-            title={badge > 0 ? `${badge} item${badge > 1 ? "s" : ""} to resolve` : undefined}
+            title={badge > 0 ? badgeHint : undefined}
           >
             <Icon size={17} />
             <span>{section.shortLabel ?? section.label}</span>
             {badge > 0 && (
-              <span className="nav__badge" aria-label={`${badge} to resolve`}>
+              <span
+                className={cx("nav__badge", isHistory && "nav__badge--warn")}
+                aria-label={badgeHint}
+              >
                 {badge}
               </span>
             )}

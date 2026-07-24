@@ -261,7 +261,7 @@ function WorkflowPage({
           ? await workflowApi.update(editingId, payload)
           : await workflowApi.create(payload);
       if (!res.success) {
-        setSaveError(res.error.message || "Failed to save to Notion.");
+        setSaveError(res.error.message || "Couldn't save this record. Please try again.");
         return;
       }
       setModal(null);

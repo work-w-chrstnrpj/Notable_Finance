@@ -126,7 +126,11 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
       .slice()
       .sort(byName);
     const activeAccounts = allAccounts.filter(
-      (account) => !account.inactive && account.type !== "Auxiliary",
+      (account) =>
+        !account.inactive &&
+        account.type !== "Auxiliary" &&
+        // Hide local seed/test accounts (no Notion page) from all pickers.
+        account.notionSynced,
     );
     const nonCreditActiveAccounts = activeAccounts.filter(
       (account) => !isCreditLikeAccountType(account.type),

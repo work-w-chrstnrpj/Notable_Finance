@@ -33,7 +33,7 @@ const CC_PAYMENT = INCOME_VIEW_FIXED_CATEGORY.creditCardPayments!.toLowerCase()
 /**
  * Income page icon:
  *  - Receivable (no receiving account) → delivery truck profile / blue
- *  - Transfer category                 → arrow left right circle / yellow
+ *  - Transfer category                 → arrow half left right circle / yellow
  *  - Credit Card Payment category      → credit card / red
  *  - Everything else (normal income)   → arrow up circle / green
  */
@@ -43,7 +43,7 @@ export function iconForIncome(input: {
 }): NotionPageIcon {
   if (!input.accountId) return native('delivery truck profile', 'blue')
   const source = (input.categorySource ?? '').trim().toLowerCase()
-  if (source === TRANSFER) return native('arrow left right circle', 'yellow')
+  if (source === TRANSFER) return native('arrow half left right circle', 'yellow')
   if (source === CC_PAYMENT) return native('credit card', 'red')
   return native('arrow up circle', 'green')
 }

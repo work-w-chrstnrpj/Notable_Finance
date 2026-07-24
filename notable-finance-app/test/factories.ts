@@ -28,6 +28,7 @@ export function account(over: Partial<AccountDto> = {}): AccountDto {
     totalCcDebtTransfer: null,
     qrCode: null,
     inactive: false,
+    notionSynced: true,
     ...over
   }
 }

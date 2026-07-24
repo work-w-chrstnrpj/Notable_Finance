@@ -76,11 +76,27 @@ export function Badge({ tone, children }: { tone: "green" | "rose" | "blue" | "a
   return <span className={cx("badge", `badge--${tone}`)}>{children}</span>;
 }
 
-export function MoneyLine({ label, value }: { label: string; value: number }) {
+export function MoneyLine({
+  label,
+  value,
+  colorBySign,
+}: {
+  label: string;
+  value: number;
+  /** Negative → red, zero → default ink, positive → green. */
+  colorBySign?: boolean;
+}) {
+  const signClass = colorBySign
+    ? value < 0
+      ? "num--neg"
+      : value > 0
+        ? "num--pos"
+        : "num--zero"
+    : "";
   return (
     <div className="money-line">
       <span>{label}</span>
-      <strong>{formatMoney(value)}</strong>
+      <strong className={signClass}>{formatMoney(value)}</strong>
     </div>
   );
 }

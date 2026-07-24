@@ -26,6 +26,7 @@ export interface AccountRow {
   annual_fee: number | null
   credit_points: number | null
   qr_code?: string | null
+  notion_page_id?: string | null
 }
 
 export interface IncomeRow {
@@ -129,7 +130,10 @@ export function mapAccount(
     totalPasabuy: balance.totalPasabuy,
     totalCcDebtTransfer: balance.totalCcDebtTransfer,
     qrCode: row.qr_code ?? null,
-    inactive: row.inactive === 1
+    inactive: row.inactive === 1,
+    // Notion is the source of truth for accounts; a row without a Notion page is
+    // local seed/test data and must be hidden from user pickers.
+    notionSynced: typeof row.notion_page_id === 'string' && row.notion_page_id.trim().length > 0
   }
 }
 

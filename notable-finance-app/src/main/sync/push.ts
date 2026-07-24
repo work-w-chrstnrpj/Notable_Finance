@@ -307,13 +307,27 @@ async function pushAllInner(): Promise<PushResult> {
                 })
           let pageId = row.notion_page_id
           const wasCreate = !pageId
+          // A bad/unknown native icon name must never block the record from
+          // reaching Notion: if Notion rejects the icon, retry the same write
+          // without it so the data still syncs (the row just gets no icon).
+          const isIconError = (err: unknown): boolean =>
+            err instanceof NotionApiError && /icon/i.test(err.message)
           if (pageId) {
-            await sendWithBackoff(() => c.updatePage(pageId as string, properties, { icon }))
+            try {
+              await sendWithBackoff(() => c.updatePage(pageId as string, properties, { icon }))
+            } catch (iconErr) {
+              if (!isIconError(iconErr)) throw iconErr
+              await sendWithBackoff(() => c.updatePage(pageId as string, properties))
+            }
             result.updated++
           } else {
-            const page = await sendWithBackoff(() =>
-              c.createPage(t.databaseId, properties, { icon })
-            )
+            let page: { id: string }
+            try {
+              page = await sendWithBackoff(() => c.createPage(t.databaseId, properties, { icon }))
+            } catch (iconErr) {
+              if (!isIconError(iconErr)) throw iconErr
+              page = await sendWithBackoff(() => c.createPage(t.databaseId, properties))
+            }
             pageId = page.id
             result.created++
             // New income pages become translatable targets for cc_payment_covered links.

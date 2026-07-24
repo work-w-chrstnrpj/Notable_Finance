@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: UiSettings = {
     expenseViewMode: "Monthly",
     sidebarCollapsed: false,
     showFab: true,
+    pushFabAutoHideMs: 180_000,
     lastSection: "dashboard",
   },
   incomeFilters: {

@@ -31,6 +31,7 @@ import type {
   IncomeRecordDto,
   ExpenseListParams,
   MonthlyMonitoringDto,
+  MonitoringSplitDto,
   NotionMapping,
   PullResult,
   PushResult,
@@ -122,7 +123,11 @@ const api = {
     dashboard: (month: string): Promise<ApiResult<DashboardSummary>> =>
       ipcRenderer.invoke('reports:dashboard', month),
     monthlyMonitoring: (month: string): Promise<ApiResult<MonthlyMonitoringDto>> =>
-      ipcRenderer.invoke('reports:monthlyMonitoring', month)
+      ipcRenderer.invoke('reports:monthlyMonitoring', month),
+    monitoringSplit: (opts?: {
+      forceRefresh?: boolean
+    }): Promise<ApiResult<MonitoringSplitDto>> =>
+      ipcRenderer.invoke('reports:monitoringSplit', opts)
   },
 
   history: {

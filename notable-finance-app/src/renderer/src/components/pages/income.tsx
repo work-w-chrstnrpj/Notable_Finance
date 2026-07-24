@@ -101,8 +101,10 @@ function IncomePage({
   const { state: incomesState, refetch, applyLocal } = useIncomes({
     rangeStart: range.start,
     rangeEnd: range.end,
-    accountId: accountId || undefined,
-    categoryId: categoryId || undefined,
+    // Only apply the account/category filters while the filter panel is active,
+    // so a stale selection can't silently hide records once the panel is closed.
+    accountId: filterActive ? accountId || undefined : undefined,
+    categoryId: filterActive ? categoryId || undefined : undefined,
   });
   const { invalidateIncomeFamily } = useFinanceInvalidation();
   useEffect(() => {

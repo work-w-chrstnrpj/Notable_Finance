@@ -51,4 +51,26 @@ describe('normalizeUiSettings', () => {
     expect(next.incomeFilters.accountId).toBe('acc-1')
     expect(next.incomeFilters.groupBy).toBe('category')
   })
+
+  it('defaults and clamps the push-FAB auto-hide delay', () => {
+    expect(normalizeUiSettings({}).workspace.pushFabAutoHideMs).toBe(180_000)
+    expect(
+      normalizeUiSettings({ workspace: { pushFabAutoHideMs: 300_000 } }).workspace
+        .pushFabAutoHideMs
+    ).toBe(300_000)
+    // Below the 10s floor and above the 30min ceiling are clamped.
+    expect(
+      normalizeUiSettings({ workspace: { pushFabAutoHideMs: 500 } }).workspace
+        .pushFabAutoHideMs
+    ).toBe(10_000)
+    expect(
+      normalizeUiSettings({ workspace: { pushFabAutoHideMs: 9_999_999 } }).workspace
+        .pushFabAutoHideMs
+    ).toBe(1_800_000)
+    // Garbage falls back to the default.
+    expect(
+      normalizeUiSettings({ workspace: { pushFabAutoHideMs: 'nope' } }).workspace
+        .pushFabAutoHideMs
+    ).toBe(180_000)
+  })
 })

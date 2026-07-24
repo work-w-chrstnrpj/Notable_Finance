@@ -92,6 +92,34 @@ describe('mapAccount', () => {
     )
     expect(dto.currentBalance).toBe(750)
     expect(dto.inactive).toBe(false)
+    // No notion_page_id → local seed/test account, hidden from pickers.
+    expect(dto.notionSynced).toBe(false)
+  })
+
+  it('marks accounts backed by a Notion page as synced', () => {
+    const base = {
+      id: 'a2',
+      account_name: 'BPI Debit',
+      account_type: 'Savings',
+      starting_balance: 0,
+      credit_limit: null,
+      inactive: 0,
+      billing_day: null,
+      due_day: null,
+      annual_fee: null,
+      credit_points: null
+    }
+    const balance = {
+      currentBalance: 0,
+      availableLimit: null,
+      totalIncomes: null,
+      totalExpenses: null,
+      totalPasabuy: null,
+      totalCcDebtTransfer: null
+    }
+    expect(mapAccount({ ...base, notion_page_id: 'page-123' }, balance).notionSynced).toBe(true)
+    expect(mapAccount({ ...base, notion_page_id: '   ' }, balance).notionSynced).toBe(false)
+    expect(mapAccount({ ...base, notion_page_id: null }, balance).notionSynced).toBe(false)
   })
 })
 

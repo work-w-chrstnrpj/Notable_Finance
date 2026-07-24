@@ -62,6 +62,9 @@ export interface AccountDto {
   totalCcDebtTransfer: number | null
   qrCode: string | null
   inactive: boolean
+  /** True when backed by a Notion page. Local seed/test accounts (no Notion
+   *  page) are false and are excluded from user pickers. */
+  notionSynced: boolean
 }
 
 export interface IncomeCategoryDto {
@@ -135,6 +138,19 @@ export interface DashboardSummary {
   totalCashFlow: number
   activeAccountCount: number
   pendingExpenseCount: number
+}
+
+/**
+ * Needs/Wants/Savings allocation split, sourced from the "Total Monthly
+ * Monitoring" row in the Notion monitoring database (percentages as fractions,
+ * e.g. 0.5 = 50%). Falls back to the classic 50/30/20 when unavailable.
+ */
+export interface MonitoringSplitDto {
+  needsPct: number
+  wantsPct: number
+  savingsPct: number
+  source: 'notion' | 'default'
+  rowFound: boolean
 }
 
 /** Monthly Monitoring DTO — mirrors the web NotionService.MonthlyMonitoringDto. */
@@ -227,11 +243,15 @@ export interface CreateIncomeInput {
   grossIncome: number
   capitalExpenditure?: number
   accountId?: string | null
-  categoryId: string
+  /** May be omitted for workflow views (transfers/creditCardPayments/alkansya);
+   *  the server resolves the locked category from `view`. */
+  categoryId?: string
   notes?: string | null
   isTransaction?: boolean
   transactedAccountId?: string | null
   ccPaymentCoveredId?: string | null
+  /** Workflow origin so the server can lock the fixed income category. */
+  view?: IncomeView
 }
 
 export type UpdateIncomeInput = Partial<CreateIncomeInput>
@@ -378,6 +398,9 @@ export interface UiWorkspaceSettings {
     | 'Unpaid Pasabuy'
   sidebarCollapsed: boolean
   showFab: boolean
+  /** Auto-hide delay (ms) for the floating Push Sync button after a change.
+   *  Default 180000 (3 minutes). */
+  pushFabAutoHideMs: number
   /** Last active section hash (without leading #/). */
   lastSection: string
 }

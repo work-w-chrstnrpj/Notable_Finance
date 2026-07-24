@@ -30,7 +30,15 @@ const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
   expenseViewMode: 'Monthly',
   sidebarCollapsed: false,
   showFab: true,
+  pushFabAutoHideMs: 180_000,
   lastSection: 'dashboard'
+}
+
+/** Clamp the push-FAB auto-hide between 10s and 30min; fall back to default. */
+function coercePushFabAutoHideMs(raw: unknown): number {
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(n)) return DEFAULT_WORKSPACE.pushFabAutoHideMs
+  return Math.min(Math.max(Math.round(n), 10_000), 1_800_000)
 }
 
 const DEFAULT_INCOME: UiIncomeFilters = {
@@ -144,6 +152,7 @@ function mergeWorkspace(raw: unknown): UiWorkspaceSettings {
     expenseViewMode,
     sidebarCollapsed: r.sidebarCollapsed === true,
     showFab: r.showFab !== false,
+    pushFabAutoHideMs: coercePushFabAutoHideMs(r.pushFabAutoHideMs),
     lastSection:
       typeof r.lastSection === 'string' && r.lastSection ? r.lastSection : DEFAULT_WORKSPACE.lastSection
   }

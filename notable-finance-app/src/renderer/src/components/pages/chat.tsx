@@ -4,14 +4,19 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Check,
+  Flame,
   MessageSquarePlus,
+  Moon,
+  PartyPopper,
   Pencil,
   Send,
   Settings2,
+  ShieldCheck,
   Sparkles,
   Trash2,
   User,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { navigate } from "@/lib/router";
 import { useUiSettings } from "@/lib/ui-settings-context";
@@ -65,6 +70,14 @@ const FALLBACK_OVERLAYS: Array<{
   { id: "strict", slash: "/strict", label: "Strict", hint: "Facts only" },
   { id: "quiet", slash: "/quiet", label: "Quiet", hint: "Minimal acks" },
 ];
+
+const OVERLAY_ICONS: Record<ChatOverlayId, LucideIcon> = {
+  default: Sparkles,
+  roast: Flame,
+  cheer: PartyPopper,
+  strict: ShieldCheck,
+  quiet: Moon,
+};
 
 /** Prefer current id when still valid; else free-tier, else first, else fallback. */
 function pickModelForList(
@@ -188,7 +201,9 @@ function DraftCard({
         .filter((c) => !c.auxiliary)
         .map((c) => ({ id: c.id, label: c.source }))
     : expenseCategories.map((c) => ({ id: c.id, label: c.name }));
-  const accountOptions = accounts.map((a) => ({ id: a.id, label: a.name }));
+  const accountOptions = accounts
+    .filter((a) => a.notionSynced)
+    .map((a) => ({ id: a.id, label: a.name }));
 
   const setField = (key: keyof DraftForm, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -1164,25 +1179,29 @@ function ChatModePage() {
         </div>
 
         <footer className="chat-mode__composer">
-          <div className="chat-mode__overlays" role="group" aria-label="Slash overlay">
+          <div className="chat-mode__overlays" role="group" aria-label="Chat tone">
             <span className="chat-mode__overlay-active" title={activeOverlayMeta?.hint}>
-              Mode: {activeOverlayMeta?.slash ?? "/default"}
+              Mode: {activeOverlayMeta?.label ?? "Default"}
             </span>
-            {overlays.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                className={cx(
-                  "chat-mode__overlay-chip",
-                  activeOverlay === o.id && "chat-mode__overlay-chip--active",
-                )}
-                title={o.hint}
-                disabled={busy}
-                onClick={() => void onSelectOverlay(o.id)}
-              >
-                {o.slash}
-              </button>
-            ))}
+            {overlays.map((o) => {
+              const Icon = OVERLAY_ICONS[o.id] ?? Sparkles;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  className={cx(
+                    "chat-mode__overlay-chip",
+                    activeOverlay === o.id && "chat-mode__overlay-chip--active",
+                  )}
+                  title={o.hint}
+                  disabled={busy}
+                  onClick={() => void onSelectOverlay(o.id)}
+                >
+                  <Icon size={13} aria-hidden="true" />
+                  {o.label}
+                </button>
+              );
+            })}
           </div>
           <div className="chat-mode__inputbar">
             <textarea

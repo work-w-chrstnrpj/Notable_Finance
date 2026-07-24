@@ -78,6 +78,7 @@ export type Account = {
   totalCcDebtTransfer: number | null;
   qrCode: string | null;
   inactive: boolean;
+  notionSynced: boolean;
 };
 
 export type IncomeCategory = {

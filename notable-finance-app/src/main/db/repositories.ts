@@ -140,7 +140,30 @@ export function getIncome(id: string): IncomeRecordDto {
   return mapIncome(row)
 }
 
-export function createIncome(input: CreateIncomeInput): IncomeRecordDto {
+/**
+ * Workflow creates (Transfer / CC Payment / Alkansya) omit categoryId — the
+ * category is locked to a fixed source. Resolve it from the view here so the
+ * record lands in the right bucket, and flag transactions accordingly.
+ */
+function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
+  if (input.categoryId && input.categoryId.trim()) return input
+  const fixed = input.view ? INCOME_VIEW_FIXED_CATEGORY[input.view] : undefined
+  if (!fixed) return input
+  const categoryId = [...findIncomeCategoryIdsBySource(fixed)][0]
+  if (!categoryId) {
+    throw new Error(
+      `The "${fixed}" income category doesn't exist locally yet. Sync your Notion income categories, then try again.`
+    )
+  }
+  const isTransaction =
+    input.view === 'transfers' || input.view === 'creditCardPayments'
+      ? true
+      : input.isTransaction
+  return { ...input, categoryId, isTransaction }
+}
+
+export function createIncome(rawInput: CreateIncomeInput): IncomeRecordDto {
+  const input = resolveWorkflowIncome(rawInput)
   validateCreateIncome(input)
   const id = randomUUID()
   const t = now()
@@ -519,7 +542,7 @@ export function listAccounts(includeInactive = false): AccountDto[] {
   const rows = getSqlite()
     .prepare(
       `SELECT id, account_name, account_type, starting_balance, credit_limit, inactive,
-         billing_day, due_day, annual_fee, credit_points, qr_code
+         billing_day, due_day, annual_fee, credit_points, qr_code, notion_page_id
        FROM accounts ${where} ORDER BY account_name`
     )
     .all() as AccountRow[]

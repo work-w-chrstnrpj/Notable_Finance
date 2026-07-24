@@ -28,6 +28,7 @@ import { logDevEvent } from "@/lib/dev-log";
 
 // FAB
 import { WorkspaceFab } from "@/components/fab";
+import { PushSyncFab } from "@/components/fab/push-fab";
 
 // FabExportProvider
 import { FabExportProvider } from "@/lib/fab-export-context";
@@ -61,7 +62,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   useEffect(() => {
     if (!settingsReady || workspaceHydrated) return;
     const ws = settings.workspace;
-    setSelectedDate(ws.selectedDate || todayIso());
+    // ISO dates compare chronologically as strings. A date persisted on an
+    // earlier day (e.g. yesterday) is stale — open on today instead so "Daily"
+    // never lands in the past. A deliberately-set today/future date is kept.
+    const today = todayIso();
+    setSelectedDate(ws.selectedDate && ws.selectedDate >= today ? ws.selectedDate : today);
     setIncomeViewMode(ws.incomeViewMode);
     setExpenseViewMode(ws.expenseViewMode);
     setSidebarCollapsed(ws.sidebarCollapsed);
@@ -321,6 +326,13 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           )}
         </main>
       </div>
+      {user && (
+        <PushSyncFab
+          autoHideMs={settings.workspace.pushFabAutoHideMs}
+          busy={activeSyncKind === "push"}
+          onPush={() => void runSyncPass("push")}
+        />
+      )}
       {showFab && user && (
         <WorkspaceFab
           activeSection={activeSection}

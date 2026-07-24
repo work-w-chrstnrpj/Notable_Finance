@@ -7,10 +7,23 @@ import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
 import { useFinanceData } from "@/lib/finance-data-context";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
+import { cx } from "@/lib/finance-helpers";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import type { Account } from "@/types/finance";
 import type { AccountScope } from "@/components/constants";
+
+/** Balance colored by sign (red/neg, ink/zero, green/pos), mono figures. */
+function signedMoney(value: number) {
+  const cls = value < 0 ? "num--neg" : value > 0 ? "num--pos" : "num--zero";
+  return <span className={cx("num", cls)}>{formatMoney(value)}</span>;
+}
+
+/** Plain monospace figure (no sign color). */
+function money(value: number | null, opts?: { compact?: boolean }) {
+  if (value === null) return "-";
+  return <span className="num">{formatMoney(value, opts)}</span>;
+}
 
 function AccountsPage() {
   const { settings, ready: settingsReady, updateSettings } = useUiSettings();
@@ -87,20 +100,20 @@ function AccountsPage() {
       return [
         accountCell,
         account.type,
-        formatMoney(account.currentBalance),
-        account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
-        account.availableLimit !== null ? formatMoney(account.availableLimit, { compact: true }) : "-",
-        account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
-        account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
-        account.billingDay?.toString() ?? "-",
-        account.dueDay?.toString() ?? "-",
+        signedMoney(account.currentBalance),
+        money(account.creditLimit, { compact: true }),
+        money(account.availableLimit, { compact: true }),
+        money(account.totalIncomes, { compact: true }),
+        money(account.totalExpenses, { compact: true }),
+        account.billingDay != null ? <span className="num">{account.billingDay}</span> : "-",
+        account.dueDay != null ? <span className="num">{account.dueDay}</span> : "-",
       ];
     }
 
     return [
       accountCell,
       account.type,
-      formatMoney(account.currentBalance),
+      signedMoney(account.currentBalance),
     ];
   });
 
@@ -115,7 +128,7 @@ function AccountsPage() {
           [
             "Total",
             "",
-            formatMoney(accountTotalBalance),
+            signedMoney(accountTotalBalance),
           ],
         ];
 
@@ -192,7 +205,7 @@ function AccountsPage() {
                   {account.type}
                 </Badge>
               </div>
-              <MoneyLine label="Current Balance" value={account.currentBalance} />
+              <MoneyLine label="Current Balance" value={account.currentBalance} colorBySign />
               {isCreditLikeAccountType(account.type) && account.creditLimit !== null && (
                 <MoneyLine label="Credit Limit" value={account.creditLimit} />
               )}

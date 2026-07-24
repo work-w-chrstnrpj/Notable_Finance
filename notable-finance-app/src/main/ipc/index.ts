@@ -18,6 +18,7 @@ import { getHistory } from '../services/history'
 import { discardUnsynced } from '../services/discard-unsynced'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
+import { fetchMonitoringSplit } from '../notion/monitoring-split'
 import {
   getSyncSettings,
   listConflicts,
@@ -304,6 +305,9 @@ export function registerIpc(): void {
   )
   ipcMain.handle('reports:monthlyMonitoring', (_e, month: string) =>
     result(() => reports.monitoring(month))
+  )
+  ipcMain.handle('reports:monitoringSplit', (_e, opts?: { forceRefresh?: boolean }) =>
+    result(() => fetchMonitoringSplit(opts))
   )
 
   // windows (Phase 1.5)

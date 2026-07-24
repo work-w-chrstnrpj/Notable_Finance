@@ -9,10 +9,10 @@ describe('iconForIncome', () => {
     })
   })
 
-  it('uses arrow left-right for Transfer', () => {
+  it('uses a redirect arrow for Transfer', () => {
     expect(iconForIncome({ categorySource: 'Transfer', accountId: 'acc-1' })).toEqual({
       type: 'icon',
-      icon: { name: 'arrow left right circle', color: 'yellow' }
+      icon: { name: 'arrow half left right circle', color: 'yellow' }
     })
   })
 

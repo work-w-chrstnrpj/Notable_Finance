@@ -230,8 +230,11 @@ function workflowApi(view: "transfers" | "creditCardPayments" | "alkansya" | "re
       return adapt(nfApi().incomes.list({ ...params, view } as never)) as Promise<ApiResult<IncomeRecord[]>>;
     },
     detail: (id: string) => incomesApi.detail(id),
-    create: (body: Record<string, unknown>) => incomesApi.create(body),
-    bulkCreate: (items: Record<string, unknown>[]) => incomesApi.bulkCreate(items),
+    // Carry the workflow view so the server can resolve the locked income
+    // category (Transfer / Credit Card Payment / Savings) when none is sent.
+    create: (body: Record<string, unknown>) => incomesApi.create({ view, ...body }),
+    bulkCreate: (items: Record<string, unknown>[]) =>
+      incomesApi.bulkCreate(items.map((it) => ({ view, ...it }))),
     update: (id: string, body: Record<string, unknown>) => incomesApi.update(id, body),
     delete: (id: string, mode: "soft" | "hard" = "soft") => incomesApi.delete(id, mode),
     bulkDelete: (ids: string[], mode: "soft" | "hard" = "soft") => incomesApi.bulkDelete(ids, mode),

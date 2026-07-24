@@ -3,7 +3,8 @@ import { useRef, useEffect, useState } from "react";
 import { ArrowUpRight, CircleDollarSign, Frown, PiggyBank, Plus, Receipt, Smile, TrendingUp, X } from "lucide-react";
 import { useLiveCollections, getIncomeCategorySummaries, getExpenseCategorySummaries } from "@/components/hooks";
 import { CategoryDonutChart } from "@/components/charts";
-import { categoryPalette, type ForecastIncome } from "@/components/constants";
+import { categoryPalette, type ForecastIncome, type ForecastKind } from "@/components/constants";
+import type { MonitoringSplitDto } from "@shared/finance.types";
 import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue, FormSectionDivider } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
@@ -59,9 +60,29 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   // Since real income lands mid/end of month, monthly income can read negative
   // beforehand. A forecast income temporarily props up Monthly Income here.
   // Persisted per-month in localStorage; removed once the real income is logged.
+  // Needs/Wants/Savings split from the Notion "Total Monthly Monitoring" row,
+  // falling back to the classic 50/30/20 until (or unless) Notion answers.
+  const [split, setSplit] = useState<MonitoringSplitDto>({
+    needsPct: 0.5,
+    wantsPct: 0.3,
+    savingsPct: 0.2,
+    source: "default",
+    rowFound: false,
+  });
+  useEffect(() => {
+    let cancelled = false;
+    void window.api?.reports?.monitoringSplit?.().then((res) => {
+      if (!cancelled && res?.ok) setSplit(res.data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const forecastKey = `nf_forecast_income_${selectedMonth}`;
   const [forecasts, setForecasts] = useState<ForecastIncome[]>([]);
   const [forecastModalOpen, setForecastModalOpen] = useState(false);
+  const [forecastKind, setForecastKind] = useState<ForecastKind>("income");
   const [forecastLabel, setForecastLabel] = useState("");
   const [forecastAmount, setForecastAmount] = useState("");
 
@@ -94,8 +115,11 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       ...forecasts,
       {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        label: forecastLabel.trim() || "Forecast income",
+        label:
+          forecastLabel.trim() ||
+          (forecastKind === "expense" ? "Forecast expense" : "Forecast income"),
         amount,
+        kind: forecastKind,
       },
     ]);
     setForecastLabel("");
@@ -107,7 +131,12 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     persistForecasts(forecasts.filter((f) => f.id !== id));
   }
 
-  const forecastTotal = forecasts.reduce((sum, f) => sum + f.amount, 0);
+  const forecastIncomeTotal = forecasts
+    .filter((f) => f.kind !== "expense")
+    .reduce((sum, f) => sum + f.amount, 0);
+  const forecastExpenseTotal = forecasts
+    .filter((f) => f.kind === "expense")
+    .reduce((sum, f) => sum + f.amount, 0);
 
 
   const scopedIncomeRecords: IncomeRecord[] = (
@@ -122,7 +151,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     scopedIncomeRecords,
   );
   // Forecast income only lifts the Monitoring metrics, never the dashboard.
-  const monthlyIncome = monthlyGrossIncome + forecastTotal;
+  const monthlyIncome = monthlyGrossIncome + forecastIncomeTotal;
   // Pasabuy expenses are fronted for others ("pinasabay lang"), so they are
   // excluded from the user's own Monthly Expense.
   const pasabuyCategoryIds = new Set(
@@ -131,7 +160,8 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const ownExpenseRecords = scopedExpenseRecords.filter(
     (record) => !pasabuyCategoryIds.has(record.categoryId),
   );
-  const monthlyExpense = getExpenseTotal(ownExpenseRecords);
+  // Forecast expense mirrors forecast income: it lifts Monthly Expense here only.
+  const monthlyExpense = getExpenseTotal(ownExpenseRecords) + forecastExpenseTotal;
   const grossMargin = monthlyIncome - monthlyExpense;
   const monitoring = {
     month: selectedMonth,
@@ -140,10 +170,11 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     monthlyCapitalExpenditure,
     monthlyExpense,
     grossMargin,
-    forNeeds: monthlyIncome * 0.5,
-    forWants: monthlyIncome * 0.3,
-    forSavings: monthlyIncome * 0.2,
+    forNeeds: monthlyIncome * split.needsPct,
+    forWants: monthlyIncome * split.wantsPct,
+    forSavings: monthlyIncome * split.savingsPct,
   };
+  const pct = (frac: number) => Math.round(frac * 100);
   const incomeCategorySummaries = getIncomeCategorySummaries(
     scopedIncomeRecords,
     normalIncomeCategories,
@@ -216,7 +247,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
             onClick={() => setForecastModalOpen(true)}
           >
             <Plus size={16} />
-            Add Forecast Income
+            Add Forecast
           </button>
         }
       />
@@ -227,14 +258,26 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           </span>
           <div className="forecast-banner__body">
             <div className="forecast-banner__title">
-              <strong>Forecast income</strong>
+              <strong>Forecast</strong>
               <span className="forecast-banner__tag">Monitoring only</span>
             </div>
             <div className="forecast-banner__items">
               {forecasts.map((f) => (
-                <span key={f.id} className="forecast-chip">
+                <span
+                  key={f.id}
+                  className={cx(
+                    "forecast-chip",
+                    f.kind === "expense" && "forecast-chip--expense",
+                  )}
+                >
+                  <span className="forecast-chip__kind">
+                    {f.kind === "expense" ? "Expense" : "Income"}
+                  </span>
                   <span className="forecast-chip__label">{f.label}</span>
-                  <span className="forecast-chip__amount">{formatMoney(f.amount)}</span>
+                  <span className="forecast-chip__amount">
+                    {f.kind === "expense" ? "−" : "+"}
+                    {formatMoney(f.amount)}
+                  </span>
                   <button
                     type="button"
                     aria-label={`Remove ${f.label}`}
@@ -247,8 +290,16 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
             </div>
           </div>
           <div className="forecast-banner__total">
-            <span>Applied</span>
-            <strong>{formatMoney(forecastTotal)}</strong>
+            {forecastIncomeTotal > 0 && (
+              <span className="forecast-banner__total-line">
+                Income <strong>+{formatMoney(forecastIncomeTotal)}</strong>
+              </span>
+            )}
+            {forecastExpenseTotal > 0 && (
+              <span className="forecast-banner__total-line">
+                Expense <strong>−{formatMoney(forecastExpenseTotal)}</strong>
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -257,22 +308,41 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           title="Monthly Income"
           value={formatMoney(monitoring.monthlyIncome)}
           detail={
-            forecastTotal
-              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastTotal, { compact: true })} forecast`
+            forecastIncomeTotal
+              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastIncomeTotal, { compact: true })} forecast`
               : getMonthLabel(selectedMonth)
           }
           icon={ArrowUpRight}
           tone="green"
         />
-        <MetricCard title="Monthly Expense" value={formatMoney(monitoring.monthlyExpense)} detail={getMonthLabel(selectedMonth)} icon={Receipt} tone="rose" />
+        <MetricCard
+          title="Monthly Expense"
+          value={formatMoney(monitoring.monthlyExpense)}
+          detail={
+            forecastExpenseTotal
+              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastExpenseTotal, { compact: true })} forecast`
+              : getMonthLabel(selectedMonth)
+          }
+          icon={Receipt}
+          tone="rose"
+        />
         <MetricCard title="Gross Margin" value={formatMoney(monitoring.grossMargin)} detail="Income less expenses" icon={CircleDollarSign} tone="blue" />
-        <MetricCard title="For Savings" value={formatMoney(monitoring.forSavings)} detail="30% allocation" icon={PiggyBank} tone="amber" />
+        <MetricCard title="For Savings" value={formatMoney(monitoring.forSavings)} detail={`${pct(split.savingsPct)}% allocation`} icon={PiggyBank} tone="amber" />
       </section>
       <section className="two-column">
-        <Panel title="Budget Allocation">
-          <BudgetRow label="Needs" percent={50} amount={monitoring.forNeeds} />
-          <BudgetRow label="Wants" percent={30} amount={monitoring.forWants} />
-          <BudgetRow label="Savings" percent={20} amount={monitoring.forSavings} />
+        <Panel
+          title="Budget Allocation"
+          action={
+            <span className="allocation-source" title="Where these percentages come from">
+              {split.source === "notion"
+                ? "Notion · Total Monthly Monitoring"
+                : "Default 50 / 30 / 20"}
+            </span>
+          }
+        >
+          <BudgetRow label="Needs" percent={pct(split.needsPct)} amount={monitoring.forNeeds} />
+          <BudgetRow label="Wants" percent={pct(split.wantsPct)} amount={monitoring.forWants} />
+          <BudgetRow label="Savings" percent={pct(split.savingsPct)} amount={monitoring.forSavings} />
         </Panel>
         <Panel title="Monthly Insight">
           {(() => {
@@ -478,7 +548,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           >
             <div className="modal-panel__header">
               <div>
-                <h2 id="forecast-modal-title">Add Forecast Income</h2>
+                <h2 id="forecast-modal-title">Add Forecast</h2>
                 <p>Temporary, Monitoring-only. Not saved to Notion.</p>
               </div>
               <button
@@ -492,9 +562,24 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
             </div>
             <div className="modal-panel__body">
               <div className="form-grid form-grid--single">
+                <Field label="Type">
+                  <SegmentedControl
+                    label="Forecast type"
+                    options={[
+                      { label: "Income", value: "income" },
+                      { label: "Expense", value: "expense" },
+                    ]}
+                    value={forecastKind}
+                    onChange={(value) => setForecastKind(value as ForecastKind)}
+                  />
+                </Field>
                 <Field label="Label">
                   <input
-                    placeholder="e.g. Salary (15th)"
+                    placeholder={
+                      forecastKind === "expense"
+                        ? "e.g. Rent (due 30th)"
+                        : "e.g. Salary (15th)"
+                    }
                     value={forecastLabel}
                     onChange={(event) => setForecastLabel(event.target.value)}
                   />

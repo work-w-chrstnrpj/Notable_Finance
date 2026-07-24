@@ -22,4 +22,11 @@ export type AnnualRecord = {
   value: number;
 };
 
-export type ForecastIncome = { id: string; label: string; amount: number };
+export type ForecastKind = "income" | "expense";
+export type ForecastIncome = {
+  id: string;
+  label: string;
+  amount: number;
+  /** Absent on legacy stored items → treated as income. */
+  kind?: ForecastKind;
+};

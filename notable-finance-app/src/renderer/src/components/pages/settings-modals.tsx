@@ -135,7 +135,12 @@ function InterfaceManageModal({
   showFab: boolean;
   onShowFabChange: (next: boolean) => void;
 }) {
-  const { hardDeleteEnabled, setHardDeleteEnabled } = useUiSettings();
+  const { hardDeleteEnabled, setHardDeleteEnabled, settings, updateSettings } =
+    useUiSettings();
+  const pushFabMinutes = Math.max(
+    1,
+    Math.round(settings.workspace.pushFabAutoHideMs / 60000),
+  );
 
   return (
     <SettingsModal
@@ -167,6 +172,35 @@ function InterfaceManageModal({
               onChange={(event) => onShowFabChange(event.target.checked)}
             />
             <span className="switch__track"><span className="switch__thumb" /></span>
+          </label>
+        </div>
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Push button auto-hide</p>
+            <p className="settings-toggle__hint">
+              After you create, edit, or delete a record, a floating “Push to
+              sync” button appears top-right. It hides on its own after this many
+              minutes if you don’t use it (and disappears once a push succeeds).
+            </p>
+          </div>
+          <label className="settings-inline-field" aria-label="Push button auto-hide minutes">
+            <input
+              type="number"
+              className="settings-inline-field__input"
+              min={1}
+              max={30}
+              step={1}
+              value={pushFabMinutes}
+              onChange={(event) => {
+                const minutes = Number(event.target.value);
+                if (!Number.isFinite(minutes)) return;
+                const clamped = Math.min(Math.max(Math.round(minutes), 1), 30);
+                void updateSettings({
+                  workspace: { pushFabAutoHideMs: clamped * 60000 },
+                });
+              }}
+            />
+            <span className="settings-inline-field__suffix">min</span>
           </label>
         </div>
         <div className="settings-row">
