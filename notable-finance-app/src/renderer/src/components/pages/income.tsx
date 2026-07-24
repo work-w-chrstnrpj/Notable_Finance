@@ -662,8 +662,8 @@ function IncomePage({
               formatDate(record.date),
               accountNameById.get(record.accountId ?? "") ?? "—",
               incomeCategoryNameById.get(record.categoryId) ?? "—",
-              formatMoney(record.grossIncome),
-              formatMoney(record.capitalExpenditure),
+              <span className="num">{formatMoney(record.grossIncome)}</span>,
+              <span className="num">{formatMoney(record.capitalExpenditure)}</span>,
               <MoneyValue key={`${record.id}-net`} value={netIncome} />,
             ];
           })}
@@ -673,8 +673,8 @@ function IncomePage({
               "",
               "",
               "",
-              formatMoney(getIncomeGrossTotal(enabledIncomeRecords)),
-              formatMoney(getIncomeCapitalExpenditureTotal(enabledIncomeRecords)),
+              <span className="num">{formatMoney(getIncomeGrossTotal(enabledIncomeRecords))}</span>,
+              <span className="num">{formatMoney(getIncomeCapitalExpenditureTotal(enabledIncomeRecords))}</span>,
               <MoneyValue
                 key="income-total-net"
                 value={getIncomeNetTotal(enabledIncomeRecords)}

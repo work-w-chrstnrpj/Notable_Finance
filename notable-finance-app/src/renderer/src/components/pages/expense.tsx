@@ -971,7 +971,7 @@ function ExpensePage({
               <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
                 {stripNotionTag(record.description)}
               </span>,
-              <span className="expense-cell--unpaid" key={`${record.id}-bal`}>
+              <span className="expense-cell--unpaid num" key={`${record.id}-bal`}>
                 {formatMoney(record.pasabuyBalance)}
               </span>,
               record.pasabuyer ?? "—",
@@ -983,9 +983,10 @@ function ExpensePage({
               [
                 "Total",
                 "",
-                formatMoney(
+                "",
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
-                ),
+                )}</span>,
                 "",
                 "",
                 "",
@@ -1031,13 +1032,13 @@ function ExpensePage({
                   {stripNotionTag(record.description)}
                 </span>,
                 accountNameById.get(record.accountId ?? "") ?? "—",
-                <span className="expense-cell--unpaid" key={`${record.id}-amt`}>
+                <span className="expense-cell--unpaid num" key={`${record.id}-amt`}>
                   {formatMoney(record.amount)}
                 </span>,
                 expenseCategoryNameById.get(record.categoryId) ?? "—",
-                formatMoney(record.interest ?? 0),
-                formatMoney(c.gross),
-                formatMoney(c.remaining),
+                <span className="num">{formatMoney(record.interest ?? 0)}</span>,
+                <span className="num">{formatMoney(c.gross)}</span>,
+                <span className="num">{formatMoney(c.remaining)}</span>,
                 record.paymentStatus ?? "—",
                 c.expected ? formatDate(c.expected) : "-",
                 record.datePaid ? formatDate(record.datePaid) : "-",
@@ -1048,15 +1049,15 @@ function ExpensePage({
                 "Total",
                 "",
                 "",
-                formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                <span className="num">{formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0))}</span>,
                 "",
-                formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
-                formatMoney(
+                <span className="num">{formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0))}</span>,
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
-                ),
-                formatMoney(
+                )}</span>,
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
-                ),
+                )}</span>,
                 "",
                 "",
                 "",
@@ -1103,15 +1104,15 @@ function ExpensePage({
                 formatDate(record.purchaseDate),
                 stripNotionTag(record.description),
                 accountNameById.get(record.accountId ?? "") ?? "—",
-                formatMoney(record.amount),
+                <span className="num">{formatMoney(record.amount)}</span>,
                 expenseCategoryNameById.get(record.categoryId) ?? "—",
-                formatMoney(record.interest ?? 0),
-                formatMoney(c.gross),
+                <span className="num">{formatMoney(record.interest ?? 0)}</span>,
+                <span className="num">{formatMoney(c.gross)}</span>,
                 record.periodCount ?? "—",
-                c.installment != null ? formatMoney(c.installment) : "—",
+                c.installment != null ? <span className="num">{formatMoney(c.installment)}</span> : "—",
                 record.paidPeriod ?? "—",
-                formatMoney(c.paid),
-                formatMoney(c.remaining),
+                <span className="num">{formatMoney(c.paid)}</span>,
+                <span className="num">{formatMoney(c.remaining)}</span>,
                 record.paymentStatus ?? "—",
                 c.expected ? formatDate(c.expected) : "-",
                 record.datePaid ? formatDate(record.datePaid) : "-",
@@ -1122,21 +1123,21 @@ function ExpensePage({
                 "Total",
                 "",
                 "",
-                formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0)),
+                <span className="num">{formatMoney(enabledExpenseRecords.reduce((s, r) => s + r.amount, 0))}</span>,
                 "",
-                formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0)),
-                formatMoney(
+                <span className="num">{formatMoney(enabledExpenseRecords.reduce((s, r) => s + (r.interest ?? 0), 0))}</span>,
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).gross, 0),
-                ),
+                )}</span>,
                 "",
                 "",
                 "",
-                formatMoney(
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).paid, 0),
-                ),
-                formatMoney(
+                )}</span>,
+                <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((s, r) => s + deriveExpenseComputed(r).remaining, 0),
-                ),
+                )}</span>,
                 "",
                 "",
                 "",
@@ -1166,7 +1167,7 @@ function ExpensePage({
               return [
                 formatDate(record.purchaseDate),
                 stripNotionTag(record.description),
-                formatMoney(record.amount),
+                <span className="num">{formatMoney(record.amount)}</span>,
                 accountNameById.get(record.accountId ?? "") ?? "—",
                 expenseCategoryNameById.get(record.categoryId) ?? "—",
                 record.datePaid ? formatDate(record.datePaid) : "-",
@@ -1184,7 +1185,7 @@ function ExpensePage({
               [
                 "Total",
                 "",
-                formatMoney(getExpenseTotal(enabledExpenseRecords)),
+                <span className="num">{formatMoney(getExpenseTotal(enabledExpenseRecords))}</span>,
                 "",
                 "",
                 "",

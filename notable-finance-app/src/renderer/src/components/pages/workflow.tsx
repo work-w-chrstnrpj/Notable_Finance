@@ -183,7 +183,7 @@ function WorkflowPage({
       formatDate(record.date),
       accountNameById.get(record.accountId ?? "") ?? "—",
       fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
-      formatMoney(record.grossIncome),
+      <span className="num">{formatMoney(record.grossIncome)}</span>,
     ];
   });
 
