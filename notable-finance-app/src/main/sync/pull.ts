@@ -362,13 +362,13 @@ async function reconcileMissingFromNotion(
 
 // ── the pull pass ───────────────────────────────────────────────────────────
 
-export async function pullAll(full = false): Promise<PullResult> {
+export async function pullAll(full = false, sinceOverride?: string): Promise<PullResult> {
   // Standalone pull (e.g. onboarding Initial Pull) gets its own run; when called from
   // syncNow the outer run already owns the id, so this nests without a new one.
-  return withSyncRun(() => pullAllInner(full))
+  return withSyncRun(() => pullAllInner(full, sinceOverride))
 }
 
-async function pullAllInner(full: boolean): Promise<PullResult> {
+async function pullAllInner(full: boolean, sinceOverride?: string): Promise<PullResult> {
   const status = syncStatus()
   if (!status.connected) throw new Error('Notion is not connected')
   if (!status.mapped) throw new Error('Databases are not mapped yet')
@@ -380,7 +380,10 @@ async function pullAllInner(full: boolean): Promise<PullResult> {
   emitStatus()
   const result: PullResult = { referenceUpserted: 0, inserted: 0, updated: 0, autoMerged: 0, conflicts: 0, pushPending: 0, errors: [], cursor: null }
   const mapping = getMapping()
-  const since = full ? undefined : (metaGet(META_KEYS.lastPullCursor) ?? undefined)
+  // sinceOverride: explicit time-range pull from the UI dropdown.
+  // full=true: initial pull / pull-all (no filter).
+  // Otherwise: incremental pull using the stored cursor.
+  const since = full ? undefined : (sinceOverride ?? (metaGet(META_KEYS.lastPullCursor) ?? undefined))
   const passStart = new Date().toISOString() // captured before fetch, so in-flight edits are caught next time
 
   try {

@@ -126,6 +126,26 @@ way so a later unarchive can still match the row.
 - **Cursor persistence:** `last_pull_cursor` is stored so pulls are incremental across restarts.
 - **Notion API ≥ 2025-09-03:** query/create/schema use the primary **data source** under each mapped database id (`/v1/data_sources/...`). Mapping still stores database ids.
 
+## Push affordances in the UI
+
+Two lightweight cues nudge the user to push local work to Notion, both driven by
+`syncStatus().dirtyCount` (dirty incomes + dirty expenses + pending hard-deletes)
+and the `sync:status` / `records:changed` broadcasts:
+
+- **History nav badge:** the sidebar **History** item shows an amber count of
+  items waiting to reach Notion. (The **Sync** item keeps its red badge for
+  `conflictCount`, which needs manual resolution.)
+- **Push-to-sync FAB:** a floating rocket button (top-right, aligned with the
+  Quick Action FAB) appears after any create/update/delete while changes are
+  pending. Clicking it runs a push-only pass; it disappears automatically once
+  the push succeeds (`dirtyCount → 0`) or after a configurable idle timeout
+  (`workspace.pushFabAutoHideMs`, default 3 minutes, editable under
+  Settings → Interface). A new local change re-surfaces it and restarts the timer.
+
+Account pickers only list **Notion-backed** accounts (`AccountDto.notionSynced`,
+true when the row has a `notion_page_id`), so local seed/test accounts never
+appear in dropdowns.
+
 ## Reused from the web app
 
 `conflict.service`, `notion-sync.service`, `notion-mutation.service` (create/update/soft-delete), `notion-property-mapper`, and `mapping.service` are copied into `notable-finance-app/src/main/{notion,sync}` and adapted from a Notion-truth model to a SQLite-truth model.

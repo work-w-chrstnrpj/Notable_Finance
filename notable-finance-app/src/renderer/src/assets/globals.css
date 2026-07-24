@@ -2842,6 +2842,15 @@ tfoot td {
   gap: 14px;
 }
 
+.sync-actions .filter-select {
+  margin-bottom: 4px;
+}
+
+.sync-actions .filter-select select {
+  min-width: 0;
+  width: 100%;
+}
+
 .action-list--sync {
   display: grid;
   gap: 10px;

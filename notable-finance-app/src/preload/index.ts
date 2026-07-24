@@ -162,9 +162,9 @@ const api = {
   sync: {
     status: (): Promise<ApiResult<SyncStatus>> => ipcRenderer.invoke('sync:status'),
     /** Reconcile (pull) then push. */
-    now: (): Promise<ApiResult<SyncNowResult>> => ipcRenderer.invoke('sync:now'),
+    now: (since?: string): Promise<ApiResult<SyncNowResult>> => ipcRenderer.invoke('sync:now', since),
     /** Notion → App only (incremental). */
-    pull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:pull'),
+    pull: (since?: string): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:pull', since),
     /** App → Notion only (dirty records). */
     push: (): Promise<ApiResult<PushResult>> => ipcRenderer.invoke('sync:push'),
     /** Full pull from Notion (onboarding / first sync). */

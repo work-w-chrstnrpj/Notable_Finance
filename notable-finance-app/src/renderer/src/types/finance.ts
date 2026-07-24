@@ -51,6 +51,9 @@ export type SyncState = "idle" | "syncing" | "fresh" | "error";
 
 export type SchemaHealth = "verified" | "warning" | "notChecked";
 
+/** Time-range presets for the pull-only sync action. */
+export type PullRange = "1h" | "24h" | "2d" | "1w" | "1m" | "1y" | "all";
+
 export type FinanceSection = {
   id: FinanceSectionId;
   label: string;

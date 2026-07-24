@@ -100,6 +100,7 @@ Overlays change tone only — never amounts, never finance delete, never auto-Ap
 | `listMessages(threadId)` | `ChatMessageDto[]` | Requires Chat enabled. |
 | `send({ threadId?, content, credentialId?, modelId?, overlay? })` | `ChatSendResult` | BYOK agent loop **or** Apple FM read-only turn for ask skills (tools → prompt → on-device summarize). Slash tokens / `overlay` set persona. Returns optional `drafts[]` for confirm cards. Finance delete refused. Write skills without BYOK error with “Select an API credential for writes.” |
 | `listDrafts(threadId?)` | `ChatDraftDto[]` | Pending `needs_input` / `ready` drafts. |
+| `updateDraft(draftId, edits)` | `ChatDraftDto` | Applies user edits from the confirm card, re-runs the original `propose*` validator in place (same id), and re-derives `missingRequired` / `status`. `edits` uses unified keys (`name`, `amount`, `date`, `accountId`, `categoryId`, `transactedAccountId`, plus expense/CC/Pasabuy fields); the validator maps them per resource. Rejects `applied` / `cancelled` drafts and non-editable kinds. |
 | `confirmDraft(draftId)` | `ChatConfirmResult` | Applies create/update when draft is complete **and** at least one BYOK credential exists; optional `quip`; broadcasts `records:changed`. Rejects incomplete / Apple-only / delete. |
 | `cancelDraft(draftId)` | `ChatDraftDto & { quip? }` | Discards draft; no finance write; optional cancel ack. |
 

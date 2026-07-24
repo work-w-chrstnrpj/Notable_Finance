@@ -369,6 +369,9 @@ export interface SyncSettings {
   intervalSeconds: number
 }
 
+/** Time-range presets for the pull-only sync action. */
+export type PullRange = '1h' | '24h' | '2d' | '1w' | '1m' | '1y' | 'all'
+
 /** App UI preferences persisted in `app_settings` (not Notion). */
 export interface UiThemeSettings {
   mode: 'light' | 'dark' | 'system'

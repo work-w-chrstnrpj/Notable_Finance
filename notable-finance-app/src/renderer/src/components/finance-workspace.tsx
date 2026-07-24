@@ -133,7 +133,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
 
   const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode);
 
-  async function runSyncPass(kind: "full" | "pull" | "push") {
+  async function runSyncPass(kind: "full" | "pull" | "push", since?: string) {
     setActiveSyncKind(kind);
     setSyncState("syncing");
     logDevEvent({
@@ -145,10 +145,10 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     try {
       const result =
         kind === "pull"
-          ? await syncApi.pullOnly()
+          ? await syncApi.pullOnly(since)
           : kind === "push"
             ? await syncApi.pushOnly()
-            : await syncApi.fullSync();
+            : await syncApi.fullSync(since);
       if (result.success) {
         setSyncState("fresh");
         setPendingOperations(0);
@@ -303,9 +303,9 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
                 syncState={syncState}
                 activeSyncKind={activeSyncKind}
                 onSchemaVerify={verifySchema}
-                onPullSync={() => void runSyncPass("pull")}
+                onPullSync={(since?: string) => void runSyncPass("pull", since)}
                 onPushSync={() => void runSyncPass("push")}
-                onSync={runSync}
+                onSync={(since?: string) => void runSyncPass("full", since)}
               />
             </ErrorBoundary>
           )}

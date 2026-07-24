@@ -16,10 +16,10 @@ export { listConflicts, resolveConflict } from './conflicts'
  * record would be pushed (clobbering the remote edit) and no conflict would be seen.
  * Push then sends clean dirty records (conflicted records are held until resolved).
  */
-export async function syncNow(): Promise<SyncNowResult> {
+export async function syncNow(sinceOverride?: string): Promise<SyncNowResult> {
   // One run id for the whole pass so pull + push events group together in History.
   return withSyncRun(async () => {
-    const pull = await pullAll(false)
+    const pull = await pullAll(false, sinceOverride)
     const push = await pushAll()
     return { push, pull }
   })

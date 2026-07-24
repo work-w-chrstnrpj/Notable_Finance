@@ -364,9 +364,9 @@ If a log/edit prompt is missing **required** fields for the active skill/profile
 
 1. Run validation / required-field checklist in main (same rules as forms).
 2. Return `status: needs_input` with `missingRequired: string[]` and optional partial draft.
-3. Assistant **asks the user** to supply those fields (one concise message or a small form on the incomplete card).
-4. **Approve stays disabled** until required set is complete (or user Cancel).
-5. Do not invent accounts, categories, Pasabuyer, payment status, or workflow counterpart accounts.
+3. The confirm card is **inline-editable**: the user fills/corrects required fields directly on the card (text/number/date inputs plus account & category dropdowns from live reference data, and CC/Pasabuy fields when the profile applies). On blur/change the renderer calls `chat.updateDraft(draftId, edits)`, which re-runs the original `propose*` validator **in place** (same id) so `missingRequired` and Ready state recompute — no extra prompt needed. The assistant may also ask in text as a fallback.
+4. **Approve stays disabled** until required set is complete (or user Cancel); `confirmDraft` re-checks server-side.
+5. Do not invent accounts, categories, Pasabuyer, payment status, or workflow counterpart accounts — the card only offers real reference values.
 
 Example:
 

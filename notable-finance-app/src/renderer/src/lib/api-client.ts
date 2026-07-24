@@ -301,12 +301,12 @@ export const syncApi = {
     return adapt(nfApi().notion.verifySchema());
   },
   /** Full sync: pull then push (header Sync button default). */
-  fullSync() {
-    return adapt(nfApi().sync.now());
+  fullSync(since?: string) {
+    return adapt(nfApi().sync.now(since));
   },
   /** Notion → App only. */
-  pullOnly() {
-    return adapt(nfApi().sync.pull());
+  pullOnly(since?: string) {
+    return adapt(nfApi().sync.pull(since));
   },
   /** App → Notion only. */
   pushOnly() {

@@ -13,7 +13,7 @@ import { MetricCard, Panel, Badge, ErrorRow } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
 import { useSyncStatus } from "@/lib/use-data";
 import { cx } from "@/lib/finance-helpers";
-import type { SchemaHealth, SyncState } from "@/types/finance";
+import type { PullRange, SchemaHealth, SyncState } from "@/types/finance";
 
 // ── Desktop-only: local-first sync controls (initial pull, auto mode, conflicts) ──
 // This panel is the one intentional addition over the web page: it surfaces the
@@ -26,6 +26,20 @@ type DesktopConflict = {
   title: string;
   fields: Array<{ field: string; local: unknown; remote: unknown }>;
 };
+
+/** Convert a PullRange preset to an ISO timestamp for the Notion `since` filter. */
+function rangeToSince(range: PullRange | ""): string | undefined {
+  if (!range || range === "all") return undefined;
+  const offsets: Record<string, number> = {
+    "1h": 3_600_000,
+    "24h": 86_400_000,
+    "2d": 172_800_000,
+    "1w": 604_800_000,
+    "1m": 2_592_000_000,
+    "1y": 31_536_000_000,
+  };
+  return new Date(Date.now() - (offsets[range] ?? 0)).toISOString();
+}
 
 function DesktopSyncPanel() {
   const [settings, setSettings] = useState<{ mode: "manual" | "auto"; intervalSeconds: number } | null>(null);
@@ -196,12 +210,13 @@ function SyncPage({
   syncState: SyncState;
   activeSyncKind: "full" | "pull" | "push" | null;
   onSchemaVerify: () => void;
-  onPullSync: () => void;
+  onPullSync: (since?: string) => void;
   onPushSync: () => void;
-  onSync: () => void;
+  onSync: (since?: string) => void;
 }) {
   const { state: syncStatusState } = useSyncStatus();
   const syncing = syncState === "syncing";
+  const [pullRange, setPullRange] = useState<PullRange | "">("");
 
   // Use API sync status when available, fall back to parent props
   const apiStatus =
@@ -224,11 +239,29 @@ function SyncPage({
       <section className="two-column">
         <Panel title="Sync Actions" action={<StatusPill syncState={syncState} schemaHealth={schemaHealth} />}>
           <div className="sync-actions">
+            <div className="filter-select">
+              <label htmlFor="pull-range">Pull range</label>
+              <select
+                id="pull-range"
+                value={pullRange}
+                onChange={(e) => setPullRange(e.target.value as PullRange | "")}
+                disabled={syncing}
+              >
+                <option value="">Incremental (last sync)</option>
+                <option value="1h">Last hour</option>
+                <option value="24h">Last 24 hours</option>
+                <option value="2d">Last 2 days</option>
+                <option value="1w">Last week</option>
+                <option value="1m">Last month</option>
+                <option value="1y">Last year</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
             <div className="action-list action-list--sync">
               <button
                 type="button"
                 className="button"
-                onClick={onPullSync}
+                onClick={() => onPullSync(rangeToSince(pullRange))}
                 disabled={syncing}
               >
                 <CloudDownload
@@ -252,7 +285,7 @@ function SyncPage({
               <button
                 type="button"
                 className="button button--primary"
-                onClick={onSync}
+                onClick={() => onSync(rangeToSince(pullRange))}
                 disabled={syncing}
               >
                 <RefreshCw

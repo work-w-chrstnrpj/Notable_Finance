@@ -339,8 +339,8 @@ export function registerIpc(): void {
 
   // sync (Phase 2.3 push + Phase 3 pull + Phase 4 reconcile)
   ipcMain.handle('sync:status', () => result(() => syncStatus()))
-  ipcMain.handle('sync:now', () => result(() => syncNow())) // reconcile (pull) then push
-  ipcMain.handle('sync:pull', () => result(() => pullAll(false))) // Notion → App only
+  ipcMain.handle('sync:now', (_e, since?: string) => result(() => syncNow(since))) // reconcile (pull) then push
+  ipcMain.handle('sync:pull', (_e, since?: string) => result(() => pullAll(false, since))) // Notion → App only
   ipcMain.handle('sync:push', () => result(() => pushAll())) // App → Notion only
   ipcMain.handle('sync:initialPull', () => result(() => pullAll(true))) // full pull (onboarding)
   ipcMain.handle('sync:getSettings', () => result(() => getSyncSettings()))
