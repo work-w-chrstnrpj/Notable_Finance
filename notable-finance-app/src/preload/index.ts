@@ -249,6 +249,11 @@ const api = {
     ): Promise<
       ApiResult<ChatDraftDto & { quip?: string; assistantMessage?: ChatMessageDto | null }>
     > => ipcRenderer.invoke('chat:cancelDraft', draftId),
+    updateDraft: (
+      draftId: string,
+      edits: Record<string, unknown>
+    ): Promise<ApiResult<ChatDraftDto>> =>
+      ipcRenderer.invoke('chat:updateDraft', draftId, edits),
     remoteModels: (
       credentialId: string
     ): Promise<ApiResult<Array<{ id: string; label: string; free?: boolean }>>> =>

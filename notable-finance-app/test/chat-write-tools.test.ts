@@ -6,8 +6,8 @@ import {
   executeChatTool,
   WRITE_TOOL_DEFINITIONS
 } from '../src/main/chat/tools/registry'
-import { MASS_EDIT_CAP } from '../src/main/chat/tools/write-tools'
-import { putDraft, getDraft, listDrafts } from '../src/main/chat/drafts'
+import { MASS_EDIT_CAP, editDraftFields } from '../src/main/chat/tools/write-tools'
+import { putDraft, getDraft, listDrafts, updateDraftSpec } from '../src/main/chat/drafts'
 import { cancelDraft } from '../src/main/chat/confirm'
 
 describe('routeChatSkill write intents', () => {
@@ -119,6 +119,73 @@ describe('draft store + cancel', () => {
     expect(draft.display?.title).toBe('spaghetti')
     expect(getDraft(draft.id)?.display?.from).toBe('Home Wallet')
     expect(getDraft(draft.id)?.display?.amount).toBe(1)
+  })
+
+  it('re-validates a draft in place, flipping status as fields complete', () => {
+    const draft = putDraft({
+      threadId: 'thread-edit',
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      summary: 'edit test',
+      missingRequired: ['Account', 'Category'],
+      warnings: [],
+      payload: { name: 'sahod', grossIncome: 20000 }
+    })
+    expect(draft.status).toBe('needs_input')
+
+    // Card edit completes the record — same id, now Ready (Approve unlocks).
+    const complete = updateDraftSpec(draft.id, {
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      summary: 'edit test',
+      missingRequired: [],
+      warnings: [],
+      payload: { name: 'sahod', grossIncome: 20000, accountId: 'a1', categoryId: 'c1' }
+    })
+    expect(complete.id).toBe(draft.id)
+    expect(complete.status).toBe('ready')
+
+    // Clearing a required field re-blocks Approve, still same id.
+    const reblocked = updateDraftSpec(draft.id, {
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      summary: 'edit test',
+      missingRequired: ['Account'],
+      warnings: [],
+      payload: { name: 'sahod', grossIncome: 20000, categoryId: 'c1' }
+    })
+    expect(reblocked.id).toBe(draft.id)
+    expect(reblocked.status).toBe('needs_input')
+  })
+
+  it('refuses to edit an applied/cancelled draft or an unknown kind', () => {
+    const draft = putDraft({
+      threadId: 'thread-edit-guard',
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      summary: 'guard',
+      missingRequired: [],
+      warnings: [],
+      payload: { name: 'x' }
+    })
+    cancelDraft(draft.id)
+    expect(() => editDraftFields(draft.id, { name: 'y' })).toThrow(/no longer editable/i)
+
+    const weird = putDraft({
+      threadId: 'thread-edit-guard',
+      resource: 'incomes',
+      action: 'create',
+      kind: 'notARealKind',
+      summary: 'weird',
+      missingRequired: [],
+      warnings: [],
+      payload: {}
+    })
+    expect(() => editDraftFields(weird.id, { name: 'y' })).toThrow(/not editable/i)
   })
 
   it('does not supersede a different kind or a different thread', () => {

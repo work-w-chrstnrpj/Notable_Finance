@@ -53,6 +53,7 @@ export {
 } from './tools/registry'
 export { routeChatSkill } from './skills/router'
 export { listDrafts, getDraft } from './drafts'
+export { editDraftFields } from './tools/write-tools'
 export {
   confirmDraft,
   cancelDraft,

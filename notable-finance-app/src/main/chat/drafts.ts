@@ -238,6 +238,41 @@ export function listDrafts(threadId?: string): ChatDraftDto[] {
   return out
 }
 
+/** Fields a propose* validator recomputes — everything except identity. */
+export type DraftSpec = Pick<
+  ChatDraftDto,
+  'resource' | 'action' | 'kind' | 'summary' | 'missingRequired' | 'warnings' | 'payload'
+> &
+  Partial<Pick<ChatDraftDto, 'targetIds' | 'computedPreview' | 'display'>>
+
+/**
+ * Replace an existing draft's computed content in place (same id) after the user
+ * edits fields on the confirm card. Status is re-derived from missingRequired so
+ * Approve unlocks the moment the record is complete.
+ */
+export function updateDraftSpec(id: string, spec: DraftSpec): ChatDraftDto {
+  hydrate()
+  const existing = drafts.get(id)
+  if (!existing) throw new Error('Draft not found')
+  const next: ChatDraftDto = {
+    ...existing,
+    resource: spec.resource,
+    action: spec.action,
+    kind: spec.kind,
+    summary: spec.summary,
+    missingRequired: spec.missingRequired,
+    warnings: spec.warnings,
+    payload: spec.payload,
+    targetIds: spec.targetIds ?? existing.targetIds,
+    computedPreview: spec.computedPreview ?? null,
+    display: spec.display ?? null,
+    status: spec.missingRequired.length > 0 ? 'needs_input' : 'ready'
+  }
+  drafts.set(id, next)
+  persist(next)
+  return next
+}
+
 export function markDraft(id: string, status: 'applied' | 'cancelled'): ChatDraftDto {
   hydrate()
   const d = drafts.get(id)

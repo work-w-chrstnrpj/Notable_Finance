@@ -5605,6 +5605,57 @@ tfoot td {
   font-size: 13px;
 }
 
+.chat-action-card__form {
+  padding: 14px 18px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.chat-field-row {
+  display: flex;
+  gap: 10px;
+}
+.chat-field-row > .chat-field {
+  flex: 1;
+  min-width: 0;
+}
+.chat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.chat-field__label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+.chat-field__input {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.chat-field__input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent, var(--green)) 55%, var(--line));
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--accent, var(--green)) 18%, transparent);
+}
+.chat-field__input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+select.chat-field__input {
+  appearance: none;
+  cursor: pointer;
+}
+
 .chat-action-card__foot {
   display: flex;
   gap: 10px;

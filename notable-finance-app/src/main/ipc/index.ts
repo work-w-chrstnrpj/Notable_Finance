@@ -547,6 +547,14 @@ export function registerIpc(): void {
       return cancelled
     })
   )
+  ipcMain.handle(
+    'chat:updateDraft',
+    (_e, draftId: string, edits: Record<string, unknown>) =>
+      result(() => {
+        requireChatEnabled()
+        return chat.editDraftFields(draftId, edits ?? {})
+      })
+  )
 }
 
 function requireChatEnabled(): void {

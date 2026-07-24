@@ -10,13 +10,24 @@ import type {
   UpdateExpenseInput,
   UpdateIncomeInput
 } from '../../../shared/finance.types'
-import { putDraft } from '../drafts'
+import { getDraft, putDraft, updateDraftSpec, type DraftSpec } from '../drafts'
 import { resolveDate, todayIso } from '../dates'
 import { resolveExpenseProfile, WORKFLOW_LOCKED_CATEGORIES } from '../expense-profile'
 
 export const MASS_EDIT_CAP = 50
 
-export type WriteToolContext = { threadId: string }
+export type WriteToolContext = {
+  threadId: string
+  /** When set, the propose validator updates this draft in place (card edit)
+   * instead of creating a new one. */
+  existingDraftId?: string
+}
+
+/** Create a new draft, or recompute an existing one when editing the card. */
+function commitDraft(ctx: WriteToolContext, spec: DraftSpec): ChatDraftDto {
+  if (ctx.existingDraftId) return updateDraftSpec(ctx.existingDraftId, spec)
+  return putDraft({ threadId: ctx.threadId, ...spec })
+}
 
 function asRecord(raw: unknown): Record<string, unknown> {
   return raw && typeof raw === 'object' && !Array.isArray(raw)
@@ -134,28 +145,28 @@ export function proposeCreateIncome(args: unknown, ctx: WriteToolContext) {
     isTransaction: false
   }
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
-    resource: 'incomes',
-    action: 'create',
-    kind: 'proposeCreateIncome',
-    missingRequired: missing,
-    warnings,
-    payload,
-    display: {
-      title: name || 'New income',
-      amount: grossIncome ?? null,
-      currency: 'PHP',
-      date: date ?? null,
-      from: cat && !cat.auxiliary ? cat.source : null,
-      fromLabel: 'Category',
-      to: account?.name ?? null,
-      toLabel: 'Account',
-      note: capitalExpenditure ? `Capital expenditure ₱${capitalExpenditure}` : null
-    },
-    summary: `Create income: ${name ?? '?'} · ₱${grossIncome ?? '?'} · ${date ?? '?'} · ${account?.name ?? '?'} · ${cat?.source ?? '?'}`
-  })
-  return draftResult(draft)
+  return draftResult(
+    commitDraft(ctx, {
+      resource: 'incomes',
+      action: 'create',
+      kind: 'proposeCreateIncome',
+      missingRequired: missing,
+      warnings,
+      payload,
+      display: {
+        title: name || 'New income',
+        amount: grossIncome ?? null,
+        currency: 'PHP',
+        date: date ?? null,
+        from: cat && !cat.auxiliary ? cat.source : null,
+        fromLabel: 'Category',
+        to: account?.name ?? null,
+        toLabel: 'Account',
+        note: capitalExpenditure ? `Capital expenditure ₱${capitalExpenditure}` : null
+      },
+      summary: `Create income: ${name ?? '?'} · ₱${grossIncome ?? '?'} · ${date ?? '?'} · ${account?.name ?? '?'} · ${cat?.source ?? '?'}`
+    })
+  )
 }
 
 export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
@@ -247,8 +258,7 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
       ? { pasabuyer, pasabuyStatus }
       : null
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
+  const draft = commitDraft(ctx, {
     resource: 'expenses',
     action: 'create',
     kind: 'proposeCreateExpense',
@@ -373,8 +383,7 @@ function proposeWorkflowIncome(
     proposeCreateReceivable: 'Receivable'
   }
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
+  const draft = commitDraft(ctx, {
     resource: 'incomes',
     action: 'create',
     kind,
@@ -472,8 +481,7 @@ export function proposeUpdateIncome(args: unknown, ctx: WriteToolContext) {
 
   if (Object.keys(patch).length === 0) missing.push('Update fields (what to change?)')
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
+  const draft = commitDraft(ctx, {
     resource: 'incomes',
     action: 'update',
     kind: 'proposeUpdateIncome',
@@ -528,8 +536,7 @@ export function proposeUpdateExpense(args: unknown, ctx: WriteToolContext) {
 
   if (Object.keys(patch).length === 0) missing.push('Update fields (what to change?)')
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
+  const draft = commitDraft(ctx, {
     resource: 'expenses',
     action: 'update',
     kind: 'proposeUpdateExpense',
@@ -593,8 +600,7 @@ function proposeMassUpdate(
   }
   if (Object.keys(cleanPatch).length === 0) missing.push('Patch fields')
 
-  const draft = putDraft({
-    threadId: ctx.threadId,
+  const draft = commitDraft(ctx, {
     resource,
     action: 'update',
     kind,
@@ -613,6 +619,79 @@ export function proposeMassUpdateIncomes(args: unknown, ctx: WriteToolContext) {
 
 export function proposeMassUpdateExpenses(args: unknown, ctx: WriteToolContext) {
   return proposeMassUpdate(ctx, 'expenses', 'proposeMassUpdateExpenses', args)
+}
+
+/** Every propose* validator, keyed by the draft kind it produces. Used to
+ * re-validate a draft in place when the user edits fields on the confirm card. */
+type ProposeValidator = (args: unknown, ctx: WriteToolContext) => { draft: ChatDraftDto }
+const EDIT_VALIDATORS: Record<string, ProposeValidator> = {
+  proposeCreateIncome,
+  proposeCreateExpense,
+  proposeCreateTransfer,
+  proposeCreateCcPayment,
+  proposeCreateAlkansya,
+  proposeCreateReceivable,
+  proposeUpdateIncome,
+  proposeUpdateExpense,
+  proposeMassUpdateIncomes,
+  proposeMassUpdateExpenses
+}
+
+/**
+ * Merge card edits into the stored payload and shape them into the arg names the
+ * matching propose* validator reads. The payload already uses canonical (native)
+ * keys, so overriding those keys directly avoids the alias-precedence pitfall
+ * (e.g. an expense validator preferring `description` over an incoming `name`).
+ */
+function buildEditArgs(
+  draft: ChatDraftDto,
+  edits: Record<string, unknown>
+): Record<string, unknown> {
+  if (draft.kind.startsWith('proposeMassUpdate')) {
+    const patch: Record<string, unknown> = { ...draft.payload }
+    for (const [k, v] of Object.entries(edits)) patch[k] = v
+    return { ids: draft.targetIds ?? [], patch }
+  }
+
+  const base: Record<string, unknown> = { ...draft.payload }
+
+  if (draft.resource === 'expenses') {
+    // Keep the resolved profile so account/category-driven fields survive edits.
+    const profile = (draft.payload._profile ?? {}) as { creditCard?: boolean }
+    if (profile.creditCard) base.creditCard = true
+    if (draft.payload.isPasabuy === true) base.pasabuy = true
+    for (const [k, v] of Object.entries(edits)) {
+      if (k === 'name') base.description = v
+      else if (k === 'date') base.purchaseDate = v
+      else base[k] = v
+    }
+  } else {
+    for (const [k, v] of Object.entries(edits)) {
+      if (k === 'amount') base.grossIncome = v
+      else base[k] = v
+    }
+  }
+  return base
+}
+
+/**
+ * Apply user edits from the confirm card, re-run the original validator so
+ * missingRequired / warnings / Ready state recompute, and update the draft in
+ * place (same id). Approve stays gated on missingRequired being empty.
+ */
+export function editDraftFields(
+  draftId: string,
+  edits: Record<string, unknown>
+): ChatDraftDto {
+  const draft = getDraft(draftId)
+  if (!draft) throw new Error('Draft not found')
+  if (draft.status === 'applied' || draft.status === 'cancelled') {
+    throw new Error('Draft is no longer editable')
+  }
+  const validate = EDIT_VALIDATORS[draft.kind]
+  if (!validate) throw new Error(`Draft kind is not editable: ${draft.kind}`)
+  const args = buildEditArgs(draft, edits)
+  return validate(args, { threadId: draft.threadId, existingDraftId: draftId }).draft
 }
 
 export function toCreateIncomeInput(payload: Record<string, unknown>): CreateIncomeInput {
