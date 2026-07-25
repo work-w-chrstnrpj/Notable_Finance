@@ -6,7 +6,9 @@ import { Panel, Field, ComputedField, MoneyValue, FilterDropdown, LoadingBlock, 
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
+import { ShortcutHint } from "@/components/shortcuts";
 import { useWorkflowRecords, useFinanceInvalidation } from "@/lib/use-data";
+import { useShortcutAction } from "@/lib/shortcuts/context";
 import {
   applyIncomeTag,
   stripNotionTag,
@@ -88,6 +90,20 @@ function WorkflowPage({
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
   );
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────
+  const modalOpen = modal !== null;
+  useShortcutAction("view.newRecord", () => openWorkflowModal("new", `New ${label} Record`), !modalOpen);
+  useShortcutAction("modal.save", () => void handleSaveWorkflow(), modalOpen && editing);
+  useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
+  useShortcutAction("modal.duplicate", () => handleDuplicateWorkflow(), modalOpen);
+  useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modalOpen && editingId != null);
+  useShortcutAction("modal.close", () => setModal(null), modalOpen);
+  const hasSelection = selectedIds.size > 0;
+  useShortcutAction("mass.selectAll", () => setSelectedIds(new Set(workflowIncomes.map((_, i) => i))), !modalOpen);
+  useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
+  useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
+  useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
 
   // Auto-update [YYMMDD] tag when date changes (new or edit mode).
   useEffect(() => {
@@ -412,6 +428,7 @@ function WorkflowPage({
           >
             <Plus size={16} />
             New Record
+            <ShortcutHint id="view.newRecord" />
           </button>
         }
       />

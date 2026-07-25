@@ -34,7 +34,8 @@ function AccountsPage() {
   const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [filtersHydrated, setFiltersHydrated] = useState(false);
-  const { allAccounts: sourceAccounts, referenceLoading } = useFinanceData();
+  const { allAccounts: allRawAccounts, referenceLoading } = useFinanceData();
+  const sourceAccounts = allRawAccounts.filter((a) => a.notionSynced);
 
   useEffect(() => {
     if (!settingsReady || filtersHydrated) return;
