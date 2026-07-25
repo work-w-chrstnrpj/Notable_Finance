@@ -102,7 +102,7 @@ function SettingsPage({
           <div>
             <p className="settings-toggle__title">Shortcuts</p>
             <p className="settings-toggle__hint">
-              Hold {IS_MAC ? "⌘" : "Ctrl"} anywhere to reveal shortcuts on buttons and tabs, or{" "}
+              Hold {IS_MAC ? "⌥ Option" : "Alt"} anywhere to reveal shortcuts on buttons and tabs, or{" "}
               <button
                 type="button"
                 className="settings-inline-link"

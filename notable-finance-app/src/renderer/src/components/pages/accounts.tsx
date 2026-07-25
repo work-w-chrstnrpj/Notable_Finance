@@ -226,6 +226,10 @@ function AccountsPage() {
           headers={accountTableHeaders}
           rows={accountTableRows}
           footerRows={accountTableFooterRows}
+          // Only the 9-column Credit view needs horizontal scroll + pinned
+          // columns; the 3-column views render as a normal full-width table.
+          wide={accountScope === "credit"}
+          unsortableColumns={[0]}
           onRowClick={(rowIndex) => {
             const account = visibleAccounts[rowIndex];
             if (account) {

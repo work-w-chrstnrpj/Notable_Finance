@@ -57,6 +57,13 @@
       "when": 1785010000000,
       "tag": "0007_chat_draft_display",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1785020000000,
+      "tag": "0008_reference_icons",
+      "breakpoints": true
     }
   ]
 }

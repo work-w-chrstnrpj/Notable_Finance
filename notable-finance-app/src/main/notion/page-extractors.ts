@@ -215,6 +215,33 @@ export function pageLastEditedTime(page: Record<string, unknown>): string | null
   return (page.last_edited_time as string | undefined) ?? null
 }
 
+/**
+ * A Notion page's icon: an emoji character, or an image URL. `isFile` marks
+ * Notion-uploaded files, whose URLs are temporary signed links (~1h) and must
+ * be cached locally; external/library icon URLs are stable.
+ */
+export function extractPageIcon(page: Record<string, unknown>): {
+  value: string | null
+  isFile: boolean
+} {
+  const icon = page.icon as
+    | {
+        type?: string
+        emoji?: string
+        external?: { url?: string }
+        file?: { url?: string }
+        custom_emoji?: { url?: string }
+      }
+    | null
+    | undefined
+  if (!icon) return { value: null, isFile: false }
+  if (icon.type === 'emoji') return { value: icon.emoji ?? null, isFile: false }
+  if (icon.type === 'external') return { value: icon.external?.url ?? null, isFile: false }
+  if (icon.type === 'custom_emoji') return { value: icon.custom_emoji?.url ?? null, isFile: false }
+  if (icon.type === 'file') return { value: icon.file?.url ?? null, isFile: true }
+  return { value: null, isFile: false }
+}
+
 /** The soft-delete convention is a title rewrite; detect it on pull. */
 export function isDeletedTitle(title: string): boolean {
   return title.startsWith('[Deleted:')

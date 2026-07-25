@@ -66,14 +66,14 @@ function journal(resource: string, action: string, recordId: string, payload: un
 
 export function listIncomeCategories(): IncomeCategoryOption[] {
   const rows = getSqlite()
-    .prepare('SELECT id, source, auxiliary FROM income_categories ORDER BY source')
+    .prepare('SELECT id, source, auxiliary, icon FROM income_categories ORDER BY source')
     .all() as IncomeCategoryRow[]
   return rows.map(mapIncomeCategory)
 }
 
 export function listExpenseCategories(): ExpenseCategoryOption[] {
   const rows = getSqlite()
-    .prepare('SELECT id, name, monthly_budget, auxiliary FROM expense_categories ORDER BY name')
+    .prepare('SELECT id, name, monthly_budget, auxiliary, icon FROM expense_categories ORDER BY name')
     .all() as ExpenseCategoryRow[]
   return rows.map(mapExpenseCategory)
 }
@@ -542,7 +542,7 @@ export function listAccounts(includeInactive = false): AccountDto[] {
   const rows = getSqlite()
     .prepare(
       `SELECT id, account_name, account_type, starting_balance, credit_limit, inactive,
-         billing_day, due_day, annual_fee, credit_points, qr_code, notion_page_id
+         billing_day, due_day, annual_fee, credit_points, qr_code, icon, notion_page_id
        FROM accounts ${where} ORDER BY account_name`
     )
     .all() as AccountRow[]

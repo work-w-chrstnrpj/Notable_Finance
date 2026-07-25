@@ -18,6 +18,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
+import { useShortcutAction } from "@/lib/shortcuts/context";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
 import { applyNotionTag, getMonthLabel, stripNotionTag } from "@/lib/finance-helpers";
@@ -880,6 +881,27 @@ function ExpensePage({
     setReceipt(receiptContext);
     return () => setReceipt(null);
   }, [receiptContext, setReceipt]);
+
+  // ── Keyboard shortcuts (Option/Alt) ────────────────────────────────
+  const modalOpen = modal !== null;
+  const hasSelection = selectedIds.size > 0;
+  useShortcutAction("view.newRecord", () => openExpenseModal("new", "New Expense"), !modalOpen);
+  useShortcutAction("view.search", () => setSearchActive((s) => !s), !modalOpen);
+  useShortcutAction("view.filters", () => setFilterActive((f) => !f), !modalOpen);
+  useShortcutAction("modal.save", () => void handleSaveExpense(), modalOpen && editing);
+  useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
+  useShortcutAction("modal.duplicate", () => handleDuplicateExpense(), modalOpen);
+  useShortcutAction("modal.delete", () => void handleDeleteExpense(), modalOpen && editingId != null);
+  useShortcutAction("modal.close", () => setModal(null), modalOpen);
+  useShortcutAction(
+    "mass.selectAll",
+    () => setSelectedIds(new Set(searchFilteredRecords.map((_, i) => i))),
+    !modalOpen,
+  );
+  useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
+  useShortcutAction("mass.edit", () => void handleBulkAction("edit"), hasSelection);
+  useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
+  useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
 
   return (
     <div className="page-stack">

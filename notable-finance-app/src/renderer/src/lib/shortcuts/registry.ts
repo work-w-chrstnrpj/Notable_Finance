@@ -116,9 +116,10 @@ export const SHORTCUTS: ShortcutDef[] = [
 /** Platform-aware display of a combo, e.g. "Mod+Shift+H" → "⌘⇧H" or "Ctrl+Shift+H". */
 export function displayCombo(combo: string, isMac: boolean): string {
   const parts = combo.split("+");
+  // "Mod" renders as Option/Alt — the app's primary modifier on every platform.
   const map: Record<string, string> = isMac
-    ? { Mod: "⌘", Shift: "⇧", Alt: "⌥", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "↵", Escape: "Esc", Backspace: "⌫", Delete: "⌦", Backquote: "~", Slash: "/", Digit: "1…9" }
-    : { Mod: "Ctrl", Shift: "Shift", Alt: "Alt", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "Enter", Escape: "Esc", Backspace: "Backspace", Delete: "Del", Backquote: "~", Slash: "/", Digit: "1…9" };
+    ? { Mod: "⌥", Shift: "⇧", Alt: "⌥", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "↵", Escape: "Esc", Backspace: "⌫", Delete: "⌦", Backquote: "~", Slash: "/", Digit: "1…9" }
+    : { Mod: "Alt", Shift: "Shift", Alt: "Alt", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "Enter", Escape: "Esc", Backspace: "Backspace", Delete: "Del", Backquote: "~", Slash: "/", Digit: "1…9" };
   const sep = isMac ? "" : "+";
   return parts.map((p) => map[p] ?? p).join(sep);
 }

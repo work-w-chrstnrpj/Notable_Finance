@@ -17,6 +17,7 @@ import { client } from '../notion/service'
 import { getMapping } from '../notion/mapping-store'
 import {
   isDeletedTitle,
+  extractPageIcon,
   pageLastEditedTime,
   pageToAccountFields,
   pageToExpenseCategoryFields,
@@ -107,10 +108,15 @@ async function pullAccounts(dbId: string, since?: string): Promise<number> {
       if (cached) qrCode = cached // only overwrite on a successful download (offline-safe)
     }
 
+    const iconExisting = db
+      .prepare('SELECT icon FROM accounts WHERE notion_page_id = ?')
+      .get(npid) as { icon: string | null } | undefined
+    const icon = await resolveIcon(page, iconExisting?.icon ?? null)
+
     n += upsertReference(
       'accounts',
-      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'qr_code'],
-      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, qrCode],
+      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'qr_code', 'icon'],
+      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, qrCode, icon],
       npid,
       pageLastEditedTime(page)
     )
@@ -118,22 +124,47 @@ async function pullAccounts(dbId: string, since?: string): Promise<number> {
   return n
 }
 
+/**
+ * Resolve a page icon to a storable string: emoji chars and stable external
+ * URLs pass through; Notion-uploaded files (expiring URLs) are cached as data
+ * URIs so they survive past the ~1h signed-link window and work offline.
+ */
+async function resolveIcon(
+  page: Record<string, unknown>,
+  existing: string | null
+): Promise<string | null> {
+  const { value, isFile } = extractPageIcon(page)
+  if (!value) return existing // keep prior icon if Notion returned none this pass
+  if (!isFile) return value
+  if (isCachedDataUri(existing)) return existing
+  const cached = await downloadImageAsDataUri(value)
+  return cached ?? existing
+}
+
 async function pullIncomeCategories(dbId: string, since?: string): Promise<number> {
+  const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
   let n = 0
   for (const page of pages) {
     const f = pageToIncomeCategoryFields(page)
-    n += upsertReference('income_categories', ['source', 'auxiliary'], [f.source, f.auxiliary], pageId(page), pageLastEditedTime(page))
+    const npid = pageId(page)
+    const existing = db.prepare('SELECT icon FROM income_categories WHERE notion_page_id = ?').get(npid) as { icon: string | null } | undefined
+    const icon = await resolveIcon(page, existing?.icon ?? null)
+    n += upsertReference('income_categories', ['source', 'auxiliary', 'icon'], [f.source, f.auxiliary, icon], npid, pageLastEditedTime(page))
   }
   return n
 }
 
 async function pullExpenseCategories(dbId: string, since?: string): Promise<number> {
+  const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
   let n = 0
   for (const page of pages) {
     const f = pageToExpenseCategoryFields(page)
-    n += upsertReference('expense_categories', ['name', 'monthly_budget', 'auxiliary'], [f.name, f.monthly_budget, f.auxiliary], pageId(page), pageLastEditedTime(page))
+    const npid = pageId(page)
+    const existing = db.prepare('SELECT icon FROM expense_categories WHERE notion_page_id = ?').get(npid) as { icon: string | null } | undefined
+    const icon = await resolveIcon(page, existing?.icon ?? null)
+    n += upsertReference('expense_categories', ['name', 'monthly_budget', 'auxiliary', 'icon'], [f.name, f.monthly_budget, f.auxiliary, icon], npid, pageLastEditedTime(page))
   }
   return n
 }

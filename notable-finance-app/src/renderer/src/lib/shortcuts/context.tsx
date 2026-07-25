@@ -63,13 +63,14 @@ function tokenFromCode(code: string, key: string): string | null {
 
 /** Build the normalized combo string from a keyboard event, or null if unusable. */
 function comboFromEvent(e: KeyboardEvent): { combo: string; digit: number | null } | null {
-  const mod = IS_MAC ? e.metaKey : e.ctrlKey;
+  // "Mod" = Option/Alt on every platform. Alt owns almost nothing at the OS or
+  // menu level, so native Cmd/Ctrl editing stays intact and there are no clashes.
+  const mod = e.altKey;
   const token = tokenFromCode(e.code, e.key);
   if (!token) return null;
   const parts: string[] = [];
   if (mod) parts.push("Mod");
   if (e.shiftKey) parts.push("Shift");
-  if (e.altKey) parts.push("Alt");
   parts.push(token);
   const digit = /^\d$/.test(token) ? Number(token) : null;
   return { combo: parts.join("+"), digit };
@@ -100,7 +101,6 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState(false);
   const [cheatOpen, setCheatOpen] = useState(false);
   const registry = useRef<Registry>(new Map());
-  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Undo/redo session stacks.
   const undoStack = useRef<UndoEntry[]>([]);
@@ -153,10 +153,6 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
   const closeCheat = useCallback(() => setCheatOpen(false), []);
 
   const clearReveal = useCallback(() => {
-    if (revealTimer.current) {
-      clearTimeout(revealTimer.current);
-      revealTimer.current = null;
-    }
     setRevealed(false);
   }, []);
 
@@ -208,13 +204,12 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
           return true;
         }
         if (def.id === "edit.undo") {
-          if (typing) return false; // let the field's native undo win
+          // Alt+Z is app-level undo; native Cmd/Ctrl+Z stays field text-undo.
           e.preventDefault();
           runUndo();
           return true;
         }
         if (def.id === "edit.redo") {
-          if (typing) return false;
           e.preventDefault();
           runRedo();
           return true;
@@ -243,23 +238,17 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const isModKey = IS_MAC ? e.key === "Meta" : e.key === "Control";
-      if (isModKey && !e.repeat) {
-        if (revealTimer.current) clearTimeout(revealTimer.current);
-        revealTimer.current = setTimeout(() => setRevealed(true), 180);
+      // Option+K (Alt+K) toggles shortcut hints.
+      if (e.altKey && e.code === "KeyK" && !e.repeat) {
+        setRevealed((r) => !r);
         return;
       }
       // Any other keydown hides the reveal and may trigger a shortcut.
-      if (revealTimer.current) {
-        clearTimeout(revealTimer.current);
-        revealTimer.current = null;
-      }
       setRevealed(false);
       dispatch(e);
     };
-    const onKeyUp = (e: KeyboardEvent) => {
-      const isModKey = IS_MAC ? e.key === "Meta" : e.key === "Control";
-      if (isModKey) clearReveal();
+    const onKeyUp = (_e: KeyboardEvent) => {
+      // no-op — reveal persists until next keydown or click/blur.
     };
     const onPointer = () => clearReveal();
     const onBlur = () => clearReveal();
@@ -275,26 +264,6 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("blur", onBlur);
     };
   }, [dispatch, clearReveal]);
-
-  // Menu-routed keys (Undo/Redo/Select All) that the Electron Edit menu owns.
-  useEffect(() => {
-    const api = window.api;
-    if (!api?.on) return;
-    return api.on("shortcut:menu", (payload) => {
-      const action = (payload as { action?: string }).action;
-      const typing = isTypingTarget(document.activeElement);
-      if (action === "undo") {
-        if (typing) document.execCommand("undo");
-        else runUndo();
-      } else if (action === "redo") {
-        if (typing) document.execCommand("redo");
-        else runRedo();
-      } else if (action === "selectAll") {
-        if (typing) document.execCommand("selectAll");
-        else fire("mass.selectAll");
-      }
-    });
-  }, [fire, runRedo, runUndo]);
 
   // Reflect reveal state on <body> so CSS-only hints can show/hide.
   useEffect(() => {
@@ -326,10 +295,17 @@ export function useShortcuts(): ShortcutContextValue {
   return ctx;
 }
 
-/** Register a handler for a shortcut id while the component is mounted. */
-export function useShortcutAction(id: string, handler: ShortcutHandler): void {
+/**
+ * Register a handler for a shortcut id while `active` (default true). Passing a
+ * state flag (e.g. modal open, rows selected) keeps the engine's scope tracking
+ * accurate — a scope is "active" only while its handlers are registered.
+ */
+export function useShortcutAction(id: string, handler: ShortcutHandler, active = true): void {
   const { registerAction } = useShortcuts();
   const ref = useRef(handler);
   ref.current = handler;
-  useEffect(() => registerAction(id, (arg) => ref.current(arg)), [id, registerAction]);
+  useEffect(() => {
+    if (!active) return;
+    return registerAction(id, (arg) => ref.current(arg));
+  }, [id, active, registerAction]);
 }

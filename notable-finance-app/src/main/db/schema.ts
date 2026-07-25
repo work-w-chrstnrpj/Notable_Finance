@@ -28,6 +28,7 @@ export const accounts = sqliteTable('accounts', {
   annualFee: real('annual_fee'),
   creditPoints: real('credit_points'),
   qrCode: text('qr_code'), // Notion "Qr Code" file URL (pulled read-only)
+  icon: text('icon'), // Notion page icon: emoji char, or cached image data URI
   notionLastEditedAt: text('notion_last_edited_at'),
   createdAt: integer('created_at').notNull()
 })
@@ -37,6 +38,7 @@ export const incomeCategories = sqliteTable('income_categories', {
   notionPageId: text('notion_page_id'),
   source: text('source').notNull(),
   auxiliary: integer('auxiliary').notNull().default(0),
+  icon: text('icon'), // Notion page icon (emoji or image URL)
   notionLastEditedAt: text('notion_last_edited_at'),
   createdAt: integer('created_at').notNull()
 })
@@ -47,6 +49,7 @@ export const expenseCategories = sqliteTable('expense_categories', {
   name: text('name').notNull(),
   monthlyBudget: real('monthly_budget').notNull().default(0),
   auxiliary: integer('auxiliary').notNull().default(0),
+  icon: text('icon'), // Notion page icon (emoji or image URL)
   notionLastEditedAt: text('notion_last_edited_at'),
   createdAt: integer('created_at').notNull()
 })

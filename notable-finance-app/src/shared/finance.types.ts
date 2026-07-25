@@ -308,6 +308,8 @@ export interface IncomeCategoryOption {
   id: string
   source: string
   auxiliary: boolean
+  /** Notion page icon: emoji char or image URL/data URI. */
+  icon?: string | null
 }
 
 export interface ExpenseCategoryOption {
@@ -315,6 +317,8 @@ export interface ExpenseCategoryOption {
   name: string
   monthlyBudget: number
   auxiliary: boolean
+  /** Notion page icon: emoji char or image URL/data URI. */
+  icon?: string | null
 }
 
 // ── Phase 2: Notion connect + sync contract ─────────────────────────────────

@@ -26,6 +26,7 @@ export interface AccountRow {
   annual_fee: number | null
   credit_points: number | null
   qr_code?: string | null
+  icon?: string | null
   notion_page_id?: string | null
 }
 
@@ -85,6 +86,7 @@ export interface IncomeCategoryRow {
   id: string
   source: string
   auxiliary: number
+  icon?: string | null
 }
 
 export interface ExpenseCategoryRow {
@@ -92,6 +94,7 @@ export interface ExpenseCategoryRow {
   name: string
   monthly_budget: number
   auxiliary: number
+  icon?: string | null
 }
 
 /**
@@ -114,7 +117,7 @@ export function mapAccount(
     id: row.id,
     name: row.account_name,
     type: row.account_type as AccountType,
-    icon: null,
+    icon: row.icon ?? null,
     information: '',
     startingBalance: row.starting_balance,
     currentBalance: balance.currentBalance,
@@ -195,7 +198,7 @@ export function mapScheduler(row: SchedulerRow): SchedulerRecordDto {
 }
 
 export function mapIncomeCategory(row: IncomeCategoryRow): IncomeCategoryOption {
-  return { id: row.id, source: row.source, auxiliary: row.auxiliary === 1 }
+  return { id: row.id, source: row.source, auxiliary: row.auxiliary === 1, icon: row.icon ?? null }
 }
 
 export function mapExpenseCategory(row: ExpenseCategoryRow): ExpenseCategoryOption {
@@ -203,6 +206,7 @@ export function mapExpenseCategory(row: ExpenseCategoryRow): ExpenseCategoryOpti
     id: row.id,
     name: row.name,
     monthlyBudget: row.monthly_budget,
+    icon: row.icon ?? null,
     auxiliary: row.auxiliary === 1
   }
 }
