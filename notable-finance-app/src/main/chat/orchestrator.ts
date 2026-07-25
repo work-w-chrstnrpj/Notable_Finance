@@ -66,11 +66,16 @@ const PHASE_65_SYSTEM = `You are Notable Finance's Finance Copilot (Phase 6.5+ �
 
 You answer from local SQLite via read tools and may **propose** creates/updates via propose* tools. Records are written ONLY when the user Approves a draft card in the UI (chat:confirm). Cancel does nothing.
 
+Formatting:
+- Always respond in Markdown. Use **bold** for key numbers, amounts, and account names.
+- Use bullet lists for multi-item answers, numbered steps for workflows, and short paragraphs otherwise.
+- Keep responses concise — no filler, no repeated information.
+
 Rules:
 - Prefer tools over guessing. Never invent balances, accounts, or categories.
 - To log or edit ANY record you MUST call the matching propose* tool — that is the only way a confirm card appears for the user. NEVER claim you drafted, logged, saved, or created something ("na-draft ko", "na-log na", "done") unless you actually called a propose* tool in this turn. If you only have a text reply, you have NOT drafted anything.
 - After propose* tools, briefly explain the draft and any missing fields. Do NOT say "saved" / "created" until Approve.
-- Finance delete / trash / archive / burahin: refuse. Soft/hard delete stay in the normal app UI.
+- Finance delete / trash / archive / burahin: refuse. Soft/hard delete stay in the normal app UI (Income, Expense, History, etc.).
 - Rebudget remains plan-only (planRebudget) — no budget writes.
 - Expense view questions: pass expenseViewMode (Monthly, Unpaid Pasabuy, Unpaid CC, To pay, …).
 - Follow the active slash overlay voice instructions. Overlays never change amounts or enable delete.
@@ -131,6 +136,24 @@ export async function listRemoteModels(credentialId: string): Promise<ChatModelO
 }
 
 const MEMO_REPLAY_TURNS = 2
+
+/**
+ * Creative overlays get a higher temperature for more varied, less redundant
+ * responses.  Strict/quiet stay low-variance for factual accuracy.
+ */
+function temperatureForOverlay(overlay: ChatOverlayId): number {
+  switch (overlay) {
+    case 'roast':
+    case 'cheer':
+      return 0.8
+    case 'strict':
+      return 0.2
+    case 'quiet':
+      return 0.3
+    default:
+      return 0.6
+  }
+}
 
 function extractMemo(payloadJson: string | null): string | null {
   if (!payloadJson) return null
@@ -224,6 +247,7 @@ async function runToolLoop(input: {
   threadId: string
   baseUrl?: string | null
   headers?: Record<string, string>
+  temperature?: number
   /** Write intents: require a tool call on the first round so the model can't
    * narrate "I logged it" without actually proposing a draft. */
   forceToolFirstRound?: boolean
@@ -253,7 +277,8 @@ async function runToolLoop(input: {
         tools: CHAT_TOOL_DEFINITIONS,
         toolChoice: forceThisRound ? 'required' : undefined,
         baseUrl,
-        headers
+        headers,
+        temperature: input.temperature
       })
     } catch (err) {
       if (!forceThisRound) throw err
@@ -273,7 +298,8 @@ async function runToolLoop(input: {
         messages,
         tools: CHAT_TOOL_DEFINITIONS,
         baseUrl,
-        headers
+        headers,
+        temperature: input.temperature
       })
     }
 
@@ -331,6 +357,7 @@ async function runToolLoop(input: {
     model: input.model,
     baseUrl,
     headers,
+    temperature: input.temperature,
     messages: [
       ...messages,
       {
@@ -532,6 +559,7 @@ export async function sendChatMessage(input: {
     threadId: thread.id,
     baseUrl,
     headers: headersForProvider(providerId),
+    temperature: temperatureForOverlay(activeOverlay),
     forceToolFirstRound: writeSkill
   })
 

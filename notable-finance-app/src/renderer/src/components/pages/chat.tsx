@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Markdown from "react-markdown";
 import {
   ArrowDownLeft,
   ArrowLeft,
@@ -835,6 +836,17 @@ function ChatModePage() {
     setBusy(true);
     setError(null);
     setDraft("");
+    // Optimistic: show the user message immediately while the API call is in flight.
+    const tempId = `temp-user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const optimisticUser: ChatMessageDto = {
+      id: tempId,
+      threadId: activeId ?? "",
+      role: "user",
+      content,
+      payloadJson: null,
+      createdAt: Date.now(),
+    };
+    setMessages((prev) => [...prev, optimisticUser]);
     try {
       const res = await window.api.chat.send({
         threadId: activeId,
@@ -845,6 +857,8 @@ function ChatModePage() {
       });
       if (!res.ok) {
         setError(res.error.message);
+        // Remove the optimistic message and restore the draft.
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
         setDraft(content);
         return;
       }
@@ -853,8 +867,10 @@ function ChatModePage() {
       if (FALLBACK_OVERLAYS.some((o) => o.id === nextOverlay)) {
         setActiveOverlay(nextOverlay);
       }
+      // Replace the optimistic user message with the real one and append the assistant reply.
       setMessages((prev) => {
-        const withoutDup = prev.filter(
+        const withoutOptimistic = prev.filter((m) => m.id !== tempId);
+        const withoutDup = withoutOptimistic.filter(
           (m) => m.id !== res.data.userMessage.id && m.id !== res.data.assistantMessage.id,
         );
         return [...withoutDup, res.data.userMessage, res.data.assistantMessage];
@@ -1140,7 +1156,48 @@ function ChatModePage() {
                 </div>
                 <div className="chat-msg__main">
                   <span className="chat-msg__role">{isUser ? "You" : "Copilot"}</span>
-                  <div className="chat-msg__bubble">{m.content}</div>
+                  <div className="chat-msg__bubble">
+                    {isUser ? (
+                      m.content
+                    ) : (
+                      <Markdown
+                        components={{
+                          p: ({ children }) => <p style={{ margin: "0 0 0.5em" }}>{children}</p>,
+                          ul: ({ children }) => <ul style={{ margin: "0.5em 0", paddingLeft: "1.5em" }}>{children}</ul>,
+                          ol: ({ children }) => <ol style={{ margin: "0.5em 0", paddingLeft: "1.5em" }}>{children}</ol>,
+                          li: ({ children }) => <li>{children}</li>,
+                          strong: ({ children }) => <strong>{children}</strong>,
+                          em: ({ children }) => <em>{children}</em>,
+                          code: ({ children, className }) => (
+                            <code className={className} style={{
+                              background: "rgba(255,255,255,0.08)",
+                              padding: "0.15em 0.35em",
+                              borderRadius: "4px",
+                              fontSize: "0.9em",
+                            }}>
+                              {children}
+                            </code>
+                          ),
+                          pre: ({ children }) => (
+                            <pre style={{
+                              background: "rgba(255,255,255,0.06)",
+                              padding: "0.75em",
+                              borderRadius: "6px",
+                              overflowX: "auto",
+                              margin: "0.5em 0",
+                            }}>
+                              {children}
+                            </pre>
+                          ),
+                          h1: ({ children }) => <h3 style={{ margin: "0.75em 0 0.25em" }}>{children}</h3>,
+                          h2: ({ children }) => <h4 style={{ margin: "0.75em 0 0.25em" }}>{children}</h4>,
+                          h3: ({ children }) => <h5 style={{ margin: "0.5em 0 0.25em" }}>{children}</h5>,
+                        }}
+                      >
+                        {m.content}
+                      </Markdown>
+                    )}
+                  </div>
                   <span className="chat-msg__time">{formatTime(m.createdAt)}</span>
                 </div>
               </div>

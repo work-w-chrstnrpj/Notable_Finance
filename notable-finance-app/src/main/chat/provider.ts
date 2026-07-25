@@ -74,6 +74,7 @@ async function postChatCompletions(input: {
   toolChoice?: 'auto' | 'required'
   baseUrl?: string
   headers?: Record<string, string>
+  temperature?: number
 }): Promise<unknown> {
   const base = resolveChatBaseUrl(input.baseUrl)
   const body: Record<string, unknown> = {
@@ -81,7 +82,7 @@ async function postChatCompletions(input: {
     messages: input.messages
   }
   if (supportsTemperatureOverride(input.model)) {
-    body.temperature = 0.3
+    body.temperature = input.temperature ?? 0.3
   }
   if (input.tools && input.tools.length > 0) {
     body.tools = input.tools
@@ -164,6 +165,7 @@ export async function completeChat(input: {
   toolChoice?: 'auto' | 'required'
   baseUrl?: string
   headers?: Record<string, string>
+  temperature?: number
 }): Promise<ChatCompletionResult> {
   const startedAt = Date.now()
   let body: unknown
