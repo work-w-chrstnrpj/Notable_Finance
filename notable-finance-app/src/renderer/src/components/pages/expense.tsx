@@ -9,11 +9,14 @@ import {
   ComputedField,
   FormSectionDivider,
   FilterSelect,
+  FilterDropdown,
   LoadingBlock,
   SegmentedControl,
   PageToolbar,
 } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
+import { ShortcutHint } from "@/components/shortcuts";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
@@ -117,6 +120,20 @@ function ExpensePage({
   const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
   const accountType = selectedFormAccount?.type ?? "Cash";
   const categoryName = expenseCategoryNameById.get(formCategoryId) ?? "";
+  const expenseCategoryById = useMemo(
+    () => new Map(expenseCategories.map((c) => [c.id, c])),
+    [expenseCategories],
+  );
+  const categoryCell = (id: string) => {
+    const c = expenseCategoryById.get(id);
+    if (!c) return "—";
+    return (
+      <span className="cat-cell">
+        <CategoryIcon icon={c.icon} />
+        {c.name}
+      </span>
+    );
+  };
   const sections = getExpenseConditionalSections({
     accountType,
     viewMode,
@@ -912,6 +929,7 @@ function ExpensePage({
             <FilterToggle
               active={filterActive}
               onToggle={() => setFilterActive((prev) => !prev)}
+              shortcutId="view.filters"
             />
             <SearchToggle
               active={searchActive}
@@ -919,6 +937,7 @@ function ExpensePage({
                 setSearchActive((prev) => !prev);
                 if (searchActive) setSearchQuery("");
               }}
+              shortcutId="view.search"
             />
             <button
               type="button"
@@ -927,6 +946,7 @@ function ExpensePage({
             >
               <Plus size={16} />
               New Expense
+              <ShortcutHint id="view.newRecord" />
             </button>
           </>
         }
@@ -936,28 +956,30 @@ function ExpensePage({
         <div className="toolbar-row">
           {filterActive && (
             <>
-              <FilterSelect
+              <FilterDropdown
                 placeholder="All accounts"
-                placeholderDisabled={false}
                 value={accountFilterId}
                 onChange={setAccountFilterId}
-              >
-                {activeAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>{account.name}</option>
-                ))}
-              </FilterSelect>
+                items={activeAccounts.map((account) => ({
+                  id: account.id,
+                  label: account.name,
+                  icon: <AccountIcon account={account} />,
+                }))}
+              />
               {viewMode !== "Unpaid Pasabuy" && (
-                <FilterSelect
+                <FilterDropdown
                   placeholder="All Categories"
-                  placeholderDisabled={false}
                   value={expenseCategoryFilter}
                   onChange={setExpenseCategoryFilter}
-                >
-                  <option value={expenseCategoryFilterWithoutPasabuy}>W/out Pasabuy</option>
-                  {expenseCategories.map((category) => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
-                  ))}
-                </FilterSelect>
+                  items={[
+                    { id: expenseCategoryFilterWithoutPasabuy, label: "W/out Pasabuy" },
+                    ...expenseCategories.map((category) => ({
+                      id: category.id,
+                      label: category.name,
+                      icon: <CategoryIcon icon={category.icon} />,
+                    })),
+                  ]}
+                />
               )}
               {viewMode === "Unpaid Pasabuy" && (
                 <FilterSelect
@@ -988,6 +1010,7 @@ function ExpensePage({
         options={expenseViewModes.map((mode) => ({ label: mode, value: mode }))}
         value={viewMode}
         onChange={(value) => handleExpenseViewModeChange(value as ExpenseViewMode)}
+        shortcutId="view.filterTab"
       />
 
       {isAnnual && (
@@ -1092,7 +1115,7 @@ function ExpensePage({
                 <span className="expense-cell--unpaid num" key={`${record.id}-amt`}>
                   {formatMoney(record.amount)}
                 </span>,
-                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                categoryCell(record.categoryId),
                 <span className="num">{formatMoney(record.interest ?? 0)}</span>,
                 <span className="num">{formatMoney(c.gross)}</span>,
                 <span className="num">{formatMoney(c.remaining)}</span>,
@@ -1162,7 +1185,7 @@ function ExpensePage({
                 stripNotionTag(record.description),
                 accountNameById.get(record.accountId ?? "") ?? "—",
                 <span className="num">{formatMoney(record.amount)}</span>,
-                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                categoryCell(record.categoryId),
                 <span className="num">{formatMoney(record.interest ?? 0)}</span>,
                 <span className="num">{formatMoney(c.gross)}</span>,
                 record.periodCount ?? "—",
@@ -1226,7 +1249,7 @@ function ExpensePage({
                 stripNotionTag(record.description),
                 <span className="num">{formatMoney(record.amount)}</span>,
                 accountNameById.get(record.accountId ?? "") ?? "—",
-                expenseCategoryNameById.get(record.categoryId) ?? "—",
+                categoryCell(record.categoryId),
                 record.datePaid ? formatDate(record.datePaid) : "-",
               ].map((cell, cellIndex) =>
                 isUnpaid && (cellIndex === 1 || cellIndex === 2) ? (
@@ -1295,20 +1318,28 @@ function ExpensePage({
             />
           </Field>
           <Field label="Accounts">
-            <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
-              <option value="">— None —</option>
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </select>
+            <FilterDropdown
+              placeholder="— None —"
+              value={formAccountId}
+              onChange={setFormAccountId}
+              items={activeAccounts.map((account) => ({
+                id: account.id,
+                label: account.name,
+                icon: <AccountIcon account={account} />,
+              }))}
+            />
           </Field>
           <Field label="Categories">
-            <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
-              <option value="">— None —</option>
-              {expenseCategories.map((category) => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </select>
+            <FilterDropdown
+              placeholder="— None —"
+              value={formCategoryId}
+              onChange={setFormCategoryId}
+              items={expenseCategories.map((category) => ({
+                id: category.id,
+                label: category.name,
+                icon: <CategoryIcon icon={category.icon} />,
+              }))}
+            />
           </Field>
           <Field label="Expense Amount" required>
             <input
@@ -1416,15 +1447,16 @@ function ExpensePage({
                 />
               </Field>
               <Field label="Pasabuy Account Receiver">
-                <select
+                <FilterDropdown
+                  placeholder="— None —"
                   value={pasabuyAccountReceiverId}
-                  onChange={(event) => setPasabuyAccountReceiverId(event.target.value)}
-                >
-                  <option value="">— None —</option>
-                  {activeAccounts.map((account) => (
-                    <option key={account.id} value={account.id}>{account.name}</option>
-                  ))}
-                </select>
+                  onChange={setPasabuyAccountReceiverId}
+                  items={activeAccounts.map((account) => ({
+                    id: account.id,
+                    label: account.name,
+                    icon: <AccountIcon account={account} />,
+                  }))}
+                />
               </Field>
               <Field label="Pasabuy paid period">
                 <input

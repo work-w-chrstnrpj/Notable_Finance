@@ -129,7 +129,7 @@ export function CheatSheet() {
           <div>
             <h2 id="cheat-sheet-title">Keyboard shortcuts</h2>
             <p>
-              Press {IS_MAC ? "⌥K" : "Alt+K"} to toggle shortcut hints on buttons and tabs.
+              Hold {IS_MAC ? "⌘" : "Ctrl"} to reveal shortcut hints on buttons and tabs.
             </p>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={closeCheat}>

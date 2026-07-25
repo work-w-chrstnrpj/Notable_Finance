@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useRef, useEffect, useMemo, useCallback, Children, isValidElement } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
-import { FileWarning, RefreshCw } from "lucide-react";
+import { ChevronDown, FileWarning, RefreshCw } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { getMoneyValueTone } from "@/lib/finance-rules";
@@ -213,26 +215,158 @@ export function FilterToggle({
 
 export function FilterSelect({
   placeholder,
-  placeholderDisabled = true,
   value,
   onChange,
   children,
 }: {
   placeholder: string;
+  /** @deprecated No longer used in the custom dropdown. */
   placeholderDisabled?: boolean;
   value: string;
   onChange: (value: string) => void;
   children: ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  // Parse <option> children into value/label pairs.
+  const options = useMemo(() => {
+    const opts: Array<{ value: string; label: string }> = [];
+    Children.forEach(children, (child) => {
+      if (!isValidElement(child)) return;
+      const props = child.props as { value?: string; children?: ReactNode };
+      if (props.value !== undefined) {
+        const label = String(
+          typeof props.children === "string"
+            ? props.children
+            : props.value,
+        );
+        opts.push({
+          value: String(props.value),
+          label,
+        });
+      }
+    });
+    return opts;
+  }, [children]);
+
+  const selectedLabel = value
+    ? options.find((o) => o.value === value)?.label ?? placeholder
+    : placeholder;
+
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
+    const handle = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  // Recalculate position when dropdown opens or page scrolls
+  const updatePosition = useCallback(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setPosition({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: Math.max(rect.width, 180),
+    });
+  }, [open]);
+
+  useEffect(() => {
+    updatePosition();
+  }, [updatePosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open, updatePosition]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
+  const handleSelect = (optValue: string) => {
+    onChange(optValue);
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+
   return (
-    <label className="filter-select">
-      <select value={value} onChange={(event) => onChange(event.target.value)}>
-        <option value="" disabled={placeholderDisabled}>
-          {placeholder}
-        </option>
-        {children}
-      </select>
-    </label>
+    <div className="filter-select">
+      <button
+        ref={triggerRef}
+        type="button"
+        className={cx("filter-select__trigger", open && "filter-select__trigger--open")}
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span>{selectedLabel}</span>
+        <ChevronDown size={14} className={cx("filter-select__chevron", open && "filter-select__chevron--open")} />
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="filter-select__dropdown"
+            role="listbox"
+            style={{
+              position: "fixed",
+              top: position.top,
+              left: position.left,
+              width: position.width,
+              zIndex: 100,
+            }}
+          >
+            <button
+              type="button"
+              className={cx("filter-select__option", !value && "filter-select__option--active")}
+              role="option"
+              aria-selected={!value}
+              onClick={() => handleSelect("")}
+            >
+              {placeholder}
+            </button>
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={cx("filter-select__option", value === opt.value && "filter-select__option--active")}
+                role="option"
+                aria-selected={value === opt.value}
+                onClick={() => handleSelect(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </div>
   );
 }
 

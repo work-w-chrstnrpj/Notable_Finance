@@ -62,8 +62,8 @@ export const SHORTCUTS: ShortcutDef[] = [
     group: "Section views",
     label: "Jump to filter tab (Daily, Weekly, …)",
     scope: "view",
-    combo: "Mod+Shift+Digit",
-    displayCombo: "Mod+Shift+1…9",
+    combo: "Mod2+Digit",
+    displayCombo: "Mod2+1…9",
     note: "On Accounts: 1 = All, 2 = Standard, 3 = Credit.",
   },
   {
@@ -71,18 +71,18 @@ export const SHORTCUTS: ShortcutDef[] = [
     group: "Section views",
     label: "Accounts: toggle Card / Table view",
     scope: "view",
-    combo: "Mod+Shift+Backquote",
-    displayCombo: "Mod+Shift+~",
+    combo: "Mod2+Backquote",
+    displayCombo: "Mod2+~",
   },
   {
     id: "view.toggleHideZero",
     group: "Section views",
     label: "Accounts: toggle Hide zero balance",
     scope: "view",
-    combo: "Mod+Shift+0",
+    combo: "Mod2+0",
   },
   { id: "view.search", group: "Section views", label: "Open search", scope: "view", combo: "Mod+F" },
-  { id: "view.filters", group: "Section views", label: "Open filters", scope: "view", combo: "Mod+G" },
+  { id: "view.filters", group: "Section views", label: "Open filters", scope: "view", combo: "Mod+Shift+F" },
   { id: "view.newRecord", group: "Section views", label: "New record", scope: "view", combo: "Mod+N" },
 
   // ── Record modal ──────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ export const SHORTCUTS: ShortcutDef[] = [
 
   // ── Editing (undo/redo — session stack) ───────────────────────────────
   { id: "edit.undo", group: "Editing", label: "Undo last change", scope: "global", combo: "Mod+Z", whileTyping: true, note: "Undoes text while a field is focused; otherwise steps back through your create / edit / delete actions this session." },
-  { id: "edit.redo", group: "Editing", label: "Redo", scope: "global", combo: "Mod+Y", whileTyping: true },
+  { id: "edit.redo", group: "Editing", label: "Redo", scope: "global", combo: "Mod+Shift+Z", displayCombo: "Mod+Shift+Z", whileTyping: true },
 
   // ── General ───────────────────────────────────────────────────────────
   { id: "general.cheatSheet", group: "General", label: "Show keyboard shortcuts", scope: "global", combo: "Mod+Slash", displayCombo: "Mod+/", whileTyping: true },
@@ -116,10 +116,12 @@ export const SHORTCUTS: ShortcutDef[] = [
 /** Platform-aware display of a combo, e.g. "Mod+Shift+H" → "⌘⇧H" or "Ctrl+Shift+H". */
 export function displayCombo(combo: string, isMac: boolean): string {
   const parts = combo.split("+");
-  // "Mod" renders as Option/Alt — the app's primary modifier on every platform.
+  // "Mod" = the primary modifier (Cmd on macOS, Ctrl elsewhere). "Mod2" = the
+  // secondary modifier for the view/filter layer (Cmd+Ctrl on macOS,
+  // Ctrl+Alt elsewhere) — chosen to avoid the ⌘⇧3/4/5 screenshot clash.
   const map: Record<string, string> = isMac
-    ? { Mod: "⌥", Shift: "⇧", Alt: "⌥", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "↵", Escape: "Esc", Backspace: "⌫", Delete: "⌦", Backquote: "~", Slash: "/", Digit: "1…9" }
-    : { Mod: "Alt", Shift: "Shift", Alt: "Alt", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "Enter", Escape: "Esc", Backspace: "Backspace", Delete: "Del", Backquote: "~", Slash: "/", Digit: "1…9" };
+    ? { Mod: "⌘", Mod2: "⌘⌃", Shift: "⇧", Alt: "⌥", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "↵", Escape: "Esc", Backspace: "⌫", Delete: "⌦", Backquote: "~", Slash: "/", Digit: "1…9" }
+    : { Mod: "Ctrl", Mod2: "Ctrl+Alt", Shift: "Shift", Alt: "Alt", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Enter: "Enter", Escape: "Esc", Backspace: "Backspace", Delete: "Del", Backquote: "~", Slash: "/", Digit: "1…9" };
   const sep = isMac ? "" : "+";
   return parts.map((p) => map[p] ?? p).join(sep);
 }

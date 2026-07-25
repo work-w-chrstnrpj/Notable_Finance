@@ -8,6 +8,7 @@ import { activeSelectorUnit, anchorMonth, todayIso } from "@/lib/date-range";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import { navigate } from "@/lib/router";
+import { useShortcutAction } from "@/lib/shortcuts/context";
 
 // Layout
 import { Sidebar, TopBar } from "@/components/layout";
@@ -186,6 +187,12 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
 
   /** Header Sync button — always full sync (pull then push). */
   const runSync = () => void runSyncPass("full");
+
+  // Sync shortcuts route through the same pass as the header button, so they get
+  // the spinner + "Last sync" feedback (the global fallback called the IPC raw).
+  useShortcutAction("sync.push", () => void runSyncPass("push"));
+  useShortcutAction("sync.pull", () => void runSyncPass("pull"));
+  useShortcutAction("sync.full", () => void runSyncPass("full"));
 
   async function verifySchema() {
     try {

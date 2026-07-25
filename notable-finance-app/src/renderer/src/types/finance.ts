@@ -88,6 +88,7 @@ export type IncomeCategory = {
   id: string;
   source: string;
   auxiliary: boolean;
+  icon?: string | null;
   monthlyEarnings: number;
   monthlyExpenditure: number;
   monthlyGross: number;
@@ -114,6 +115,7 @@ export type ExpenseCategory = {
   monthlyBudget: number;
   upcomingBudget: number;
   auxiliary: "Yes" | "No";
+  icon?: string | null;
   spending: number;
   remaining: number;
   overview: string;

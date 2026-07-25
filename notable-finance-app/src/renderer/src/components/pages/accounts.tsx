@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { PageToolbar, FilterSelect, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
+import { Panel, PageToolbar, FilterSelect, FilterDropdown, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
@@ -9,6 +9,7 @@ import { isCreditLikeAccountType } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import { cx } from "@/lib/finance-helpers";
 import { useUiSettings } from "@/lib/ui-settings-context";
+import { useShortcutAction } from "@/lib/shortcuts/context";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import type { Account } from "@/types/finance";
 import type { AccountScope } from "@/components/constants";
@@ -54,6 +55,14 @@ function AccountsPage() {
       });
     },
   );
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────
+  useShortcutAction("view.toggleHideZero", () => setHideZeroBalance((h) => !h));
+  useShortcutAction("view.toggleAccountLayout", () => setViewMode((v) => (v === "cards" ? "table" : "cards")));
+  useShortcutAction("view.filterTab", (arg) => {
+    const scopes: AccountScope[] = ["all", "standard", "credit"];
+    if (arg != null && arg >= 1 && arg <= scopes.length) setAccountScope(scopes[arg - 1]);
+  });
 
   // P5: Show skeleton while reference data is loading
   if (referenceLoading) {
@@ -117,13 +126,24 @@ function AccountsPage() {
     ];
   });
 
-  const accountTotalBalance = visibleAccounts.reduce(
-    (sum, account) => sum + account.currentBalance,
-    0,
-  );
+  const sumBy = (pick: (a: (typeof visibleAccounts)[number]) => number | null) =>
+    visibleAccounts.reduce((sum, a) => sum + (pick(a) ?? 0), 0);
+  const accountTotalBalance = sumBy((a) => a.currentBalance);
   const accountTableFooterRows =
     accountScope === "credit"
-      ? []
+      ? [
+          [
+            "Total",
+            "",
+            signedMoney(accountTotalBalance),
+            money(sumBy((a) => a.creditLimit), { compact: true }),
+            money(sumBy((a) => a.availableLimit), { compact: true }),
+            money(sumBy((a) => a.totalIncomes), { compact: true }),
+            money(sumBy((a) => a.totalExpenses), { compact: true }),
+            "",
+            "",
+          ],
+        ]
       : [
           [
             "Total",
@@ -134,47 +154,46 @@ function AccountsPage() {
 
   return (
     <div className="page-stack">
-      <PageToolbar
-        title="Accounts"
-        actions={
-          <>
-            <FilterSelect
-              placeholder="All card types"
-              placeholderDisabled={false}
-              value={cardTypeFilter}
-              onChange={setCardTypeFilter}
-            >
-              {cardTypeOptions.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </FilterSelect>
-            <FilterToggle
-              label="Hide zero balance"
-              checked={hideZeroBalance}
-              onChange={setHideZeroBalance}
-            />
-            <SegmentedControl
-              label="Account view"
-              options={[
-                { label: "Cards", value: "cards" },
-                { label: "Table", value: "table" },
-              ]}
-              value={viewMode}
-              onChange={(value) => setViewMode(value as "cards" | "table")}
-            />
-            <SegmentedControl
-              label="Account mode"
-              options={[
-                { label: "All Accounts", value: "all" },
-                { label: "Accounts", value: "standard" },
-                { label: "Credit Accounts", value: "credit" },
-              ]}
-              value={accountScope}
-              onChange={(value) => setAccountScope(value as AccountScope)}
-            />
-          </>
-        }
+      <PageToolbar title="Accounts" />
+
+      {/* Scope tabs on their own row (like Daily/Weekly on other views), then a
+          wrapping filter row with card-type, hide-zero, and the Cards/Table
+          toggle — nothing lives in the header, so nothing overflows. */}
+      <SegmentedControl
+        label="Account mode"
+        options={[
+          { label: "All Accounts", value: "all" },
+          { label: "Accounts", value: "standard" },
+          { label: "Credit Accounts", value: "credit" },
+        ]}
+        value={accountScope}
+        onChange={(value) => setAccountScope(value as AccountScope)}
+        shortcutId="view.filterTab"
       />
+      <div className="account-filter-row">
+        <FilterDropdown
+          placeholder="All card types"
+          value={cardTypeFilter}
+          onChange={setCardTypeFilter}
+          items={cardTypeOptions.map((type) => ({ id: type, label: type }))}
+        />
+        <FilterToggle
+          label="Hide zero balance"
+          checked={hideZeroBalance}
+          onChange={setHideZeroBalance}
+          shortcutId="view.toggleHideZero"
+        />
+        <SegmentedControl
+          label="Account view"
+          options={[
+            { label: "Cards", value: "cards" },
+            { label: "Table", value: "table" },
+          ]}
+          value={viewMode}
+          onChange={(value) => setViewMode(value as "cards" | "table")}
+          shortcutId="view.toggleAccountLayout"
+        />
+      </div>
 
       {viewMode === "cards" ? (
         <section className="account-grid">
@@ -222,21 +241,26 @@ function AccountsPage() {
           ))}
         </section>
       ) : (
-        <DataTable
-          headers={accountTableHeaders}
-          rows={accountTableRows}
-          footerRows={accountTableFooterRows}
-          // Only the 9-column Credit view needs horizontal scroll + pinned
-          // columns; the 3-column views render as a normal full-width table.
-          wide={accountScope === "credit"}
-          unsortableColumns={[0]}
-          onRowClick={(rowIndex) => {
-            const account = visibleAccounts[rowIndex];
-            if (account) {
-              setSelectedAccount(account);
-            }
-          }}
-        />
+        // Wrap in a Panel exactly like Income/Expense — the Panel provides the
+        // min-width:0 containment so the wide table scrolls INSIDE it instead of
+        // stretching the whole page.
+        <Panel title="Accounts">
+          <DataTable
+            headers={accountTableHeaders}
+            rows={accountTableRows}
+            footerRows={accountTableFooterRows}
+            // Only the 9-column Credit view needs horizontal scroll + pinned
+            // columns; the 3-column views render as a normal full-width table.
+            wide={accountScope === "credit"}
+            unsortableColumns={[0]}
+            onRowClick={(rowIndex) => {
+              const account = visibleAccounts[rowIndex];
+              if (account) {
+                setSelectedAccount(account);
+              }
+            }}
+          />
+        </Panel>
       )}
 
       {selectedAccount && (

@@ -61,15 +61,24 @@ function tokenFromCode(code: string, key: string): string | null {
   return null;
 }
 
+/** The primary shortcut modifier: Cmd on macOS, Ctrl elsewhere. */
+function isModKey(e: KeyboardEvent | { key: string }): boolean {
+  return e.key === (IS_MAC ? "Meta" : "Control");
+}
+
 /** Build the normalized combo string from a keyboard event, or null if unusable. */
 function comboFromEvent(e: KeyboardEvent): { combo: string; digit: number | null } | null {
-  // "Mod" = Option/Alt on every platform. Alt owns almost nothing at the OS or
-  // menu level, so native Cmd/Ctrl editing stays intact and there are no clashes.
-  const mod = e.altKey;
+  // "Mod" = Cmd on macOS, Ctrl on Windows/Linux (primary). "Mod2" = the view
+  // layer: Cmd+Ctrl on macOS, Ctrl+Alt elsewhere. Check Mod2 first, since on mac
+  // it also sets metaKey. The typing guard + preventDefault keep native text
+  // undo/select-all/find intact inside fields.
+  const mod2 = IS_MAC ? e.metaKey && e.ctrlKey : e.ctrlKey && e.altKey;
+  const mod = !mod2 && (IS_MAC ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.altKey);
   const token = tokenFromCode(e.code, e.key);
   if (!token) return null;
   const parts: string[] = [];
-  if (mod) parts.push("Mod");
+  if (mod2) parts.push("Mod2");
+  else if (mod) parts.push("Mod");
   if (e.shiftKey) parts.push("Shift");
   parts.push(token);
   const digit = /^\d$/.test(token) ? Number(token) : null;
@@ -176,11 +185,11 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
       if (!parsed) return false;
       const typing = isTypingTarget(e.target);
 
-      // Digit combos are dynamic: Mod+<n> = navigation, Mod+Shift+<n> = filter tab.
+      // Digit combos are dynamic: Mod+<n> = navigation, Mod2+<n> = filter tab.
       let matches: ShortcutDef[] = candidates.get(parsed.combo) ?? [];
       if (parsed.digit != null && matches.length === 0) {
-        if (parsed.combo === `Mod+Shift+${parsed.digit}`) {
-          matches = candidates.get("Mod+Shift+Digit") ?? [];
+        if (parsed.combo === `Mod2+${parsed.digit}`) {
+          matches = candidates.get("Mod2+Digit") ?? [];
         }
       }
       if (matches.length === 0) return false;
@@ -238,17 +247,19 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      // Option+K (Alt+K) toggles shortcut hints.
-      if (e.altKey && e.code === "KeyK" && !e.repeat) {
-        setRevealed((r) => !r);
+      // Holding the mod key alone (⌘ on mac / Ctrl elsewhere) reveals the hints,
+      // Office-style. Don't dispatch — it's a bare modifier.
+      if (isModKey(e) && !e.repeat) {
+        setRevealed(true);
         return;
       }
       // Any other keydown hides the reveal and may trigger a shortcut.
       setRevealed(false);
       dispatch(e);
     };
-    const onKeyUp = (_e: KeyboardEvent) => {
-      // no-op — reveal persists until next keydown or click/blur.
+    const onKeyUp = (e: KeyboardEvent) => {
+      // Releasing the mod key hides the hints.
+      if (isModKey(e)) setRevealed(false);
     };
     const onPointer = () => clearReveal();
     const onBlur = () => clearReveal();

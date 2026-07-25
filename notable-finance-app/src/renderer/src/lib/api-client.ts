@@ -69,7 +69,7 @@ export const incomeCategoriesApi = {
     const r = await nfApi().categories.income();
     if (!r.ok) return err(r.error);
     let cats: IncomeCategory[] = r.data.map((c) => ({
-      id: c.id, source: c.source, auxiliary: c.auxiliary,
+      id: c.id, source: c.source, auxiliary: c.auxiliary, icon: c.icon ?? null,
       monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0,
     }));
     if (params?.normalOnly) cats = cats.filter((c) => !c.auxiliary);
@@ -90,7 +90,7 @@ export const expenseCategoriesApi = {
     if (!r.ok) return err(r.error);
     const cats: ExpenseCategory[] = r.data.map((c) => ({
       id: c.id, name: c.name, monthlyBudget: c.monthlyBudget, upcomingBudget: 0,
-      auxiliary: c.auxiliary ? "Yes" : "No",
+      auxiliary: c.auxiliary ? "Yes" : "No", icon: c.icon ?? null,
       spending: 0, remaining: 0, overview: "", totalOverview: 0,
     }));
     return ok(cats);

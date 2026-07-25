@@ -2,9 +2,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
-import { Panel, Field, ComputedField, MoneyValue, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
+import { Panel, Field, ComputedField, MoneyValue, FilterDropdown, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
+import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { useWorkflowRecords, useFinanceInvalidation } from "@/lib/use-data";
 import {
   applyIncomeTag,
@@ -498,33 +499,45 @@ function WorkflowPage({
             </Field>
           )}
           <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || isReceivables}>
-            <select value={receivingAccountId} onChange={(event) => setReceivingAccountId(event.target.value)}>
-              <option value="">— None —</option>
-              {sourceAccountOptions.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </select>
+            <FilterDropdown
+              placeholder="— None —"
+              value={receivingAccountId}
+              onChange={setReceivingAccountId}
+              items={sourceAccountOptions.map((account) => ({
+                id: account.id,
+                label: account.name,
+                icon: <AccountIcon account={account} />,
+              }))}
+            />
           </Field>
           {secondaryAccountLabel && (
             <Field label={secondaryAccountLabel} required={isTransfer}>
-              <select value={transactedAccountId} onChange={(event) => setTransactedAccountId(event.target.value)}>
-                <option value="">— None —</option>
-                {nonCreditActiveAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>{account.name}</option>
-                ))}
-              </select>
+              <FilterDropdown
+                placeholder="— None —"
+                value={transactedAccountId}
+                onChange={setTransactedAccountId}
+                items={nonCreditActiveAccounts.map((account) => ({
+                  id: account.id,
+                  label: account.name,
+                  icon: <AccountIcon account={account} />,
+                }))}
+              />
             </Field>
           )}
           {!categoryEditable && fixedCategory ? (
             <ComputedField label="Categories" value={fixedCategory} />
           ) : (
             <Field label="Categories">
-              <select value={workflowCategoryIdInput} onChange={(event) => setWorkflowCategoryIdInput(event.target.value)}>
-                <option value="">— None —</option>
-                {normalIncomeCategories.map((category) => (
-                  <option key={category.id} value={category.id}>{category.source}</option>
-                ))}
-              </select>
+              <FilterDropdown
+                placeholder="— None —"
+                value={workflowCategoryIdInput}
+                onChange={setWorkflowCategoryIdInput}
+                items={normalIncomeCategories.map((category) => ({
+                  id: category.id,
+                  label: category.source,
+                  icon: <CategoryIcon icon={category.icon} />,
+                }))}
+              />
             </Field>
           )}
           {isReceivables && (

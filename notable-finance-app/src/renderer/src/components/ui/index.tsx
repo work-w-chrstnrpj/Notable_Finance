@@ -1,10 +1,11 @@
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { FileWarning, RefreshCw } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
+import { ShortcutHint } from "@/components/shortcuts";
 
 export type ComputedValueTone = "green" | "rose" | "amber" | "ink";
 
@@ -183,11 +184,13 @@ export function SegmentedControl({
   options,
   value,
   onChange,
+  shortcutId,
 }: {
   label: string;
   options: Array<{ label: string; value: string }>;
   value: string;
   onChange: (value: string) => void;
+  shortcutId?: string;
 }) {
   return (
     <div className="segmented" aria-label={label}>
@@ -201,6 +204,7 @@ export function SegmentedControl({
           {option.label}
         </button>
       ))}
+      {shortcutId && <ShortcutHint id={shortcutId} />}
     </div>
   );
 }
@@ -209,10 +213,12 @@ export function FilterToggle({
   label,
   checked,
   onChange,
+  shortcutId,
 }: {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  shortcutId?: string;
 }) {
   return (
     <label className={cx("filter-toggle", checked && "filter-toggle--active")}>
@@ -222,6 +228,7 @@ export function FilterToggle({
         onChange={(event) => onChange(event.target.checked)}
       />
       <span>{label}</span>
+      {shortcutId && <ShortcutHint id={shortcutId} />}
     </label>
   );
 }
@@ -251,6 +258,62 @@ export function FilterSelect({
   );
 }
 
+/** Icon‑aware dropdown: renders icon + label per item, native select cannot. */
+export function FilterDropdown({
+  placeholder,
+  value,
+  onChange,
+  items,
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  items: Array<{ id: string; label: string; icon?: ReactNode }>;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = items.find((i) => i.id === value);
+  return (
+    <div className={cx("filter-dropdown", open && "filter-dropdown--open")}>
+      <button
+        type="button"
+        className="filter-dropdown__trigger"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {selected ? (
+          <span className="filter-dropdown__selected">
+            {selected.icon}
+            {selected.label}
+          </span>
+        ) : (
+          <span className="filter-dropdown__placeholder">{placeholder}</span>
+        )}
+      </button>
+      {open && (
+        <div className="filter-dropdown__menu">
+          <button
+            type="button"
+            className={cx("filter-dropdown__item", !value && "filter-dropdown__item--active")}
+            onClick={() => { onChange(""); setOpen(false); }}
+          >
+            {placeholder}
+          </button>
+          {items.map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              className={cx("filter-dropdown__item", value === item.id && "filter-dropdown__item--active")}
+              onClick={() => { onChange(item.id); setOpen(false); }}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BudgetRow({ label, percent, amount }: { label: string; percent: number; amount: number }) {
   return (
     <div className="budget-row">
@@ -265,17 +328,20 @@ export function CategoryCard({
   title,
   detail,
   value,
+  icon,
   muted = false,
   onClick,
 }: {
   title: string;
   detail: string;
   value: string;
+  icon?: ReactNode;
   muted?: boolean;
   onClick?: () => void;
 }) {
   const content = (
     <>
+      {icon && <span className="category-card__icon">{icon}</span>}
       <p>{title}</p>
       <span>{detail}</span>
       <strong>{value}</strong>

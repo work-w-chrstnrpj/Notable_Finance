@@ -1,12 +1,15 @@
 
 import { Search, SlidersHorizontal } from "lucide-react";
+import { ShortcutHint } from "@/components/shortcuts";
 
 export function SearchToggle({
   active,
   onToggle,
+  shortcutId,
 }: {
   active: boolean;
   onToggle: () => void;
+  shortcutId?: string;
 }) {
   return (
     <button
@@ -16,6 +19,7 @@ export function SearchToggle({
       aria-label={active ? "Close search" : "Search"}
     >
       <Search size={16} />
+      {shortcutId && <ShortcutHint id={shortcutId} />}
     </button>
   );
 }
@@ -57,9 +61,11 @@ export function SearchInput({
 export function FilterToggle({
   active,
   onToggle,
+  shortcutId,
 }: {
   active: boolean;
   onToggle: () => void;
+  shortcutId?: string;
 }) {
   return (
     <button
@@ -69,6 +75,7 @@ export function FilterToggle({
       aria-label={active ? "Close filters" : "Filters"}
     >
       <SlidersHorizontal size={16} />
+      {shortcutId && <ShortcutHint id={shortcutId} />}
     </button>
   );
 }

@@ -32,6 +32,7 @@ function getIncomeCategorySummaries(
     return {
       id: category.id,
       source: category.source,
+      icon: category.icon ?? null,
       grossIncome,
       capitalExpenditure,
       netIncome,
@@ -57,6 +58,7 @@ function getExpenseCategorySummaries(records: ExpenseRecord[], categories: Expen
         monthlyBudget: category.monthlyBudget,
         upcomingBudget: category.upcomingBudget,
         auxiliary: category.auxiliary,
+        icon: category.icon ?? null,
         spending,
         remaining,
         overview: `${formatPercent(usage)} used`,

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ArrowLeft, Banknote, Building2, CreditCard, Download, Landmark, QrCode, Smartphone, X } from "lucide-react";
+import { ArrowLeft, Banknote, Building2, CreditCard, Download, Landmark, QrCode, Smartphone, Tag, X } from "lucide-react";
 import { MoneyValue } from "@/components/ui";
 import { cx } from "@/lib/finance-helpers";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
@@ -256,4 +256,37 @@ function AccountDetailModal({
   );
 }
 
-export { AccountTypeIcon, isImageUrl, AccountIcon, AccountDetailModal };
+function CategoryIcon({ icon, className }: { icon?: string | null; className?: string }) {
+  const cls = className ?? "category-icon";
+  if (icon && isImageUrl(icon)) {
+    return (
+      <img
+        src={icon}
+        alt=""
+        width={20}
+        height={20}
+        className={cls}
+        onError={(event) => {
+          const target = event.currentTarget;
+          target.style.display = "none";
+          const fallback = target.nextElementSibling;
+          if (fallback) (fallback as HTMLElement).style.display = "grid";
+        }}
+      />
+    );
+  }
+  if (icon) {
+    return (
+      <span className={`${cls} category-icon--emoji`} aria-hidden="true">
+        {icon}
+      </span>
+    );
+  }
+  return (
+    <span className={`${cls} category-icon--fallback`}>
+      <Tag size={16} />
+    </span>
+  );
+}
+
+export { AccountTypeIcon, isImageUrl, AccountIcon, CategoryIcon, AccountDetailModal };

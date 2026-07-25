@@ -134,9 +134,14 @@
 }
 
 [data-theme="dark"] .filter-toggle {
-  background: var(--surface-muted);
+  background: transparent;
   color: var(--ink-muted);
-  border-color: var(--line-strong);
+  border-color: transparent;
+}
+
+[data-theme="dark"] .filter-toggle:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
 }
 
 [data-theme="dark"] .filter-toggle--active {
@@ -1406,7 +1411,7 @@ body.shortcuts-revealed .shortcut-hint {
 .workspace__content {
   flex: 1;
   min-height: 0;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: auto;
   padding: 24px;
 }
@@ -1451,6 +1456,16 @@ body.shortcuts-revealed .shortcut-hint {
   justify-content: space-between;
   gap: 16px;
   padding: 16px;
+}
+
+/* Sticky toolbar inside page-stack (Accounts, Income, etc.) */
+.page-stack > .page-toolbar {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.page-toolbar__actions {
+  min-width: 0;
 }
 
 .page-toolbar h2,
@@ -1934,6 +1949,77 @@ body.shortcuts-revealed .shortcut-hint {
   font-weight: 600;
 }
 
+/* ── Filter dropdown (icon‑aware) ───────────────────────────────── */
+.filter-dropdown {
+  position: relative;
+  font-size: 12px;
+  font-weight: 600;
+}
+.filter-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+.filter-dropdown__trigger:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.filter-dropdown__selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-dropdown__placeholder {
+  color: var(--ink-muted);
+}
+.filter-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 160px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+}
+.filter-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-dropdown__item:hover {
+  background: var(--surface-muted);
+}
+.filter-dropdown__item--active {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.filter-dropdown--open .filter-dropdown__trigger {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 /* ── Search toggle & input ────────────────────────────────────────── */
 .search-toggle {
   color: var(--ink-muted);
@@ -2096,6 +2182,21 @@ input {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 14px;
 }
+.account-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.cat-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cat-cell .account-icon,
+.cat-cell .category-icon {
+  flex: 0 0 auto;
+}
 
 .account-card {
   display: grid;
@@ -2172,6 +2273,29 @@ input {
   height: 22px;
 }
 
+.category-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.category-icon--fallback {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+}
+
+.category-icon--emoji {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
 .account-card__name-row {
   display: flex;
   align-items: center;
@@ -2184,6 +2308,12 @@ input {
 }
 
 .account-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-cell {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -2339,6 +2469,10 @@ table {
 table.data-table--wide {
   width: max-content;
   min-width: 100%;
+}
+
+table.data-table--wide thead {
+  background: var(--surface);
 }
 
 table.data-table--wide th,
@@ -2831,9 +2965,9 @@ tfoot td {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 8px;
-  background: var(--surface-muted);
+  background: transparent;
   padding: 4px 10px;
   min-height: 32px;
   font-size: 13px;
@@ -2851,11 +2985,20 @@ tfoot td {
   cursor: pointer;
 }
 
-.filter-toggle:hover,
-.filter-toggle--active {
-  background: var(--surface);
+.filter-toggle:hover {
+  background: var(--surface-muted);
   color: var(--ink);
-  box-shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 4px 12px rgba(28, 25, 23, 0.05);
+}
+
+.filter-toggle--active {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+
+.filter-toggle--active:hover {
+  color: var(--blue);
+  filter: brightness(1.06);
 }
 
 .bar-chart {
@@ -3127,6 +3270,11 @@ tfoot td {
   display: grid;
   gap: 8px;
   padding: 12px;
+}
+
+.category-card__icon {
+  display: flex;
+  align-items: center;
 }
 
 .category-card--muted {

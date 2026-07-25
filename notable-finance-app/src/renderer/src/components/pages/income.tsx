@@ -4,14 +4,17 @@ import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { buildAnnualGroups, GroupBySelect } from "@/components/charts";
 import { AnnualBarChart } from "@/components/charts";
-import { Panel, Field, ComputedField, MoneyValue, FilterSelect, LoadingBlock, SegmentedControl } from "@/components/ui";
+import { Panel, Field, ComputedField, MoneyValue, FilterSelect, FilterDropdown, LoadingBlock, SegmentedControl } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
+import { ShortcutHint } from "@/components/shortcuts";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
+import { useShortcutAction } from "@/lib/shortcuts/context";
 import { applyIncomeTag, stripNotionTag, parseNumberInput, getIncomeGrossTotal, getIncomeCapitalExpenditureTotal, getIncomeNetTotal } from "@/lib/finance-helpers";
 import { computeRange, incomeModeToUnit } from "@/lib/date-range";
 import { calculateNetIncome, getMoneyValueTone } from "@/lib/finance-rules";
@@ -41,6 +44,20 @@ function IncomePage({
     accountNameById,
     incomeCategoryNameById,
   } = useLiveCollections();
+  const incomeCategoryById = useMemo(
+    () => new Map(normalIncomeCategories.map((c) => [c.id, c])),
+    [normalIncomeCategories],
+  );
+  const categoryCell = (id: string) => {
+    const c = incomeCategoryById.get(id);
+    if (!c) return incomeCategoryNameById.get(id) ?? "—";
+    return (
+      <span className="cat-cell">
+        <CategoryIcon icon={c.icon} />
+        {c.source}
+      </span>
+    );
+  };
   const range = computeRange(incomeModeToUnit(viewMode), selectedDate);
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -164,6 +181,27 @@ function IncomePage({
     accountNameById,
     incomeCategoryNameById,
   );
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────
+  const modalOpen = modal !== null;
+  useShortcutAction("view.newRecord", () => openIncomeModal("new", "New Income"), !modalOpen);
+  useShortcutAction("view.search", () => setSearchActive((s) => !s), !modalOpen);
+  useShortcutAction("view.filters", () => setFilterActive((f) => !f), !modalOpen);
+  useShortcutAction("modal.save", () => void handleSaveIncome(), modalOpen && editing);
+  useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
+  useShortcutAction("modal.duplicate", () => handleDuplicateIncome(), modalOpen);
+  useShortcutAction("modal.delete", () => void handleDeleteIncome(), modalOpen && editingId != null);
+  useShortcutAction("modal.close", () => setModal(null), modalOpen);
+  const hasSelection = selectedIds.size > 0;
+  useShortcutAction(
+    "mass.selectAll",
+    () => setSelectedIds(new Set(searchFilteredRecords.map((_, i) => i))),
+    !modalOpen,
+  );
+  useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
+  useShortcutAction("mass.edit", () => void handleBulkAction("edit"), hasSelection);
+  useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
+  useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
 
   function openIncomeModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -549,6 +587,7 @@ function IncomePage({
             <FilterToggle
               active={filterActive}
               onToggle={() => setFilterActive((prev) => !prev)}
+              shortcutId="view.filters"
             />
             <SearchToggle
               active={searchActive}
@@ -556,6 +595,7 @@ function IncomePage({
                 setSearchActive((prev) => !prev);
                 if (searchActive) setSearchQuery("");
               }}
+              shortcutId="view.search"
             />
             <button
               type="button"
@@ -564,6 +604,7 @@ function IncomePage({
             >
               <Plus size={16} />
               New Income
+              <ShortcutHint id="view.newRecord" />
             </button>
           </>
         }
@@ -573,30 +614,26 @@ function IncomePage({
         <div className="toolbar-row">
           {filterActive && (
             <>
-              <FilterSelect
+              <FilterDropdown
                 placeholder="All Accounts"
-                placeholderDisabled={false}
                 value={accountId}
                 onChange={setAccountId}
-              >
-                {nonCreditActiveAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name}
-                  </option>
-                ))}
-              </FilterSelect>
-              <FilterSelect
+                items={nonCreditActiveAccounts.map((account) => ({
+                  id: account.id,
+                  label: account.name,
+                  icon: <AccountIcon account={account} />,
+                }))}
+              />
+              <FilterDropdown
                 placeholder="All Categories"
-                placeholderDisabled={false}
                 value={categoryId}
                 onChange={setCategoryId}
-              >
-                {normalIncomeCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.source}
-                  </option>
-                ))}
-              </FilterSelect>
+                items={normalIncomeCategories.map((category) => ({
+                  id: category.id,
+                  label: category.source,
+                  icon: <CategoryIcon icon={category.icon} />,
+                }))}
+              />
             </>
           )}
           {searchActive && (
@@ -614,6 +651,7 @@ function IncomePage({
         options={incomeViewModes.map((mode) => ({ label: mode, value: mode }))}
         value={viewMode}
         onChange={(value) => onViewModeChange(value as IncomeViewMode)}
+        shortcutId="view.filterTab"
       />
 
       {isAnnual && (
@@ -661,7 +699,7 @@ function IncomePage({
               stripNotionTag(record.name),
               formatDate(record.date),
               accountNameById.get(record.accountId ?? "") ?? "—",
-              incomeCategoryNameById.get(record.categoryId) ?? "—",
+              categoryCell(record.categoryId),
               <span className="num">{formatMoney(record.grossIncome)}</span>,
               <span className="num">{formatMoney(record.capitalExpenditure)}</span>,
               <MoneyValue key={`${record.id}-net`} value={netIncome} />,
@@ -745,20 +783,28 @@ function IncomePage({
             />
           </Field>
           <Field label="Accounts">
-            <select value={formAccountId} onChange={(event) => setFormAccountId(event.target.value)}>
-              <option value="">— None —</option>
-              {nonCreditActiveAccounts.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </select>
+            <FilterDropdown
+              placeholder="— None —"
+              value={formAccountId}
+              onChange={setFormAccountId}
+              items={nonCreditActiveAccounts.map((account) => ({
+                id: account.id,
+                label: account.name,
+                icon: <AccountIcon account={account} />,
+              }))}
+            />
           </Field>
           <Field label="Categories">
-            <select value={formCategoryId} onChange={(event) => setFormCategoryId(event.target.value)}>
-              <option value="">— None —</option>
-              {normalIncomeCategories.map((category) => (
-                <option key={category.id} value={category.id}>{category.source}</option>
-              ))}
-            </select>
+            <FilterDropdown
+              placeholder="— None —"
+              value={formCategoryId}
+              onChange={setFormCategoryId}
+              items={normalIncomeCategories.map((category) => ({
+                id: category.id,
+                label: category.source,
+                icon: <CategoryIcon icon={category.icon} />,
+              }))}
+            />
           </Field>
           <ComputedField
             label="Net Income"

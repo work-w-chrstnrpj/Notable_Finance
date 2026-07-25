@@ -7,6 +7,7 @@ import { categoryPalette, type ForecastIncome, type ForecastKind } from "@/compo
 import type { MonitoringSplitDto } from "@shared/finance.types";
 import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue, FormSectionDivider } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
+import { CategoryIcon } from "@/components/ui/accounts";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { useIncomes, useExpenses } from "@/lib/use-data";
@@ -397,7 +398,10 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           <DataTable
             headers={["Income Type", "Gross Income", "Expenditure", "Net Income", "Earning Percentage"]}
             rows={visibleIncomeCategorySummaries.map((category) => [
-              category.source,
+              <span key={`${category.id}-name`} className="category-cell">
+                <CategoryIcon icon={category.icon} />
+                {category.source}
+              </span>,
               formatMoney(category.grossIncome),
               formatMoney(category.capitalExpenditure),
               <MoneyValue key={`${category.id}-net`} value={category.netIncome} />,
@@ -431,6 +435,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
                 title={category.source}
                 detail={formatPercent(category.earningPercentage)}
                 value={formatMoney(category.netIncome)}
+                icon={<CategoryIcon icon={category.icon} />}
               />
             ))}
           </div>
@@ -469,7 +474,10 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           <DataTable
             headers={["Expense category", "Monthly Budget", "Spending", "Remaining"]}
             rows={visibleExpenseCategorySummaries.map((category) => [
-              category.name,
+              <span key={`${category.id}-name`} className="category-cell">
+                <CategoryIcon icon={category.icon} />
+                {category.name}
+              </span>,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
               formatMoney(category.remaining),
@@ -490,7 +498,10 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               "Total Overview",
             ]}
             rows={visibleExpenseCategorySummaries.map((category) => [
-              category.name,
+              <span key={`${category.id}-name`} className="category-cell">
+                <CategoryIcon icon={category.icon} />
+                {category.name}
+              </span>,
               formatMoney(category.monthlyBudget),
               formatMoney(category.spending),
               formatMoney(category.remaining),
@@ -526,6 +537,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
                 title={category.name}
                 detail={`Remaining ${formatMoney(category.remaining, { compact: true })}`}
                 value={formatMoney(category.monthlyBudget, { compact: true })}
+                icon={<CategoryIcon icon={category.icon} />}
               />
             ))}
           </div>

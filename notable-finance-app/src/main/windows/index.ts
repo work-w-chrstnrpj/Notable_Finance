@@ -92,7 +92,7 @@ export function installMenu(): void {
         { type: 'separator' },
         {
           label: 'New Window',
-          accelerator: 'CmdOrCtrl+N',
+          accelerator: 'CmdOrCtrl+Shift+N',
           click: () => {
             createWindow()
           }
@@ -107,8 +107,29 @@ export function installMenu(): void {
           : { role: 'quit' as const }
       ]
     },
-    // App shortcuts use Option/Alt, so Cmd/Ctrl editing keys stay fully native.
-    { role: 'editMenu' },
+    // Custom Edit menu — remove Find submenu so Cmd+F reaches the renderer
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' },
+        { type: 'separator' },
+        {
+          label: 'Speech',
+          submenu: [
+            { role: 'startSpeaking' },
+            { role: 'stopSpeaking' }
+          ]
+        }
+      ]
+    },
     { role: 'viewMenu' },
     {
       label: 'Window',
