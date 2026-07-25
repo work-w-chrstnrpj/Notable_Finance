@@ -55,7 +55,8 @@ const EVENT_CHANNELS: EventChannel[] = [
   'derived:updated',
   'sync:status',
   'tabs:command',
-  'devLogs:entry'
+  'devLogs:entry',
+  'shortcut:menu'
 ]
 
 const api = {

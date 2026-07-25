@@ -21,7 +21,7 @@ import { Toast } from "@/components/ui/toast";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
 import { applyNotionTag, getMonthLabel, stripNotionTag } from "@/lib/finance-helpers";
-import { computeRange, expenseModeToUnit, anchorMonth } from "@/lib/date-range";
+import { computeRange, expenseModeToUnit, anchorMonth, todayIso } from "@/lib/date-range";
 import {
   calculateGrossPrice,
   calculateInstallmentAmount,
@@ -152,6 +152,41 @@ function ExpensePage({
     periodCount,
   });
   const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
+
+  // ── Form automations (user-triggered only; record-load uses setters directly) ──
+  const [automationNotice, setAutomationNotice] = useState<string | null>(null);
+
+  /** CC Payment Status change → auto-fill dependent fields. */
+  function onSelectPaymentStatus(next: PaymentStatus | "") {
+    const prev = paymentStatus;
+    setPaymentStatus(next);
+    if (!sections.creditCard) return;
+    if (next === "Unpaid") {
+      // A fresh unpaid CC purchase defaults to a single monthly, no interest.
+      setInterestInput("0.00");
+      setPaymentFrequency("Monthly");
+      setPeriodCountInput("1");
+      setAutomationNotice("Auto-filled: Interest ₱0.00 · Monthly · Period Count 1");
+    } else if (next === "Paid" && (prev === "Unpaid" || periodCount === 1)) {
+      // A non-installment (or single-period) CC purchase marked Paid is settled
+      // in one period, today. Installments with more periods are left untouched.
+      setPaidPeriodInput("1");
+      setDatePaidInput(todayIso());
+      setAutomationNotice("Auto-filled: Paid Period 1 · Date Paid today");
+    }
+  }
+
+  /** Pasabuy Status change → auto-fill when fully received in a single period. */
+  function onSelectPasabuyStatus(next: PasabuyStatus | "") {
+    setPasabuyStatus(next);
+    if (!sections.pasabuy) return;
+    if (next === "Payment fully received" && periodCount === 1) {
+      setPasabuyPaidPeriodInput("1");
+      setPasabuyDateOfPaymentInput(todayIso());
+      setAutomationNotice("Auto-filled: Pasabuy Paid Period 1 · Date of Payment today");
+    }
+  }
+
   const [editing, setEditing] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
@@ -1112,7 +1147,7 @@ function ExpensePage({
                 c.installment != null ? <span className="num">{formatMoney(c.installment)}</span> : "—",
                 record.paidPeriod ?? "—",
                 <span className="num">{formatMoney(c.paid)}</span>,
-                <span className="num">{formatMoney(c.remaining)}</span>,
+                <span className="num num--due">{formatMoney(c.remaining)}</span>,
                 record.paymentStatus ?? "—",
                 c.expected ? formatDate(c.expected) : "-",
                 record.datePaid ? formatDate(record.datePaid) : "-",
@@ -1274,7 +1309,7 @@ function ExpensePage({
               <Field label="Payment Status">
                 <select
                   value={paymentStatus}
-                  onChange={(event) => setPaymentStatus(event.target.value as PaymentStatus)}
+                  onChange={(event) => onSelectPaymentStatus(event.target.value as PaymentStatus)}
                 >
                   <option value="">— None —</option>
                   {paymentStatusLabels.map((status) => (
@@ -1343,7 +1378,7 @@ function ExpensePage({
               <Field label="Pasabuy Status">
                 <select
                   value={pasabuyStatus}
-                  onChange={(event) => setPasabuyStatus(event.target.value as PasabuyStatus)}
+                  onChange={(event) => onSelectPasabuyStatus(event.target.value as PasabuyStatus)}
                 >
                   <option value="">— None —</option>
                   {pasabuyStatusLabels.map((status) => (
@@ -1407,6 +1442,15 @@ function ExpensePage({
       )}
       {saveError && (
         <Toast message={saveError} onDismiss={() => setSaveError(null)} />
+      )}
+      {automationNotice && (
+        <Toast
+          key={automationNotice}
+          tone="info"
+          duration={5000}
+          message={automationNotice}
+          onDismiss={() => setAutomationNotice(null)}
+        />
       )}
     </div>
   );

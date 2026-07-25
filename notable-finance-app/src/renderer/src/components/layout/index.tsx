@@ -28,6 +28,7 @@ import { cx } from "@/lib/finance-helpers";
 import { userInitials } from "@/lib/avatar";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
+import { ShortcutHint, SECTION_SHORTCUT_ID } from "@/components/shortcuts";
 import type {
   ExpenseViewMode,
   FinanceSection,
@@ -226,6 +227,9 @@ function NavGroup({
           >
             <Icon size={17} />
             <span>{section.shortLabel ?? section.label}</span>
+            {SECTION_SHORTCUT_ID[section.id] && (
+              <ShortcutHint id={SECTION_SHORTCUT_ID[section.id]!} className="nav__shortcut" />
+            )}
             {badge > 0 && (
               <span
                 className={cx("nav__badge", isHistory && "nav__badge--warn")}

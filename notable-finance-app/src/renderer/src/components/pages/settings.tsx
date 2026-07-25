@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Database, Bug, MessageSquare, Palette, SlidersHorizontal, UserRound } from "lucide-react";
+import { Database, Bug, Keyboard, MessageSquare, Palette, SlidersHorizontal, UserRound } from "lucide-react";
+import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { useUiSettings } from "@/lib/ui-settings-context";
@@ -34,6 +35,7 @@ function SettingsPage({
   useTheme();
   const { user } = useAuth();
   const { chatEnabled, setChatEnabled, devModeEnabled, setDevModeEnabled } = useUiSettings();
+  const { openCheat } = useShortcuts();
   const initials = userInitials(user?.name, user?.email);
 
   return (
@@ -92,6 +94,28 @@ function SettingsPage({
           >
             <SlidersHorizontal size={16} />
             Manage
+          </button>
+        </div>
+      </Panel>
+      <Panel title="Keyboard shortcuts">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Shortcuts</p>
+            <p className="settings-toggle__hint">
+              Hold {IS_MAC ? "⌘" : "Ctrl"} anywhere to reveal shortcuts on buttons and tabs, or{" "}
+              <button
+                type="button"
+                className="settings-inline-link"
+                onClick={openCheat}
+              >
+                view the full list
+              </button>
+              .
+            </p>
+          </div>
+          <button type="button" className="button" onClick={openCheat}>
+            <Keyboard size={16} />
+            View shortcuts
           </button>
         </div>
       </Panel>

@@ -742,6 +742,8 @@ export type EventChannel =
   | 'tabs:command'
   /** Dev Mode live log stream (payload: DevLogEntry). */
   | 'devLogs:entry'
+  /** Edit-menu keys the OS menu owns, routed to the renderer (undo/redo/select all). */
+  | 'shortcut:menu'
 
 export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
 

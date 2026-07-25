@@ -91,8 +91,9 @@ export function installMenu(): void {
         },
         { type: 'separator' },
         {
+          // ⌘N is freed for the in-app "New record" shortcut; New Window moves to ⌘⇧N.
           label: 'New Window',
-          accelerator: 'CmdOrCtrl+N',
+          accelerator: 'CmdOrCtrl+Shift+N',
           click: () => {
             createWindow()
           }
@@ -107,7 +108,33 @@ export function installMenu(): void {
           : { role: 'quit' as const }
       ]
     },
-    { role: 'editMenu' },
+    {
+      // Native cut/copy/paste stay as roles (needed for text fields on macOS);
+      // Undo/Redo/Select All are routed to the renderer so they can be
+      // context-aware (text editing while typing, app actions otherwise).
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Undo',
+          accelerator: 'CmdOrCtrl+Z',
+          click: () => sendToFocused('shortcut:menu', { action: 'undo' })
+        },
+        {
+          label: 'Redo',
+          accelerator: 'CmdOrCtrl+Y',
+          click: () => sendToFocused('shortcut:menu', { action: 'redo' })
+        },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        {
+          label: 'Select All',
+          accelerator: 'CmdOrCtrl+A',
+          click: () => sendToFocused('shortcut:menu', { action: 'selectAll' })
+        }
+      ]
+    },
     { role: 'viewMenu' },
     {
       label: 'Window',

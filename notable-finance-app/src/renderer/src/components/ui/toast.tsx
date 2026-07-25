@@ -1,15 +1,19 @@
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, Sparkles, X } from "lucide-react";
+
+export type ToastTone = "error" | "info";
 
 export function Toast({
   message,
   onDismiss,
   duration,
+  tone = "error",
 }: {
   message: string;
   onDismiss: () => void;
   duration?: number;
+  tone?: ToastTone;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -28,9 +32,14 @@ export function Toast({
     return () => clearTimeout(timer);
   }, [visible, duration, onDismiss]);
 
+  const Icon = tone === "info" ? Sparkles : AlertTriangle;
+
   return (
-    <div className={`toast ${visible ? "toast--visible" : ""}`} role="alert">
-      <AlertTriangle size={16} className="toast__icon" />
+    <div
+      className={`toast toast--${tone} ${visible ? "toast--visible" : ""}`}
+      role={tone === "info" ? "status" : "alert"}
+    >
+      <Icon size={16} className="toast__icon" />
       <span className="toast__message">{message}</span>
       <button
         type="button"

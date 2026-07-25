@@ -28,9 +28,9 @@ function DashboardPage({
   } = useLiveCollections();
   const { state: incomesState } = useIncomes({ month: selectedMonth });
   const { state: expensesState } = useExpenses({ month: selectedMonth });
-  const { state: alkansyaState } = useWorkflowRecords("alkansya", {
-    month: selectedMonth,
-  });
+  // Alkansya Balance is an all-time savings pot, not a monthly figure — pull
+  // every record (no month scope) and show it as a positive kept-aside total.
+  const { state: alkansyaState } = useWorkflowRecords("alkansya", {});
   const { state: transferState } = useWorkflowRecords("transfer", {
     month: selectedMonth,
   });
@@ -63,7 +63,7 @@ function DashboardPage({
   const monthExpenses: ExpenseRecord[] = (
     expensesState.status === "success" ? expensesState.data : []
   ).filter((r) => !r.description?.includes("[Deleted:"));
-  const monthAlkansya: IncomeRecord[] = (
+  const allAlkansya: IncomeRecord[] = (
     alkansyaState.status === "success" ? alkansyaState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
 
@@ -83,9 +83,10 @@ function DashboardPage({
     (sum, r) => sum + r.amount + (r.interest ?? 0),
     0,
   );
-  const alkansyaBalance = monthAlkansya.reduce(
-    (sum, r) => sum + (r.grossIncome - r.capitalExpenditure),
-    0,
+  // Amounts are stored negative (deducted from the account for safekeeping);
+  // show the absolute kept-aside total.
+  const alkansyaBalance = Math.abs(
+    allAlkansya.reduce((sum, r) => sum + (r.grossIncome - r.capitalExpenditure), 0),
   );
 
   const totalCashFlow = nonCreditActiveAccounts.reduce(

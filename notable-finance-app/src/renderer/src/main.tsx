@@ -10,6 +10,8 @@ import { UiSettingsProvider } from "@/lib/ui-settings-context";
 import { FinanceWorkspace } from "@/components/finance-workspace";
 import { WorkspaceTabBar } from "@/components/layout/workspace-tab-bar";
 import { AppTabsProvider, useActiveTabSection } from "@/lib/app-tabs-context";
+import { ShortcutProvider } from "@/lib/shortcuts/context";
+import { GlobalShortcuts, CheatSheet } from "@/components/shortcuts";
 import { DevModeProbe } from "@/components/dev-mode-probe";
 
 // Desktop entry — UiSettings (SQLite) wraps theme/auth so profile + prefs persist.
@@ -68,7 +70,11 @@ function App() {
             <FinanceDataProvider>
               <IpcInvalidationBridge />
               <AppTabsProvider>
-                <TabbedWorkspace />
+                <ShortcutProvider>
+                  <GlobalShortcuts />
+                  <TabbedWorkspace />
+                  <CheatSheet />
+                </ShortcutProvider>
               </AppTabsProvider>
             </FinanceDataProvider>
           </AuthProvider>
