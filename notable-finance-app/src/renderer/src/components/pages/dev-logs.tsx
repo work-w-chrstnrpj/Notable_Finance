@@ -5,7 +5,7 @@ import { navigate } from "@/lib/router";
 import { cx } from "@/lib/finance-helpers";
 import type { DevLogEntry, DevLogKind } from "@shared/finance.types";
 
-const KINDS: Array<DevLogKind | "all"> = ["all", "click", "api", "operation", "system"];
+const KINDS: Array<DevLogKind | "all"> = ["all", "api", "operation", "system"];
 
 function formatTime(at: number): string {
   const d = new Date(at);
@@ -115,7 +115,7 @@ function DevLogsPage() {
 
       <div className="dev-logs__stream" role="log" aria-live="polite">
         {filtered.length === 0 && (
-          <p className="dev-logs__empty">No entries yet. Click around or run Sync to generate logs.</p>
+          <p className="dev-logs__empty">No entries yet. Failed API calls, sync errors, and chat failures will appear here.</p>
         )}
         {filtered.map((e) => (
           <article

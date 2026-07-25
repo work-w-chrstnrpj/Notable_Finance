@@ -467,7 +467,7 @@ export interface UiSettings {
 }
 
 /** Dev Mode log kinds (in-memory ring buffer; never persisted). */
-export type DevLogKind = 'click' | 'api' | 'operation' | 'system'
+export type DevLogKind = 'api' | 'operation' | 'system'
 
 export interface DevLogEntry {
   id: string

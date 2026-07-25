@@ -101,17 +101,19 @@ function installDevLogIpcWrapper(): void {
           out && typeof out === 'object' && 'ok' in (out as object)
             ? Boolean((out as ApiResult<unknown>).ok)
             : true
-        appendDevLog({
-          kind: 'api',
-          source: 'main',
-          action: channel,
-          message: ok ? `IPC ${channel} ok` : `IPC ${channel} failed`,
-          detail: {
-            args: summarizeForDevLog(args)
-          } as Record<string, unknown>,
-          durationMs: Date.now() - started,
-          ok
-        })
+        if (!ok) {
+          appendDevLog({
+            kind: 'api',
+            source: 'main',
+            action: channel,
+            message: `IPC ${channel} failed`,
+            detail: {
+              args: summarizeForDevLog(args)
+            } as Record<string, unknown>,
+            durationMs: Date.now() - started,
+            ok: false
+          })
+        }
         return out
       } catch (error) {
         appendDevLog({
