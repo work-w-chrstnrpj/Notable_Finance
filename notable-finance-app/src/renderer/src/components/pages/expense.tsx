@@ -42,7 +42,7 @@ import {
 } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
-import { expensesApi } from "@/lib/api-client";
+import { expensesApi, incomesApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { parseNumberInput, parseOptionalNumberInput, getExpenseTotal } from "@/lib/finance-helpers";
@@ -219,6 +219,7 @@ function ExpensePage({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [linkedIncomeName, setLinkedIncomeName] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
@@ -408,6 +409,14 @@ function ExpensePage({
     setPasabuyPaidPeriodInput(record?.pasabuyPaidPeriod?.toString() ?? "");
     setPasabuyAccountReceiverId(record?.pasabuyAccountReceiverId ?? "");
     setEditingId(record?.id ?? null);
+    // Look up linked CC Payment income name
+    if (record?.ccLinkPaymentReceiptId) {
+      incomesApi.detail(record.ccLinkPaymentReceiptId).then((res) => {
+        setLinkedIncomeName(res.success ? res.data.name : null);
+      }).catch(() => setLinkedIncomeName(null));
+    } else {
+      setLinkedIncomeName(null);
+    }
     setEditing(mode === "new");
     setSaveError(null);
     setModal({ mode, title });
@@ -1427,6 +1436,14 @@ function ExpensePage({
                 label="Expected payment date"
                 value={expectedPaymentDate ? formatDate(expectedPaymentDate) : "-"}
               />
+              {linkedIncomeName && (
+                <>
+                  <FormSectionDivider title="CC Payment Receipt" />
+                  <div className="form-grid form-grid--single">
+                    <ComputedField label="Covered by" value={linkedIncomeName} />
+                  </div>
+                </>
+              )}
             </>
           )}
           {sections.pasabuy && (

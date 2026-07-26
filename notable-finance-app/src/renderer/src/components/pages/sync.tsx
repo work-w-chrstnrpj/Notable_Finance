@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { MetricCard, Panel, Badge, ErrorRow } from "@/components/ui";
+import { ConfirmModal } from "@/components/ui/form-modals";
 import { StatusPill } from "@/components/ui/date-range";
 import { useSyncStatus } from "@/lib/use-data";
 import { cx } from "@/lib/finance-helpers";
@@ -200,6 +201,7 @@ function DesktopSyncPanel() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [modalConflict, setModalConflict] = useState<DesktopConflict | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const reload = async () => {
     const [s, c] = await Promise.all([window.api.sync.getSettings(), window.api.sync.listConflicts()]);
@@ -220,6 +222,19 @@ function DesktopSyncPanel() {
     setNotice(
       r.ok
         ? `Pulled ${r.data.referenceUpserted} reference rows, ${r.data.inserted} records.`
+        : r.error.message,
+    );
+    setBusy(false);
+  };
+
+  const resetAll = async () => {
+    setBusy(true);
+    setNotice(null);
+    setShowResetConfirm(false);
+    const r = await window.api.sync.reset();
+    setNotice(
+      r.ok
+        ? `Reset complete. Pulled ${r.data.referenceUpserted} reference rows, ${r.data.inserted} records from Notion.`
         : r.error.message,
     );
     setBusy(false);
@@ -273,6 +288,19 @@ function DesktopSyncPanel() {
           <button type="button" className="button" onClick={() => void initialPull()} disabled={busy}>
             <CloudDownload size={16} />
             {busy ? "Pulling…" : "Pull now"}
+          </button>
+        </div>
+
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Reset local database</p>
+            <p className="settings-toggle__hint">
+              Delete all local data and re-download everything from Notion. This cannot be undone.
+            </p>
+          </div>
+          <button type="button" className="button button--danger" onClick={() => setShowResetConfirm(true)} disabled={busy}>
+            <AlertTriangle size={16} />
+            Reset
           </button>
         </div>
 
@@ -354,6 +382,19 @@ function DesktopSyncPanel() {
           </div>
         )}
       </div>
+
+      {/* Reset confirmation modal */}
+      {showResetConfirm && (
+        <ConfirmModal
+          title="Reset local database"
+          message="Are you sure you want to reset the local database? All local data will be deleted and re-downloaded from Notion. This action cannot be undone."
+          confirmLabel="Reset"
+          danger
+          busy={busy}
+          onConfirm={() => void resetAll()}
+          onCancel={() => setShowResetConfirm(false)}
+        />
+      )}
 
       {/* Three-way merge modal */}
       {modalConflict && (

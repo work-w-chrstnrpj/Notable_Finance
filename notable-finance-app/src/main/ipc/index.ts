@@ -24,6 +24,7 @@ import {
   listConflicts,
   pullAll,
   pushAll,
+  resetDatabase,
   resolveAllConflicts,
   resolveConflict,
   setSyncSettings,
@@ -189,6 +190,9 @@ export function registerIpc(): void {
   ipcMain.handle('incomes:list', (_e, params?: IncomeListParams) =>
     result(() => repo.listIncomes(params))
   )
+  ipcMain.handle('incomes:get', (_e, id: string) =>
+    result(() => repo.getIncome(id))
+  )
   ipcMain.handle('incomes:create', (_e, input: CreateIncomeInput) =>
     result(() => {
       const record = repo.createIncome(input)
@@ -349,6 +353,7 @@ export function registerIpc(): void {
   ipcMain.handle('sync:pull', (_e, since?: string) => result(() => pullAll(false, since))) // Notion → App only
   ipcMain.handle('sync:push', () => result(() => pushAll())) // App → Notion only
   ipcMain.handle('sync:initialPull', () => result(() => pullAll(true))) // full pull (onboarding)
+  ipcMain.handle('sync:reset', () => result(() => resetDatabase())) // wipe local + re-pull
   ipcMain.handle('sync:getSettings', () => result(() => getSyncSettings()))
   ipcMain.handle('sync:setMode', (_e, patch: Partial<SyncSettings>) =>
     result(() => {

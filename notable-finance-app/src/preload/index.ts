@@ -83,6 +83,8 @@ const api = {
   incomes: {
     list: (params?: IncomeListParams): Promise<ApiResult<IncomeRecordDto[]>> =>
       ipcRenderer.invoke('incomes:list', params),
+    get: (id: string): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke('incomes:get', id),
     create: (input: CreateIncomeInput): Promise<ApiResult<IncomeRecordDto>> =>
       ipcRenderer.invoke('incomes:create', input),
     update: (id: string, patch: UpdateIncomeInput): Promise<ApiResult<IncomeRecordDto>> =>
@@ -172,6 +174,8 @@ const api = {
     push: (): Promise<ApiResult<PushResult>> => ipcRenderer.invoke('sync:push'),
     /** Full pull from Notion (onboarding / first sync). */
     initialPull: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:initialPull'),
+    /** Wipe all local finance data and re-pull from Notion. */
+    reset: (): Promise<ApiResult<PullResult>> => ipcRenderer.invoke('sync:reset'),
     getSettings: (): Promise<ApiResult<SyncSettings>> => ipcRenderer.invoke('sync:getSettings'),
     setMode: (patch: Partial<SyncSettings>): Promise<ApiResult<SyncSettings>> =>
       ipcRenderer.invoke('sync:setMode', patch),

@@ -9,6 +9,7 @@ export { pullAll } from './pull'
 export { syncStatus } from './status'
 export { getSyncSettings, setSyncSettings } from './settings'
 export { listConflicts, resolveConflict, resolveAllConflicts } from './conflicts'
+export { resetDatabase } from './reset'
 
 /**
  * A full manual pass. PULL first so the three-way merge can detect conflicts and

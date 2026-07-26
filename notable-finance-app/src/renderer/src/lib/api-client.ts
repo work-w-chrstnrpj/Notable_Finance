@@ -124,10 +124,7 @@ export const incomesApi = {
     return adapt(nfApi().incomes.list({ ...params, view: "incomes" })) as Promise<ApiResult<IncomeRecord[]>>;
   },
   async detail(id: string): Promise<ApiResult<IncomeRecord>> {
-    const r = await this.list();
-    if (!r.success) return r;
-    const found = r.data.find((x) => x.id === id);
-    return found ? ok(found) : { success: false, error: { code: "E_NOT_FOUND", message: "income not found" } };
+    return adapt(nfApi().incomes.get(id)) as Promise<ApiResult<IncomeRecord>>;
   },
   create(body: Record<string, unknown>) {
     return adapt(nfApi().incomes.create(body as never)) as Promise<ApiResult<IncomeRecord>>;

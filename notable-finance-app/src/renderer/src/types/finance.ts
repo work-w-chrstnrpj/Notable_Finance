@@ -143,6 +143,7 @@ export type ExpenseRecord = {
   pasabuyPaidPeriod: number | null;
   pasabuyAccountReceiverId: string | null;
   pasabuyBalance: number;
+  ccLinkPaymentReceiptId: string | null;
 };
 
 // ── History section ───────────────────────────────────────────────────
