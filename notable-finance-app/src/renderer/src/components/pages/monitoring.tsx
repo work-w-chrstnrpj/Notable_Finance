@@ -14,13 +14,78 @@ import { useIncomes, useExpenses } from "@/lib/use-data";
 import { useFabRegister } from "@/lib/fab-export-context";
 import { SHOT_HIDE_CLASS } from "@/lib/export-node";
 import { cx, getExpenseTotal, getIncomeCapitalExpenditureTotal, getIncomeGrossTotal, getIncomeNetTotal, getMonthLabel, parseNumberInput } from "@/lib/finance-helpers";
+import { anchorMonth } from "@/lib/date-range";
 import { calculateCategoryTotalOverview } from "@/lib/finance-rules";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
-import type { ExpenseRecord, IncomeRecord } from "@/types/finance";
+import type { ExpenseRecord, IncomeRecord, MonitoringViewMode } from "@/types/finance";
 
-function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
+const monitoringViewModes: MonitoringViewMode[] = ["Monthly", "Quarterly", "Semi-Annually", "Annually"];
+
+function computeMonitoringRange(mode: MonitoringViewMode, anchor: string): { start: string; end: string } {
+  const d = new Date(anchor + "-15"); // mid-month to avoid edge cases
+  const y = d.getFullYear();
+  const m = d.getMonth(); // 0-indexed
+
+  if (mode === "Annually") {
+    return { start: `${y}-01-01`, end: `${y}-12-31` };
+  }
+  if (mode === "Semi-Annually") {
+    // Start from selected month, span 6 months
+    const endD = new Date(y, m + 6, 0); // last day of month 5 after anchor (day 0 of m+6 = last day of m+5)
+    return {
+      start: `${y}-${String(m + 1).padStart(2, "0")}-01`,
+      end: `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}-${String(endD.getDate()).padStart(2, "0")}`,
+    };
+  }
+  if (mode === "Quarterly") {
+    // Start from selected month, span 4 months
+    const endD = new Date(y, m + 4, 0); // last day of month 3 after anchor (day 0 of m+4 = last day of m+3)
+    return {
+      start: `${y}-${String(m + 1).padStart(2, "0")}-01`,
+      end: `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}-${String(endD.getDate()).padStart(2, "0")}`,
+    };
+  }
+  // Monthly - single month
+  const endDate = new Date(y, m + 1, 0);
+  return { start: `${y}-${String(m + 1).padStart(2, "0")}-01`, end: `${y}-${String(m + 1).padStart(2, "0")}-${endDate.getDate()}` };
+}
+
+function periodLabel(mode: MonitoringViewMode): string {
+  if (mode === "Annually") return "Annual";
+  if (mode === "Semi-Annually") return "Semi-Annual";
+  if (mode === "Quarterly") return "Quarterly";
+  return "Monthly";
+}
+
+function monitoringRangeLabel(mode: MonitoringViewMode, anchor: string): string {
+  const d = new Date(anchor + "-15");
+  if (mode === "Annually") return anchor.slice(0, 4);
+  if (mode === "Semi-Annually") {
+    const startLabel = getMonthLabel(anchor).slice(0, 3);
+    const endD = new Date(d.getFullYear(), d.getMonth() + 6, 0);
+    const endLabel = getMonthLabel(`${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}`).slice(0, 3);
+    return `${startLabel} – ${endLabel} ${anchor.slice(0, 4)}`;
+  }
+  if (mode === "Quarterly") {
+    const startLabel = getMonthLabel(anchor).slice(0, 3);
+    const endD = new Date(d.getFullYear(), d.getMonth() + 4, 0);
+    const endLabel = getMonthLabel(`${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}`).slice(0, 3);
+    return `${startLabel} – ${endLabel} ${anchor.slice(0, 4)}`;
+  }
+  return getMonthLabel(anchor);
+}
+
+function MonthlyMonitoringPage({
+  viewMode,
+  onViewModeChange,
+  selectedDate,
+}: {
+  viewMode: MonitoringViewMode;
+  onViewModeChange: (viewMode: MonitoringViewMode) => void;
+  selectedDate: string;
+}) {
   type ZeroFilter = "all" | "hide-both" | "hide-spending" | "hide-budget";
   const { settings, ready: settingsReady, updateSettings } = useUiSettings();
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
@@ -29,8 +94,20 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   const [zeroFilter, setZeroFilter] = useState<ZeroFilter>("all");
   const [filtersHydrated, setFiltersHydrated] = useState(false);
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
-  const { state: incomesState } = useIncomes({ month: selectedMonth });
-  const { state: expensesState } = useExpenses({ month: selectedMonth });
+
+  const selectedMonth = anchorMonth(selectedDate);
+
+  // Compute the date range based on view mode
+  const range = computeMonitoringRange(viewMode, selectedMonth);
+
+  // Compute the period multiplier for budget scaling
+  const periodMultiplier = viewMode === "Annually" ? 12 : viewMode === "Semi-Annually" ? 6 : viewMode === "Quarterly" ? 4 : 1;
+
+  const period = periodLabel(viewMode);
+  const rangeLbl = monitoringRangeLabel(viewMode, selectedMonth);
+
+  const { state: incomesState } = useIncomes({ rangeStart: range.start, rangeEnd: range.end });
+  const { state: expensesState } = useExpenses({ rangeStart: range.start, rangeEnd: range.end });
 
   useEffect(() => {
     if (!settingsReady || filtersHydrated) return;
@@ -80,7 +157,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     };
   }, []);
 
-  const forecastKey = `nf_forecast_income_${selectedMonth}`;
+  const forecastKey = `nf_forecast_income_${viewMode}_${range.start}`;
   const [forecasts, setForecasts] = useState<ForecastIncome[]>([]);
   const [forecastModalOpen, setForecastModalOpen] = useState(false);
   const [forecastKind, setForecastKind] = useState<ForecastKind>("income");
@@ -211,16 +288,22 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
     0,
   );
 
+  // Scaled budget values: budgets represent monthly allocations, so multiply
+  // by the period multiplier. Spending values are actuals — do NOT scale.
+  const scaledMonthlyBudgetTotal = monthlyBudgetTotal * periodMultiplier;
+  const scaledBudgetSpendingTotal = budgetSpendingTotal; // spending is actual
+  const scaledRemainingTotal = scaledMonthlyBudgetTotal - budgetSpendingTotal;
+
   // Expose this view's DOM to the FAB so it can capture a Monthly Insight Shot.
   const { setInsight } = useFabRegister();
   const captureRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setInsight({
-      monthLabel: getMonthLabel(selectedMonth),
+      monthLabel: rangeLbl,
       getNode: () => captureRef.current,
     });
     return () => setInsight(null);
-  }, [selectedMonth, setInsight]);
+  }, [rangeLbl, setInsight]);
 
 
   // P5: Show skeleton while primary data is loading
@@ -240,16 +323,24 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
   return (
     <div className="page-stack" ref={captureRef}>
       <PageToolbar
-        title="Monthly Monitoring"
+        title={`${period} Monitoring`}
         actions={
-          <button
-            type="button"
-            className={cx("button button--primary", SHOT_HIDE_CLASS)}
-            onClick={() => setForecastModalOpen(true)}
-          >
-            <Plus size={16} />
-            Add Forecast
-          </button>
+          <>
+            <SegmentedControl
+              label="Monitoring view"
+              options={monitoringViewModes.map((mode) => ({ label: mode, value: mode }))}
+              value={viewMode}
+              onChange={(value) => onViewModeChange(value as MonitoringViewMode)}
+            />
+            <button
+              type="button"
+              className={cx("button button--primary", SHOT_HIDE_CLASS)}
+              onClick={() => setForecastModalOpen(true)}
+            >
+              <Plus size={16} />
+              Add Forecast
+            </button>
+          </>
         }
       />
       {forecasts.length > 0 && (
@@ -306,23 +397,23 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       )}
       <section className="metric-grid">
         <MetricCard
-          title="Monthly Income"
+          title={`${period} Income`}
           value={formatMoney(monitoring.monthlyIncome)}
           detail={
             forecastIncomeTotal
-              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastIncomeTotal, { compact: true })} forecast`
-              : getMonthLabel(selectedMonth)
+              ? `${rangeLbl} · incl. ${formatMoney(forecastIncomeTotal, { compact: true })} forecast`
+              : rangeLbl
           }
           icon={ArrowUpRight}
           tone="green"
         />
         <MetricCard
-          title="Monthly Expense"
+          title={`${period} Expense`}
           value={formatMoney(monitoring.monthlyExpense)}
           detail={
             forecastExpenseTotal
-              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastExpenseTotal, { compact: true })} forecast`
-              : getMonthLabel(selectedMonth)
+              ? `${rangeLbl} · incl. ${formatMoney(forecastExpenseTotal, { compact: true })} forecast`
+              : rangeLbl
           }
           icon={Receipt}
           tone="rose"
@@ -336,7 +427,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           action={
             <span className="allocation-source" title="Where these percentages come from">
               {split.source === "notion"
-                ? "Notion · Total Monthly Monitoring"
+                ? "Notion"
                 : "Default 50 / 30 / 20"}
             </span>
           }
@@ -345,7 +436,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           <BudgetRow label="Wants" percent={pct(split.wantsPct)} amount={monitoring.forWants} />
           <BudgetRow label="Savings" percent={pct(split.savingsPct)} amount={monitoring.forSavings} />
         </Panel>
-        <Panel title="Monthly Insight">
+        <Panel title={`${period} Insight`}>
           {(() => {
             const setBudget = monitoring.forNeeds + monitoring.forWants;
             // On track when actual spending stays within the Needs+Wants budget.
@@ -362,7 +453,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
                   </p>
                   <p className="insight__message">
                     {onTrack
-                      ? `You spent ${formatMoney(difference)} less than your set budget this month — you're on track!`
+                      ? `You spent ${formatMoney(difference)} less than your set budget ${viewMode === "Monthly" ? "this month" : "this period"} — you're on track!`
                       : `You've exceeded your set budget by ${formatMoney(difference)}.`}
                   </p>
                 </div>
@@ -443,14 +534,14 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       </Panel>
 
       <Panel
-        title="Monthly Budget"
+        title={`${period} Budget`}
         action={
           <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Expense category view"
               options={[
                 { label: "Simplified", value: "simplified" },
-                { label: "MB Breakdown", value: "breakdown" },
+                { label: "Breakdown", value: "breakdown" },
                 { label: "Chart", value: "chart" },
                 { label: "Cards", value: "cards" },
               ]}
@@ -472,18 +563,18 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
       >
         {expenseCategoryView === "simplified" && (
           <DataTable
-            headers={["Expense category", "Monthly Budget", "Spending", "Remaining"]}
+            headers={["Expense category", `${period} Budget`, "Spending", "Remaining"]}
             rows={visibleExpenseCategorySummaries.map((category) => [
               <span key={`${category.id}-name`} className="category-cell">
                 <CategoryIcon icon={category.icon} />
                 {category.name}
               </span>,
-              formatMoney(category.monthlyBudget),
+              formatMoney(category.monthlyBudget * periodMultiplier),
               formatMoney(category.spending),
-              formatMoney(category.remaining),
+              formatMoney(category.monthlyBudget * periodMultiplier - category.spending),
             ])}
             footerRows={[
-              ["Total", formatMoney(monthlyBudgetTotal), formatMoney(budgetSpendingTotal), formatMoney(remainingTotal)],
+              ["Total", formatMoney(scaledMonthlyBudgetTotal), formatMoney(scaledBudgetSpendingTotal), formatMoney(scaledRemainingTotal)],
             ]}
           />
         )}
@@ -491,7 +582,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           <DataTable
             headers={[
               "Expense category",
-              "Monthly Budget",
+              `${period} Budget`,
               "Spending",
               "Remaining",
               "Overview",
@@ -502,18 +593,18 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
                 <CategoryIcon icon={category.icon} />
                 {category.name}
               </span>,
-              formatMoney(category.monthlyBudget),
+              formatMoney(category.monthlyBudget * periodMultiplier),
               formatMoney(category.spending),
-              formatMoney(category.remaining),
+              formatMoney(category.monthlyBudget * periodMultiplier - category.spending),
               category.overview,
               formatPercent(category.totalOverview),
             ])}
             footerRows={[
               [
                 "Total",
-                formatMoney(monthlyBudgetTotal),
-                formatMoney(budgetSpendingTotal),
-                formatMoney(remainingTotal),
+                formatMoney(scaledMonthlyBudgetTotal),
+                formatMoney(scaledBudgetSpendingTotal),
+                formatMoney(scaledRemainingTotal),
                 "",
                 formatPercent(calculateCategoryTotalOverview(budgetSpendingTotal, monitoring.monthlyExpense)),
               ],
@@ -535,8 +626,8 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               <CategoryCard
                 key={category.id}
                 title={category.name}
-                detail={`Remaining ${formatMoney(category.remaining, { compact: true })}`}
-                value={formatMoney(category.monthlyBudget, { compact: true })}
+                detail={`Remaining ${formatMoney(category.monthlyBudget * periodMultiplier - category.spending, { compact: true })}`}
+                value={formatMoney(category.monthlyBudget * periodMultiplier, { compact: true })}
                 icon={<CategoryIcon icon={category.icon} />}
               />
             ))}

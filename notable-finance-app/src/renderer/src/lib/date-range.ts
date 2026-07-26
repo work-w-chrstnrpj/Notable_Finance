@@ -2,6 +2,7 @@ import type {
   ExpenseViewMode,
   FinanceSectionId,
   IncomeViewMode,
+  MonitoringViewMode,
 } from "@/types/finance";
 
 export type ViewUnit = "day" | "week" | "month" | "year";
@@ -63,6 +64,18 @@ export function expenseModeToUnit(mode: ExpenseViewMode): ViewUnit | null {
       return "year";
     default:
       return null;
+  }
+}
+
+export function monitoringModeToUnit(mode: MonitoringViewMode): ViewUnit {
+  switch (mode) {
+    case "Annually":
+      return "year";
+    case "Semi-Annually":
+    case "Quarterly":
+    case "Monthly":
+    default:
+      return "month";
   }
 }
 
@@ -150,6 +163,7 @@ export function activeSelectorUnit(
   section: FinanceSectionId,
   incomeViewMode: IncomeViewMode,
   expenseViewMode: ExpenseViewMode,
+  monitoringViewMode: MonitoringViewMode = "Monthly",
 ): ViewUnit | null {
   switch (section) {
     case "income":
@@ -157,10 +171,11 @@ export function activeSelectorUnit(
     case "expense":
       return expenseModeToUnit(expenseViewMode);
     case "dashboard":
-    case "monthly-monitoring":
     case "transfer":
     case "credit-card-payment":
       return "month";
+    case "monthly-monitoring":
+      return monitoringModeToUnit(monitoringViewMode);
     // Alkansya (Savings) and Receivables are month-independent buckets, so
     // they show no date selector and query every matching record.
     case "alkansya":

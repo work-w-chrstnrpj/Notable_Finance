@@ -14,10 +14,12 @@ function DateRangeSelector({
   unit,
   anchorDate,
   onChange,
+  activeMonths,
 }: {
   unit: ViewUnit;
   anchorDate: string;
   onChange: (isoDate: string) => void;
+  activeMonths?: number[];
 }) {
   const [open, setOpen] = useState(false);
   const [year, month, day] = anchorDate.split("-").map(Number);
@@ -114,7 +116,7 @@ function DateRangeSelector({
                         key={mName}
                         className={cx(
                           "date-picker__cell",
-                          draftYear === year && m + 1 === month && "is-active",
+                          draftYear === year && (m + 1 === month || activeMonths?.includes(m)) && "is-active",
                         )}
                         onClick={() => pickMonth(m)}
                       >

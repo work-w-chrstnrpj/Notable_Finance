@@ -134,6 +134,16 @@ function ExpensePage({
       </span>
     );
   };
+  const accountCell = (id: string | null | undefined) => {
+    const a = accountById.get(id ?? "");
+    if (!a) return accountNameById.get(id ?? "") ?? "—";
+    return (
+      <span className="cat-cell">
+        <AccountIcon account={a} />
+        {a.name}
+      </span>
+    );
+  };
   const sections = getExpenseConditionalSections({
     accountType,
     viewMode,
@@ -1058,7 +1068,7 @@ function ExpensePage({
               record.pasabuyer ?? "—",
               record.pasabuyStatus ?? "—",
               record.pasabuyDateOfPayment ? formatDate(record.pasabuyDateOfPayment) : "—",
-              accountNameById.get(record.pasabuyAccountReceiverId ?? "") ?? "—",
+              accountCell(record.pasabuyAccountReceiverId),
             ])}
             footerRows={[
               [
@@ -1112,7 +1122,7 @@ function ExpensePage({
                 <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
                   {stripNotionTag(record.description)}
                 </span>,
-                accountNameById.get(record.accountId ?? "") ?? "—",
+                accountCell(record.accountId),
                 <span className="expense-cell--unpaid num" key={`${record.id}-amt`}>
                   {formatMoney(record.amount)}
                 </span>,
@@ -1184,7 +1194,7 @@ function ExpensePage({
               return [
                 formatDate(record.purchaseDate),
                 stripNotionTag(record.description),
-                accountNameById.get(record.accountId ?? "") ?? "—",
+                accountCell(record.accountId),
                 <span className="num">{formatMoney(record.amount)}</span>,
                 categoryCell(record.categoryId),
                 <span className="num">{formatMoney(record.interest ?? 0)}</span>,
@@ -1249,7 +1259,7 @@ function ExpensePage({
                 formatDate(record.purchaseDate),
                 stripNotionTag(record.description),
                 <span className="num">{formatMoney(record.amount)}</span>,
-                accountNameById.get(record.accountId ?? "") ?? "—",
+                accountCell(record.accountId),
                 categoryCell(record.categoryId),
                 record.datePaid ? formatDate(record.datePaid) : "-",
               ].map((cell, cellIndex) =>

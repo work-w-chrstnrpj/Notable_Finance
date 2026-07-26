@@ -58,6 +58,20 @@ function IncomePage({
       </span>
     );
   };
+  const accountById = useMemo(
+    () => new Map(nonCreditActiveAccounts.map((a) => [a.id, a])),
+    [nonCreditActiveAccounts],
+  );
+  const accountCell = (id: string | null | undefined) => {
+    const a = accountById.get(id ?? "");
+    if (!a) return accountNameById.get(id ?? "") ?? "—";
+    return (
+      <span className="cat-cell">
+        <AccountIcon account={a} />
+        {a.name}
+      </span>
+    );
+  };
   const range = computeRange(incomeModeToUnit(viewMode), selectedDate);
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -698,7 +712,7 @@ function IncomePage({
             return [
               stripNotionTag(record.name),
               formatDate(record.date),
-              accountNameById.get(record.accountId ?? "") ?? "—",
+              accountCell(record.accountId),
               categoryCell(record.categoryId),
               <span className="num">{formatMoney(record.grossIncome)}</span>,
               <span className="num">{formatMoney(record.capitalExpenditure)}</span>,

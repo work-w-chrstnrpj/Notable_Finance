@@ -253,6 +253,7 @@ function TopBar({
   selectorUnit,
   syncState,
   activeSyncKind = null,
+  activeMonths,
   onDateChange,
   onSchemaVerify,
   onSync,
@@ -268,6 +269,7 @@ function TopBar({
   selectorUnit: ViewUnit | null;
   syncState: SyncState;
   activeSyncKind?: "full" | "pull" | "push" | null;
+  activeMonths?: number[];
   onDateChange: (isoDate: string) => void;
   onSchemaVerify: () => void;
   onSync: () => void;
@@ -292,6 +294,7 @@ function TopBar({
             unit={selectorUnit}
             anchorDate={selectedDate}
             onChange={onDateChange}
+            activeMonths={activeMonths}
           />
         )}
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />

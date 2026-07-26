@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useFinanceData } from "@/lib/finance-data-context";
 import { syncApi } from "@/lib/api-client";
@@ -39,7 +39,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 // Hooks & types
 import { isWorkflowSection } from "@/components/hooks";
-import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, SchemaHealth, SyncState } from "@/types/finance";
+import type { ExpenseViewMode, FinanceSectionId, IncomeViewMode, MonitoringViewMode, SchemaHealth, SyncState } from "@/types/finance";
 
 export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSectionId }) {
   const { user } = useAuth();
@@ -51,6 +51,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const selectedMonth = anchorMonth(selectedDate);
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
+  const [monitoringViewMode, setMonitoringViewMode] = useState<MonitoringViewMode>("Monthly");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
@@ -132,7 +133,22 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
 
   const [activeSyncKind, setActiveSyncKind] = useState<"full" | "pull" | "push" | null>(null);
 
-  const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode);
+  const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode, monitoringViewMode);
+
+  const activeMonths = useMemo(() => {
+    if (activeSection !== "monthly-monitoring") return undefined;
+    if (monitoringViewMode === "Monthly") return undefined; // single month highlight is enough
+    if (monitoringViewMode === "Annually") return undefined; // year picker, no month grid
+
+    const d = new Date(selectedDate.slice(0, 7) + "-15");
+    const m = d.getMonth(); // 0-indexed
+    const span = monitoringViewMode === "Quarterly" ? 4 : 6;
+    const months: number[] = [];
+    for (let i = 0; i < span; i++) {
+      months.push((m + i) % 12);
+    }
+    return months;
+  }, [activeSection, monitoringViewMode, selectedDate]);
 
   async function runSyncPass(kind: "full" | "pull" | "push", since?: string) {
     setActiveSyncKind(kind);
@@ -249,6 +265,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           selectorUnit={selectorUnit}
           syncState={syncState}
           activeSyncKind={activeSyncKind}
+          activeMonths={activeMonths}
           onDateChange={setSelectedDate}
           onSchemaVerify={verifySchema}
           onSync={runSync}
@@ -288,7 +305,11 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           )}
           {activeSection === "monthly-monitoring" && (
             <ErrorBoundary sectionLabel="Monthly Monitoring">
-              <MonthlyMonitoringPage selectedMonth={selectedMonth} />
+              <MonthlyMonitoringPage
+                viewMode={monitoringViewMode}
+                onViewModeChange={setMonitoringViewMode}
+                selectedDate={selectedDate}
+              />
             </ErrorBoundary>
           )}
           {isWorkflowSection(activeSection) && (

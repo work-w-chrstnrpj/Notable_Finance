@@ -26,6 +26,8 @@ export type AccountType =
 
 export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually";
 
+export type MonitoringViewMode = "Monthly" | "Quarterly" | "Semi-Annually" | "Annually";
+
 export type ExpenseViewMode =
   | "Daily"
   | "Weekly"
