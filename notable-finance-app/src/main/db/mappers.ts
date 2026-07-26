@@ -14,6 +14,19 @@ import type {
 } from '../../shared/finance.types'
 
 // Row shapes as returned by better-sqlite3 (snake_case column names).
+
+/** Parse cc_payment_covered_id which may be a plain ID (legacy) or JSON array. */
+function parseCcPaymentCoveredIds(value: string | null): string[] {
+  if (!value) return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : [value]
+  } catch {
+    // Legacy format: plain ID string
+    return value ? [value] : []
+  }
+}
+
 export interface AccountRow {
   id: string
   account_name: string
@@ -150,7 +163,7 @@ export function mapIncome(row: IncomeRow): IncomeRecordDto {
     accountId: row.account_id,
     categoryId: row.category_id ?? '',
     transactedAccountId: row.transacted_account_id,
-    ccPaymentCoveredId: row.cc_payment_covered_id,
+    ccPaymentCoveredIds: parseCcPaymentCoveredIds(row.cc_payment_covered_id),
     deleted: row.deleted === 1,
     syncState: row.sync_state as IncomeRecordDto['syncState']
   }

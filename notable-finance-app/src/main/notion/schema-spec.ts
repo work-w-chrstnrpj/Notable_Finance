@@ -76,7 +76,8 @@ export const EXPECTED_SCHEMA: Record<MappableResource, ExpectedProperty[]> = {
     { property: E.pasabuyDateOfPayment, type: 'date', kind: 'writable' },
     { property: E.pasabuyPaidPeriod, type: 'number', kind: 'writable' },
     { property: E.pasabuyAccountReceiverId, type: 'relation', kind: 'writable' },
-    { property: E.pasabuyBalance, type: 'formula', kind: 'computed' }
+    { property: E.pasabuyBalance, type: 'formula', kind: 'computed' },
+    { property: E.ccLinkPaymentReceiptId, type: 'relation', kind: 'writable' }
   ]
 }
 

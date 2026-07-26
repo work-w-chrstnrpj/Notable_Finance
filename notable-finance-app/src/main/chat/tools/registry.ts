@@ -325,7 +325,8 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           payerAccountId: { type: 'string' },
           payerAccount: { type: 'string' },
           transactedAccountId: { type: 'string' },
-          ccPaymentCoveredId: { type: 'string' }
+          ccPaymentCoveredId: { type: 'string' },
+          ccPaymentCoveredIds: { type: 'array', items: { type: 'string' } }
         },
         additionalProperties: false
       }

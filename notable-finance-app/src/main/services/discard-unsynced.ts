@@ -160,7 +160,9 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
       payload.extras?.notes ?? null,
       payload.extras?.isTransaction ?? 0,
       (s.transactedAccountId as string | null) ?? null,
-      (s.ccPaymentCoveredId as string | null) ?? null
+      Array.isArray(s.ccPaymentCoveredIds) && s.ccPaymentCoveredIds.length > 0
+        ? JSON.stringify(s.ccPaymentCoveredIds)
+        : null
     )
   } else {
     db.prepare(

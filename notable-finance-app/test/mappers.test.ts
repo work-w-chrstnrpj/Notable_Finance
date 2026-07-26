@@ -58,8 +58,27 @@ describe('mapIncome', () => {
       capitalExpenditure: 100,
       accountId: 'acc1',
       categoryId: 'cat1',
-      deleted: false
+      deleted: false,
+      ccPaymentCoveredIds: []
     })
+  })
+
+  it('parses JSON array from cc_payment_covered_id', () => {
+    const row = { ...incomeRow, cc_payment_covered_id: '["id1","id2"]' }
+    const dto = mapIncome(row)
+    expect(dto.ccPaymentCoveredIds).toEqual(['id1', 'id2'])
+  })
+
+  it('parses legacy plain ID from cc_payment_covered_id', () => {
+    const row = { ...incomeRow, cc_payment_covered_id: 'legacy-id' }
+    const dto = mapIncome(row)
+    expect(dto.ccPaymentCoveredIds).toEqual(['legacy-id'])
+  })
+
+  it('returns empty array for null cc_payment_covered_id', () => {
+    const row = { ...incomeRow, cc_payment_covered_id: null }
+    const dto = mapIncome(row)
+    expect(dto.ccPaymentCoveredIds).toEqual([])
   })
 })
 

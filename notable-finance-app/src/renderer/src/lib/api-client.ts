@@ -209,6 +209,9 @@ export const expensesApi = {
         : await nfApi().expenses.softDelete(id);
     return r.ok ? ok(undefined as void) : err(r.error);
   },
+  listForCCCoverage() {
+    return adapt(nfApi().expenses.listForCCCoverage()) as Promise<ApiResult<ExpenseRecord[]>>;
+  },
   async bulkDelete(ids: string[], mode: "soft" | "hard" = "soft") {
     const deleted: string[] = [];
     const failed: { id: string; error: string }[] = [];

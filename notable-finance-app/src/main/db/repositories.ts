@@ -185,7 +185,7 @@ export function createIncome(rawInput: CreateIncomeInput): IncomeRecordDto {
       input.notes ?? null,
       input.isTransaction ? 1 : 0,
       input.transactedAccountId ?? null,
-      input.ccPaymentCoveredId ?? null
+      input.ccPaymentCoveredIds ? JSON.stringify(input.ccPaymentCoveredIds) : null
     )
   journal('incomes', 'create', id, input)
   return getIncome(id)
@@ -199,14 +199,20 @@ const INCOME_PATCH_COLS: Record<string, string> = {
   accountId: 'account_id',
   categoryId: 'category_id',
   notes: 'notes',
-  transactedAccountId: 'transacted_account_id',
-  ccPaymentCoveredId: 'cc_payment_covered_id'
+  transactedAccountId: 'transacted_account_id'
 }
 
 export function updateIncome(id: string, patch: UpdateIncomeInput): IncomeRecordDto {
   validateUpdateIncome(patch as Record<string, unknown>)
   getIncome(id) // existence check
-  applyPatch('incomes', id, patch as Record<string, unknown>, INCOME_PATCH_COLS)
+  // ccPaymentCoveredIds needs JSON serialization before passing to applyPatch
+  const { ccPaymentCoveredIds, ...rest } = patch
+  applyPatch('incomes', id, rest as Record<string, unknown>, INCOME_PATCH_COLS)
+  if (ccPaymentCoveredIds !== undefined) {
+    getSqlite()
+      .prepare(`UPDATE incomes SET cc_payment_covered_id = ?, sync_state = 'dirty', local_updated_at = ? WHERE id = ?`)
+      .run(ccPaymentCoveredIds ? JSON.stringify(ccPaymentCoveredIds) : null, now(), id)
+  }
   journal('incomes', 'update', id, patch)
   return getIncome(id)
 }
@@ -306,6 +312,34 @@ export function listExpenses(params: ExpenseListParams = {}): ExpenseRecordDto[]
     pasabuyCategoryIds: new Set(pasabuyCategories.map((c) => c.id)),
     pasabuyCategoryId: pasabuyCategories.find((c) => c.name === 'Pasabuy')?.id
   })
+}
+
+/**
+ * List expenses eligible for CC Payment Covered relation.
+ * Returns expenses on credit-like accounts that are NOT fully paid.
+ */
+export function listExpensesForCCCoverage(): ExpenseRecordDto[] {
+  const creditAccountIds = new Set(
+    (
+      getSqlite()
+        .prepare('SELECT id, account_type FROM accounts')
+        .all() as Array<{ id: string; account_type: string }>
+    )
+      .filter((a) => isCreditLike(a.account_type))
+      .map((a) => a.id)
+  )
+  if (creditAccountIds.size === 0) return []
+
+  const catName = expenseCategoryNames()
+  const rows = getSqlite()
+    .prepare(
+      `SELECT ${EXPENSE_COLS} FROM expenses
+       WHERE deleted = 0
+         AND account_id IN (${Array.from(creditAccountIds).map(() => '?').join(',')})
+       ORDER BY purchase_date DESC, created_at DESC`
+    )
+    .all(...creditAccountIds) as ExpenseRow[]
+  return decoratePasabuy(rows.map(mapExpense), catName)
 }
 
 export function getExpense(id: string): ExpenseRecordDto {

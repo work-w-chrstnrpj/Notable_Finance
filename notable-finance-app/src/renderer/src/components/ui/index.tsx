@@ -1,5 +1,5 @@
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { FileWarning, RefreshCw } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
@@ -307,6 +307,129 @@ export function FilterDropdown({
               {item.icon}
               {item.label}
             </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Notion-style multi-select: chips in input, searchable dropdown with +/- buttons. */
+export function MultiSelect({
+  placeholder,
+  selectedIds,
+  onChange,
+  items,
+}: {
+  placeholder: string;
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  items: Array<{ id: string; label: string; sublabel?: string }>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const selected = items.filter((i) => selectedIds.includes(i.id));
+  const filtered = items.filter(
+    (i) =>
+      i.label.toLowerCase().includes(search.toLowerCase()) ||
+      (i.sublabel && i.sublabel.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  function toggle(id: string) {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((x) => x !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+    inputRef.current?.focus();
+  }
+
+  function handleInputFocus() {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    setOpen(true);
+  }
+
+  function handleInputBlur() {
+    closeTimerRef.current = setTimeout(() => {
+      if (!containerRef.current?.contains(document.activeElement)) {
+        setOpen(false);
+        setSearch("");
+      }
+    }, 150);
+  }
+
+  return (
+    <div className="multi-select" ref={containerRef}>
+      <div className="multi-select__picker">
+        <div
+          className={cx("multi-select__control", open && "multi-select__control--open")}
+          onClick={() => { inputRef.current?.focus(); setOpen(true); }}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            className="multi-select__input"
+            placeholder={placeholder}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+          />
+        </div>
+        {open && filtered.length > 0 && (
+          <div className="multi-select__dropdown">
+            {filtered.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={cx("multi-select__option", isSelected && "multi-select__option--selected")}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    toggle(item.id);
+                  }}
+                >
+                  <span className="multi-select__option-content">
+                    <span className="multi-select__option-label">{item.label}</span>
+                    {item.sublabel && (
+                      <span className="multi-select__option-sublabel">{item.sublabel}</span>
+                    )}
+                  </span>
+                  <span className={cx("multi-select__option-action", isSelected && "multi-select__option-action--remove")}>
+                    {isSelected ? "\u2212" : "+"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      {selected.length > 0 && (
+        <div className="multi-select__linked">
+          {selected.map((item) => (
+            <div key={item.id} className="multi-select__linked-item">
+              <span className="multi-select__linked-info">
+                <span className="multi-select__linked-label">{item.label}</span>
+                {item.sublabel && (
+                  <span className="multi-select__linked-sublabel">{item.sublabel}</span>
+                )}
+              </span>
+              <button
+                type="button"
+                className="multi-select__linked-remove"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  toggle(item.id);
+                }}
+              >
+                −
+              </button>
+            </div>
           ))}
         </div>
       )}

@@ -44,6 +44,12 @@ export function extractRelationFirst(props: Props, name: string): string | null 
   return rel?.[0]?.id ?? null
 }
 
+/** All relation page ids from a multi-value relation property. */
+export function extractRelationAll(props: Props, name: string): string[] {
+  const rel = prop(props, name)?.relation as Array<{ id?: string }> | undefined
+  return rel?.map((r) => r.id ?? '').filter(Boolean) ?? []
+}
+
 /** First file URL from a "files" property (Notion-hosted or external). */
 export function extractFileUrl(props: Props, name: string): string | null {
   const files = prop(props, name)?.files as
@@ -108,7 +114,7 @@ export interface IncomeFields {
   account_id: string | null // NOTION id
   category_id: string | null // NOTION id
   transacted_account_id: string | null // NOTION id
-  cc_payment_covered_id: string | null // NOTION id
+  cc_payment_covered_ids: string[] // NOTION ids (multi-relation)
   is_transaction: number
 }
 
@@ -173,7 +179,7 @@ export function pageToIncomeFields(page: Record<string, unknown>): IncomeFields 
   const props = (page.properties as Props) ?? {}
   const n = NOTION_PROPERTY_NAMES.incomes
   const transacted = extractRelationFirst(props, n.transactedAccountId)
-  const ccCovered = extractRelationFirst(props, n.ccPaymentCoveredId)
+  const ccCoveredIds = extractRelationAll(props, n.ccPaymentCoveredId)
   return {
     title: extractTitle(props, n.name),
     date: extractDate(props, n.date),
@@ -182,8 +188,8 @@ export function pageToIncomeFields(page: Record<string, unknown>): IncomeFields 
     account_id: extractRelationFirst(props, n.accountId),
     category_id: extractRelationFirst(props, n.categoryId),
     transacted_account_id: transacted,
-    cc_payment_covered_id: ccCovered,
-    is_transaction: transacted || ccCovered ? 1 : 0
+    cc_payment_covered_ids: ccCoveredIds,
+    is_transaction: transacted || ccCoveredIds.length > 0 ? 1 : 0
   }
 }
 

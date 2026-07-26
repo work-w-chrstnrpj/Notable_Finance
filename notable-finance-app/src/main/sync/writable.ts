@@ -17,7 +17,7 @@ export const INCOME_WRITABLE_COLS: Record<string, string> = {
   accountId: 'account_id',
   categoryId: 'category_id',
   transactedAccountId: 'transacted_account_id',
-  ccPaymentCoveredId: 'cc_payment_covered_id'
+  ccPaymentCoveredIds: 'cc_payment_covered_id'
 }
 
 export const EXPENSE_WRITABLE_COLS: Record<string, string> = {
@@ -42,7 +42,19 @@ export const EXPENSE_WRITABLE_COLS: Record<string, string> = {
 
 function rowToWritable(row: Row, cols: Record<string, string>): FieldMap {
   const out: FieldMap = {}
-  for (const [key, col] of Object.entries(cols)) out[key] = row[col] ?? null
+  for (const [key, col] of Object.entries(cols)) {
+    let value = row[col] ?? null
+    // ccPaymentCoveredIds is stored as a JSON array in a text column
+    if (key === 'ccPaymentCoveredIds' && typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value)
+        value = Array.isArray(parsed) ? parsed : value ? [value] : []
+      } catch {
+        value = value ? [value] : []
+      }
+    }
+    out[key] = value
+  }
   return out
 }
 
@@ -67,7 +79,12 @@ function writeWritable(
   const values: unknown[] = []
   for (const [key, col] of Object.entries(cols)) {
     sets.push(`${col} = ?`)
-    values.push(writable[key] ?? null)
+    let value = writable[key] ?? null
+    // ccPaymentCoveredIds is an array that must be serialized to JSON for storage
+    if (key === 'ccPaymentCoveredIds' && Array.isArray(value)) {
+      value = value.length > 0 ? JSON.stringify(value) : null
+    }
+    values.push(value)
   }
   sets.push('base_snapshot = ?', 'sync_state = ?')
   values.push(JSON.stringify(opts.base), opts.syncState)

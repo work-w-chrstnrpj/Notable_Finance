@@ -24,6 +24,7 @@ import {
   listConflicts,
   pullAll,
   pushAll,
+  resolveAllConflicts,
   resolveConflict,
   setSyncSettings,
   syncNow,
@@ -221,6 +222,9 @@ export function registerIpc(): void {
   ipcMain.handle('expenses:list', (_e, params?: ExpenseListParams) =>
     result(() => repo.listExpenses(params))
   )
+  ipcMain.handle('expenses:listForCCCoverage', () =>
+    result(() => repo.listExpensesForCCCoverage())
+  )
   ipcMain.handle('expenses:create', (_e, input: CreateExpenseInput) =>
     result(() => {
       const record = repo.createExpense(input)
@@ -357,6 +361,16 @@ export function registerIpc(): void {
 
   // conflicts (Phase 4.2)
   ipcMain.handle('sync:listConflicts', () => result(() => listConflicts()))
+  ipcMain.handle('sync:resolveAllConflicts', (_e, resolution: 'local' | 'remote') =>
+    result(() => {
+      const remaining = resolveAllConflicts(resolution)
+      broadcast('records:changed', { resource: 'incomes', ids: [] })
+      broadcast('records:changed', { resource: 'expenses', ids: [] })
+      broadcast('derived:updated', {})
+      broadcast('sync:status', syncStatus())
+      return remaining
+    }))
+
   ipcMain.handle('sync:resolveConflict', (_e, table: 'incomes' | 'expenses', id: string, resolution: ConflictResolution) =>
     result(() => {
       resolveConflict(table, id, resolution)

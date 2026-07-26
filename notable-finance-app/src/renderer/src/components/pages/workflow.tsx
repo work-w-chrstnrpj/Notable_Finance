@@ -2,12 +2,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
-import { Panel, Field, ComputedField, MoneyValue, FilterDropdown, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
+import { Panel, Field, ComputedField, MoneyValue, FilterDropdown, LoadingBlock, EmptyState, PageToolbar, MultiSelect, FormSectionDivider } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
-import { useWorkflowRecords, useFinanceInvalidation } from "@/lib/use-data";
+import { useWorkflowRecords, useFinanceInvalidation, useExpensesForCCCoverage } from "@/lib/use-data";
 import { useShortcutAction } from "@/lib/shortcuts/context";
 import {
   applyIncomeTag,
@@ -86,10 +86,20 @@ function WorkflowPage({
   const { hardDeleteEnabled } = useUiSettings();
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
+  const [ccCoveredIds, setCcCoveredIds] = useState<string[]>([]);
+  const { state: ccCoverageState } = useExpensesForCCCoverage();
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
     parseNumberInput(workflowCapitalExpenditureInput),
   );
+
+  const eligibleCcExpenses = (ccCoverageState.status === "success" ? ccCoverageState.data : [])
+  const totalCovered = eligibleCcExpenses
+    .filter((e) => ccCoveredIds.includes(e.id))
+    .reduce((sum, e) => {
+      const installment = e.periodCount && e.periodCount > 0 ? e.amount / e.periodCount : e.amount;
+      return sum + installment;
+    }, 0);
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
   const modalOpen = modal !== null;
@@ -98,7 +108,7 @@ function WorkflowPage({
   useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
   useShortcutAction("modal.duplicate", () => handleDuplicateWorkflow(), modalOpen);
   useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modalOpen && editingId != null);
-  useShortcutAction("modal.close", () => setModal(null), modalOpen);
+  useShortcutAction("modal.close", () => { setModal(null); setCcCoveredIds([]); }, modalOpen);
   const hasSelection = selectedIds.size > 0;
   useShortcutAction("mass.selectAll", () => setSelectedIds(new Set(workflowIncomes.map((_, i) => i))), !modalOpen);
   useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
@@ -224,6 +234,7 @@ function WorkflowPage({
     setEditingId(record?.id ?? null);
     setEditing(mode === "new");
     setSaveError(null);
+    setCcCoveredIds(record?.ccPaymentCoveredIds ?? []);
     setModal({ mode, title });
   }
 
@@ -270,6 +281,9 @@ function WorkflowPage({
     if (categoryEditable) {
       payload.categoryId = workflowCategoryIdInput;
     }
+    if (isCreditCardPayment) {
+      payload.ccPaymentCoveredIds = ccCoveredIds;
+    }
     setSaving(true);
     setSaveError(null);
     try {
@@ -282,6 +296,7 @@ function WorkflowPage({
         return;
       }
       setModal(null);
+      setCcCoveredIds([]);
       const saved = res.data;
       applyLocal((rows) => {
         const idx = rows.findIndex((r) => r.id === saved.id);
@@ -306,6 +321,7 @@ function WorkflowPage({
     setEditingId(null);
     setEditing(true);
     setSaveError(null);
+    setCcCoveredIds([]);
     setModal({ mode: "new", title: `New ${label} Record (Copy)` });
   }
 
@@ -391,6 +407,7 @@ function WorkflowPage({
     setDeleteConfirmIds(null);
     setSelectedIds(new Set());
     setModal(null);
+    setCcCoveredIds([]);
     setSaveError(null);
     setSaving(true);
     try {
@@ -480,7 +497,7 @@ function WorkflowPage({
         onSave={handleSaveWorkflow}
         onDelete={handleDeleteWorkflow}
         onDuplicate={handleDuplicateWorkflow}
-        onClose={() => setModal(null)}
+        onClose={() => { setModal(null); setCcCoveredIds([]); }}
       >
         <div className="form-grid form-grid--single">
           <Field label="Name" required>
@@ -540,6 +557,31 @@ function WorkflowPage({
                 }))}
               />
             </Field>
+          )}
+          {isCreditCardPayment && (
+            <>
+              <FormSectionDivider title="CC Covered Expenses" />
+              <div className="form-grid form-grid--single">
+                <Field label="Covered Expenses">
+                  <MultiSelect
+                    placeholder="Search expenses to link..."
+                    selectedIds={ccCoveredIds}
+                    onChange={setCcCoveredIds}
+                    items={eligibleCcExpenses.map((e) => ({
+                      id: e.id,
+                      label: e.description,
+                      sublabel: `₱${(e.periodCount && e.periodCount > 0 ? e.amount / e.periodCount : e.amount).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+                    }))}
+                  />
+                </Field>
+                {ccCoveredIds.length > 0 && (
+                  <ComputedField
+                    label="Total Covered"
+                    value={`₱${totalCovered.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                  />
+                )}
+              </div>
+            </>
           )}
           {!categoryEditable && fixedCategory ? (
             <ComputedField label="Categories" value={fixedCategory} />

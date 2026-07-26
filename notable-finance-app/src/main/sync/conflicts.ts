@@ -128,3 +128,26 @@ export function resolveConflict(
     'UPDATE conflicts SET resolved_at = ?, resolution = ? WHERE record_table = ? AND record_id = ? AND resolved_at IS NULL'
   ).run(Date.now(), JSON.stringify(resolution), table, recordId)
 }
+
+/**
+ * Resolve ALL pending conflicts across all records. Bulk operation for "Accept All" buttons.
+ * Returns the updated conflict list after resolution.
+ */
+export function resolveAllConflicts(resolution: 'local' | 'remote'): ConflictGroup[] {
+  const db = getSqlite()
+  
+  // Get all unique (table, record_id) pairs with pending conflicts
+  const pending = db.prepare(
+    `SELECT DISTINCT record_table, record_id FROM conflicts WHERE resolved_at IS NULL`
+  ).all() as Array<{ record_table: Table; record_id: string }>
+  
+  for (const p of pending) {
+    try {
+      resolveConflict(p.record_table, p.record_id, { all: resolution })
+    } catch {
+      // Skip records that fail (shouldn't happen, but be safe)
+    }
+  }
+  
+  return listConflicts()
+}

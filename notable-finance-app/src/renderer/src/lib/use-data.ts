@@ -186,6 +186,13 @@ export function useExpenses(params?: {
   );
 }
 
+export function useExpensesForCCCoverage() {
+  return useApiQuery<ExpenseRecord[]>(
+    ["expenses", "ccCoverage"],
+    () => expensesApi.listForCCCoverage(),
+  );
+}
+
 // ── Workflow hooks (income-backed views) ──────────────────────────────
 
 export function useTransfers(params?: WorkflowListParams) {

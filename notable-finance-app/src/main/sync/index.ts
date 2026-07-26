@@ -8,7 +8,7 @@ export { pushAll } from './push'
 export { pullAll } from './pull'
 export { syncStatus } from './status'
 export { getSyncSettings, setSyncSettings } from './settings'
-export { listConflicts, resolveConflict } from './conflicts'
+export { listConflicts, resolveConflict, resolveAllConflicts } from './conflicts'
 
 /**
  * A full manual pass. PULL first so the three-way merge can detect conflicts and

@@ -372,7 +372,7 @@ function proposeWorkflowIncome(
     categoryId: cat?.id ?? '',
     isTransaction: true,
     transactedAccountId: transacted?.id ?? null,
-    ccPaymentCoveredId: str(a.ccPaymentCoveredId) ?? null,
+    ccPaymentCoveredIds: str(a.ccPaymentCoveredId) ? [str(a.ccPaymentCoveredId)!] : [],
     notes: str(a.notes) ?? null
   }
 
@@ -705,7 +705,11 @@ export function toCreateIncomeInput(payload: Record<string, unknown>): CreateInc
     notes: (payload.notes as string | null | undefined) ?? null,
     isTransaction: payload.isTransaction === true,
     transactedAccountId: (payload.transactedAccountId as string | null | undefined) ?? null,
-    ccPaymentCoveredId: (payload.ccPaymentCoveredId as string | null | undefined) ?? null
+    ccPaymentCoveredIds: Array.isArray(payload.ccPaymentCoveredIds)
+      ? payload.ccPaymentCoveredIds as string[]
+      : payload.ccPaymentCoveredId
+        ? [payload.ccPaymentCoveredId as string]
+        : []
   }
 }
 

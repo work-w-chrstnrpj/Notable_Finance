@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
   ClipboardCheck,
   CloudDownload,
   CloudUpload,
@@ -8,6 +10,7 @@ import {
   GitMerge,
   RefreshCw,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import { MetricCard, Panel, Badge, ErrorRow } from "@/components/ui";
 import { StatusPill } from "@/components/ui/date-range";
@@ -16,9 +19,6 @@ import { cx } from "@/lib/finance-helpers";
 import type { PullRange, SchemaHealth, SyncState } from "@/types/finance";
 
 // ── Desktop-only: local-first sync controls (initial pull, auto mode, conflicts) ──
-// This panel is the one intentional addition over the web page: it surfaces the
-// desktop's local-first machinery (bring-your-own-Notion initial pull, interval sync,
-// and the three-way-merge conflict resolver). Everything else matches the web app.
 
 type DesktopConflict = {
   recordTable: "incomes" | "expenses";
@@ -41,11 +41,165 @@ function rangeToSince(range: PullRange | ""): string | undefined {
   return new Date(Date.now() - (offsets[range] ?? 0)).toISOString();
 }
 
+const fmt = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : String(v));
+
+// ── Three-way merge modal ────────────────────────────────────────────────────
+
+function ConflictModal({
+  conflict,
+  onClose,
+  onResolve,
+}: {
+  conflict: DesktopConflict;
+  onClose: () => void;
+  onResolve: (resolution: { perField: Record<string, "local" | "remote"> }) => void;
+}) {
+  // Result state: which side each field picks. Default to "remote" (Notion) for all.
+  const [choices, setChoices] = useState<Record<string, "local" | "remote">>(() => {
+    const init: Record<string, "local" | "remote"> = {};
+    for (const f of conflict.fields) {
+      init[f.field] = "remote";
+    }
+    return init;
+  });
+  const [busy, setBusy] = useState(false);
+
+  const setChoice = useCallback((field: string, side: "local" | "remote") => {
+    setChoices((prev) => ({ ...prev, [field]: side }));
+  }, []);
+
+  const acceptAll = useCallback((side: "local" | "remote") => {
+    const next: Record<string, "local" | "remote"> = {};
+    for (const f of conflict.fields) next[f.field] = side;
+    setChoices(next);
+  }, [conflict.fields]);
+
+  const handleSave = async () => {
+    setBusy(true);
+    await onResolve({ perField: choices });
+    setBusy(false);
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="conflict-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="conflict-modal__header">
+          <GitMerge size={18} />
+          <span className="conflict-modal__title">{conflict.title}</span>
+          <Badge tone="neutral">{conflict.recordTable}</Badge>
+          <button type="button" className="conflict-modal__close" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Quick actions */}
+        <div className="conflict-modal__quick">
+          <button type="button" className="button" onClick={() => acceptAll("local")}>
+            Accept all mine
+          </button>
+          <button type="button" className="button" onClick={() => acceptAll("remote")}>
+            Accept all Notion
+          </button>
+        </div>
+
+        {/* Three-column merge table */}
+        <div className="conflict-merge">
+          {/* Column headers */}
+          <div className="conflict-merge__header">
+            <div className="conflict-merge__col conflict-merge__col--mine">
+              <span className="conflict-merge__col-label">Mine</span>
+            </div>
+            <div className="conflict-merge__col conflict-merge__col--result">
+              <span className="conflict-merge__col-label">Result</span>
+            </div>
+            <div className="conflict-merge__col conflict-merge__col--notion">
+              <span className="conflict-merge__col-label">Notion</span>
+            </div>
+          </div>
+
+          {/* Field rows */}
+          {conflict.fields.map((f) => {
+            const chosen = choices[f.field];
+            return (
+              <div key={f.field} className="conflict-merge__row">
+                {/* Mine column */}
+                <div
+                  className={cx(
+                    "conflict-merge__cell conflict-merge__cell--mine",
+                    chosen === "local" && "conflict-merge__cell--active"
+                  )}
+                  onClick={() => setChoice(f.field, "local")}
+                >
+                  <span className="conflict-merge__field-name">{f.field}</span>
+                  <span className="conflict-merge__field-value">{fmt(f.local)}</span>
+                </div>
+
+                {/* Arrow: accept mine */}
+                <button
+                  type="button"
+                  className={cx("conflict-merge__arrow", chosen === "local" && "conflict-merge__arrow--active")}
+                  onClick={() => setChoice(f.field, "local")}
+                  title="Use my value"
+                >
+                  <ArrowRight size={16} />
+                </button>
+
+                {/* Result column */}
+                <div className="conflict-merge__cell conflict-merge__cell--result">
+                  <span className="conflict-merge__field-value conflict-merge__field-value--result">
+                    {fmt(chosen === "local" ? f.local : f.remote)}
+                  </span>
+                </div>
+
+                {/* Arrow: accept notion */}
+                <button
+                  type="button"
+                  className={cx("conflict-merge__arrow", chosen === "remote" && "conflict-merge__arrow--active")}
+                  onClick={() => setChoice(f.field, "remote")}
+                  title="Use Notion value"
+                >
+                  <ArrowLeft size={16} />
+                </button>
+
+                {/* Notion column */}
+                <div
+                  className={cx(
+                    "conflict-merge__cell conflict-merge__cell--notion",
+                    chosen === "remote" && "conflict-merge__cell--active"
+                  )}
+                  onClick={() => setChoice(f.field, "remote")}
+                >
+                  <span className="conflict-merge__field-name">{f.field}</span>
+                  <span className="conflict-merge__field-value">{fmt(f.remote)}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="conflict-modal__footer">
+          <button type="button" className="button" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button type="button" className="button button--primary" onClick={() => void handleSave()} disabled={busy}>
+            {busy ? "Saving…" : "Save resolution"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Desktop Sync Panel ───────────────────────────────────────────────────────
+
 function DesktopSyncPanel() {
   const [settings, setSettings] = useState<{ mode: "manual" | "auto"; intervalSeconds: number } | null>(null);
   const [conflicts, setConflicts] = useState<DesktopConflict[]>([]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [modalConflict, setModalConflict] = useState<DesktopConflict | null>(null);
 
   const reload = async () => {
     const [s, c] = await Promise.all([window.api.sync.getSettings(), window.api.sync.listConflicts()]);
@@ -76,15 +230,23 @@ function DesktopSyncPanel() {
     if (r.ok) setSettings(r.data);
   };
 
-  const resolve = async (
+  const resolveOne = async (
     c: DesktopConflict,
     resolution: { all: "local" | "remote" } | { perField: Record<string, "local" | "remote"> },
   ) => {
     const r = await window.api.sync.resolveConflict(c.recordTable, c.recordId, resolution);
-    if (r.ok) setConflicts(r.data as DesktopConflict[]);
+    if (r.ok) {
+      setConflicts(r.data as DesktopConflict[]);
+      setModalConflict(null); // close modal after save
+    }
   };
 
-  const fmt = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : String(v));
+  const resolveAll = async (resolution: "local" | "remote") => {
+    setBusy(true);
+    const r = await window.api.sync.resolveAllConflicts(resolution);
+    if (r.ok) setConflicts(r.data as DesktopConflict[]);
+    setBusy(false);
+  };
 
   return (
     <Panel
@@ -158,40 +320,54 @@ function DesktopSyncPanel() {
 
         {conflicts.length > 0 && (
           <div className="conflict-group">
+            <div className="conflict-bulk">
+              <p className="conflict-bulk__label">{conflicts.length} record{conflicts.length > 1 ? "s" : ""} with conflicts</p>
+              <div className="conflict-bulk__actions">
+                <button type="button" className="button button--primary" onClick={() => void resolveAll("remote")} disabled={busy}>
+                  Accept All from Notion
+                </button>
+                <button type="button" className="button" onClick={() => void resolveAll("local")} disabled={busy}>
+                  Accept All Mine
+                </button>
+              </div>
+            </div>
             {conflicts.map((c) => (
-              <div key={`${c.recordTable}:${c.recordId}`} className="conflict-card">
+              <button
+                key={`${c.recordTable}:${c.recordId}`}
+                type="button"
+                className="conflict-card conflict-card--clickable"
+                onClick={() => setModalConflict(c)}
+              >
                 <div className="conflict-card__head">
                   <GitMerge size={15} />
                   <strong>{c.title}</strong>
                   <Badge tone="neutral">{c.recordTable}</Badge>
                 </div>
-                <div className="conflict-fields">
+                <div className="conflict-card__fields-preview">
                   {c.fields.map((f) => (
-                    <div key={f.field} className="conflict-field">
-                      <Badge tone="amber">{f.field}</Badge>
-                      <div className="conflict-field__values">
-                        <span>Mine: <b>{fmt(f.local)}</b></span>
-                        <span>Notion: <b>{fmt(f.remote)}</b></span>
-                      </div>
-                      <div className="conflict-field__actions">
-                        <button type="button" className="button" onClick={() => void resolve(c, { perField: { [f.field]: "local" } })}>Mine</button>
-                        <button type="button" className="button" onClick={() => void resolve(c, { perField: { [f.field]: "remote" } })}>Notion</button>
-                      </div>
-                    </div>
+                    <Badge key={f.field} tone="amber">{f.field}</Badge>
                   ))}
                 </div>
-                <div className="conflict-card__actions">
-                  <button type="button" className="button" onClick={() => void resolve(c, { all: "local" })}>Keep all mine</button>
-                  <button type="button" className="button" onClick={() => void resolve(c, { all: "remote" })}>Keep all Notion</button>
-                </div>
-              </div>
+                <span className="conflict-card__chevron">→</span>
+              </button>
             ))}
           </div>
         )}
       </div>
+
+      {/* Three-way merge modal */}
+      {modalConflict && (
+        <ConflictModal
+          conflict={modalConflict}
+          onClose={() => setModalConflict(null)}
+          onResolve={(resolution) => void resolveOne(modalConflict, resolution)}
+        />
+      )}
     </Panel>
   );
 }
+
+// ── Sync Page ────────────────────────────────────────────────────────────────
 
 function SyncPage({
   lastSync,
@@ -218,7 +394,6 @@ function SyncPage({
   const syncing = syncState === "syncing";
   const [pullRange, setPullRange] = useState<PullRange | "">("");
 
-  // Use API sync status when available, fall back to parent props
   const apiStatus =
     syncStatusState.status === "success" ? syncStatusState.data : null;
 

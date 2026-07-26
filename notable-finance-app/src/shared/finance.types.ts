@@ -86,7 +86,7 @@ export interface IncomeRecordDto {
   accountId: string | null
   categoryId: string
   transactedAccountId?: string | null
-  ccPaymentCoveredId?: string | null
+  ccPaymentCoveredIds?: string[]
   deleted?: boolean
   /** Local sync state for record-level badges (desktop only; web omits it). */
   syncState?: 'clean' | 'dirty' | 'conflict'
@@ -249,7 +249,7 @@ export interface CreateIncomeInput {
   notes?: string | null
   isTransaction?: boolean
   transactedAccountId?: string | null
-  ccPaymentCoveredId?: string | null
+  ccPaymentCoveredIds?: string[]
   /** Workflow origin so the server can lock the fixed income category. */
   view?: IncomeView
 }

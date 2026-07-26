@@ -55,6 +55,10 @@ function notionToLocal(table: string): Map<string, string> {
 const localRelation = (map: Map<string, string>, notionId: string | null): string | null =>
   notionId ? (map.get(notionId) ?? null) : null
 
+/** Translate an array of Notion relation ids to local ids (skipping unmapped). */
+const localRelationAll = (map: Map<string, string>, notionIds: string[]): string[] =>
+  notionIds.map((id) => map.get(id)).filter((id): id is string => id != null)
+
 // ── reference upserts (read-only caches) ────────────────────────────────────
 
 function upsertReference(
@@ -235,7 +239,8 @@ async function pullIncomes(
   dbId: string,
   since: string | undefined,
   accountMap: Map<string, string>,
-  categoryMap: Map<string, string>
+  categoryMap: Map<string, string>,
+  expenseMap: Map<string, string>
 ): Promise<RecordOutcome> {
   const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
@@ -251,7 +256,7 @@ async function pullIncomes(
       accountId: localRelation(accountMap, f.account_id),
       categoryId: localRelation(categoryMap, f.category_id),
       transactedAccountId: localRelation(accountMap, f.transacted_account_id),
-      ccPaymentCoveredId: null // income→income link resolved in a later pass
+      ccPaymentCoveredIds: localRelationAll(expenseMap, f.cc_payment_covered_ids)
     }
     const lastEdited = pageLastEditedTime(page)
     const npid = pageId(page)
@@ -269,7 +274,10 @@ async function pullIncomes(
       ).run(
         newId, npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
         remote.name, remote.grossIncome, remote.capitalExpenditure, remote.accountId, remote.categoryId,
-        remote.date, f.is_transaction, remote.transactedAccountId, remote.ccPaymentCoveredId
+        remote.date, f.is_transaction, remote.transactedAccountId,
+        (Array.isArray(remote.ccPaymentCoveredIds) && remote.ccPaymentCoveredIds.length > 0)
+          ? JSON.stringify(remote.ccPaymentCoveredIds)
+          : null
       )
       recordActivity({
         resource: 'incomes',
@@ -293,7 +301,8 @@ async function pullExpenses(
   dbId: string,
   since: string | undefined,
   accountMap: Map<string, string>,
-  categoryMap: Map<string, string>
+  categoryMap: Map<string, string>,
+  incomeMap: Map<string, string>
 ): Promise<RecordOutcome> {
   const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
@@ -318,7 +327,7 @@ async function pullExpenses(
       pasabuyDateOfPayment: f.pasabuy_date_of_payment,
       pasabuyPaidPeriod: f.pasabuy_paid_period,
       pasabuyAccountReceiverId: localRelation(accountMap, f.pasabuy_account_receiver_id),
-      ccLinkPaymentReceiptId: null
+      ccLinkPaymentReceiptId: localRelation(incomeMap, f.cc_link_payment_receipt_id)
     }
     const lastEdited = pageLastEditedTime(page)
     const npid = pageId(page)
@@ -429,6 +438,8 @@ async function pullAllInner(full: boolean, sinceOverride?: string): Promise<Pull
     const accountMap = notionToLocal('accounts')
     const incomeCatMap = notionToLocal('income_categories')
     const expenseCatMap = notionToLocal('expense_categories')
+    const incomeMap = notionToLocal('incomes')
+    const expenseMap = notionToLocal('expenses')
 
     const merge = (o: RecordOutcome): void => {
       result.inserted += o.inserted
@@ -437,8 +448,8 @@ async function pullAllInner(full: boolean, sinceOverride?: string): Promise<Pull
       result.conflicts += o.conflicts
       result.pushPending += o.pushPending
     }
-    if (mapping.incomes) merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap))
-    if (mapping.expenses) merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap))
+    if (mapping.incomes) merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap, expenseMap))
+    if (mapping.expenses) merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap, incomeMap))
 
     // Presence pass: Notion trash/archive removes pages from query results, so
     // incremental last_edited filters never surface them — reconcile by full id set.

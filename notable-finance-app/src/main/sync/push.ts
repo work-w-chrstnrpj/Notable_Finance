@@ -51,6 +51,7 @@ interface RelationMaps {
   incomeCategories: Map<string, string>
   expenseCategories: Map<string, string>
   incomes: Map<string, string>
+  expenses: Map<string, string>
 }
 
 class UnmappedRelationError extends Error {
@@ -211,7 +212,8 @@ async function pushAllInner(): Promise<PushResult> {
     accounts: notionIdLookup('accounts'),
     incomeCategories: notionIdLookup('income_categories'),
     expenseCategories: notionIdLookup('expense_categories'),
-    incomes: notionIdLookup('incomes')
+    incomes: notionIdLookup('incomes'),
+    expenses: notionIdLookup('expenses')
   }
   const incomeCategoryNames = categoryNameLookup('income_categories')
   const expenseCategoryNames = categoryNameLookup('expense_categories')
@@ -233,7 +235,9 @@ async function pushAllInner(): Promise<PushResult> {
         accountId: translate(relations.accounts, dto.accountId as string | null, 'accountId'),
         categoryId: translate(relations.incomeCategories, dto.categoryId as string | null, 'categoryId'),
         transactedAccountId: translate(relations.accounts, dto.transactedAccountId as string | null, 'transactedAccountId'),
-        ccPaymentCoveredId: translate(relations.incomes, dto.ccPaymentCoveredId as string | null, 'ccPaymentCoveredId')
+        ccPaymentCoveredIds: (dto.ccPaymentCoveredIds as string[] | null | undefined)
+          ?.map((id) => translate(relations.expenses, id, 'ccPaymentCoveredIds'))
+          ?? []
       })
     },
     {

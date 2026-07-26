@@ -96,6 +96,8 @@ const api = {
   expenses: {
     list: (params?: ExpenseListParams): Promise<ApiResult<ExpenseRecordDto[]>> =>
       ipcRenderer.invoke('expenses:list', params),
+    listForCCCoverage: (): Promise<ApiResult<ExpenseRecordDto[]>> =>
+      ipcRenderer.invoke('expenses:listForCCCoverage'),
     create: (input: CreateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
       ipcRenderer.invoke('expenses:create', input),
     update: (id: string, patch: UpdateExpenseInput): Promise<ApiResult<ExpenseRecordDto>> =>
@@ -180,7 +182,11 @@ const api = {
       id: string,
       resolution: ConflictResolution
     ): Promise<ApiResult<ConflictGroup[]>> =>
-      ipcRenderer.invoke('sync:resolveConflict', table, id, resolution)
+      ipcRenderer.invoke('sync:resolveConflict', table, id, resolution),
+    resolveAllConflicts: (
+      resolution: 'local' | 'remote'
+    ): Promise<ApiResult<ConflictGroup[]>> =>
+      ipcRenderer.invoke('sync:resolveAllConflicts', resolution)
   },
 
   settings: {

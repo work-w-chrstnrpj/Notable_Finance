@@ -107,7 +107,7 @@ export type IncomeRecord = {
   categoryId: string;
   /** Transaction-only fields returned from backend, not editable in normal income forms */
   transactedAccountId?: string | null;
-  ccPaymentCoveredId?: string | null;
+  ccPaymentCoveredIds?: string[];
   deleted?: boolean;
 };
 

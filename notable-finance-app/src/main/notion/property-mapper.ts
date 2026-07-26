@@ -98,6 +98,12 @@ function buildRelation(value: string | null) {
   return { relation: [{ id: value }] }
 }
 
+/** Build a multi-value Notion relation (array of page ids). */
+function buildRelationMulti(ids: string[] | null | undefined) {
+  if (!ids || ids.length === 0) return { relation: [] }
+  return { relation: ids.map((id) => ({ id })) }
+}
+
 /**
  * Build Notion properties for an Income record. Emits only fields present in `dto`
  * so PATCH payloads don't clobber untouched properties. Relation values must already
@@ -121,9 +127,9 @@ export function incomeDtoToProperties(dto: Record<string, unknown>): Record<stri
     properties[names.transactedAccountId] = buildRelation(
       (dto.transactedAccountId as string) ?? null
     )
-  if (dto.ccPaymentCoveredId !== undefined)
-    properties[names.ccPaymentCoveredId] = buildRelation(
-      (dto.ccPaymentCoveredId as string) ?? null
+  if (dto.ccPaymentCoveredIds !== undefined)
+    properties[names.ccPaymentCoveredId] = buildRelationMulti(
+      (dto.ccPaymentCoveredIds as string[]) ?? null
     )
   return properties
 }
