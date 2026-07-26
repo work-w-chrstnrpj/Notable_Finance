@@ -216,9 +216,12 @@ export function pageLastEditedTime(page: Record<string, unknown>): string | null
 }
 
 /**
- * A Notion page's icon: an emoji character, or an image URL. `isFile` marks
- * Notion-uploaded files, whose URLs are temporary signed links (~1h) and must
- * be cached locally; external/library icon URLs are stable.
+ * A Notion page's icon: an emoji character, a native Notion icon, or an image
+ * URL. `isFile` marks Notion-uploaded files, whose URLs are temporary signed
+ * links (~1h) and must be cached locally; external/library icon URLs are stable.
+ *
+ * Native Notion icons (type "icon") are stored as `notion-icon:name:color`
+ * strings so the renderer can look them up in Lucide.
  */
 export function extractPageIcon(page: Record<string, unknown>): {
   value: string | null
@@ -231,6 +234,7 @@ export function extractPageIcon(page: Record<string, unknown>): {
         external?: { url?: string }
         file?: { url?: string }
         custom_emoji?: { url?: string }
+        icon?: { name?: string; color?: string }
       }
     | null
     | undefined
@@ -239,6 +243,11 @@ export function extractPageIcon(page: Record<string, unknown>): {
   if (icon.type === 'external') return { value: icon.external?.url ?? null, isFile: false }
   if (icon.type === 'custom_emoji') return { value: icon.custom_emoji?.url ?? null, isFile: false }
   if (icon.type === 'file') return { value: icon.file?.url ?? null, isFile: true }
+  if (icon.type === 'icon') {
+    const name = icon.icon?.name
+    const color = icon.icon?.color ?? 'default'
+    if (name) return { value: `notion-icon:${name}:${color}`, isFile: false }
+  }
   return { value: null, isFile: false }
 }
 

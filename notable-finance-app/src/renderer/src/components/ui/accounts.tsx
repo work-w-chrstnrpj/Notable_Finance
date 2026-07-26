@@ -1,6 +1,10 @@
 
 import { useState } from "react";
-import { ArrowLeft, Banknote, Building2, CreditCard, Download, Landmark, QrCode, Smartphone, Tag, X } from "lucide-react";
+import {
+  ArrowLeft, Banknote, Building2, CreditCard, Download, Landmark, QrCode,
+  Smartphone, Tag, X, HelpCircle,
+} from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { MoneyValue } from "@/components/ui";
 import { cx } from "@/lib/finance-helpers";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
@@ -29,6 +33,52 @@ function isImageUrl(value: string): boolean {
   return /^(https?:\/\/|data:|\/)/.test(value);
 }
 
+// ── Native Notion icon support ──────────────────────────────
+
+const NOTION_ICON_PREFIX = "notion-icon:";
+
+/** Check if an icon string is a native Notion icon (not an emoji or URL). */
+function isNotionIcon(icon: string): boolean {
+  return icon.startsWith(NOTION_ICON_PREFIX);
+}
+
+/** Parse a `notion-icon:name:color` string into its parts. */
+function parseNotionIcon(icon: string): { name: string; color: string } {
+  const rest = icon.slice(NOTION_ICON_PREFIX.length);
+  const colonIdx = rest.indexOf(":");
+  if (colonIdx === -1) return { name: rest, color: "default" };
+  return { name: rest.slice(0, colonIdx), color: rest.slice(colonIdx + 1) };
+}
+
+/** Convert a kebab-case Notion icon name to PascalCase for Lucide lookup. */
+function toPascalCase(str: string): string {
+  return str.replace(/(^\w|-\w)/g, (g) => g.replace("-", "").toUpperCase());
+}
+
+/** Notion's named icon palette → CSS colors. */
+const NOTION_ICON_COLORS: Record<string, string> = {
+  blue: "#2383e2",
+  gray: "#979a9b",
+  red: "#ff7369",
+  pink: "#e255a1",
+  green: "#0f7b6c",
+  orange: "#ffa231",
+  yellow: "#e9ab01",
+  purple: "#9065b0",
+  brown: "#937264",
+  default: "#979a9b",
+};
+
+/** Render a native Notion icon string as a Lucide React element. */
+function NotionIcon({ icon, size = 16 }: { icon: string; size?: number }) {
+  if (!isNotionIcon(icon)) return null;
+  const { name, color } = parseNotionIcon(icon);
+  const componentName = toPascalCase(name);
+  const ResolvedIcon = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[componentName] ?? HelpCircle;
+  const fillColor = NOTION_ICON_COLORS[color] ?? NOTION_ICON_COLORS.default;
+  return <ResolvedIcon size={size} color={fillColor} />;
+}
+
 function AccountIcon({ account }: { account: Account }) {
   if (account.icon && isImageUrl(account.icon)) {
     return (
@@ -47,6 +97,14 @@ function AccountIcon({ account }: { account: Account }) {
           }
         }}
       />
+    );
+  }
+
+  if (account.icon && isNotionIcon(account.icon)) {
+    return (
+      <span className="account-icon account-icon--notion" aria-hidden="true">
+        <NotionIcon icon={account.icon} size={18} />
+      </span>
     );
   }
 
@@ -95,6 +153,10 @@ function AccountDetailModal({
           <div className="account-modal__title-row">
             {account.icon && isImageUrl(account.icon) ? (
               <img src={account.icon} alt="" width={40} height={40} className="account-icon account-icon--large" />
+            ) : account.icon && isNotionIcon(account.icon) ? (
+              <span className="account-icon account-icon--notion account-icon--large" aria-hidden="true">
+                <NotionIcon icon={account.icon} size={22} />
+              </span>
             ) : account.icon ? (
               <span className="account-icon account-icon--emoji account-icon--large" aria-hidden="true">
                 {account.icon}
@@ -273,6 +335,13 @@ function CategoryIcon({ icon, className }: { icon?: string | null; className?: s
           if (fallback) (fallback as HTMLElement).style.display = "grid";
         }}
       />
+    );
+  }
+  if (icon && isNotionIcon(icon)) {
+    return (
+      <span className={`${cls} category-icon--notion`} aria-hidden="true">
+        <NotionIcon icon={icon} size={16} />
+      </span>
     );
   }
   if (icon) {

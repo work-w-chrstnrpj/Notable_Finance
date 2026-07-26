@@ -201,8 +201,16 @@ function extractIcon(page: Record<string, unknown>): string | null {
   const icon = page.icon as Record<string, unknown> | null | undefined;
   if (!icon) return null;
   if (icon.type === 'emoji') return icon.emoji as string ?? null;
-  const external = icon.external as Record<string, unknown> | undefined;
-  if (external) return external.url as string ?? null;
+  if (icon.type === 'external') {
+    const external = icon.external as Record<string, unknown> | undefined;
+    return (external?.url as string) ?? null;
+  }
+  if (icon.type === 'icon') {
+    const inner = icon.icon as Record<string, unknown> | undefined;
+    const name = inner?.name as string | undefined;
+    const color = (inner?.color as string) ?? 'default';
+    if (name) return `notion-icon:${name}:${color}`;
+  }
   return null;
 }
 

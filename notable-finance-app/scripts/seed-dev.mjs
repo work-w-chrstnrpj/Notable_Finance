@@ -1,4 +1,4 @@
-// Dev-only seeder for the LOCAL reference cache (accounts + categories).
+// Dev-only seeder for the LOCAL reference cache (accounts).
 // These are read-only in the app (maintained in Notion; pulled in Phase 3) — this script
 // stands in for that pull during offline development. Idempotent: skips rows that exist.
 // Usage: pnpm --filter notable-finance-app seed   (run the app once first so the DB exists)
@@ -31,23 +31,6 @@ const ACCOUNTS = [
   { name: 'Visa Platinum', type: 'Credit Account', starting: 0, limit: 50000 }
 ]
 
-// Auxiliary income categories are the workflow categories (Transfer / Credit Card
-// Payment / Savings) — excluded from the plain Income view, exactly like the web app.
-const INCOME_CATEGORIES = [
-  { source: 'Salary', auxiliary: 0 },
-  { source: 'Freelance', auxiliary: 0 },
-  { source: 'Transfer', auxiliary: 1 },
-  { source: 'Credit Card Payment', auxiliary: 1 },
-  { source: 'Savings', auxiliary: 1 }
-]
-
-const EXPENSE_CATEGORIES = [
-  { name: 'Food', budget: 8000 },
-  { name: 'Transport', budget: 3000 },
-  { name: 'Rent', budget: 12000 },
-  { name: 'Pasabuy', budget: 0 }
-]
-
 let added = 0
 
 const accSelect = db.prepare('SELECT id FROM accounts WHERE account_name = ?')
@@ -58,28 +41,6 @@ const accInsert = db.prepare(
 for (const a of ACCOUNTS) {
   if (!accSelect.get(a.name)) {
     accInsert.run(randomUUID(), a.name, a.type, a.starting, a.limit, now)
-    added++
-  }
-}
-
-const icSelect = db.prepare('SELECT id FROM income_categories WHERE source = ?')
-const icInsert = db.prepare(
-  'INSERT INTO income_categories (id, source, auxiliary, created_at) VALUES (?, ?, ?, ?)'
-)
-for (const c of INCOME_CATEGORIES) {
-  if (!icSelect.get(c.source)) {
-    icInsert.run(randomUUID(), c.source, c.auxiliary, now)
-    added++
-  }
-}
-
-const ecSelect = db.prepare('SELECT id FROM expense_categories WHERE name = ?')
-const ecInsert = db.prepare(
-  'INSERT INTO expense_categories (id, name, monthly_budget, auxiliary, created_at) VALUES (?, ?, ?, 0, ?)'
-)
-for (const c of EXPENSE_CATEGORIES) {
-  if (!ecSelect.get(c.name)) {
-    ecInsert.run(randomUUID(), c.name, c.budget, now)
     added++
   }
 }

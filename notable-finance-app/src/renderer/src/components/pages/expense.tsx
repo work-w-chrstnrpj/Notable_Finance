@@ -406,6 +406,7 @@ function ExpensePage({
   async function handleSaveExpense() {
     const invalid = new Set<string>();
     if (!descriptionInput.trim()) invalid.add("description");
+    if (!expenseAmountInput || parseNumberInput(expenseAmountInput) <= 0) invalid.add("amount");
     if (invalid.size > 0) {
       setShakeFields(invalid);
       setSaveError("Please fill in all required fields.");
@@ -1310,7 +1311,7 @@ function ExpensePage({
               onChange={(event) => setDescriptionInput(event.target.value)}
             />
           </Field>
-          <Field label="Purchase Date" required>
+          <Field label="Purchase Date">
             <input
               type="date"
               value={purchaseDateInput}
@@ -1341,9 +1342,10 @@ function ExpensePage({
               }))}
             />
           </Field>
-          <Field label="Expense Amount" required>
+          <Field label="Expense Amount" required error={shakeFields.has("amount")}>
             <input
               inputMode="decimal"
+              className={shakeFields.has("amount") ? "field__input--shake" : undefined}
               placeholder="0.00"
               value={expenseAmountInput}
               onChange={(event) => setExpenseAmountInput(event.target.value)}
