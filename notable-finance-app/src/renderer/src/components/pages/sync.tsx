@@ -97,24 +97,26 @@ function ConflictModal({
         {/* Quick actions */}
         <div className="conflict-modal__quick">
           <button type="button" className="button" onClick={() => acceptAll("local")}>
-            Accept all mine
+            Accept all Local
           </button>
           <button type="button" className="button" onClick={() => acceptAll("remote")}>
             Accept all Notion
           </button>
         </div>
 
-        {/* Three-column merge table */}
+        {/* Three-column merge grid — header and data rows share the same grid */}
         <div className="conflict-merge">
-          {/* Column headers */}
-          <div className="conflict-merge__header">
-            <div className="conflict-merge__col conflict-merge__col--mine">
-              <span className="conflict-merge__col-label">Mine</span>
+          {/* Column headers — rendered as the first row of the grid */}
+          <div className="conflict-merge__row conflict-merge__row--header">
+            <div className="conflict-merge__cell conflict-merge__cell--header">
+              <span className="conflict-merge__col-label">Local</span>
             </div>
-            <div className="conflict-merge__col conflict-merge__col--result">
+            <div className="conflict-merge__arrow conflict-merge__arrow--spacer" aria-hidden />
+            <div className="conflict-merge__cell conflict-merge__cell--header conflict-merge__cell--result">
               <span className="conflict-merge__col-label">Result</span>
             </div>
-            <div className="conflict-merge__col conflict-merge__col--notion">
+            <div className="conflict-merge__arrow conflict-merge__arrow--spacer" aria-hidden />
+            <div className="conflict-merge__cell conflict-merge__cell--header">
               <span className="conflict-merge__col-label">Notion</span>
             </div>
           </div>
@@ -124,10 +126,10 @@ function ConflictModal({
             const chosen = choices[f.field];
             return (
               <div key={f.field} className="conflict-merge__row">
-                {/* Mine column */}
+                {/* Local column */}
                 <div
                   className={cx(
-                    "conflict-merge__cell conflict-merge__cell--mine",
+                    "conflict-merge__cell conflict-merge__cell--local",
                     chosen === "local" && "conflict-merge__cell--active"
                   )}
                   onClick={() => setChoice(f.field, "local")}
@@ -136,12 +138,12 @@ function ConflictModal({
                   <span className="conflict-merge__field-value">{fmt(f.local)}</span>
                 </div>
 
-                {/* Arrow: accept mine */}
+                {/* Arrow: accept local */}
                 <button
                   type="button"
                   className={cx("conflict-merge__arrow", chosen === "local" && "conflict-merge__arrow--active")}
                   onClick={() => setChoice(f.field, "local")}
-                  title="Use my value"
+                  title="Use local value"
                 >
                   <ArrowRight size={16} />
                 </button>
@@ -355,7 +357,7 @@ function DesktopSyncPanel() {
                   Accept All from Notion
                 </button>
                 <button type="button" className="button" onClick={() => void resolveAll("local")} disabled={busy}>
-                  Accept All Mine
+                  Accept All Local
                 </button>
               </div>
             </div>

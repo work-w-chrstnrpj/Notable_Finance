@@ -1,7 +1,7 @@
 
 import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
@@ -52,6 +52,7 @@ function DataTable({
   onToggleSelect,
   onBulkAction,
   showBulkEdit = true,
+  showBulkPrint = false,
   bulkDeleteLabel = "Soft Delete",
   bulkDeleteDanger = false,
 }: {
@@ -80,9 +81,11 @@ function DataTable({
   /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
   onToggleSelect?: (rowIndex: number, selected: boolean) => void;
   /** Callback when a bulk action is triggered from the floating toolbar. */
-  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit") => void;
+  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") => void;
   /** Show the mass-edit button in the bulk toolbar (Income/Expense). */
   showBulkEdit?: boolean;
+  /** Show the Print Receipt button in the bulk toolbar (Expense). */
+  showBulkPrint?: boolean;
   /** Soft Delete / Hard Delete label for the selection toolbar. */
   bulkDeleteLabel?: string;
   /** Red danger styling when hard-delete mode is on. */
@@ -176,6 +179,16 @@ function DataTable({
             >
               <Pencil size={14} />
               <span>Edit</span>
+            </button>
+          )}
+          {showBulkPrint && (
+            <button
+              type="button"
+              className="bulk-toolbar__btn"
+              onClick={() => onBulkAction?.("print")}
+            >
+              <Printer size={14} />
+              <span>Print Receipt</span>
             </button>
           )}
           <button

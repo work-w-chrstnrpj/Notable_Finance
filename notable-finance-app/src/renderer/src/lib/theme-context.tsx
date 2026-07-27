@@ -96,7 +96,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--blue", stored.primaryColor);
     document.documentElement.style.setProperty("--green", stored.secondaryColor);
     document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`);
-  }, [stored, mounted]);
+    // Apply font settings from UiSettings
+    const { fonts } = settings;
+    const bodyFallback = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    const monoFallback = "'DM Mono', 'SFMono-Regular', Consolas, ui-monospace, monospace";
+    const brandFallback = "'Instrument Serif', serif";
+    document.documentElement.style.setProperty("--font-body", fonts.bodyFont ? `${fonts.bodyFont}, ${bodyFallback}` : bodyFallback);
+    document.documentElement.style.setProperty("--font-mono", fonts.monoFont ? `${fonts.monoFont}, ${monoFallback}` : monoFallback);
+    document.documentElement.style.setProperty("--font-brand", fonts.brandFont ? `${fonts.brandFont}, ${brandFallback}` : brandFallback);
+  }, [stored, mounted, settings.fonts]);
 
   useEffect(() => {
     if (stored.mode !== "system") return;

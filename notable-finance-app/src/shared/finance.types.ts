@@ -383,6 +383,15 @@ export interface UiThemeSettings {
   secondaryColor: string
 }
 
+export interface UiFontSettings {
+  /** Body/UI font family name. */
+  bodyFont: string
+  /** Monospace/numbers font family name. */
+  monoFont: string
+  /** Brand/display font family name (receipts, insight shots, headings). */
+  brandFont: string
+}
+
 export interface UiProfileSettings {
   displayName: string
   /** JPEG/PNG/WebP data URL, or null for initials-only avatar. */
@@ -459,6 +468,7 @@ export interface UiSettings {
   devModeEnabled: boolean
   profile: UiProfileSettings
   theme: UiThemeSettings
+  fonts: UiFontSettings
   workspace: UiWorkspaceSettings
   incomeFilters: UiIncomeFilters
   expenseFilters: UiExpenseFilters

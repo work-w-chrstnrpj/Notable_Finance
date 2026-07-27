@@ -68,7 +68,7 @@ function WorkspaceFab({
             )}
             {canShotInsight && (
               <button type="button" className="fab__action" onClick={() => choose("insight")}>
-                <span className="fab__action-label">Monthly Insight Shot</span>
+                <span className="fab__action-label">{insight.viewLabel}</span>
                 <span className="fab__action-icon">
                   <Camera size={18} />
                 </span>
@@ -666,7 +666,7 @@ function InsightShotModal({
   insight,
   onClose,
 }: {
-  insight: { monthLabel: string; getNode: () => HTMLElement | null };
+  insight: { monthLabel: string; viewLabel: string; getNode: () => HTMLElement | null };
   onClose: () => void;
 }) {
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -701,8 +701,8 @@ function InsightShotModal({
 
   return (
     <ExportModalShell
-      title="Monthly Insight Shot"
-      subtitle="A clean snapshot of your monthly monitoring."
+      title={insight.viewLabel}
+      subtitle={`A clean snapshot of your ${insight.viewLabel.toLowerCase().replace(" insight shot", "")} monitoring.`}
       busy={status !== "ready"}
       onClose={onClose}
       onPrint={() => surfaceRef.current && printNode(surfaceRef.current)}
@@ -715,19 +715,19 @@ function InsightShotModal({
       {status === "error" && (
         <EmptyState
           title="Couldn't build the snapshot"
-          detail="Open the Monthly Monitoring view and try again."
+          detail="Open the monitoring view and try again."
         />
       )}
       {status === "ready" && snapshot && (
         <div className="insight-shot" ref={surfaceRef}>
           <div className="insight-shot__head">
             <span className="insight-shot__brand">NOTABLE FINANCE</span>
-            <span className="insight-shot__title">Monthly Monitoring</span>
+            <span className="insight-shot__title">Monitoring</span>
             <span className="insight-shot__month">{insight.monthLabel}</span>
           </div>
           <div className="insight-shot__body">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="insight-shot__image" src={snapshot} alt="Monthly monitoring snapshot" />
+            <img className="insight-shot__image" src={snapshot} alt="Monitoring snapshot" />
           </div>
         </div>
       )}

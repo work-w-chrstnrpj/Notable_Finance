@@ -334,7 +334,7 @@ function WorkflowPage({
     });
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
     if (action === "edit") {
       // Mass edit is available on Income / Expense pages; workflows keep duplicate/delete.
       return;

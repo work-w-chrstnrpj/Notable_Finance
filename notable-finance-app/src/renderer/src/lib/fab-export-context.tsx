@@ -40,10 +40,12 @@ export type ReceiptContext = {
 
 /**
  * Published by the Monthly Monitoring view so the FAB can capture an image of
- * the live UI (headers + MMMM YYYY), stripped of nav/toggle/filter chrome.
+ * the live UI (headers + month/period label), stripped of nav/toggle/filter chrome.
  */
 export type InsightContext = {
   monthLabel: string;
+  /** Dynamic label for the view mode, e.g. "Monthly Insight Shot", "Quarterly Insight Shot". */
+  viewLabel: string;
   /** Returns the DOM node to snapshot, or null if not mounted yet. */
   getNode: () => HTMLElement | null;
 };

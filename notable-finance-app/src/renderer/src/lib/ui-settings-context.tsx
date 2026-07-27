@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: UiSettings = {
   devModeEnabled: false,
   profile: { displayName: "Local User", avatarDataUrl: null },
   theme: { mode: "system", primaryColor: "#5b6cf9", secondaryColor: "#0d9488" },
+  fonts: { bodyFont: "Inter", monoFont: "DM Mono", brandFont: "Instrument Serif" },
   workspace: {
     selectedDate: null,
     incomeViewMode: "Monthly",
@@ -64,6 +65,7 @@ type UiSettingsPatch = {
   devModeEnabled?: boolean;
   profile?: Partial<UiSettings["profile"]>;
   theme?: Partial<UiSettings["theme"]>;
+  fonts?: Partial<UiSettings["fonts"]>;
   workspace?: Partial<UiSettings["workspace"]>;
   incomeFilters?: Partial<UiSettings["incomeFilters"]>;
   expenseFilters?: Partial<UiSettings["expenseFilters"]>;
@@ -112,7 +114,20 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
       .get()
       .then((res) => {
         if (cancelled || !res.ok) return;
-        setSettings(res.data);
+        // Merge with defaults so newly-added fields (e.g. fonts) are always present
+        // even when loading settings saved before the field existed.
+        setSettings({
+          ...DEFAULT_SETTINGS,
+          ...res.data,
+          theme: { ...DEFAULT_SETTINGS.theme, ...res.data.theme },
+          fonts: { ...DEFAULT_SETTINGS.fonts, ...res.data.fonts },
+          profile: { ...DEFAULT_SETTINGS.profile, ...res.data.profile },
+          workspace: { ...DEFAULT_SETTINGS.workspace, ...res.data.workspace },
+          incomeFilters: { ...DEFAULT_SETTINGS.incomeFilters, ...res.data.incomeFilters },
+          expenseFilters: { ...DEFAULT_SETTINGS.expenseFilters, ...res.data.expenseFilters },
+          accountsFilters: { ...DEFAULT_SETTINGS.accountsFilters, ...res.data.accountsFilters },
+          monitoringFilters: { ...DEFAULT_SETTINGS.monitoringFilters, ...res.data.monitoringFilters },
+        });
       })
       .finally(() => {
         if (!cancelled) setReady(true);
@@ -143,6 +158,7 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
         patch.devModeEnabled === undefined ? prev.devModeEnabled : patch.devModeEnabled === true,
       profile: patch.profile ? { ...prev.profile, ...patch.profile } : prev.profile,
       theme: patch.theme ? { ...prev.theme, ...patch.theme } : prev.theme,
+      fonts: patch.fonts ? { ...prev.fonts, ...patch.fonts } : prev.fonts,
       workspace: patch.workspace ? { ...prev.workspace, ...patch.workspace } : prev.workspace,
       incomeFilters: patch.incomeFilters
         ? { ...prev.incomeFilters, ...patch.incomeFilters }

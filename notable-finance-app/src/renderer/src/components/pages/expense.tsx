@@ -21,6 +21,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
+import { ReceiptModal } from "@/components/fab";
 import { useShortcutAction } from "@/lib/shortcuts/context";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
@@ -231,6 +232,7 @@ function ExpensePage({
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
+  const [receiptModalCtx, setReceiptModalCtx] = useState<ReceiptContext | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -676,11 +678,56 @@ function ExpensePage({
     }
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
     if (action === "edit") {
       if (selectedIds.size === 0) return;
       setMassEditError(null);
       setMassEditOpen(true);
+      return;
+    }
+
+    if (action === "print") {
+      if (selectedIds.size === 0) return;
+      const isInstallment = viewMode === "Installments";
+      const amountHeader = isInstallment ? "Installment Amount" : "Amount";
+      const receiptValue = (record: ExpenseRecord): number => {
+        if (isInstallment) return deriveExpenseComputed(record).installment ?? 0;
+        if (viewMode === "Unpaid CC") return deriveExpenseComputed(record).remaining;
+        if (viewMode === "Unpaid Pasabuy") return record.pasabuyBalance ?? 0;
+        return record.amount;
+      };
+      const selectedRecords = Array.from(selectedIds)
+        .map((idx) => searchFilteredRecords[idx])
+        .filter((r): r is ExpenseRecord => r != null);
+      const rows: ReceiptRow[] = selectedRecords.map((record) => {
+        const base = {
+          date: formatDate(record.purchaseDate),
+          description: stripNotionTag(record.description),
+          amount: formatMoney(receiptValue(record)),
+        };
+        if (isInstallment) {
+          const c = deriveExpenseComputed(record);
+          return {
+            ...base,
+            grossAmount: formatMoney(c.gross),
+            paidAmount: formatMoney(c.paid),
+            remainingBalance: formatMoney(c.remaining),
+            installmentAmount: c.installment != null ? formatMoney(c.installment) : "—",
+            expectedPaymentDate: c.expected ? formatDate(c.expected) : "—",
+          };
+        }
+        return base;
+      });
+      const total = selectedRecords.reduce((sum, record) => sum + receiptValue(record), 0);
+      setReceiptModalCtx({
+        viewTitle: `${viewMode} Expenses`,
+        periodLabel: getMonthLabel(anchorMonth(selectedDate)),
+        amountHeader,
+        rows,
+        total: formatMoney(total),
+        installmentLayout: isInstallment || undefined,
+      });
+      setSelectedIds(new Set());
       return;
     }
 
@@ -1063,6 +1110,7 @@ function ExpensePage({
             onBulkAction={handleBulkAction}
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
+            showBulkPrint
             wide
             headers={["Date", "Name", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
@@ -1109,6 +1157,7 @@ function ExpensePage({
             onBulkAction={handleBulkAction}
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
+            showBulkPrint
             wide
             headers={[
               "Date",
@@ -1179,6 +1228,7 @@ function ExpensePage({
             onBulkAction={handleBulkAction}
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
+            showBulkPrint
             wide
             headers={[
               "Date",
@@ -1259,6 +1309,7 @@ function ExpensePage({
             onBulkAction={handleBulkAction}
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
+            showBulkPrint
             wide
             headers={["Date", "Description", "Amount", "Account", "Category", "Date Paid"]}
             rowClassName={expenseRowClassName}
@@ -1533,6 +1584,12 @@ function ExpensePage({
           duration={5000}
           message={automationNotice}
           onDismiss={() => setAutomationNotice(null)}
+        />
+      )}
+      {receiptModalCtx && (
+        <ReceiptModal
+          receipt={receiptModalCtx}
+          onClose={() => setReceiptModalCtx(null)}
         />
       )}
     </div>

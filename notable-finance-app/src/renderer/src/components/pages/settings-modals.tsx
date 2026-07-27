@@ -244,11 +244,23 @@ function InterfaceManageModal({
 function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
   const { mode, primaryColor, secondaryColor, setMode, setPrimaryColor, setSecondaryColor } =
     useTheme();
+  const { settings, updateSettings } = useUiSettings();
+  const { bodyFont, monoFont, brandFont } = settings.fonts;
+
+  const fontOptions = [
+    { value: "Inter", label: "Inter" },
+    { value: "DM Mono", label: "DM Mono" },
+    { value: "Instrument Serif", label: "Instrument Serif" },
+    { value: "system-ui", label: "System UI" },
+    { value: "Georgia", label: "Georgia" },
+    { value: "Courier New", label: "Courier New" },
+    { value: "Arial", label: "Arial" },
+  ];
 
   return (
     <SettingsModal
       title="Customize Theme"
-      subtitle="Personalize your appearance and accent colors."
+      subtitle="Personalize your appearance, colors, and fonts."
       onClose={onClose}
       footer={
         <button type="button" className="button button--primary" onClick={onClose}>
@@ -286,6 +298,53 @@ function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
               <span className="settings-color-label">Secondary</span>
               <ColorPicker value={secondaryColor} onChange={setSecondaryColor} />
             </div>
+          </div>
+        </div>
+        <div className="theme-modal-section">
+          <p className="settings-toggle__title">Fonts</p>
+          <p className="settings-toggle__hint">
+            Customize the typeface for body text, numbers/data, and brand headings.
+          </p>
+          <div className="form-grid form-grid--single" style={{ gap: "0.75rem" }}>
+            <Field label="Body Font">
+              <select
+                className="settings-select"
+                value={bodyFont}
+                onChange={(e) =>
+                  void updateSettings({ fonts: { bodyFont: e.target.value } })
+                }
+              >
+                {fontOptions.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Numbers / Data Font">
+              <select
+                className="settings-select"
+                value={monoFont}
+                onChange={(e) =>
+                  void updateSettings({ fonts: { monoFont: e.target.value } })
+                }
+              >
+                {fontOptions.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Brand / Display Font">
+              <select
+                className="settings-select"
+                value={brandFont}
+                onChange={(e) =>
+                  void updateSettings({ fonts: { brandFont: e.target.value } })
+                }
+              >
+                {fontOptions.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+            </Field>
           </div>
         </div>
       </div>

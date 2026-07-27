@@ -411,7 +411,7 @@ function IncomePage({
     }
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
     if (action === "edit") {
       if (selectedIds.size === 0) return;
       setMassEditError(null);

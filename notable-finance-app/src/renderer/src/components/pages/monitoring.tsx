@@ -294,16 +294,17 @@ function MonthlyMonitoringPage({
   const scaledBudgetSpendingTotal = budgetSpendingTotal; // spending is actual
   const scaledRemainingTotal = scaledMonthlyBudgetTotal - budgetSpendingTotal;
 
-  // Expose this view's DOM to the FAB so it can capture a Monthly Insight Shot.
+  // Expose this view's DOM to the FAB so it can capture an Insight Shot.
   const { setInsight } = useFabRegister();
   const captureRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setInsight({
       monthLabel: rangeLbl,
+      viewLabel: `${period} Insight Shot`,
       getNode: () => captureRef.current,
     });
     return () => setInsight(null);
-  }, [rangeLbl, setInsight]);
+  }, [rangeLbl, period, setInsight]);
 
 
   // P5: Show skeleton while primary data is loading
