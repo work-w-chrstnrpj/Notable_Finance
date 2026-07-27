@@ -20,7 +20,6 @@ import { broadcast } from '../windows'
  */
 
 let updateDownloaded = false
-let updateVersion: string | null = null
 
 /** Start the auto-updater. Called once during app startup. */
 export function initUpdater(): void {
@@ -54,7 +53,6 @@ export function initUpdater(): void {
 
   autoUpdater.on('update-downloaded', (info) => {
     updateDownloaded = true
-    updateVersion = info.version ?? null
     console.log(`[updater] Downloaded v${info.version} — ready to install`)
     broadcast('updater:progress', {
       stage: 'downloaded',

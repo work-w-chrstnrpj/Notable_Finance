@@ -264,21 +264,33 @@ function ExpensePage({
       });
     },
   );
-  const { state: expensesState, refetch, applyLocal } = useExpenses({
-    rangeStart: expenseRange?.start,
-    rangeEnd: expenseRange?.end,
-    // Account/category/pasabuyer filters only apply while the filter panel is
-    // active. Otherwise a value left selected before toggling the panel off
-    // would silently hide records with the control hidden from view.
-    accountId: filterActive ? accountFilterId || undefined : undefined,
-    categoryId:
-      filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
-        ? expenseCategoryFilter
-        : undefined,
-    paymentStatus: undefined,
-    pasabuyer: filterActive ? pasabuyerFilter || undefined : undefined,
-    expenseViewMode: viewMode,
-  });
+  const expenseParams = useMemo(
+    () => ({
+      rangeStart: expenseRange?.start,
+      rangeEnd: expenseRange?.end,
+      // Account/category/pasabuyer filters only apply while the filter panel is
+      // active. Otherwise a value left selected before toggling the panel off
+      // would silently hide records with the control hidden from view.
+      accountId: filterActive ? accountFilterId || undefined : undefined,
+      categoryId:
+        filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
+          ? expenseCategoryFilter
+          : undefined,
+      paymentStatus: undefined,
+      pasabuyer: filterActive ? pasabuyerFilter || undefined : undefined,
+      expenseViewMode: viewMode,
+    }),
+    [
+      expenseRange?.start,
+      expenseRange?.end,
+      filterActive,
+      accountFilterId,
+      expenseCategoryFilter,
+      pasabuyerFilter,
+      viewMode,
+    ],
+  );
+  const { state: expensesState, refetch, applyLocal } = useExpenses(expenseParams);
   const { invalidateExpenseFamily } = useFinanceInvalidation();
   useEffect(() => {
     const handler = () => {
@@ -297,18 +309,21 @@ function ExpensePage({
   const isLoading = expensesState.status === "loading";
   const allExpenseRecords: ExpenseRecord[] =
     expensesState.status === "success" ? expensesState.data : [];
-  const visibleExpenseRecords: ExpenseRecord[] = allExpenseRecords.filter(
-    (record) => {
-      if (record.description?.includes("[Deleted:")) return false;
-      if (
-        expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
-        pasabuyCategory &&
-        record.categoryId === pasabuyCategory.id
-      ) {
-        return false;
-      }
-      return true;
-    },
+
+  const visibleExpenseRecords: ExpenseRecord[] = useMemo(
+    () =>
+      allExpenseRecords.filter((record) => {
+        if (record.description?.includes("[Deleted:")) return false;
+        if (
+          expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
+          pasabuyCategory &&
+          record.categoryId === pasabuyCategory.id
+        ) {
+          return false;
+        }
+        return true;
+      }),
+    [allExpenseRecords, expenseCategoryFilter, expenseCategoryFilterWithoutPasabuy, pasabuyCategory],
   );
 
   // Fuzzy search: filter visible records by search query (client-side only)
@@ -365,6 +380,7 @@ function ExpensePage({
       purchaseDate: record.purchaseDate,
       billingDay: account?.billingDay ?? null,
       dueDay: account?.dueDay ?? null,
+      periodCount: record.periodCount,
     });
     return { gross, installment, paid, remaining, expected };
   }
@@ -972,7 +988,14 @@ function ExpensePage({
   const hasSelection = selectedIds.size > 0;
   useShortcutAction("view.newRecord", () => openExpenseModal("new", "New Expense"), !modalOpen);
   useShortcutAction("view.search", () => setSearchActive((s) => !s), !modalOpen);
-  useShortcutAction("view.filters", () => setFilterActive((f) => !f), !modalOpen);
+  useShortcutAction("view.filters", () => {
+    if (filterActive) {
+      setAccountFilterId("");
+      setExpenseCategoryFilter("");
+      setPasabuyerFilter("");
+    }
+    setFilterActive((f) => !f);
+  }, !modalOpen);
   useShortcutAction("modal.save", () => void handleSaveExpense(), modalOpen && editing);
   useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
   useShortcutAction("modal.duplicate", () => handleDuplicateExpense(), modalOpen);
@@ -996,7 +1019,14 @@ function ExpensePage({
           <>
             <FilterToggle
               active={filterActive}
-              onToggle={() => setFilterActive((prev) => !prev)}
+              onToggle={() => {
+                if (filterActive) {
+                  setAccountFilterId("");
+                  setExpenseCategoryFilter("");
+                  setPasabuyerFilter("");
+                }
+                setFilterActive((prev) => !prev);
+              }}
               shortcutId="view.filters"
             />
             <SearchToggle
