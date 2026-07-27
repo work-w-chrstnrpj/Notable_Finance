@@ -578,6 +578,9 @@ export function registerIpc(): void {
     (_e, draftId: string, edits: Record<string, unknown>) =>
       result(() => {
         requireChatEnabled()
+        return chat.editDraftFields(draftId, edits ?? {})
+      })
+  )
 
   // ── Auto-updater (Phase 5.1) ──────────────────────────────────────
   ipcMain.handle('updater:check', () =>
@@ -595,9 +598,6 @@ export function registerIpc(): void {
       installUpdate()
       return true as const
     })
-  )
-        return chat.editDraftFields(draftId, edits ?? {})
-      })
   )
 }
 
