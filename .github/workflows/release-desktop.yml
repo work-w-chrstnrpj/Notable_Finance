@@ -1,0 +1,69 @@
+name: Release Desktop App
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Remove Apple Intelligence helper on non-macOS
+        if: matrix.platform != 'mac'
+        shell: bash
+        run: |
+          cd notable-finance-app
+          # Strip the fm-proxy extraResource from electron-builder config
+          node -e "
+            const fs = require('fs');
+            let c = fs.readFileSync('electron-builder.yml', 'utf8');
+            c = c.replace(/  - from: node_modules\/apple-local-llm\/bin\/fm-proxy\n    to: fm-proxy\n?/, '');
+            fs.writeFileSync('electron-builder.yml', c);
+          "
+          rm -rf node_modules/apple-local-llm
+
+      - name: Build for ${{ matrix.platform }}
+        working-directory: notable-finance-app
+        run: pnpm run dist:${{ matrix.platform }}
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            notable-finance-app/dist/*.dmg
+            notable-finance-app/dist/*.zip
+            notable-finance-app/dist/*.exe
+            notable-finance-app/dist/*.AppImage
+            notable-finance-app/dist/latest-mac.yml
+            notable-finance-app/dist/latest.yml
+            notable-finance-app/dist/latest-linux.yml
+          fail_on_unmatched_files: false

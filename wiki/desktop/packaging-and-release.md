@@ -61,15 +61,17 @@ Auto-update is implemented and ready for use — see `src/main/updater/index.ts`
 
 ## How to release a new version
 
-Do this from your dev machine (and eventually from CI).
+Releases are automated via GitHub Actions (`.github/workflows/release-desktop.yml`). Pushing a version tag triggers a CI build on macOS, Windows, and Linux in parallel, and all artifacts are uploaded to the GitHub Release automatically.
 
 ### 1. Bump the version
 
 ```bash
 # In notable-finance-app/
-npm version patch   # 0.1.0 → 0.1.1  (bug fixes)
+npm version patch   # 1.0.0 → 1.0.1  (bug fixes)
 # or
-npm version minor   # 0.1.0 → 0.2.0  (new features)
+npm version minor   # 1.0.0 → 1.1.0  (new features)
+# or
+npm version major   # 1.0.0 → 2.0.0  (breaking changes)
 ```
 
 This updates `package.json`, `package-lock.json`, and creates a git commit + `vX.Y.Z` tag automatically.
@@ -77,52 +79,31 @@ This updates `package.json`, `package-lock.json`, and creates a git commit + `vX
 ### 2. Push the tag
 
 ```bash
-git push origin --tags
+git push origin main && git push origin v1.0.1
 ```
 
-This pushes the tag (e.g. `v0.1.1`) to GitHub — required for the GitHub Release later.
+Pushes the commit and tag to GitHub. The tag push triggers the CI workflow.
 
-### 3. Build + package for your current platform
+### 3. CI builds and publishes
 
-```bash
-npm run pack
-```
+The `release-desktop.yml` workflow runs three parallel jobs:
 
-Runs `electron-vite build` (compiles TS into `out/`) then `electron-builder --dir` (unpacked app in `dist/`).
+| Runner | Platform | Artifacts |
+|--------|----------|-----------|
+| `macos-latest` | macOS | `.dmg`, `.zip`, `latest-mac.yml` |
+| `windows-latest` | Windows | `.exe` (NSIS), `latest.yml` |
+| `ubuntu-latest` | Linux | `.AppImage`, `latest-linux.yml` |
 
-To produce the actual installer artifacts on your current machine:
+Each job:
+1. Installs pnpm + Node 22
+2. Runs `pnpm install --frozen-lockfile`
+3. Strips the Apple Intelligence helper (`fm-proxy`) on non-macOS builds
+4. Runs `pnpm run dist:<platform>`
+5. Uploads artifacts to the GitHub Release for the pushed tag
 
-```bash
-# macOS only
-npx electron-builder --mac
+The GitHub Release is created automatically if it doesn't exist. Add release notes manually or edit the release after CI completes.
 
-# Windows only (run on Windows)
-npx electron-builder --win
-
-# Both (if on macOS with cross-compile setup)
-npx electron-builder --mac --win --linux
-```
-
-Output lands in `dist/`:
-
-| Platform | Artifacts to upload |
-|----------|---------------------|
-| macOS | `Notable Finance-X.Y.Z.dmg`, `Notable Finance-X.Y.Z-mac.zip`, **`latest-mac.yml`** |
-| Windows | `Notable Finance Setup X.Y.Z.exe`, **`latest.yml`** |
-| Linux | `Notable Finance-X.Y.Z.AppImage`, **`latest-linux.yml`** |
-
-> The `latest-*.yml` files are **required** — electron-updater reads them to know which version is newest.
-
-### 4. Create a GitHub Release
-
-1. Go to **your repo → Releases**: `https://github.com/work-w-chrstnrpj/Notable_Finance/releases`
-2. Click **Draft a new release**
-3. Choose the tag you just pushed (e.g. `v0.1.1`)
-4. Write release notes describing what changed
-5. **Upload all artifacts from `dist/`** — every `.dmg`, `.exe`, `.AppImage`, **and** every `latest-*.yml` file
-6. Click **Publish release**
-
-### 5. Users get the update automatically
+### 4. Users get the update automatically
 
 Once the release is live, every running copy of the app will:
 
@@ -131,7 +112,22 @@ Once the release is live, every running copy of the app will:
 3. Show **Install Now** in **Settings → Updates**.
 4. Install and restart on click.
 
-> **Future improvement:** automate steps 3–4 with a GitHub Actions workflow that builds on all three platforms and uploads to the Release. See [`.github/workflows/release.yml`] (placeholder).
+### Manual build (fallback)
+
+If CI is unavailable, build locally for your current platform:
+
+```bash
+# macOS
+npm run dist:mac
+
+# Windows
+npm run dist:win
+
+# Linux
+npm run dist:linux
+```
+
+Then manually upload the artifacts from `dist/` to a GitHub Release.
 
 ## App configuration handling
 
