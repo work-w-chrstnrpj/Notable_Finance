@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as { version: string }
 
 // Build config for the three Electron targets (main / preload / renderer).
 // See wiki/desktop/desktop-architecture.md and wiki/desktop/project-structure.md.
@@ -23,7 +26,7 @@ export default defineConfig({
       }
     },
     define: {
-      '__APP_VERSION__': JSON.stringify('0.1.0')
+      '__APP_VERSION__': JSON.stringify(pkg.version)
     },
     plugins: [react()]
   }
