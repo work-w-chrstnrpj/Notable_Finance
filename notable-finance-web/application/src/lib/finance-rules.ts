@@ -70,11 +70,9 @@ export function isCreditLikeAccountType(type: AccountType) {
 }
 
 export function calculateTotalCashFlow(accounts: Account[]) {
-  return roundMoney(
-    accounts
-      .filter((account) => !account.inactive && !isCreditLikeAccountType(account.type))
-      .reduce((sum, account) => sum + account.currentBalance, 0),
-  );
+  return accounts
+    .filter((account) => !account.inactive && !isCreditLikeAccountType(account.type))
+    .reduce((sum, account) => sum + account.currentBalance, 0);
 }
 
 export function isAuxiliaryIncomeCategory(label: string) {
@@ -115,7 +113,7 @@ export function isMonthlyMonitoringEditable(section: FinanceSectionId) {
 }
 
 export function calculateNetIncome(grossIncome: number, capitalExpenditure: number) {
-  return roundMoney(grossIncome - capitalExpenditure);
+  return grossIncome - capitalExpenditure;
 }
 
 export function calculateCategoryTotalOverview(categorySpending: number, totalSpending: number) {
@@ -123,11 +121,11 @@ export function calculateCategoryTotalOverview(categorySpending: number, totalSp
     return 0;
   }
 
-  return roundMoney((categorySpending / totalSpending) * 100);
+  return (categorySpending / totalSpending) * 100;
 }
 
 export function calculateGrossPrice(expenseAmount: number, interest: number) {
-  return roundMoney(expenseAmount + interest);
+  return expenseAmount + interest;
 }
 
 export function calculateInstallmentAmount(options: {
@@ -139,7 +137,7 @@ export function calculateInstallmentAmount(options: {
     return null;
   }
 
-  return roundMoney(options.grossPrice / options.periodCount);
+  return options.grossPrice / options.periodCount;
 }
 
 export function calculatePaidAmount(options: {
@@ -149,18 +147,18 @@ export function calculatePaidAmount(options: {
   paidPeriod: number | null;
 }) {
   if (options.paymentStatus === "Paid") {
-    return roundMoney(options.grossPrice);
+    return options.grossPrice;
   }
 
   if (options.paymentStatus === "Installment" && options.installmentAmount && options.paidPeriod) {
-    return roundMoney(options.installmentAmount * options.paidPeriod);
+    return options.installmentAmount * options.paidPeriod;
   }
 
   return 0;
 }
 
 export function calculateRemainingBalance(grossPrice: number, paidAmount: number) {
-  return roundMoney(Math.max(grossPrice - paidAmount, 0));
+  return Math.max(grossPrice - paidAmount, 0);
 }
 
 export function calculatePasabuyReceivedAmount(options: {
@@ -171,7 +169,7 @@ export function calculatePasabuyReceivedAmount(options: {
   periodCount: number | null;
 }) {
   if (options.pasabuyStatus === "Payment fully received") {
-    return roundMoney(options.grossPrice);
+    return options.grossPrice;
   }
 
   if (
@@ -179,7 +177,7 @@ export function calculatePasabuyReceivedAmount(options: {
     options.installmentAmount &&
     options.pasabuyPaidPeriod
   ) {
-    return roundMoney(options.installmentAmount * options.pasabuyPaidPeriod);
+    return options.installmentAmount * options.pasabuyPaidPeriod;
   }
 
   if (
@@ -188,7 +186,7 @@ export function calculatePasabuyReceivedAmount(options: {
     options.periodCount > 0 &&
     options.pasabuyPaidPeriod
   ) {
-    return roundMoney((options.grossPrice / options.periodCount) * options.pasabuyPaidPeriod);
+    return (options.grossPrice / options.periodCount) * options.pasabuyPaidPeriod;
   }
 
   return 0;
@@ -314,10 +312,6 @@ export function isCreditAccountExpense(record: ExpenseRecord, accounts: Account[
   const account = accounts.find((item) => item.id === record.accountId);
 
   return account ? isCreditLikeAccountType(account.type) : false;
-}
-
-function roundMoney(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 function parseIsoDate(value: string) {

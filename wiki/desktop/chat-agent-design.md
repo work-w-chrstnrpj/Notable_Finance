@@ -519,7 +519,7 @@ See [`development-plan.md`](development-plan.md).
 - [`ipc-contract.md`](ipc-contract.md) — `chat:*` channels (threads, messages, credentials, send/confirm)
 - [`security.md`](security.md) — multi-credential keys
 - [`local-data-schema.md`](local-data-schema.md) — `chat_threads` / `chat_messages` / `chat_credentials`
-- [`project-structure.md`](project-structure.md) — `main/chat/`
+- [`project-structure.md`](project-structure.md) — `main/chat/` (includes `topic-guard.ts`)
 - [`desktop-testing-strategy.md`](desktop-testing-strategy.md)
 - [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md) — keep field lists in sync with product
 

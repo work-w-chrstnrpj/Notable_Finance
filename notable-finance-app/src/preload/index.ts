@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
+  UpdaterCheckResult,
   AccountDto,
   ApiResult,
   ChatCredentialDto,
@@ -308,6 +309,15 @@ const api = {
     const listener = (_e: IpcRendererEvent, payload: unknown): void => handler(payload)
     ipcRenderer.on(channel, listener)
     return () => ipcRenderer.removeListener(channel, listener)
+  },
+
+  updater: {
+    check: (): Promise<ApiResult<UpdaterCheckResult>> =>
+      ipcRenderer.invoke('updater:check'),
+    status: (): Promise<ApiResult<{ updateDownloaded: boolean }>> =>
+      ipcRenderer.invoke('updater:status'),
+    install: (): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke('updater:install')
   }
 }
 

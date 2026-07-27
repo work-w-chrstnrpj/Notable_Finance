@@ -44,8 +44,6 @@ export type FinanceRecord =
   | MonthlyMonitoringDto;
 
 const nowIso = () => new Date().toISOString();
-export const roundMoney = (value: number) =>
-  Math.round((value + Number.EPSILON) * 100) / 100;
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 

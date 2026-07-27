@@ -55,6 +55,7 @@ import {
   summarizeForDevLog
 } from '../dev-logs/store'
 import type { DevLogKind } from '../../shared/finance.types'
+import { checkForUpdatesNow, isUpdateDownloaded, installUpdate } from '../updater'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
@@ -577,6 +578,24 @@ export function registerIpc(): void {
     (_e, draftId: string, edits: Record<string, unknown>) =>
       result(() => {
         requireChatEnabled()
+
+  // ── Auto-updater (Phase 5.1) ──────────────────────────────────────
+  ipcMain.handle('updater:check', () =>
+    result(() => {
+      return checkForUpdatesNow()
+    })
+  )
+  ipcMain.handle('updater:status', () =>
+    result(() => ({
+      updateDownloaded: isUpdateDownloaded()
+    }))
+  )
+  ipcMain.handle('updater:install', () =>
+    result(() => {
+      installUpdate()
+      return true as const
+    })
+  )
         return chat.editDraftFields(draftId, edits ?? {})
       })
   )

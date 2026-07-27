@@ -51,3 +51,13 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+
+# GitHub Releases auto-update (Phase 5.1).
+# Create a GitHub Release with the matching tag (v${version}) and the CI or
+# manual workflow uploads dist/*.exe, dist/*.dmg, dist/*.AppImage, and the
+# latest-mac.yml / latest-linux.yml / latest.yml update feed files.
+publish:
+  provider: github
+  owner: work-w-chrstnrpj
+  repo: Notable_Finance
+  releaseType: release

@@ -2388,11 +2388,17 @@ tfoot td {
 }
 
 .field {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
   color: var(--ink-soft);
   font-size: 13px;
   font-weight: 700;
+  width: 100%;
+}
+
+.field select {
+  width: 100%;
 }
 
 .field__required {

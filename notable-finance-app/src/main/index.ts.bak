@@ -5,7 +5,6 @@ import { appIconPath, createWindow, installMenu, onActivate } from './windows'
 import { reschedule, stopScheduler } from './sync/scheduler'
 import { appendDevLog } from './dev-logs/store'
 import { shutdownAppleClient } from './chat/apple'
-import { initUpdater } from './updater'
 
 // Test hook: redirect userData (DB + keychain token file) to an isolated dir for e2e runs.
 if (process.env.NF_USER_DATA_DIR) {
@@ -29,9 +28,6 @@ app.whenReady().then(() => {
   registerIpc()
   installMenu()
   createWindow()
-
-  // Start auto-update checker (background, runs ~3s after startup).
-  initUpdater()
 
   appendDevLog({
     kind: 'system',

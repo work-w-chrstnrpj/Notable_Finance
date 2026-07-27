@@ -2,12 +2,7 @@ const moneyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",
   maximumFractionDigits: 2,
-});
-
-const wholeMoneyFormatter = new Intl.NumberFormat("en-PH", {
-  style: "currency",
-  currency: "PHP",
-  maximumFractionDigits: 0,
+  roundingMode: "trunc",
 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -16,11 +11,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PH", {
   year: "numeric",
 });
 
-export function formatMoney(value: number, options?: { compact?: boolean }) {
-  if (options?.compact) {
-    return wholeMoneyFormatter.format(value);
-  }
-
+export function formatMoney(value: number) {
   return moneyFormatter.format(value);
 }
 
@@ -36,7 +27,7 @@ export function formatDate(value: string | null | undefined) {
 }
 
 export function formatPercent(value: number) {
-  return `${value.toFixed(1)}%`;
+  return `${value}%`;
 }
 
 /** Convert a YYYY-MM-DD date string to YYMMDD format (e.g. "2026-07-30" → "260730"). */

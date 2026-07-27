@@ -68,7 +68,7 @@ export function SpendingBreakdownCard({
         {data.map((item) => (
           <div key={item.name} className="spending-list__row">
             <span><i style={{ backgroundColor: item.color }} />{item.name}</span>
-            <strong>{formatMoney(item.value, { compact: true })}</strong>
+            <strong>{formatMoney(item.value)}</strong>
           </div>
         ))}
       </div>
@@ -213,7 +213,7 @@ export function CategoryDonutChart({
         {data.map((item) => (
           <div key={item.name}>
             <span><i style={{ backgroundColor: item.color }} />{item.name}</span>
-            <strong>{formatMoney(item.value, { compact: true })}</strong>
+            <strong>{formatMoney(item.value)}</strong>
           </div>
         ))}
       </div>

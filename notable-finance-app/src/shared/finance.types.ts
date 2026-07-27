@@ -754,3 +754,11 @@ export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
 export interface TabsCommandEvent {
   action: TabsCommand
 }
+
+
+// ── Auto-updater (Phase 5.1) ─────────────────────────────────────────
+export interface UpdaterCheckResult {
+  updateAvailable: boolean
+  version?: string
+  error?: string
+}

@@ -10,9 +10,6 @@ import {
 } from '../common/finance.types';
 import { isCreditLike } from './notion-resource-utils';
 
-const roundMoney = (value: number) =>
-  Math.round((value + Number.EPSILON) * 100) / 100;
-
 /**
  * Owns reporting calculations: dashboardSummary, monthlyMonitoring.
  * Extracted from NotionService (P4-3 step 3) so the service is smaller
@@ -60,23 +57,17 @@ export class NotionReportingService {
     ) as ExpenseRecordDto[];
 
     const accounts = this.cache.getCollectedAccounts(userId);
-    const totalIncome = roundMoney(
-      incomes.reduce((sum, item) => sum + item.grossIncome - item.capitalExpenditure, 0),
-    );
-    const totalExpense = roundMoney(
-      expenses.reduce((sum, item) => sum + item.amount + item.interest, 0),
-    );
-    const totalCashFlow = roundMoney(
-      accounts
-        .filter((account) => !account.inactive && !isCreditLike(account.type))
-        .reduce((sum, account) => sum + account.currentBalance, 0),
-    );
+    const totalIncome = incomes.reduce((sum, item) => sum + item.grossIncome - item.capitalExpenditure, 0);
+    const totalExpense = expenses.reduce((sum, item) => sum + item.amount + item.interest, 0);
+    const totalCashFlow = accounts
+      .filter((account) => !account.inactive && !isCreditLike(account.type))
+      .reduce((sum, account) => sum + account.currentBalance, 0);
 
     return {
       month,
       totalIncome,
       totalExpense,
-      grossMargin: roundMoney(totalIncome - totalExpense),
+      grossMargin: totalIncome - totalExpense,
       totalCashFlow,
       activeAccountCount: accounts.filter((account) => !account.inactive).length,
       pendingExpenseCount: expenses.filter((expense) => expense.datePaid === null).length,
@@ -109,29 +100,21 @@ export class NotionReportingService {
     const expenseCategories = this.cache.getCollectedExpenseCategories(userId);
     const incomeCategories = this.cache.getCollectedIncomeCategories(userId);
 
-    const monthlyGrossIncome = roundMoney(
-      incomes.reduce((sum, item) => sum + item.grossIncome, 0),
-    );
-    const monthlyIncome = roundMoney(
-      incomes.reduce((sum, item) => sum + item.grossIncome - item.capitalExpenditure, 0),
-    );
-    const monthlyExpense = roundMoney(
-      expenses.reduce((sum, item) => sum + item.amount + item.interest, 0),
-    );
+    const monthlyGrossIncome = incomes.reduce((sum, item) => sum + item.grossIncome, 0);
+    const monthlyIncome = incomes.reduce((sum, item) => sum + item.grossIncome - item.capitalExpenditure, 0);
+    const monthlyExpense = expenses.reduce((sum, item) => sum + item.amount + item.interest, 0);
     const categoryRows = expenseCategories.map((category: ExpenseCategoryDto) => {
-      const spending = roundMoney(
-        expenses
-          .filter((expense) => expense.categoryId === category.id)
-          .reduce((sum, expense) => sum + expense.amount + expense.interest, 0),
-      );
+      const spending = expenses
+        .filter((expense) => expense.categoryId === category.id)
+        .reduce((sum, expense) => sum + expense.amount + expense.interest, 0);
       return {
         id: category.id,
         name: category.name,
         budget: category.monthlyBudget,
         spending,
-        remaining: roundMoney(category.monthlyBudget - spending),
+        remaining: category.monthlyBudget - spending,
         totalOverview:
-          monthlyExpense > 0 ? roundMoney((spending / monthlyExpense) * 100) : 0,
+          monthlyExpense > 0 ? (spending / monthlyExpense) * 100 : 0,
       };
     });
 
@@ -141,18 +124,16 @@ export class NotionReportingService {
       monthlyIncome,
       monthlyGrossIncome,
       monthlyExpense,
-      grossMargin: roundMoney(monthlyIncome - monthlyExpense),
-      forNeeds: roundMoney(monthlyIncome * 0.5),
-      forWants: roundMoney(monthlyIncome * 0.3),
-      forSavings: roundMoney(monthlyIncome * 0.2),
+      grossMargin: monthlyIncome - monthlyExpense,
+      forNeeds: monthlyIncome * 0.5,
+      forWants: monthlyIncome * 0.3,
+      forSavings: monthlyIncome * 0.2,
       incomeCategories: incomeCategories.map((category: IncomeCategoryDto) => ({
         id: category.id,
         source: category.source,
-        total: roundMoney(
-          incomes
-            .filter((income) => income.categoryId === category.id)
-            .reduce((sum, income) => sum + income.grossIncome - income.capitalExpenditure, 0),
-        ),
+        total: incomes
+          .filter((income) => income.categoryId === category.id)
+          .reduce((sum, income) => sum + income.grossIncome - income.capitalExpenditure, 0),
       })),
       expenseCategories: categoryRows,
     };

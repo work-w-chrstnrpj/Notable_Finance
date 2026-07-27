@@ -230,7 +230,7 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
           value={formatMoney(monitoring.monthlyIncome)}
           detail={
             forecastTotal
-              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastTotal, { compact: true })} forecast`
+              ? `${getMonthLabel(selectedMonth)} · incl. ${formatMoney(forecastTotal)} forecast`
               : getMonthLabel(selectedMonth)
           }
           icon={ArrowUpRight}
@@ -426,8 +426,8 @@ function MonthlyMonitoringPage({ selectedMonth }: { selectedMonth: string }) {
               <CategoryCard
                 key={category.id}
                 title={category.name}
-                detail={`Remaining ${formatMoney(category.remaining, { compact: true })}`}
-                value={formatMoney(category.monthlyBudget, { compact: true })}
+                detail={`Remaining ${formatMoney(category.remaining)}`}
+                value={formatMoney(category.monthlyBudget)}
               />
             ))}
           </div>

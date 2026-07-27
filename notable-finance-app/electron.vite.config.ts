@@ -22,6 +22,9 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
+    define: {
+      '__APP_VERSION__': JSON.stringify('0.1.0')
+    },
     plugins: [react()]
   }
 })

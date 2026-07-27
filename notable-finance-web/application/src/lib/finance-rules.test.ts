@@ -181,7 +181,7 @@ describe("finance frontend rules", () => {
   });
 
   it("calculates expense category total overview as share of total spending", () => {
-    expect(calculateCategoryTotalOverview(12500, 23700)).toBe(52.74);
+    expect(calculateCategoryTotalOverview(12500, 23700)).toBe(52.742616033755276);
     expect(calculateCategoryTotalOverview(12500, 0)).toBe(0);
   });
 

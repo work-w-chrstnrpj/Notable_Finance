@@ -66,10 +66,10 @@ function AccountsPage() {
         accountCell,
         account.type,
         formatMoney(account.currentBalance),
-        account.creditLimit !== null ? formatMoney(account.creditLimit, { compact: true }) : "-",
-        account.availableLimit !== null ? formatMoney(account.availableLimit, { compact: true }) : "-",
-        account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
-        account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
+        account.creditLimit !== null ? formatMoney(account.creditLimit) : "-",
+        account.availableLimit !== null ? formatMoney(account.availableLimit) : "-",
+        account.totalIncomes !== null ? formatMoney(account.totalIncomes) : "-",
+        account.totalExpenses !== null ? formatMoney(account.totalExpenses) : "-",
         account.billingDay?.toString() ?? "-",
         account.dueDay?.toString() ?? "-",
       ];
@@ -79,8 +79,8 @@ function AccountsPage() {
       accountCell,
       account.type,
       formatMoney(account.currentBalance),
-      account.totalIncomes !== null ? formatMoney(account.totalIncomes, { compact: true }) : "-",
-      account.totalExpenses !== null ? formatMoney(account.totalExpenses, { compact: true }) : "-",
+      account.totalIncomes !== null ? formatMoney(account.totalIncomes) : "-",
+      account.totalExpenses !== null ? formatMoney(account.totalExpenses) : "-",
     ];
   });
 
@@ -104,8 +104,8 @@ function AccountsPage() {
             "Total",
             "",
             formatMoney(accountTotalBalance),
-            formatMoney(accountTotalIncome, { compact: true }),
-            formatMoney(accountTotalExpense, { compact: true }),
+            formatMoney(accountTotalIncome),
+            formatMoney(accountTotalExpense),
           ],
         ];
 

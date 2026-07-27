@@ -243,6 +243,8 @@ function SettingsPage({
         </div>
       </Panel>
 
+      <UpdatesPanel />
+
       {modal === "notion" && <NotionConfigModal onClose={() => setModal(null)} />}
       {modal === "theme" && <ThemeCustomizeModal onClose={() => setModal(null)} />}
       {modal === "interface" && (
@@ -256,6 +258,79 @@ function SettingsPage({
       {modal === "ai" && <AiChatConfigModal onClose={() => setModal(null)} />}
     </div>
   );
+}
+
+
+function UpdatesPanel() {
+  const [status, setStatus] = useState<{ checking: boolean; result: string }>({
+    checking: false,
+    result: "",
+  })
+
+  const handleCheck = async () => {
+    setStatus({ checking: true, result: "Checking for updates…" })
+    try {
+      const res = await window.api.updater.check()
+      if (!res.ok) {
+        setStatus({ checking: false, result: `Error: ${res.error ?? "unknown"}` })
+        return
+      }
+      if (res.data.updateAvailable) {
+        setStatus({
+          checking: false,
+          result: `Update v${res.data.version} available — downloading in background. Check back shortly to install.`,
+        })
+      } else {
+        setStatus({ checking: false, result: "You have the latest version." })
+      }
+    } catch (err) {
+      setStatus({ checking: false, result: `Error: ${err instanceof Error ? err.message : String(err)}` })
+    }
+  }
+
+  const handleInstall = async () => {
+    try {
+      await window.api.updater.install()
+    } catch {
+      // app will quit — nothing to handle
+    }
+  }
+
+  return (
+    <Panel title="Updates">
+      <div className="settings-row">
+        <div>
+          <p className="settings-toggle__title">App version</p>
+          <p className="settings-toggle__hint">
+            {__APP_VERSION__} &mdash;
+            {" "}auto-update downloads releases from GitHub.
+          </p>
+          {status.result && (
+            <p className="settings-toggle__hint" style={{ marginTop: "0.5rem" }}>
+              {status.result}
+            </p>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button
+            type="button"
+            className="button"
+            onClick={handleCheck}
+            disabled={status.checking}
+          >
+            {status.checking ? "Checking…" : "Check for Updates"}
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={handleInstall}
+          >
+            Install Now
+          </button>
+        </div>
+      </div>
+    </Panel>
+  )
 }
 
 export { SettingsPage };

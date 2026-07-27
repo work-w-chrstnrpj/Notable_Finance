@@ -294,7 +294,7 @@ function DashboardPage({
         <MetricCard
           title="Available Credit"
           value={formatMoney(display.availableCredit)}
-          detail={`Limit ${formatMoney(display.creditLimit, { compact: true })}`}
+          detail={`Limit ${formatMoney(display.creditLimit)}`}
           icon={CreditCard}
           tone="blue"
         />
@@ -405,7 +405,7 @@ function TopSpendingCategoriesCard({
               <div key={cat.name} className="budget-usage-row">
                 <div>
                   <span>{cat.name}</span>
-                  <strong>{formatMoney(cat.value, { compact: true })} · {percent}%</strong>
+                  <strong>{formatMoney(cat.value)} · {percent}%</strong>
                 </div>
                 <div className="budget-usage-track">
                   <i style={{ width: `${Math.min(percent, 100)}%`, backgroundColor: color }} />
@@ -459,7 +459,7 @@ function RecentTransactionsList({
               </span>
               <span className={cx("recent-list__amount", `recent-list__amount--${record.section}`)}>
                 {prefix}
-                {formatMoney(Math.abs(record.value), { compact: true })}
+                {formatMoney(Math.abs(record.value))}
               </span>
             </button>
           );
