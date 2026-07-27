@@ -595,7 +595,10 @@ export function registerIpc(): void {
   )
   ipcMain.handle('updater:install', () =>
     result(() => {
-      installUpdate()
+      const willQuit = installUpdate()
+      if (!willQuit) {
+        throw new Error('Update is still downloading. Please wait for the download to finish.')
+      }
       return true as const
     })
   )

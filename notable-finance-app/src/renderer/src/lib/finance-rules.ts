@@ -202,6 +202,7 @@ export function calculateExpectedPaymentDate(options: {
   purchaseDate: string;
   billingDay: number | null;
   dueDay: number | null;
+  periodCount?: number | null;
 }) {
   if (!options.purchaseDate || !options.billingDay || !options.dueDay) {
     return null;
@@ -213,9 +214,11 @@ export function calculateExpectedPaymentDate(options: {
     return null;
   }
 
-  const billingMonthOffset = purchaseDate.day <= options.billingDay ? 0 : 1;
-  const billingMonthIndex = purchaseDate.monthIndex + billingMonthOffset;
-  const dueMonthOffset = options.dueDay > options.billingDay ? 0 : 1;
+  const pCount = options.periodCount ?? 1;
+  const missedCycle = purchaseDate.day > options.billingDay ? 1 : 0;
+  const billOffset = missedCycle + pCount - 1;
+  const billingMonthIndex = purchaseDate.monthIndex + billOffset;
+  const dueMonthOffset = options.billingDay > options.dueDay ? 1 : 0;
   const dueDate = createClampedDate(
     purchaseDate.year,
     billingMonthIndex + dueMonthOffset,

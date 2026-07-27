@@ -306,6 +306,7 @@ function QuickAddExpenseModal({
     purchaseDate: purchaseDateInput,
     billingDay: selectedFormAccount?.billingDay ?? null,
     dueDay: selectedFormAccount?.dueDay ?? null,
+    periodCount,
   });
   const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
     grossPrice,

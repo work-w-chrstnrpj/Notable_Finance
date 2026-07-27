@@ -222,6 +222,27 @@ describe("finance frontend rules", () => {
     ).toBe("2026-08-10");
   });
 
+  it("calculates expected payment date with billingDay === dueDay (no extra month)", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-19",
+        billingDay: 5,
+        dueDay: 5,
+      }),
+    ).toBe("2026-08-05");
+  });
+
+  it("calculates expected payment date with periodCount > 1", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: 15,
+        dueDay: 10,
+        periodCount: 3,
+      }),
+    ).toBe("2026-10-10");
+  });
+
   it("calculates pasabuy received amount and balance locally", () => {
     const received = calculatePasabuyReceivedAmount({
       grossPrice: 8000,

@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { useUiSettings } from "@/lib/ui-settings-context";
+import { loadGoogleFont } from "@/lib/font-loader";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -101,6 +102,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const bodyFallback = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     const monoFallback = "'DM Mono', 'SFMono-Regular', Consolas, ui-monospace, monospace";
     const brandFallback = "'Instrument Serif', serif";
+    // Dynamically load Google Fonts for any non-local, non-system font
+    loadGoogleFont(fonts.bodyFont);
+    loadGoogleFont(fonts.monoFont);
+    loadGoogleFont(fonts.brandFont);
     document.documentElement.style.setProperty("--font-body", fonts.bodyFont ? `${fonts.bodyFont}, ${bodyFallback}` : bodyFallback);
     document.documentElement.style.setProperty("--font-mono", fonts.monoFont ? `${fonts.monoFont}, ${monoFallback}` : monoFallback);
     document.documentElement.style.setProperty("--font-brand", fonts.brandFont ? `${fonts.brandFont}, ${brandFallback}` : brandFallback);

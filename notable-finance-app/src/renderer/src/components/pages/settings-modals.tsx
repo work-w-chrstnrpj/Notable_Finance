@@ -2,6 +2,7 @@
 import { startTransition, useState, useEffect } from "react";
 import { useTheme } from "@/lib/theme-context";
 import { useUiSettings } from "@/lib/ui-settings-context";
+import { FONT_OPTIONS, loadGoogleFont } from "@/lib/font-loader";
 import { ColorPicker } from "@/components/color-picker";
 import { userNotionConfigApi } from "@/lib/api-client";
 import { Field, FormSectionDivider } from "@/components/ui";
@@ -247,15 +248,37 @@ function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
   const { settings, updateSettings } = useUiSettings();
   const { bodyFont, monoFont, brandFont } = settings.fonts;
 
-  const fontOptions = [
-    { value: "Inter", label: "Inter" },
-    { value: "DM Mono", label: "DM Mono" },
-    { value: "Instrument Serif", label: "Instrument Serif" },
-    { value: "system-ui", label: "System UI" },
-    { value: "Georgia", label: "Georgia" },
-    { value: "Courier New", label: "Courier New" },
-    { value: "Arial", label: "Arial" },
-  ];
+  const fontGroups = FONT_OPTIONS.reduce<Record<string, typeof FONT_OPTIONS>>((acc, f) => {
+    (acc[f.group] ??= []).push(f);
+    return acc;
+  }, {});
+
+  const handleFontChange = (key: "bodyFont" | "monoFont" | "brandFont", value: string) => {
+    loadGoogleFont(value);
+    void updateSettings({ fonts: { [key]: value } });
+  };
+
+  const renderFontSelect = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+  ) => (
+    <Field label={label}>
+      <select
+        className="settings-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {Object.entries(fontGroups).map(([group, fonts]) => (
+          <optgroup key={group} label={group}>
+            {fonts.map((f) => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </Field>
+  );
 
   return (
     <SettingsModal
@@ -306,45 +329,9 @@ function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
             Customize the typeface for body text, numbers/data, and brand headings.
           </p>
           <div className="form-grid form-grid--single" style={{ gap: "0.75rem" }}>
-            <Field label="Body Font">
-              <select
-                className="settings-select"
-                value={bodyFont}
-                onChange={(e) =>
-                  void updateSettings({ fonts: { bodyFont: e.target.value } })
-                }
-              >
-                {fontOptions.map((f) => (
-                  <option key={f.value} value={f.value}>{f.label}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Numbers / Data Font">
-              <select
-                className="settings-select"
-                value={monoFont}
-                onChange={(e) =>
-                  void updateSettings({ fonts: { monoFont: e.target.value } })
-                }
-              >
-                {fontOptions.map((f) => (
-                  <option key={f.value} value={f.value}>{f.label}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Brand / Display Font">
-              <select
-                className="settings-select"
-                value={brandFont}
-                onChange={(e) =>
-                  void updateSettings({ fonts: { brandFont: e.target.value } })
-                }
-              >
-                {fontOptions.map((f) => (
-                  <option key={f.value} value={f.value}>{f.label}</option>
-                ))}
-              </select>
-            </Field>
+            {renderFontSelect("Body Font", bodyFont, (v) => handleFontChange("bodyFont", v))}
+            {renderFontSelect("Numbers / Data Font", monoFont, (v) => handleFontChange("monoFont", v))}
+            {renderFontSelect("Brand / Display Font", brandFont, (v) => handleFontChange("brandFont", v))}
           </div>
         </div>
       </div>

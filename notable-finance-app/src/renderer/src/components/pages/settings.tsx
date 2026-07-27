@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Database, Bug, Keyboard, MessageSquare, Palette, SlidersHorizontal, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
@@ -262,68 +262,132 @@ function SettingsPage({
 
 
 function UpdatesPanel() {
-  const [status, setStatus] = useState<{ checking: boolean; result: string }>({
-    checking: false,
-    result: "",
-  })
+  const [checking, setChecking] = useState(false)
+  const [statusText, setStatusText] = useState("")
+  const [downloaded, setDownloaded] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [percent, setPercent] = useState(0)
+  const [installError, setInstallError] = useState("")
+
+  useEffect(() => {
+    const unsub = window.api.on("updater:progress", (payload) => {
+      const ev = payload as {
+        stage: string
+        percent?: number
+        version?: string
+        error?: string
+      }
+      if (ev.stage === "downloading") {
+        setDownloading(true)
+        setDownloaded(false)
+        if (ev.percent != null) setPercent(ev.percent)
+      } else if (ev.stage === "downloaded") {
+        setDownloading(false)
+        setDownloaded(true)
+        setPercent(100)
+        setStatusText(
+          ev.version
+            ? `Update v${ev.version} downloaded — ready to install.`
+            : "Update downloaded — ready to install."
+        )
+      } else if (ev.stage === "error") {
+        setDownloading(false)
+        setStatusText(`Error: ${ev.error ?? "unknown"}`)
+      }
+    })
+    return unsub
+  }, [])
 
   const handleCheck = async () => {
-    setStatus({ checking: true, result: "Checking for updates…" })
+    setChecking(true)
+    setInstallError("")
+    setStatusText("Checking for updates…")
     try {
       const res = await window.api.updater.check()
       if (!res.ok) {
-        setStatus({ checking: false, result: `Error: ${res.error ?? "unknown"}` })
+        setStatusText(`Error: ${res.error ?? "unknown"}`)
         return
       }
       if (res.data.updateAvailable) {
-        setStatus({
-          checking: false,
-          result: `Update v${res.data.version} available — downloading in background. Check back shortly to install.`,
-        })
+        setStatusText(
+          `Update v${res.data.version} available — downloading in background.`
+        )
       } else {
-        setStatus({ checking: false, result: "You have the latest version." })
+        setStatusText("You have the latest version.")
       }
     } catch (err) {
-      setStatus({ checking: false, result: `Error: ${err instanceof Error ? err.message : String(err)}` })
+      setStatusText(`Error: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setChecking(false)
     }
   }
 
   const handleInstall = async () => {
+    setInstallError("")
     try {
       await window.api.updater.install()
-    } catch {
-      // app will quit — nothing to handle
+    } catch (err) {
+      setInstallError(err instanceof Error ? err.message : String(err))
     }
   }
 
   return (
     <Panel title="Updates">
       <div className="settings-row">
-        <div>
+        <div style={{ flex: 1 }}>
           <p className="settings-toggle__title">App version</p>
           <p className="settings-toggle__hint">
             {__APP_VERSION__} &mdash;
             {" "}auto-update downloads releases from GitHub.
           </p>
-          {status.result && (
+          {statusText && (
             <p className="settings-toggle__hint" style={{ marginTop: "0.5rem" }}>
-              {status.result}
+              {statusText}
+            </p>
+          )}
+          {downloading && (
+            <div style={{ marginTop: "0.5rem" }}>
+              <div style={{
+                height: 6,
+                borderRadius: 3,
+                background: "var(--color-border, #e5e5e5)",
+                overflow: "hidden",
+                width: "100%",
+                maxWidth: 300,
+              }}>
+                <div style={{
+                  height: "100%",
+                  width: `${percent}%`,
+                  background: "var(--color-primary, #3b82f6)",
+                  borderRadius: 3,
+                  transition: "width 0.3s ease",
+                }} />
+              </div>
+              <p className="settings-toggle__hint" style={{ marginTop: "0.25rem" }}>
+                {percent}% downloaded
+              </p>
+            </div>
+          )}
+          {installError && (
+            <p className="settings-toggle__hint" style={{ marginTop: "0.5rem", color: "var(--color-error, #ef4444)" }}>
+              {installError}
             </p>
           )}
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
           <button
             type="button"
             className="button"
             onClick={handleCheck}
-            disabled={status.checking}
+            disabled={checking}
           >
-            {status.checking ? "Checking…" : "Check for Updates"}
+            {checking ? "Checking…" : "Check for Updates"}
           </button>
           <button
             type="button"
             className="button button--primary"
             onClick={handleInstall}
+            disabled={!downloaded}
           >
             Install Now
           </button>

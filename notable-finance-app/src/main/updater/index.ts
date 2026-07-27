@@ -1,5 +1,7 @@
 import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import type { UpdaterProgressEvent } from '../../shared/finance.types'
+import { broadcast } from '../windows'
 
 /**
  * Auto-update via GitHub Releases.
@@ -18,6 +20,7 @@ import { autoUpdater } from 'electron-updater'
  */
 
 let updateDownloaded = false
+let updateVersion: string | null = null
 
 /** Start the auto-updater. Called once during app startup. */
 export function initUpdater(): void {
@@ -38,18 +41,36 @@ export function initUpdater(): void {
     console.log('[updater] No update available')
   )
 
-  autoUpdater.on('download-progress', (p) =>
+  autoUpdater.on('download-progress', (p) => {
     console.log(`[updater] Downloading… ${Math.round(p.percent)}%`)
-  )
+    broadcast('updater:progress', {
+      stage: 'downloading',
+      percent: Math.round(p.percent),
+      bytesPerSecond: p.bytesPerSecond,
+      transferred: p.transferred,
+      total: p.total,
+    } satisfies UpdaterProgressEvent)
+  })
 
   autoUpdater.on('update-downloaded', (info) => {
     updateDownloaded = true
+    updateVersion = info.version ?? null
     console.log(`[updater] Downloaded v${info.version} — ready to install`)
+    broadcast('updater:progress', {
+      stage: 'downloaded',
+      percent: 100,
+      version: info.version,
+    } satisfies UpdaterProgressEvent)
   })
 
-  autoUpdater.on('error', (err) =>
-    console.error('[updater] Error:', err.message ?? err)
-  )
+  autoUpdater.on('error', (err) => {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[updater] Error:', msg)
+    broadcast('updater:progress', {
+      stage: 'error',
+      error: msg,
+    } satisfies UpdaterProgressEvent)
+  })
 
   // Check ~3s after startup so the UI is ready.
   setTimeout(() => {
@@ -84,9 +105,11 @@ export function isUpdateDownloaded(): boolean {
   return updateDownloaded
 }
 
-/** Quit the app and apply the staged update. */
-export function installUpdate(): void {
+/** Quit the app and apply the staged update. Returns true if it will quit. */
+export function installUpdate(): boolean {
   if (updateDownloaded) {
     autoUpdater.quitAndInstall()
+    return true
   }
+  return false
 }

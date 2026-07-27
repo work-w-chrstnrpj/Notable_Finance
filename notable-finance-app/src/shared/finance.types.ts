@@ -758,6 +758,8 @@ export type EventChannel =
   | 'devLogs:entry'
   /** Edit-menu keys the OS menu owns, routed to the renderer (undo/redo/select all). */
   | 'shortcut:menu'
+  /** Auto-updater download progress and completion. */
+  | 'updater:progress'
 
 export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
 
@@ -765,6 +767,17 @@ export interface TabsCommandEvent {
   action: TabsCommand
 }
 
+export type UpdaterProgressStage = 'downloading' | 'downloaded' | 'error'
+
+export interface UpdaterProgressEvent {
+  stage: UpdaterProgressStage
+  percent?: number
+  bytesPerSecond?: number
+  transferred?: number
+  total?: number
+  version?: string
+  error?: string
+}
 
 // ── Auto-updater (Phase 5.1) ─────────────────────────────────────────
 export interface UpdaterCheckResult {
