@@ -97,7 +97,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--green", stored.secondaryColor);
     document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`);
     // Apply font settings from UiSettings
-    const { fonts } = settings;
+    const fonts = settings.fonts ?? { bodyFont: "", monoFont: "", brandFont: "" };
     const bodyFallback = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     const monoFallback = "'DM Mono', 'SFMono-Regular', Consolas, ui-monospace, monospace";
     const brandFallback = "'Instrument Serif', serif";

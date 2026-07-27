@@ -3,6 +3,7 @@ import { getSqlite } from '../db'
 import type {
   UiAccountsFilters,
   UiExpenseFilters,
+  UiFontSettings,
   UiIncomeFilters,
   UiMonitoringFilters,
   UiProfileSettings,
@@ -22,6 +23,12 @@ const DEFAULT_THEME: UiThemeSettings = {
   mode: 'system',
   primaryColor: '#5b6cf9',
   secondaryColor: '#0d9488'
+}
+
+const DEFAULT_FONTS: UiFontSettings = {
+  bodyFont: 'Inter',
+  monoFont: 'DM Mono',
+  brandFont: 'Instrument Serif'
 }
 
 const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
@@ -80,6 +87,7 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   devModeEnabled: false,
   profile: { ...DEFAULT_PROFILE },
   theme: { ...DEFAULT_THEME },
+  fonts: { ...DEFAULT_FONTS },
   workspace: { ...DEFAULT_WORKSPACE },
   incomeFilters: { ...DEFAULT_INCOME },
   expenseFilters: { ...DEFAULT_EXPENSE },
@@ -117,6 +125,15 @@ function mergeTheme(raw: unknown): UiThemeSettings {
       typeof r.secondaryColor === 'string' && r.secondaryColor
         ? r.secondaryColor
         : DEFAULT_THEME.secondaryColor
+  }
+}
+
+function mergeFonts(raw: unknown): UiFontSettings {
+  const r = asRecord(raw)
+  return {
+    bodyFont: typeof r.bodyFont === 'string' && r.bodyFont ? r.bodyFont : DEFAULT_FONTS.bodyFont,
+    monoFont: typeof r.monoFont === 'string' && r.monoFont ? r.monoFont : DEFAULT_FONTS.monoFont,
+    brandFont: typeof r.brandFont === 'string' && r.brandFont ? r.brandFont : DEFAULT_FONTS.brandFont
   }
 }
 
@@ -237,6 +254,7 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
     devModeEnabled: r.devModeEnabled === true,
     profile: mergeProfile(r.profile),
     theme: mergeTheme(r.theme),
+    fonts: mergeFonts(r.fonts),
     workspace: mergeWorkspace(r.workspace),
     incomeFilters: mergeIncome(r.incomeFilters),
     expenseFilters: mergeExpense(r.expenseFilters),
@@ -265,6 +283,7 @@ export function setUiSettings(patch: Partial<{
   devModeEnabled: boolean
   profile: Partial<UiProfileSettings>
   theme: Partial<UiThemeSettings>
+  fonts: Partial<UiFontSettings>
   workspace: Partial<UiWorkspaceSettings>
   incomeFilters: Partial<UiIncomeFilters>
   expenseFilters: Partial<UiExpenseFilters>
@@ -286,6 +305,7 @@ export function setUiSettings(patch: Partial<{
       patch.devModeEnabled === undefined ? current.devModeEnabled : patch.devModeEnabled,
     profile: patch.profile ? { ...current.profile, ...patch.profile } : current.profile,
     theme: patch.theme ? { ...current.theme, ...patch.theme } : current.theme,
+    fonts: patch.fonts ? { ...current.fonts, ...patch.fonts } : current.fonts,
     workspace: patch.workspace ? { ...current.workspace, ...patch.workspace } : current.workspace,
     incomeFilters: patch.incomeFilters
       ? { ...current.incomeFilters, ...patch.incomeFilters }
