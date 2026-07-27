@@ -5,159 +5,113 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-07-27
 
-### Changed
+Initial desktop release — a local-first Electron app that mirrors the web app's finance
+workspace, works fully offline, and syncs bidirectionally with Notion.
 
-- **Notion archive/trash no longer sticks Unsynced** — if Notion deletes/archives an
-  income/expense page, sync soft-deletes locally and marks it clean (push no longer loops
-  on “Can't edit block that is archived”). A full presence pass on pull catches Notion-only
-  trash even when the local row was still live.
-- **Pull restored for Notion-Version `2026-03-11`** — database query/create/schema now use
-  the data-sources API (`/v1/data_sources/...`). The old `/v1/databases/.../query` path is
-  deprecated on this version, which left Last Pull stuck while push still worked.
-- **Sync Actions: Pull / Push / Full** — Commit Queue is replaced by three buttons (pull-only,
-  push-only, full sync). The top-header Sync button remains full sync. Spacing between Verify
-  Schema and Refresh Source is fixed.
-- **Accounts list (non-credit)** — Card and Table views no longer show **Total Cash Inflow** /
-  **Total Cash Outflow**. Credit cards still show Payment Made / Purchase Expenses.
-- **Account detail modal** — Balances now also include derived **Total Pasabuy** and
-  **Total CC, Debt & Transfer** (same local formula terms as Current Balance).
+### Architecture
 
-### Added
+- **Local-first:** all data lives in a local SQLite database (`better-sqlite3` + Drizzle ORM).
+  Reads are instant; writes are committed locally first, then synced to Notion in the background.
+- **Nine finance sections:** Dashboard, Accounts, Income, Expense, Monthly Monitoring,
+  Transfer, Credit Card Payment, Alkansya, and Receivables — matching the web app's view
+  semantics.
+- **Bidirectional Notion sync:** pull (initial + incremental via `last_edited_time` cursor),
+  push (dirty records only, writable fields, ~3 req/s throttle with 429 backoff), and
+  three-way merge with per-field conflict resolution.
+- **Renderer ported from the web app** (React 19, TanStack Query, Recharts) over an IPC-backed
+  `api-client` with the same interface as the web's HTTP client.
 
-- **Mass edit for selected Income/Expense rows** — the bulk toolbar now includes **Edit**.
-  It opens a modal where you can (+) add one or more writable fields (inputs, dropdowns,
-  dates — not formulas, and not Name / Purchase description), set each new value, and
-  apply the same patch to every selected row via `bulkUpdate`.
-- **Notion page icons on push** — every create/update to Notion now sets a native page
-  icon (API `type: "icon"`) so rows are visually typed in the Notion DB:
-  - Expense (non-Pasabuy) → arrow down circle / red
-  - Expense (Pasabuy) → vitruvian man circle / yellow
-  - Income (normal) → arrow up circle / green
-  - Transfer → arrow left right circle / yellow
-  - Credit Card Payment → credit card / red
-  - Receivable (no account) → delivery truck profile / blue
-  Requires Notion-Version `2026-03-11` (bumped from `2022-06-28`) for native icons.
-- **History section** — a new sidebar page (System group) that surfaces the local-first
-  sync journal:
-  - **Unsynced Items**: local changes not yet on Notion (`sync_state` dirty/conflict),
-    **including soft-deleted records**, each tagged Created / Updated / Deleted, with a
-    Conflict badge and "never sent to Notion" hint where relevant.
-  - **Recently Synced**: a sortable **table** (matching the other views) with columns
-    Status / Record / Type / Direction / When. It shows only the **last two sync passes**
-    (the current sync and the one immediately before it), each row tagged with its status
-    (Created / Updated / Deleted) and **direction** — `Notion DB → App` (pull) or
-    `App → Notion DB` (push).
-  - Backed by a new durable `activity_log` table (migrations `0003_reflective_angel` +
-    `0004_massive_maximus`) that the pull and push engines append to on every applied
-    record. Each event carries a `run_id` so History can group by sync pass; one `syncNow`
-    (pull + push) shares a single run id. Unlike `mutation_queue` (cleared on push), the
-    feed persists (capped to the newest 1000 rows) but the UI only surfaces the last two
-    runs. Exposed via a new `history:get` IPC channel.
-  - The old empty **Activity Log** placeholder on the Sync page was removed (History
-    replaces it).
-- **Sync sidebar conflict badge** — a live red number on the Sync nav item showing how
-  many records need conflict resolution. Seeds from `sync.status().conflictCount` and
-  updates on every `sync:status` broadcast (including after resolve). Resolution stays
-  on the Sync page; the badge just surfaces that work is waiting.
+### Added — Core
 
-### Changed
+- **Full finance UI** with workspace shell (Sidebar + TopBar), date-range selector, view modes,
+  light/dark theme, toasts, error boundaries, and quick-action FAB.
+- **Dashboard** with charts, trends, and breakdowns matching the web app.
+- **Accounts** card and table views with Current Balance, Available Limit, Total Cash
+  Inflow/Outflow, Total Pasabuy, and Total CC/Debt/Transfer computations — all matching the
+  Notion formulas exactly.
+- **Income and Expense** pages with full CRUD, view filtering (Daily/Weekly/Annual),
+  Unpaid Pasabuy / To pay / To buy / Installments / Unpaid CC expense views.
+- **Workflow pages:** Transfer, Credit Card Payment, Alkansya, Receivables.
+- **Monthly Monitoring** with mode views.
+- **Settings** with theme customization and FAB toggle.
+- **Multi-window** with cross-window event fan-out.
 
-- **Redesigned the "Local-First Sync (Desktop)" panel** on the Sync page — it was
-  cramped and misaligned (the auto-sync checkbox, interval field, and "seconds" label
-  stacked awkwardly because `.action-list` is a grid). It now uses the standard
-  `settings-row` layout with a proper toggle switch for auto-sync and an inline
-  "every N sec" interval, and conflicts render as clean cards (field label · Mine/Notion
-  values · per-field and bulk resolve actions) instead of overflowing rows.
-- **Pinned `better-sqlite3` to 12.11.1 and Electron to 42.x** so packaging works without a
-  local MSVC toolchain: the better-sqlite3 13.x releases currently ship **no prebuilt
-  binaries**, and no npm-published version has a prebuild for Electron 43's ABI (v148).
-  12.11.1 provides prebuilds for Electron 42 (ABI v146) and Node 24 (ABI v137). Revisit once
-  13.x prebuilds are published.
+### Added — Sync
+
+- **Notion connect onboarding:** bring-your-own integration token, validated then encrypted
+  with `safeStorage` (OS keychain), database discovery + mapping, schema-drift verification.
+- **Pull:** initial + incremental (`last_edited_time` cursor in `sync_meta`); reference caches
+  (accounts/categories) refresh on pull; Notion relation IDs translated to local IDs.
+- **Push:** dirty records only (writable fields), local→Notion relation translation,
+  idempotent updates, ~3 req/s throttle with 429 backoff.
+- **Three-way merge (base/local/remote):** disjoint edits auto-merge, same-field overlaps
+  become conflicts with per-field and bulk resolve (keep-mine / keep-Notion).
+- **Sync Actions:** Pull / Push / Full buttons replace the old Commit Queue. The top-header
+  Sync button runs full sync.
+- **Auto-sync:** configurable interval with manual trigger.
+- **Crash-durable mutation queue.**
+
+### Added — History & Conflicts
+
+- **History section** (sidebar, System group) surfaces the local-first sync journal:
+  - **Unsynced Items:** local changes not yet on Notion (dirty/conflict), including
+    soft-deleted records, tagged Created / Updated / Deleted with Conflict badge.
+  - **Recently Synced:** sortable table showing the last two sync passes with direction
+    (Notion DB → App / App → Notion DB).
+  - Backed by a durable `activity_log` table (capped to 1000 rows).
+- **Sync sidebar conflict badge:** live red number on the Sync nav item, seeds from
+  `sync.status().conflictCount`, updates on every `sync:status` broadcast.
+
+### Added — Bulk Operations
+
+- **Mass edit:** select multiple Income/Expense rows, open a bulk edit modal, apply the
+  same field patch to all selected rows.
+- **Notion page icons on push:** every create/update sets a native page icon (arrow up/down,
+  credit card, delivery truck) so rows are visually typed in Notion.
+
+### Added — Desktop-only
+
+- **QR Code offline cache:** QR image bytes are downloaded and cached as a `data:` URI during
+  pull (Notion signed URLs expire in ~1h). Already-cached QRs are skipped on re-pull.
+- **Apple Intelligence Chat:** read-only Apple Foundation Models helper (`fm-proxy`) for Mac
+  users with Apple Intelligence enabled.
+- **Keyboard shortcuts** across all sections.
 
 ### Fixed
 
-- **Account & expense computations now match the Notion formulas exactly** (decoded from the
-  workspace schema, replacing earlier guesses):
-  - **Current Balance** is one unified formula for every account type — `ΣGrossIncome −
-    (ΣExpenseAmount + ΣInterest) + ΣPasabuyReceived + ΣTransactionAmount` — with **no Starting
-    Balance**, using **gross** (not net) income, and each term aggregated by the correct
-    relation (`accountId`, `transactedAccountId`, `pasabuyAccountReceiverId`). Fixes the wrong
-    dashboard Total Cash Flow.
-  - **Available Limit** = `creditLimit>0 ? min(creditLimit + currentBalance, creditLimit) : —`.
-  - Accounts now expose **Total Cash Inflow / Outflow** (labelled "Payment / Purchase Made" for
-    credit accounts).
-  - **Pasabuyer Balance** in the Unpaid-Pasabuy view is now computed (`amount − installment ×
-    pasabuyPaidPeriod`; 0 when fully received) instead of always ₱0.00, and that column is
-    relabelled "Pasabuyer Balance". Gross Price / Installment / Paid / Received amounts are
-    ported verbatim from the Notion formulas.
-  - **QR Code** now syncs AND works fully offline: the account property is "Qr Code" (not
-    "QR Code" — the old name never matched). During pull the QR image **bytes are downloaded
-    and cached as a `data:` URI** (new `qr_code` column), rather than storing Notion's signed
-    file URL which expires in ~1h and breaks offline. Already-cached QRs are skipped on
-    re-pull; download failures are non-fatal (offline-safe). Backfills existing accounts on
-    the next full "Pull from Notion".
-
-### Changed
-
-- **Renderer aligned 1:1 with the web app.** The desktop UI is now the web renderer ported
-  verbatim (workspace shell with Sidebar + TopBar, date-range selector and view modes,
-  Dashboard with charts/trends/breakdowns, Accounts card/table views, full Income/Expense
-  pages, Workflow pages, Monthly Monitoring, **Settings** with theme customization and FAB
-  toggle, quick-action FAB, light/dark theme, toasts, error boundaries) over an IPC-backed
-  `api-client` with the same interface as the web's HTTP client. Backend list filtering
-  (Daily/Weekly/Annual ranges; Unpaid Pasabuy / To pay / To buy / Installments / Unpaid CC
-  expense views) is copied from the web query service, so outputs match view-for-view.
-- Desktop-only additions are isolated: a "Local-First Sync" panel on the Sync page (initial
-  pull, auto-sync interval, three-way-merge conflict resolver) and a hash router + local-user
-  auth stub replacing Next.js routing/login (the desktop is single-user; account management
-  is intentionally dropped).
-
-## [0.1.0] - 2026-07-21
-
-First offline-first desktop release — a local-first Electron app that mirrors the web app's
-finance workspace, works fully offline, and syncs bidirectionally with Notion. Personal /
-unsigned build.
-
-### Added
-
-- **Phase 0 — Scaffold.** pnpm workspace + electron-vite (main/preload/renderer) with HMR;
-  better-sqlite3 + drizzle migrations run on start (local DB in `userData`); finance DTOs +
-  local derivations copied from the web app; typed contextBridge IPC skeleton.
-- **Phase 1 — Offline app.** Local CRUD for incomes/expenses/scheduler (instant writes marked
-  `dirty`, soft-delete via title rewrite, mutation-queue journal); balances/budgets/net/monthly
-  derived live from SQLite; nine sections (Dashboard, Accounts, Income, Expense, Monitoring,
-  Transfer, CC Payment, Alkansya, Receivables) with the web app's view semantics; multi-window
-  with cross-window event fan-out.
-- **Phase 2 — Notion connect + push.** Bring-your-own-Notion onboarding: token validated then
-  encrypted with `safeStorage` (OS keychain), database discovery + mapping, schema-drift
-  verification; push of dirty records (writable fields only) with local→Notion relation
-  translation, idempotent updates, ~3 req/s throttle and 429 backoff.
-- **Phase 3 — Pull.** Initial + incremental pull (`last_edited_time` cursor in `sync_meta`);
-  reference caches (accounts/categories) refresh on pull; Notion relation ids translated to
-  local ids.
-- **Phase 4 — Reconcile + conflict.** Three-way merge (base/local/remote) — disjoint edits
-  auto-merge, same-field overlaps become conflicts logged for a resolver (keep-mine /
-  keep-Notion / per-field); reconcile runs before push so remote edits are never clobbered;
-  manual + auto (interval) sync modes; global status chip + per-record dirty/conflict badges;
-  crash-durable mutation queue.
-- **Phase 5 — Packaging.** electron-builder targets for macOS (`.dmg`/`.zip`), Linux
-  (`AppImage`), and Windows (NSIS), with `better-sqlite3` rebuilt for the packaged Electron ABI
-  and migrations bundled as resources; Playwright + Electron end-to-end suite.
+- **Account & expense computations** now match Notion formulas exactly:
+  - Current Balance = `ΣGrossIncome − (ΣExpenseAmount + ΣInterest) + ΣPasabuyReceived + ΣTransactionAmount`
+  - Available Limit, Pasabuyer Balance, Payment/Purchase Made for credit accounts.
+- **Notion archive/trash** no longer sticks records as Unsynced — soft-deletes are marked
+  clean and push no longer loops on archived blocks.
+- **Pull restored** for Notion-Version `2026-03-11` (data-sources API replaces deprecated
+  `/v1/databases/.../query` path).
+- **QR Code property name** fixed ("Qr Code" vs old "QR Code" — the old name never matched).
 
 ### Security
 
 - Notion token is never written to SQLite, never logged, and never returned to the renderer.
 - Every window runs with `contextIsolation`, `sandbox`, and `nodeIntegration: false`; all
   validation happens in the main process.
+- OS keychain (`safeStorage`) for token encryption.
 
-### Notes
+### Platform Notes
 
-- **Unsigned:** on macOS, right-click → Open once to pass Gatekeeper. Code-signing +
-  notarization and auto-update are future work (see `wiki/desktop/packaging-and-release.md`).
-- Sync was verified end-to-end against a mock Notion API; the first run against a real
-  workspace happens when you connect your own integration token in the Sync section.
+- **macOS:** unsigned build — right-click → Open once to pass Gatekeeper. Universal binary
+  (Apple Silicon + Intel).
+- **Windows:** NSIS installer, auto-update works fully (silent installer).
+- **Linux:** AppImage, works if launched from a writable location.
 
-[Unreleased]: https://example.com/notable-finance/compare/v0.1.0...HEAD
+### Auto-Update
+
+Built-in auto-update via GitHub Releases (`electron-updater`). Checks on startup (~3s delay)
+and manual "Check for Updates" in Settings → Updates.
+
+## [0.1.0] - 2026-07-21
+
+Internal development milestone (not publicly released).
+
+[1.0.0]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.0.0
 [0.1.0]: https://example.com/notable-finance/releases/tag/v0.1.0
