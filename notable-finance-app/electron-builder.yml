@@ -1,7 +1,7 @@
 # electron-builder packaging (Phase 5.1). Personal / unsigned for now; signing +
 # notarization + auto-update are documented future steps (wiki/desktop/packaging-and-release.md).
 appId: com.notablefinance.desktop
-productName: Notable Finance
+productName: Notable-Finance
 copyright: Copyright © 2026 Notable Finance
 
 directories:
