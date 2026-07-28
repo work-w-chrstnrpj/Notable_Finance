@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import type { UpdaterProgressEvent } from '../../shared/finance.types'
+import type { ManualDownloadEvent, UpdaterProgressEvent } from '../../shared/finance.types'
 import { broadcast } from '../windows'
 
 /**
@@ -15,11 +15,24 @@ import { broadcast } from '../windows'
  * 6. macOS (zip): stages the update — user is prompted to restart.
  *
  * For unsigned macOS builds:
- *   The app must have been opened via right-click → Open once (Gatekeeper).
- *   After that, zip-based updates work.
+ *   Code signature validation in ShipIt can fail for unsigned .app bundles.
+ *   When this happens, the updater falls back to broadcasting a manual-download
+ *   event so the UI can offer a direct link to the GitHub Release instead.
  */
 
 let updateDownloaded = false
+
+const GITHUB_RELEASE_URL =
+  'https://github.com/work-w-chrstnrpj/Notable_Finance/releases/latest'
+
+/** Detect if the error is a macOS code-signature validation failure (unsigned app). */
+function isMacSignatureError(msg: string): boolean {
+  return (
+    msg.includes('did not pass validation') ||
+    msg.includes('code has no resources') ||
+    msg.includes('signature indicates they must be present')
+  )
+}
 
 /** Start the auto-updater. Called once during app startup. */
 export function initUpdater(): void {
@@ -64,6 +77,15 @@ export function initUpdater(): void {
   autoUpdater.on('error', (err) => {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[updater] Error:', msg)
+
+    if (isMacSignatureError(msg)) {
+      broadcast('updater:manual-download', {
+        releaseUrl: GITHUB_RELEASE_URL,
+        version: autoUpdater.availableVersion ?? 'latest',
+      } satisfies ManualDownloadEvent)
+      return
+    }
+
     broadcast('updater:progress', {
       stage: 'error',
       error: msg,
@@ -91,9 +113,17 @@ export async function checkForUpdatesNow(): Promise<{
     }
     return { updateAvailable: false }
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (isMacSignatureError(msg)) {
+      broadcast('updater:manual-download', {
+        releaseUrl: GITHUB_RELEASE_URL,
+        version: autoUpdater.availableVersion ?? 'latest',
+      } satisfies ManualDownloadEvent)
+      return { updateAvailable: false, version: autoUpdater.availableVersion ?? undefined }
+    }
     return {
       updateAvailable: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: msg,
     }
   }
 }

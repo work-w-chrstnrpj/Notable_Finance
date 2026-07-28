@@ -58,7 +58,8 @@ const EVENT_CHANNELS: EventChannel[] = [
   'tabs:command',
   'devLogs:entry',
   'shortcut:menu',
-  'updater:progress'
+  'updater:progress',
+  'updater:manual-download'
 ]
 
 const api = {

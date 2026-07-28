@@ -783,6 +783,11 @@ export interface UpdaterProgressEvent {
   error?: string
 }
 
+export interface ManualDownloadEvent {
+  releaseUrl: string
+  version?: string
+}
+
 // ── Auto-updater (Phase 5.1) ─────────────────────────────────────────
 export interface UpdaterCheckResult {
   updateAvailable: boolean

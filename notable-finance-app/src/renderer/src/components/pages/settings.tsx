@@ -268,6 +268,7 @@ function UpdatesPanel() {
   const [downloading, setDownloading] = useState(false)
   const [percent, setPercent] = useState(0)
   const [installError, setInstallError] = useState("")
+  const [manualDownloadUrl, setManualDownloadUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const unsub = window.api.on("updater:progress", (payload) => {
@@ -298,9 +299,23 @@ function UpdatesPanel() {
     return unsub
   }, [])
 
+  useEffect(() => {
+    const unsub = window.api.on("updater:manual-download", (payload) => {
+      const ev = payload as { releaseUrl: string; version?: string }
+      setManualDownloadUrl(ev.releaseUrl)
+      setStatusText(
+        ev.version
+          ? `Auto-update unavailable for v${ev.version} on this platform — download manually.`
+          : "Auto-update unavailable — download the latest release manually."
+      )
+    })
+    return unsub
+  }, [])
+
   const handleCheck = async () => {
     setChecking(true)
     setInstallError("")
+    setManualDownloadUrl(null)
     setStatusText("Checking for updates…")
     try {
       const res = await window.api.updater.check()
@@ -371,6 +386,13 @@ function UpdatesPanel() {
           {installError && (
             <p className="settings-toggle__hint" style={{ marginTop: "0.5rem", color: "var(--color-error, #ef4444)" }}>
               {installError}
+            </p>
+          )}
+          {manualDownloadUrl && (
+            <p className="settings-toggle__hint" style={{ marginTop: "0.5rem" }}>
+              <a href={manualDownloadUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary, #3b82f6)" }}>
+                Download latest release manually →
+              </a>
             </p>
           )}
         </div>
