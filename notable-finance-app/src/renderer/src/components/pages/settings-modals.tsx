@@ -246,14 +246,14 @@ function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
   const { mode, primaryColor, secondaryColor, setMode, setPrimaryColor, setSecondaryColor } =
     useTheme();
   const { settings, updateSettings } = useUiSettings();
-  const { bodyFont, monoFont, brandFont } = settings.fonts;
+  const { bodyFont, monoFont, brandFont, receiptFont } = settings.fonts;
 
   const fontGroups = FONT_OPTIONS.reduce<Record<string, typeof FONT_OPTIONS>>((acc, f) => {
     (acc[f.group] ??= []).push(f);
     return acc;
   }, {});
 
-  const handleFontChange = (key: "bodyFont" | "monoFont" | "brandFont", value: string) => {
+  const handleFontChange = (key: "bodyFont" | "monoFont" | "brandFont" | "receiptFont", value: string) => {
     loadGoogleFont(value);
     void updateSettings({ fonts: { [key]: value } });
   };
@@ -332,6 +332,7 @@ function ThemeCustomizeModal({ onClose }: { onClose: () => void }) {
             {renderFontSelect("Body Font", bodyFont, (v) => handleFontChange("bodyFont", v))}
             {renderFontSelect("Numbers / Data Font", monoFont, (v) => handleFontChange("monoFont", v))}
             {renderFontSelect("Brand / Display Font", brandFont, (v) => handleFontChange("brandFont", v))}
+            {renderFontSelect("Receipt Font", receiptFont, (v) => handleFontChange("receiptFont", v))}
           </div>
         </div>
       </div>

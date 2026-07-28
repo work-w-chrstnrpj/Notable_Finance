@@ -161,6 +161,7 @@ export type ActivityEntry = {
   action: MutationAction;
   direction: ActivityDirection;
   at: number;
+  payload?: Record<string, unknown> | null;
 };
 
 export type UnsyncedItem = {
@@ -173,6 +174,7 @@ export type UnsyncedItem = {
   notionPageId: string | null;
   localUpdatedAt: number;
   pendingHardDelete?: boolean;
+  payload?: Record<string, unknown> | null;
 };
 
 export type HistoryData = {

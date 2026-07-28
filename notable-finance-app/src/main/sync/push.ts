@@ -135,7 +135,8 @@ async function pushPendingHardDeletes(
           notionPageId,
           title,
           action: 'delete',
-          direction: 'push'
+          direction: 'push',
+          payload: (() => { try { return JSON.parse(row.payload); } catch { return null; } })()
         })
       }
       result.pushed++
@@ -280,7 +281,8 @@ async function pushAllInner(): Promise<PushResult> {
             notionPageId: null,
             title: (row.title as string | null) ?? null,
             action: 'delete',
-            direction: 'push'
+            direction: 'push',
+            payload: (() => { try { return t.writable(row) as Record<string, unknown>; } catch { return null; } })()
           })
           result.skipped++
           continue
@@ -354,7 +356,8 @@ async function pushAllInner(): Promise<PushResult> {
             notionPageId: pageId,
             title: (row.title as string | null) ?? null,
             action: Number(row.deleted) === 1 ? 'delete' : wasCreate ? 'create' : 'update',
-            direction: 'push'
+            direction: 'push',
+            payload: localDto as Record<string, unknown>
           })
           result.pushed++
         } catch (error) {

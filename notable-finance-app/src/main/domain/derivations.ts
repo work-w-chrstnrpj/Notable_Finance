@@ -76,31 +76,25 @@ export function computeAccountBalance(
 ): AccountBalance {
   const liveIncomes = incomes.filter(notDeleted)
   const liveExpenses = expenses.filter(notDeleted)
-
-  // Total Incomes — gross income linked via the Accounts relation.
-  const totalIncomes = round2(
-    liveIncomes.filter((i) => i.accountId === account.id).reduce((s, i) => s + i.grossIncome, 0)
-  )
-  // Total Expenses + Total Credit Interest — via the Expenses relation.
   const chargedExpenses = liveExpenses.filter((e) => e.accountId === account.id)
-  const totalExpenseAmount = round2(chargedExpenses.reduce((s, e) => s + e.amount, 0))
-  const totalInterest = round2(chargedExpenses.reduce((s, e) => s + e.interest, 0))
-  // Total Pasabuy — Pasabuy Received Amount via the Pasabuy Account Receiver relation.
-  const totalPasabuy = round2(
-    liveExpenses
-      .filter((e) => e.pasabuyAccountReceiverId === account.id)
-      .reduce((s, e) => s + pasabuyReceivedAmount(e, ctx.expenseCategoryName(e.categoryId)), 0)
-  )
-  // Total CC, Debt & Transfer — Transaction Amount via the Transacted Account relation.
-  const totalTransfer = round2(
-    liveIncomes
-      .filter((i) => i.transactedAccountId === account.id)
-      .reduce((s, i) => s + transactionAmount(i, ctx.incomeCategoryName(i.categoryId)), 0)
-  )
 
-  const currentBalance = round2(
-    totalIncomes - (totalExpenseAmount + totalInterest) + totalPasabuy + totalTransfer
-  )
+  // Compute raw sums WITHOUT intermediate rounding.
+  // Notion's Current Balance formula evaluates in one pass from raw inputs + rollups;
+  // rounding each sub-term independently discards sub-cent precision and causes a ±0.01 drift.
+  const rawIncomes = liveIncomes
+    .filter((i) => i.accountId === account.id)
+    .reduce((s, i) => s + i.grossIncome, 0)
+  const rawExpenseAmount = chargedExpenses.reduce((s, e) => s + e.amount, 0)
+  const rawInterest = chargedExpenses.reduce((s, e) => s + e.interest, 0)
+  const rawPasabuy = liveExpenses
+    .filter((e) => e.pasabuyAccountReceiverId === account.id)
+    .reduce((s, e) => s + pasabuyReceivedAmount(e, ctx.expenseCategoryName(e.categoryId)), 0)
+  const rawTransfer = liveIncomes
+    .filter((i) => i.transactedAccountId === account.id)
+    .reduce((s, i) => s + transactionAmount(i, ctx.incomeCategoryName(i.categoryId)), 0)
+
+  // Round once at the final step — mirrors Notion's single-shot formula evaluation
+  const currentBalance = round2(rawIncomes - (rawExpenseAmount + rawInterest) + rawPasabuy + rawTransfer)
 
   const availableLimit =
     account.creditLimit && account.creditLimit > 0
@@ -110,10 +104,10 @@ export function computeAccountBalance(
   return {
     currentBalance,
     availableLimit,
-    totalIncomes,
-    totalExpenses: round2(totalExpenseAmount + totalInterest),
-    totalPasabuy,
-    totalCcDebtTransfer: totalTransfer
+    totalIncomes: round2(rawIncomes),
+    totalExpenses: round2(rawExpenseAmount + rawInterest),
+    totalPasabuy: round2(rawPasabuy),
+    totalCcDebtTransfer: round2(rawTransfer)
   }
 }
 

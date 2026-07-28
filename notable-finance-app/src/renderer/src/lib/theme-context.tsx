@@ -98,7 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--green", stored.secondaryColor);
     document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`);
     // Apply font settings from UiSettings
-    const fonts = settings.fonts ?? { bodyFont: "", monoFont: "", brandFont: "" };
+    const fonts = settings.fonts ?? { bodyFont: "", monoFont: "", brandFont: "", receiptFont: "" };
     const bodyFallback = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     const monoFallback = "'DM Mono', 'SFMono-Regular', Consolas, ui-monospace, monospace";
     const brandFallback = "'Instrument Serif', serif";
@@ -106,9 +106,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     loadGoogleFont(fonts.bodyFont);
     loadGoogleFont(fonts.monoFont);
     loadGoogleFont(fonts.brandFont);
+    loadGoogleFont(fonts.receiptFont);
     document.documentElement.style.setProperty("--font-body", fonts.bodyFont ? `${fonts.bodyFont}, ${bodyFallback}` : bodyFallback);
     document.documentElement.style.setProperty("--font-mono", fonts.monoFont ? `${fonts.monoFont}, ${monoFallback}` : monoFallback);
     document.documentElement.style.setProperty("--font-brand", fonts.brandFont ? `${fonts.brandFont}, ${brandFallback}` : brandFallback);
+    document.documentElement.style.setProperty("--font-receipt", fonts.receiptFont ? `${fonts.receiptFont}, ${brandFallback}` : brandFallback);
   }, [stored, mounted, settings.fonts]);
 
   useEffect(() => {

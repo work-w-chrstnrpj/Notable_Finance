@@ -42,6 +42,32 @@ function titleFor(table: Table, recordId: string): string {
   return row?.title ?? recordId.slice(0, 8)
 }
 
+/** Resolve foreign-key field values to display names so the conflict modal shows
+ *  human-readable account/category names instead of raw UUIDs. */
+function resolveFieldValue(table: Table, field: string, value: unknown): unknown {
+  if (value === null || value === undefined) return value
+  const strVal = String(value)
+  const db = getSqlite()
+  if (field === 'accountId' || field === 'transactedAccountId' || field === 'pasabuyAccountReceiverId') {
+    const row = db.prepare('SELECT account_name FROM accounts WHERE id = ?').get(strVal) as { account_name?: string } | undefined
+    return row?.account_name ?? strVal
+  }
+  if (field === 'categoryId') {
+    if (table === 'incomes') {
+      const row = db.prepare('SELECT source FROM income_categories WHERE id = ?').get(strVal) as { source?: string } | undefined
+      return row?.source ?? strVal
+    }
+    const row = db.prepare('SELECT name FROM expense_categories WHERE id = ?').get(strVal) as { name?: string } | undefined
+    return row?.name ?? strVal
+  }
+  if (field === 'paymentStatus' || field === 'paymentFrequency' || field === 'pasabuyStatus') {
+    // These are select labels — return as-is but replace empty/null with "(none)"
+    if (strVal === '' || strVal === 'null') return '(none)'
+    return strVal
+  }
+  return value
+}
+
 export function listConflicts(): ConflictGroup[] {
   const rows = getSqlite()
     .prepare(
@@ -72,11 +98,14 @@ export function listConflicts(): ConflictGroup[] {
       }
       groups.set(key, g)
     }
+    const base = JSON.parse(r.base_value)
+    const local = JSON.parse(r.local_value)
+    const remote = JSON.parse(r.remote_value)
     g.fields.push({
       field: r.field,
-      base: JSON.parse(r.base_value),
-      local: JSON.parse(r.local_value),
-      remote: JSON.parse(r.remote_value)
+      base: resolveFieldValue(r.record_table, r.field, base),
+      local: resolveFieldValue(r.record_table, r.field, local),
+      remote: resolveFieldValue(r.record_table, r.field, remote)
     })
   }
   return [...groups.values()]

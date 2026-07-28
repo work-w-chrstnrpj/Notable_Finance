@@ -28,7 +28,8 @@ const DEFAULT_THEME: UiThemeSettings = {
 const DEFAULT_FONTS: UiFontSettings = {
   bodyFont: 'Inter',
   monoFont: 'DM Mono',
-  brandFont: 'Instrument Serif'
+  brandFont: 'Instrument Serif',
+  receiptFont: 'Instrument Serif'
 }
 
 const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
@@ -133,7 +134,8 @@ function mergeFonts(raw: unknown): UiFontSettings {
   return {
     bodyFont: typeof r.bodyFont === 'string' && r.bodyFont ? r.bodyFont : DEFAULT_FONTS.bodyFont,
     monoFont: typeof r.monoFont === 'string' && r.monoFont ? r.monoFont : DEFAULT_FONTS.monoFont,
-    brandFont: typeof r.brandFont === 'string' && r.brandFont ? r.brandFont : DEFAULT_FONTS.brandFont
+    brandFont: typeof r.brandFont === 'string' && r.brandFont ? r.brandFont : DEFAULT_FONTS.brandFont,
+    receiptFont: typeof r.receiptFont === 'string' && r.receiptFont ? r.receiptFont : DEFAULT_FONTS.receiptFont
   }
 }
 

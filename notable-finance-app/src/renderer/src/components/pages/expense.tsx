@@ -43,10 +43,11 @@ import {
 } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
-import { expensesApi, incomesApi } from "@/lib/api-client";
+import { expensesApi, incomesApi, creditCardPaymentsApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { DATA_CHANGED_EVENT } from "@/lib/finance-events";
 import { parseNumberInput, parseOptionalNumberInput, getExpenseTotal } from "@/lib/finance-helpers";
+import { consumePendingEdit } from "@/lib/pending-edit";
 import { useDebouncedPersist } from "@/lib/use-debounced-persist";
 import {
   expenseCategoryFilterWithoutPasabuy,
@@ -59,6 +60,7 @@ import type {
   PaymentFrequency,
   PaymentStatus,
   PasabuyStatus,
+  IncomeRecord,
 } from "@/types/finance";
 
 const expenseViewModes: ExpenseViewMode[] = [
@@ -223,8 +225,8 @@ function ExpensePage({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [linkedIncomeName, setLinkedIncomeName] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set());
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled, settings, ready: settingsReady, updateSettings } = useUiSettings();
   const [filtersHydrated, setFiltersHydrated] = useState(false);
@@ -233,6 +235,7 @@ function ExpensePage({
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
+  const [coverExpensesOpen, setCoverExpensesOpen] = useState(false);
   const [receiptModalCtx, setReceiptModalCtx] = useState<ReceiptContext | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
@@ -385,9 +388,8 @@ function ExpensePage({
     return { gross, installment, paid, remaining, expected };
   }
 
-  function expenseRowClassName(rowIndex: number): string | undefined {
-    const record = visibleExpenseRecords[rowIndex];
-    if (record && pendingIds.has(record.id)) {
+  function expenseRowClassName(recordId: string): string | undefined {
+    if (recordId && pendingIds.has(recordId)) {
       return "record-pending record-pending-appear";
     }
     return undefined;
@@ -444,6 +446,8 @@ function ExpensePage({
   async function handleSaveExpense() {
     const invalid = new Set<string>();
     if (!descriptionInput.trim()) invalid.add("description");
+    if (!formAccountId) invalid.add("account");
+    if (!formCategoryId) invalid.add("category");
     if (!expenseAmountInput || parseNumberInput(expenseAmountInput) <= 0) invalid.add("amount");
     if (invalid.size > 0) {
       setShakeFields(invalid);
@@ -571,18 +575,22 @@ function ExpensePage({
   }
 
   function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
-    if (nextViewMode === "Unpaid Pasabuy") {
-      setExpenseCategoryFilter("");
-    }
+    // Reset all filters when view mode changes (Issue #3)
+    setAccountFilterId("");
+    setExpenseCategoryFilter("");
+    setPasabuyerFilter("");
+    setFilterActive(false);
+    setSearchActive(false);
+    setSearchQuery("");
 
     onViewModeChange(nextViewMode);
   }
 
-  function toggleRowSelect(rowIndex: number, selected: boolean) {
+  function toggleRowSelect(recordId: string, selected: boolean) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (selected) next.add(rowIndex);
-      else next.delete(rowIndex);
+      if (selected) next.add(recordId);
+      else next.delete(recordId);
       return next;
     });
   }
@@ -656,9 +664,7 @@ function ExpensePage({
   );
 
   async function applyMassEdit(patch: Record<string, string | number | null>) {
-    const ids = Array.from(selectedIds)
-      .map((idx) => searchFilteredRecords[idx]?.id)
-      .filter((id): id is string => id != null);
+    const ids = Array.from(selectedIds).filter((id): id is string => id != null);
     if (ids.length === 0) {
       setMassEditOpen(false);
       setSelectedIds(new Set());
@@ -695,11 +701,17 @@ function ExpensePage({
     }
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") {
     if (action === "edit") {
       if (selectedIds.size === 0) return;
       setMassEditError(null);
       setMassEditOpen(true);
+      return;
+    }
+
+    if (action === "cover") {
+      if (selectedIds.size === 0) return;
+      setCoverExpensesOpen(true);
       return;
     }
 
@@ -713,9 +725,9 @@ function ExpensePage({
         if (viewMode === "Unpaid Pasabuy") return record.pasabuyBalance ?? 0;
         return record.amount;
       };
-      const selectedRecords = Array.from(selectedIds)
-        .map((idx) => searchFilteredRecords[idx])
-        .filter((r): r is ExpenseRecord => r != null);
+      const selectedRecords = searchFilteredRecords.filter(
+        (r) => selectedIds.has(r.id)
+      );
       const rows: ReceiptRow[] = selectedRecords.map((record) => {
         const base = {
           date: formatDate(record.purchaseDate),
@@ -752,9 +764,9 @@ function ExpensePage({
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
         const next = new Set(prev);
-        for (const idx of selectedIds) {
-          if (shouldDisable) next.add(idx);
-          else next.delete(idx);
+        for (const id of selectedIds) {
+          if (shouldDisable) next.add(id);
+          else next.delete(id);
         }
         return next;
       });
@@ -763,9 +775,9 @@ function ExpensePage({
     }
 
     if (action === "duplicate") {
-      const recordsToDuplicate = Array.from(selectedIds)
-        .map((idx) => visibleExpenseRecords[idx])
-        .filter((r): r is ExpenseRecord => r != null);
+      const recordsToDuplicate = visibleExpenseRecords.filter(
+        (r) => selectedIds.has(r.id)
+      );
 
       if (recordsToDuplicate.length === 0) {
         setSelectedIds(new Set());
@@ -846,9 +858,7 @@ function ExpensePage({
     }
 
     if (action === "delete") {
-      const idsToDelete = Array.from(selectedIds)
-        .map((idx) => visibleExpenseRecords[idx]?.id)
-        .filter((id): id is string => id != null);
+      const idsToDelete = Array.from(selectedIds).filter((id): id is string => id != null);
 
       if (idsToDelete.length === 0) {
         setSelectedIds(new Set());
@@ -919,7 +929,7 @@ function ExpensePage({
   }
 
   const enabledExpenseRecords = searchFilteredRecords.filter(
-    (_, idx) => !disabledIds.has(idx),
+    (r) => !disabledIds.has(r.id),
   );
 
   // Publish a printable receipt of the current view for the floating button.
@@ -941,7 +951,7 @@ function ExpensePage({
       return record.amount;
     };
     const enabledRecords = searchFilteredRecords.filter(
-      (_, idx) => !disabledIds.has(idx),
+      (r) => !disabledIds.has(r.id),
     );
     const rows: ReceiptRow[] = enabledRecords.map((record) => {
       const base = {
@@ -1003,13 +1013,25 @@ function ExpensePage({
   useShortcutAction("modal.close", () => setModal(null), modalOpen);
   useShortcutAction(
     "mass.selectAll",
-    () => setSelectedIds(new Set(searchFilteredRecords.map((_, i) => i))),
+    () => setSelectedIds(new Set(searchFilteredRecords.map((r) => r.id).filter(Boolean))),
     !modalOpen,
   );
   useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
   useShortcutAction("mass.edit", () => void handleBulkAction("edit"), hasSelection);
   useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
   useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
+
+  // Check for pending edit triggered by History page navigation
+  useEffect(() => {
+    const pending = consumePendingEdit("expenses");
+    if (pending && visibleExpenseRecords.length > 0) {
+      const record = visibleExpenseRecords.find((r) => r.id === pending.recordId);
+      if (record) {
+        openExpenseModal("edit", record.description, record.id);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleExpenseRecords.length]);
 
   return (
     <div className="page-stack">
@@ -1135,6 +1157,7 @@ function ExpensePage({
         ) : viewMode === "Unpaid Pasabuy" ? (
           <DataTable
             selectable
+            recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
@@ -1143,13 +1166,14 @@ function ExpensePage({
           bulkDeleteDanger={hardDeleteEnabled}
             showBulkPrint
             wide
-            headers={["Date", "Name", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
+            headers={["Date", "Name", "Account", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"]}
             rowClassName={expenseRowClassName}
             rows={searchFilteredRecords.map((record) => [
               formatDate(record.purchaseDate),
               <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
                 {stripNotionTag(record.description)}
               </span>,
+              accountCell(record.accountId),
               <span className="expense-cell--unpaid num" key={`${record.id}-bal`}>
                 {formatMoney(record.pasabuyBalance)}
               </span>,
@@ -1163,6 +1187,7 @@ function ExpensePage({
                 "Total",
                 "",
                 "",
+                "",
                 <span className="num">{formatMoney(
                   enabledExpenseRecords.reduce((sum, r) => sum + (r.pasabuyBalance ?? 0), 0),
                 )}</span>,
@@ -1172,8 +1197,8 @@ function ExpensePage({
                 "",
               ],
             ]}
-            onRowClick={(rowIndex) => {
-              const record = visibleExpenseRecords[rowIndex];
+            onRowClick={(recordId) => {
+              const record = visibleExpenseRecords.find((r) => r.id === recordId);
               if (record) {
                 openExpenseModal("edit", record.description, record.id);
               }
@@ -1182,12 +1207,14 @@ function ExpensePage({
         ) : viewMode === "Unpaid CC" ? (
           <DataTable
             selectable
+            recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
+            showBulkCover
             showBulkPrint
             wide
             headers={[
@@ -1243,8 +1270,8 @@ function ExpensePage({
                 "",
               ],
             ]}
-            onRowClick={(rowIndex) => {
-              const record = visibleExpenseRecords[rowIndex];
+            onRowClick={(recordId) => {
+              const record = visibleExpenseRecords.find((r) => r.id === recordId);
               if (record) {
                 openExpenseModal("edit", record.description, record.id);
               }
@@ -1253,6 +1280,7 @@ function ExpensePage({
         ) : viewMode === "Installments" ? (
           <DataTable
             selectable
+            recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
@@ -1324,8 +1352,8 @@ function ExpensePage({
                 "",
               ],
             ]}
-            onRowClick={(rowIndex) => {
-              const record = visibleExpenseRecords[rowIndex];
+            onRowClick={(recordId) => {
+              const record = visibleExpenseRecords.find((r) => r.id === recordId);
               if (record) {
                 openExpenseModal("edit", record.description, record.id);
               }
@@ -1334,6 +1362,7 @@ function ExpensePage({
         ) : (
           <DataTable
             selectable
+            recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
@@ -1373,8 +1402,8 @@ function ExpensePage({
                 "",
               ],
             ]}
-            onRowClick={(rowIndex) => {
-              const record = visibleExpenseRecords[rowIndex];
+            onRowClick={(recordId) => {
+              const record = visibleExpenseRecords.find((r) => r.id === recordId);
               if (record) {
                 openExpenseModal("edit", record.description, record.id);
               }
@@ -1384,9 +1413,7 @@ function ExpensePage({
       </Panel>
 
       {saveNotice && (
-        <div className="save-notice" style={{ padding: "0.75rem 1rem", borderRadius: 8, background: "var(--color-warning-bg, #fef3c7)", color: "var(--color-warning-text, #92400e)", marginBottom: "0.5rem", fontSize: "0.875rem", cursor: "pointer" }} onClick={() => setSaveNotice(null)}>
-          {saveNotice}
-        </div>
+        <Toast key={saveNotice} tone="info" duration={4000} message={saveNotice} onDismiss={() => setSaveNotice(null)} />
       )}
 
       <FormModal
@@ -1419,7 +1446,7 @@ function ExpensePage({
               onChange={(event) => setPurchaseDateInput(event.target.value)}
             />
           </Field>
-          <Field label="Accounts">
+          <Field label="Accounts" required error={shakeFields.has("account")}>
             <FilterDropdown
               placeholder="— None —"
               value={formAccountId}
@@ -1431,7 +1458,7 @@ function ExpensePage({
               }))}
             />
           </Field>
-          <Field label="Categories">
+          <Field label="Categories" required error={shakeFields.has("category")}>
             <FilterDropdown
               placeholder="— None —"
               value={formCategoryId}
@@ -1585,8 +1612,8 @@ function ExpensePage({
       </FormModal>
       <MassEditModal
         open={massEditOpen}
-        title={`Mass edit ${selectedIds.size} expense${selectedIds.size === 1 ? "" : "s"}`}
-        subtitle="Purchase description cannot be mass-edited. Add one or more fields, set the new value, then apply to every selected row."
+        title={`Bulk edit ${selectedIds.size} expense${selectedIds.size === 1 ? "" : "s"}`}
+        subtitle="Purchase description cannot be bulk-edited. Add one or more fields, set the new value, then apply to every selected row."
         fields={massEditFields}
         saving={massEditSaving}
         error={massEditError}
@@ -1594,6 +1621,7 @@ function ExpensePage({
           if (!massEditSaving) setMassEditOpen(false);
         }}
         onApply={applyMassEdit}
+        showExpensePresets
       />
       {deleteConfirmIds && (
         <ConfirmModal
@@ -1623,8 +1651,285 @@ function ExpensePage({
           onClose={() => setReceiptModalCtx(null)}
         />
       )}
+      <CoverExpensesModal
+        open={coverExpensesOpen}
+        selectedExpenseIds={Array.from(selectedIds)}
+        onClose={() => setCoverExpensesOpen(false)}
+        onCovered={() => {
+          setCoverExpensesOpen(false);
+          setSelectedIds(new Set());
+          invalidateExpenseFamily();
+        }}
+      />
     </div>
   );
 }
 
-export { ExpensePage };
+
+// ── Cover Expenses Modal (Issue #7) ─────────────────────────────────────────
+
+function CoverExpensesModal({
+  open,
+  selectedExpenseIds,
+  onClose,
+  onCovered,
+}: {
+  open: boolean;
+  selectedExpenseIds: string[];
+  onClose: () => void;
+  onCovered: () => void;
+}) {
+  const { creditActiveAccounts, nonCreditActiveAccounts } = useLiveCollections();
+  const [ccPayments, setCcPayments] = useState<Array<{ id: string; name: string; date: string }>>([]);
+  const [selectedCcPaymentId, setSelectedCcPaymentId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newName, setNewName] = useState("CC Payment — ");
+  const [newDate, setNewDate] = useState(() => todayIso());
+  const [newCcAccountId, setNewCcAccountId] = useState("");
+  const [newPayerAccountId, setNewPayerAccountId] = useState("");
+  const [newAmount, setNewAmount] = useState("");
+
+  // Load existing CC Payment incomes
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    setError(null);
+    setSelectedCcPaymentId("");
+    setShowCreateForm(false);
+    creditCardPaymentsApi.list({}).then((res) => {
+      if (res.success) {
+        setCcPayments(
+          (res.data as IncomeRecord[])
+            .filter((r) => !r.name?.includes("[Deleted:"))
+            .map((r) => ({ id: r.id, name: stripNotionTag(r.name), date: r.date }))
+        );
+      } else {
+        setError("Failed to load CC Payment records.");
+      }
+    }).catch(() => setError("Network error loading CC Payment records."))
+    .finally(() => setLoading(false));
+  }, [open]);
+
+  async function handleCover() {
+    if (!selectedCcPaymentId) {
+      setError("Select a CC Payment receipt or create a new one.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      // Fetch current CC Payment to merge expense IDs into its ccPaymentCoveredIds
+      const detail = await creditCardPaymentsApi.detail(selectedCcPaymentId);
+      const existingIds: string[] = detail.success
+        ? detail.data.ccPaymentCoveredIds ?? []
+        : [];
+      const mergedIds = [...new Set([...existingIds, ...selectedExpenseIds])];
+      const res = await creditCardPaymentsApi.update(selectedCcPaymentId, {
+        ccPaymentCoveredIds: mergedIds,
+      });
+      if (!res.success) {
+        setError(res.error.message || "Failed to cover expenses.");
+        return;
+      }
+      onCovered();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleCreateAndCover() {
+    if (!newName.trim() || !newDate || !newCcAccountId) {
+      setError("Name, Date, and CC Account are required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      // Create the CC Payment income record
+      const createRes = await creditCardPaymentsApi.create({
+        name: newName.trim(),
+        date: newDate,
+        grossIncome: parseNumberInput(newAmount),
+        accountId: newCcAccountId,
+        transactedAccountId: newPayerAccountId || null,
+        // Category is set server-side via the workflow view parameter
+      });
+      if (!createRes.success) {
+        setError(createRes.error.message || "Failed to create CC Payment.");
+        return;
+      }
+      const newCcPaymentId = createRes.data.id;
+
+      // Link the selected expenses by updating the CC Payment's ccPaymentCoveredIds
+      const linkRes = await creditCardPaymentsApi.update(newCcPaymentId, {
+        ccPaymentCoveredIds: selectedExpenseIds,
+      });
+      if (!linkRes.success) {
+        setError(linkRes.error.message || "Created CC Payment but failed to link expenses.");
+        return;
+      }
+      onCovered();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !saving) onClose();
+      }}
+    >
+      <section className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="cover-title">
+        <div className="modal-panel__header">
+          <div>
+            <h2 id="cover-title">Cover {selectedExpenseIds.length} Expense{selectedExpenseIds.length > 1 ? "s" : ""}</h2>
+            <p>Link these unpaid CC expenses to a CC Payment receipt.</p>
+          </div>
+          <button type="button" className="icon-button" aria-label="Close" onClick={onClose} disabled={saving}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div className="modal-panel__body">
+          {error && <p className="mass-edit-error" style={{ marginBottom: "0.75rem" }}>{error}</p>}
+
+          {!showCreateForm ? (
+            <>
+              {/* Existing CC Payments list */}
+              <div className="form-grid form-grid--single" style={{ marginBottom: "1rem" }}>
+                <Field label="Select a CC Payment Receipt">
+                  <>
+                    {/* Header row: label + [+] button */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                      <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--ink)" }}>Available Receipts</span>
+                      <button
+                        type="button"
+                        className="button button--ghost"
+                        title="Create a new CC Payment record"
+                        onClick={() => {
+                          setShowCreateForm(true);
+                          setSelectedCcPaymentId("");
+                        }}
+                        disabled={saving}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", fontSize: "0.8125rem", padding: "0.25rem 0.5rem" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New
+                      </button>
+                    </div>
+
+                    {/* Scrollable CC Payment list */}
+                    {loading ? (
+                      <p style={{ color: "var(--ink-muted)", fontSize: "0.8125rem" }}>Loading CC Payment records...</p>
+                    ) : ccPayments.length === 0 ? (
+                      <p style={{ color: "var(--ink-muted)", fontSize: "0.8125rem" }}>No CC Payment records found.</p>
+                    ) : (
+                      <div style={{ maxHeight: 220, overflowY: "auto", display: "flex", flexDirection: "column", gap: "1px" }}>
+                        {ccPayments.map((cp) => (
+                          <label
+                            key={cp.id}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.375rem",
+                              borderRadius: 3, cursor: "pointer",
+                              background: selectedCcPaymentId === cp.id ? "var(--blue-soft, #dbeafe)" : "transparent",
+                            }}
+                            onClick={() => setSelectedCcPaymentId(cp.id)}
+                          >
+                            <span
+                              style={{
+                                width: 12, height: 12, flexShrink: 0,
+                                borderRadius: "50%",
+                                border: selectedCcPaymentId === cp.id ? "4px solid var(--blue)" : "1.5px solid var(--ink-muted, #9b9a97)",
+                                background: selectedCcPaymentId === cp.id ? "var(--blue)" : "transparent",
+                                transition: "all 0.1s ease",
+                              }}
+                            />
+                            <span style={{ flex: 1, fontSize: "0.8125rem", lineHeight: 1.3 }}>{cp.name}</span>
+                            <span style={{ fontSize: "0.6875rem", color: "var(--ink-muted)", flexShrink: 0 }}>{formatDate(cp.date)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                </Field>
+              </div>
+
+            </>
+          ) : (
+            <>
+              {/* New CC Payment form */}
+              <p style={{ fontSize: "0.875rem", color: "var(--ink-muted)", marginBottom: "0.75rem" }}>
+                The new CC Payment will be created and the {selectedExpenseIds.length} selected expense{selectedExpenseIds.length > 1 ? "s" : ""} will be linked to it.
+              </p>
+              <div className="form-grid form-grid--single">
+                <Field label="Name" required>
+                  <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="CC Payment — ..." />
+                </Field>
+                <Field label="Date" required>
+                  <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+                </Field>
+                <Field label="CC Account" required>
+                  <select value={newCcAccountId} onChange={(e) => setNewCcAccountId(e.target.value)}>
+                    <option value="">— Select —</option>
+                    {creditActiveAccounts.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Payment Amount">
+                  <input inputMode="decimal" placeholder="0.00" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} />
+                </Field>
+                <Field label="Payer Account">
+                  <select value={newPayerAccountId} onChange={(e) => setNewPayerAccountId(e.target.value)}>
+                    <option value="">— None —</option>
+                    {nonCreditActiveAccounts.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "0.5rem" }}>
+                <button
+                  type="button"
+                  className="button"
+                  onClick={() => setShowCreateForm(false)}
+                  disabled={saving}
+                >
+                  Back to existing records
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="modal-panel__footer">
+          <button type="button" className="button" onClick={onClose} disabled={saving}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={showCreateForm ? handleCreateAndCover : handleCover}
+            disabled={saving || (!showCreateForm && !selectedCcPaymentId)}
+          >
+            {saving ? "Saving..." : showCreateForm ? "Create & Cover" : "Cover"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export { ExpensePage, CoverExpensesModal };

@@ -554,6 +554,7 @@ function ReceiptModal({
       <div
         className={`receipt${receipt.installmentLayout ? " receipt--installment" : ""}`}
         ref={surfaceRef}
+        style={{ fontFamily: "var(--font-receipt)" }}
       >
         <div className="receipt__head">
           <h1 className="receipt__brand">Notable Finance Receipt</h1>

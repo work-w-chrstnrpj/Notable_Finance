@@ -207,7 +207,8 @@ function applyMerge(
       notionPageId,
       title: (merged[titleKey] as string | null) ?? null,
       action: deletedOf(merged) ? 'delete' : 'update',
-      direction: 'pull'
+      direction: 'pull',
+      payload: merged as Record<string, unknown>
     })
 
   switch (result.outcome) {
@@ -285,7 +286,8 @@ async function pullIncomes(
         notionPageId: npid,
         title: (remote.name as string | null) ?? null,
         action: isDeletedTitle(f.title) ? 'delete' : 'create',
-        direction: 'pull'
+        direction: 'pull',
+        payload: remote as Record<string, unknown>
       })
       outcome.inserted++
       continue
@@ -358,7 +360,8 @@ async function pullExpenses(
         notionPageId: npid,
         title: (remote.description as string | null) ?? null,
         action: isDeletedTitle(f.title) ? 'delete' : 'create',
-        direction: 'pull'
+        direction: 'pull',
+        payload: remote as Record<string, unknown>
       })
       outcome.inserted++
       continue

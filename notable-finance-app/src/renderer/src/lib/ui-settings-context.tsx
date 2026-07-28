@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS: UiSettings = {
   devModeEnabled: false,
   profile: { displayName: "Local User", avatarDataUrl: null },
   theme: { mode: "system", primaryColor: "#5b6cf9", secondaryColor: "#0d9488" },
-  fonts: { bodyFont: "Inter", monoFont: "DM Mono", brandFont: "Instrument Serif" },
+  fonts: { bodyFont: "Inter", monoFont: "DM Mono", brandFont: "Instrument Serif", receiptFont: "Instrument Serif" },
   workspace: {
     selectedDate: null,
     incomeViewMode: "Monthly",

@@ -145,7 +145,13 @@ const api = {
     discardUnsynced: (
       resource: 'incomes' | 'expenses',
       recordId: string
-    ): Promise<ApiResult<true>> => ipcRenderer.invoke('history:discardUnsynced', resource, recordId)
+    ): Promise<ApiResult<true>> => ipcRenderer.invoke('history:discardUnsynced', resource, recordId),
+    /** Returns the full writable payload for a synced or unsynced record (for read-only form modals). */
+    getItemDetail: (
+      resource: 'incomes' | 'expenses',
+      recordId: string
+    ): Promise<ApiResult<Record<string, unknown> | null>> =>
+      ipcRenderer.invoke('history:getItemDetail', resource, recordId)
   },
 
   windows: {

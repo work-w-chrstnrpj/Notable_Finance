@@ -1,7 +1,7 @@
 
 import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer, CreditCard } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
@@ -53,13 +53,15 @@ function DataTable({
   onBulkAction,
   showBulkEdit = true,
   showBulkPrint = false,
+  showBulkCover = false,
+  recordIds,
   bulkDeleteLabel = "Soft Delete",
   bulkDeleteDanger = false,
 }: {
   headers: string[];
   rows: ReactNode[][];
   footerRows?: ReactNode[][];
-  onRowClick?: (rowIndex: number) => void;
+  onRowClick?: (recordId: string) => void;
   /** Column indices that should not be clickable/sortable (e.g. icon columns). */
   unsortableColumns?: number[];
   /** Size the table to its content and let the wrapper scroll horizontally. */
@@ -71,21 +73,25 @@ function DataTable({
   /** Optional summary text shown beside the pagination controls (e.g. "325 records"). */
   pageSummary?: string;
   /** Optional callback to apply a className to each row based on its index or content. */
-  rowClassName?: (rowIndex: number, row: ReactNode[]) => string | undefined;
+  rowClassName?: (recordId: string, row: ReactNode[]) => string | undefined;
   /** Enable Notion-style row selection checkboxes. */
   selectable?: boolean;
   /** Set of original row indices that are currently selected. */
-  selectedIds?: Set<number>;
+  selectedIds?: Set<string>;
   /** Set of original row indices that are temporarily disabled (dimmed, excluded from totals). */
-  disabledIds?: Set<number>;
+  disabledIds?: Set<string>;
   /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
-  onToggleSelect?: (rowIndex: number, selected: boolean) => void;
+  onToggleSelect?: (recordId: string, selected: boolean) => void;
   /** Callback when a bulk action is triggered from the floating toolbar. */
-  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") => void;
+  onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") => void;
   /** Show the mass-edit button in the bulk toolbar (Income/Expense). */
   showBulkEdit?: boolean;
   /** Show the Print Receipt button in the bulk toolbar (Expense). */
+  /** Array of record IDs, parallel to `rows`. Used for ID-based selection/disable. */
+  recordIds?: string[];
   showBulkPrint?: boolean;
+  /** Show the "Cover the expense" button in the bulk toolbar (Unpaid CC view). */
+  showBulkCover?: boolean;
   /** Soft Delete / Hard Delete label for the selection toolbar. */
   bulkDeleteLabel?: string;
   /** Red danger styling when hard-delete mode is on. */
@@ -139,21 +145,21 @@ function DataTable({
 
   // Check if all visible (paginated) rows are selected
   const allVisibleSelected =
-    selectable &&
+    selectable && recordIds &&
     paginated.length > 0 &&
-    paginated.every(({ index }) => selectedIds?.has(index));
+    paginated.every(({ index }) => selectedIds?.has(recordIds[index]));
 
   // Indeterminate: some but not all visible rows are selected
   const someVisibleSelected =
-    selectable &&
+    selectable && recordIds &&
     !allVisibleSelected &&
-    paginated.some(({ index }) => selectedIds?.has(index));
+    paginated.some(({ index }) => selectedIds?.has(recordIds[index]));
 
   // Determine if we should show "Enable" or "Disable" in the toolbar
   const selectedHasDisabled =
     selectable &&
     (selectedIds?.size ?? 0) > 0 &&
-    Array.from(selectedIds!).some((idx) => disabledIds?.has(idx));
+    Array.from(selectedIds!).some((id) => disabledIds?.has(id));
 
   return (
     <div className="table-container">
@@ -189,6 +195,16 @@ function DataTable({
             >
               <Printer size={14} />
               <span>Print Receipt</span>
+            </button>
+          )}
+          {showBulkCover && (
+            <button
+              type="button"
+              className="bulk-toolbar__btn"
+              onClick={() => onBulkAction?.("cover")}
+            >
+              <CreditCard size={14} />
+              <span>Cover the expense</span>
             </button>
           )}
           <button
@@ -238,15 +254,15 @@ function DataTable({
                       )}
                       aria-label="Select all rows"
                       onClick={() => {
-                        if (!onToggleSelect) return;
-                        const visibleIndices = paginated.map(({ index }) => index);
+                        if (!onToggleSelect || !recordIds) return;
+                        const visibleIds = paginated.map(({ index }) => recordIds[index]).filter(Boolean);
                         if (allVisibleSelected) {
-                          for (const idx of visibleIndices) {
-                            onToggleSelect(idx, false);
+                          for (const id of visibleIds) {
+                            onToggleSelect(id, false);
                           }
                         } else {
-                          for (const idx of visibleIndices) {
-                            onToggleSelect(idx, true);
+                          for (const id of visibleIds) {
+                            onToggleSelect(id, true);
                           }
                         }
                       }}
@@ -289,26 +305,30 @@ function DataTable({
         </thead>
         <tbody>
           {paginated.map(({ row, index }) => {
-            const isSelected = selectedIds?.has(index) ?? false;
+            const isSelected = (recordIds && selectedIds?.has(recordIds[index])) ?? false;
             return (
               <tr
                 key={`row-${index}`}
                 className={cx(
                   onRowClick && "table-row--clickable",
-                  selectable && isSelected && "table-row--selected",
-                  selectable && disabledIds?.has(index) && "record-disabled",
-                  rowClassName?.(index, row),
+                  selectable && recordIds && selectedIds?.has(recordIds[index]) && "table-row--selected",
+                  selectable && recordIds && disabledIds?.has(recordIds[index]) && "record-disabled",
+                  rowClassName?.(recordIds?.[index] ?? "", row),
                 )}
                 tabIndex={onRowClick ? 0 : undefined}
-                onClick={() => onRowClick?.(index)}
+                onClick={() => {
+                          const id = recordIds?.[index];
+                          if (id) onRowClick?.(id);
+                        }}
                 onKeyDown={(event) => {
-                  if (!onRowClick) {
+                  if (!onRowClick || !recordIds) {
                     return;
                   }
 
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    onRowClick(index);
+                    const id = recordIds[index];
+                    if (id) onRowClick(id);
                   }
                 }}
               >
@@ -324,7 +344,8 @@ function DataTable({
                         aria-label="Select row"
                         onClick={(event) => {
                           event.stopPropagation();
-                          onToggleSelect?.(index, !isSelected);
+                          const id = recordIds?.[index];
+                          if (id) onToggleSelect?.(id, !isSelected);
                         }}
                       >
                         <span className="row-checkbox__box">

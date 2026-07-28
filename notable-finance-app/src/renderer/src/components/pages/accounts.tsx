@@ -254,8 +254,8 @@ function AccountsPage() {
             // columns; the 3-column views render as a normal full-width table.
             wide={accountScope === "credit"}
             unsortableColumns={[0]}
-            onRowClick={(rowIndex) => {
-              const account = visibleAccounts[rowIndex];
+            onRowClick={(recordId) => {
+              const account = visibleAccounts.find((a) => a.id === recordId);
               if (account) {
                 setSelectedAccount(account);
               }

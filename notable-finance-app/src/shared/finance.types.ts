@@ -390,6 +390,8 @@ export interface UiFontSettings {
   monoFont: string
   /** Brand/display font family name (receipts, insight shots, headings). */
   brandFont: string
+  /** Receipt-specific font family name. Falls back to brandFont if not set. */
+  receiptFont: string
 }
 
 export interface UiProfileSettings {
@@ -707,6 +709,7 @@ export interface ActivityEntry {
   recordId: string
   notionPageId: string | null
   title: string | null
+  payload?: Record<string, unknown> | null
   action: MutationAction // create | update | delete
   direction: ActivityDirection
   at: number // ms timestamp
@@ -722,6 +725,7 @@ export interface UnsyncedItem {
   resource: SyncedResource
   recordId: string
   title: string | null
+  payload?: Record<string, unknown> | null
   /** delete when soft/hard-deleted; create when never pushed (no Notion page); else update. */
   action: MutationAction
   syncState: 'dirty' | 'conflict'

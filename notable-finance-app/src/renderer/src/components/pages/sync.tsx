@@ -42,7 +42,14 @@ function rangeToSince(range: PullRange | ""): string | undefined {
   return new Date(Date.now() - (offsets[range] ?? 0)).toISOString();
 }
 
-const fmt = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : String(v));
+/** Format a conflict value for display, distinguishing null/empty/blank states. */
+const fmt = (v: unknown): string => {
+  if (v === null || v === undefined) return "(∅ empty)";
+  if (v === "") return "(“” blank)";
+  const s = String(v);
+  if (s === "null" || s === "undefined") return `("${s}" literal)`;
+  return s;
+};
 
 // ── Three-way merge modal ────────────────────────────────────────────────────
 

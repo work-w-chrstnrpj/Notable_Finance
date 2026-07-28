@@ -29,7 +29,7 @@ export function transactionAmount(
   categoryName: string | undefined
 ): number {
   if (!income.transactedAccountId) return 0
-  return isTransactionCategory(categoryName) ? round2(-income.grossIncome) : 0
+  return isTransactionCategory(categoryName) ? -income.grossIncome : 0
 }
 
 // ── Expense formulas ────────────────────────────────────────────────────────

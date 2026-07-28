@@ -5,6 +5,41 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-29
+
+### Added
+- Database migration 0009: adds `payload` column to `activity_log` for full record payloads in history
+- History page: record detail modals with read-only form views and old→new diff display for unsynced and synced items
+- Push/Cancel Unsynced bulk actions in History page for managing pending changes directly from history
+- Pending edit system (`pending-edit.ts`) for History→page auto-open edit modal navigation
+- Sync conflict display now distinguishes null (∅ empty) vs `""` blank vs literal values
+- Server-side FK resolution for conflict modal (account/category UUIDs → display names)
+- Source account excluded from Transfer account dropdown
+- Transfer record name prefill ("Transfer") and auto-negated grossIncome
+- CC Payment record name prefill ("CC Payment —")
+- Receipt font independently configurable via `receiptFont` in UiFontSettings (default "Instrument Serif")
+- Expense form validation: Account & Category required with red * and shake animation
+- Position-based → ID-based (UUID) refactor across data-table, income, expense, workflow, accounts pages
+- Cover the expense feature: mass linking of CC expenses to CC Payment receipts via CoverExpensesModal
+- Unpaid Pasabuy view: Account column added between Name and Pasabuyer Balance
+- Bulk toolbar repositioned to prevent overlap with side nav
+- CoverExpensesModal UI refinement: custom radio indicators, tighter rows, + New ghost button
+- "Mass Edit" → "Bulk Edit" rename across expense and income pages
+- Bulk Edit modal preset quick-action buttons: Bulk CC Pay and Bulk Pasabuy
+- Toast notification system replacing inline save notices across expense, income, history, and finance-workspace pages
+- Sync success/failure toasts in finance-workspace (push, pull, full sync)
+- `receiptFont` CSS variable (`--font-receipt`) applied on receipt div
+- `ItemDetail` IPC handler for full record payload retrieval
+
+### Changed
+- Sync conflict `fmt()` shows null→(∅ empty), ""→("" blank), and literal values
+- Account balance computation uses raw sums with single final rounding to prevent ±0.01 drift
+- `transactionAmount()` removes intermediate rounding for correctness
+- Filter state fully reset when switching Daily/Weekly/Monthly view mode (expense + income)
+- `selectedIds`/`disabledIds` changed from `Set<number>` to `Set<string>` (UUIDs)
+- Position-based row lookups replaced with ID-based `.find()` / `.filter()` throughout
+- Bulk toolbar centering changed to `margin: 0 auto; width: fit-content`
+
 ## [1.0.0] - 2026-07-27
 
 Initial desktop release — a local-first Electron app that mirrors the web app's finance
@@ -113,5 +148,6 @@ and manual "Check for Updates" in Settings → Updates.
 
 Internal development milestone (not publicly released).
 
+[1.1.0]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.1.0
 [1.0.0]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.0.0
 [0.1.0]: https://example.com/notable-finance/releases/tag/v0.1.0

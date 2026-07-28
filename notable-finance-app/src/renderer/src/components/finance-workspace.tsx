@@ -22,6 +22,7 @@ import { MonthlyMonitoringPage } from "@/components/pages/monitoring";
 import { WorkflowPage } from "@/components/pages/workflow";
 import { HistoryPage } from "@/components/pages/history";
 import { SyncPage } from "@/components/pages/sync";
+import { Toast } from "@/components/ui/toast";
 import { SettingsPage } from "@/components/pages/settings";
 import { ChatModePage } from "@/components/pages/chat";
 import { DevLogsPage } from "@/components/pages/dev-logs";
@@ -132,6 +133,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   }
 
   const [activeSyncKind, setActiveSyncKind] = useState<"full" | "pull" | "push" | null>(null);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode, monitoringViewMode);
 
@@ -171,6 +173,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
         refreshReferenceData();
+        setSyncNotice(`Sync complete: ${kind} succeeded`);
         logDevEvent({
           kind: "operation",
           action: `sync:${kind}`,
@@ -179,6 +182,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         });
       } else {
         setSyncState("error");
+        setSyncNotice(`Sync failed`);
         logDevEvent({
           kind: "operation",
           action: `sync:${kind}`,
@@ -189,6 +193,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
       }
     } catch (err) {
       setSyncState("error");
+      setSyncNotice(`Sync error`);
       logDevEvent({
         kind: "operation",
         action: `sync:${kind}`,
@@ -366,6 +371,9 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           activeSection={activeSection}
           selectedDate={selectedDate}
         />
+      )}
+      {syncNotice && (
+        <Toast key={syncNotice} tone="info" duration={4000} message={syncNotice} onDismiss={() => setSyncNotice(null)} />
       )}
     </div>
     </FabExportProvider>

@@ -1,7 +1,7 @@
 {
   "name": "notable-finance",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "Root commands for the Notable Finance frontend application and backend service.",
   "scripts": {
     "bootstrap": "npm run deps:frontend && npm run deps:backend",

@@ -14,7 +14,7 @@ import type {
 import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
-import { getHistory } from '../services/history'
+import { getHistory, getItemDetail } from '../services/history'
 import { discardUnsynced } from '../services/discard-unsynced'
 import * as notion from '../notion/service'
 import { getMapping, saveMapping } from '../notion/mapping-store'
@@ -308,6 +308,9 @@ export function registerIpc(): void {
         changed(resource, [recordId])
         return true
       })
+  )
+  ipcMain.handle('history:getItemDetail', (_e, resource: 'incomes' | 'expenses', recordId: string) =>
+    result(() => getItemDetail(resource, recordId))
   )
 
   // reports (computed locally, Phase 1.3)

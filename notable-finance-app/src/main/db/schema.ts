@@ -147,6 +147,7 @@ export const activityLog = sqliteTable('activity_log', {
   recordId: text('record_id').notNull(), // local id
   notionPageId: text('notion_page_id'), // known once linked
   title: text('title'), // snapshot of the record title at event time
+  payload: text('payload'), // JSON: full writable fields at event time
   action: text('action').notNull(), // create | update | delete
   direction: text('direction').notNull(), // pull (Notion DB → App) | push (App → Notion DB)
   at: integer('at').notNull() // ms timestamp

@@ -15,6 +15,7 @@ import {
   parseNumberInput,
   getMonthLabel,
 } from "@/lib/finance-helpers";
+import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
 import { calculateNetIncome, getMoneyValueTone, getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
@@ -80,8 +81,8 @@ function WorkflowPage({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set());
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled } = useUiSettings();
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
@@ -110,7 +111,7 @@ function WorkflowPage({
   useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modalOpen && editingId != null);
   useShortcutAction("modal.close", () => { setModal(null); setCcCoveredIds([]); }, modalOpen);
   const hasSelection = selectedIds.size > 0;
-  useShortcutAction("mass.selectAll", () => setSelectedIds(new Set(workflowIncomes.map((_, i) => i))), !modalOpen);
+  useShortcutAction("mass.selectAll", () => setSelectedIds(new Set(workflowIncomes.map((r) => r.id).filter(Boolean))), !modalOpen);
   useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
   useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
   useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
@@ -139,11 +140,13 @@ function WorkflowPage({
   const workflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
+
+
   // ── Publish printable receipt for Receivables ──────────────────────
   const { setReceipt } = useFabRegister();
   const receiptContext = useMemo<ReceiptContext>(() => {
     const enabledRecords = workflowIncomes.filter(
-      (_, idx) => !disabledIds.has(idx),
+      (r) => !disabledIds.has(r.id),
     );
     const rows: ReceiptRow[] = enabledRecords.map((record) => ({
       date: record.date ? formatDate(record.date) : "—",
@@ -219,7 +222,7 @@ function WorkflowPage({
       recordId != null
         ? workflowIncomes.find((r) => r.id === recordId)
         : undefined;
-    setWorkflowNameInput(record?.name ?? "");
+    setWorkflowNameInput(record?.name ?? (isTransfer ? "Transfer" : isCreditCardPayment ? "CC Payment —" : ""));
     setWorkflowDateInput(record?.date ?? "");
     setReceivingAccountId(record?.accountId ?? "");
     setTransactedAccountId(record?.transactedAccountId ?? "");
@@ -267,7 +270,9 @@ function WorkflowPage({
     const payload: Record<string, unknown> = {
       name: workflowNameInput.trim(),
       date: workflowDateInput,
-      grossIncome: parseNumberInput(workflowAmountInput),
+      grossIncome: isTransfer
+        ? -Math.abs(parseNumberInput(workflowAmountInput))
+        : parseNumberInput(workflowAmountInput),
       capitalExpenditure: parseNumberInput(workflowCapitalExpenditureInput),
       accountId: receivingAccountId,
     };
@@ -325,16 +330,16 @@ function WorkflowPage({
     setModal({ mode: "new", title: `New ${label} Record (Copy)` });
   }
 
-  function toggleRowSelect(rowIndex: number, selected: boolean) {
+  function toggleRowSelect(recordId: string, selected: boolean) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (selected) next.add(rowIndex);
-      else next.delete(rowIndex);
+      if (selected) next.add(recordId);
+      else next.delete(recordId);
       return next;
     });
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") {
     if (action === "edit") {
       // Mass edit is available on Income / Expense pages; workflows keep duplicate/delete.
       return;
@@ -343,9 +348,9 @@ function WorkflowPage({
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
         const next = new Set(prev);
-        for (const idx of selectedIds) {
-          if (shouldDisable) next.add(idx);
-          else next.delete(idx);
+        for (const id of selectedIds) {
+          if (shouldDisable) next.add(id);
+          else next.delete(id);
         }
         return next;
       });
@@ -354,9 +359,9 @@ function WorkflowPage({
     }
 
     if (action === "duplicate") {
-      const recordsToDuplicate = Array.from(selectedIds)
-        .map((idx) => workflowIncomes[idx])
-        .filter((r): r is IncomeRecord => r != null);
+      const recordsToDuplicate = workflowIncomes.filter(
+        (r) => selectedIds.has(r.id)
+      );
 
       if (recordsToDuplicate.length === 0) {
         setSelectedIds(new Set());
@@ -390,9 +395,7 @@ function WorkflowPage({
     }
 
     if (action === "delete") {
-      const idsToDelete = Array.from(selectedIds)
-        .map((idx) => workflowIncomes[idx]?.id)
-        .filter((id): id is string => id != null);
+      const idsToDelete = Array.from(selectedIds).filter((id): id is string => id != null);
 
       if (idsToDelete.length === 0) {
         setSelectedIds(new Set());
@@ -433,6 +436,27 @@ function WorkflowPage({
     setDeleteConfirmIds([editingId]);
   }
 
+  // Check for pending edit triggered by History page navigation
+  useEffect(() => {
+    const sectionToResource: Record<string, PendingEditResource> = {
+      transfer: "transfers",
+      "credit-card-payment": "creditCardPayments",
+      alkansya: "alkansya",
+      receivables: "receivables",
+    };
+    const mapped = sectionToResource[section];
+    if (mapped) {
+      const pending = consumePendingEdit(mapped);
+      if (pending && workflowIncomes.length > 0) {
+        const record = workflowIncomes.find((r) => r.id === pending.recordId);
+        if (record) {
+          openWorkflowModal("edit", record.name, record.id);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workflowIncomes.length]);
+
   return (
     <div className="page-stack">
       <PageToolbar
@@ -455,6 +479,7 @@ function WorkflowPage({
         {workflowRows.length ? (
           <DataTable
             selectable
+            recordIds={workflowIncomes.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
             onToggleSelect={toggleRowSelect}
@@ -464,8 +489,8 @@ function WorkflowPage({
             bulkDeleteDanger={hardDeleteEnabled}
             headers={workflowHeaders}
             rows={workflowRows}
-            onRowClick={(rowIndex) => {
-              const record = workflowIncomes[rowIndex];
+            onRowClick={(recordId) => {
+              const record = workflowIncomes.find((r) => r.id === recordId);
               if (record) {
                 openWorkflowModal("edit", record.name, record.id);
               }
@@ -550,7 +575,9 @@ function WorkflowPage({
                 placeholder="— None —"
                 value={transactedAccountId}
                 onChange={setTransactedAccountId}
-                items={nonCreditActiveAccounts.map((account) => ({
+                items={nonCreditActiveAccounts
+                  .filter((account) => !isTransfer || account.id !== receivingAccountId)
+                  .map((account) => ({
                   id: account.id,
                   label: account.name,
                   icon: <AccountIcon account={account} />,

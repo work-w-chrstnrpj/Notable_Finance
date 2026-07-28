@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Clock,
@@ -10,12 +10,20 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useLiveCollections } from "@/components/hooks";
 import { Badge, EmptyState, MetricCard, Panel } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { ConfirmModal } from "@/components/ui/form-modals";
+import { Toast } from "@/components/ui/toast";
+import { navigate } from "@/lib/router";
+import { setPendingEdit, type PendingEditResource } from "@/lib/pending-edit";
+import { syncApi } from "@/lib/api-client";
+import { Send } from "lucide-react";
 import { useHistory, useFinanceInvalidation } from "@/lib/use-data";
 import { historyApi } from "@/lib/api-client";
-import type { MutationAction, SyncedResource, UnsyncedItem } from "@/types/finance";
+import { formatMoney, formatDate } from "@/lib/format";
+import { calculateNetIncome, getMoneyValueTone, transactionWorkflowCategories } from "@/lib/finance-rules";
+import type { ActivityEntry, MutationAction, SyncedResource, UnsyncedItem } from "@/types/finance";
 
 // ── History section ────────────────────────────────────────────────────────
 // Two feeds backed by the local store:
@@ -25,6 +33,9 @@ import type { MutationAction, SyncedResource, UnsyncedItem } from "@/types/finan
 //   2. Recently Synced — the durable activity_log of completed sync events, showing
 //      the status (Created/Updated/Deleted) and direction (Notion DB → App / App →
 //      Notion DB) of each.
+//
+// When the user clicks an item, a modal opens that mimics the income/expense form layout
+// (read-only by default) using the stored payload data.
 
 const RESOURCE_LABEL: Record<SyncedResource, string> = {
   incomes: "Income",
@@ -105,12 +116,187 @@ function discardCopy(item: UnsyncedItem): { title: string; message: string } {
   };
 }
 
+// ── Form-view components for record detail modals ───────────────────────────
+
+function IncomeFormView({ payload }: { payload: Record<string, unknown> }) {
+  const { nonCreditActiveAccounts, allIncomeCategories } = useLiveCollections();
+  const accountNameById = useMemo(
+    () => new Map(nonCreditActiveAccounts.map((a) => [a.id, a.name])),
+    [nonCreditActiveAccounts],
+  );
+  const categoryNameById = useMemo(
+    () => new Map(allIncomeCategories.map((c) => [c.id, c.source])),
+    [allIncomeCategories],
+  );
+
+  const grossIncome = Number(payload.grossIncome ?? 0);
+  const capitalExpenditure = Number(payload.capitalExpenditure ?? 0);
+  const netIncome = calculateNetIncome(grossIncome, capitalExpenditure);
+
+  const prev = payload._previous as Record<string, unknown> | undefined;
+
+  const prevGrossIncome = prev?.grossIncome != null ? Number(prev.grossIncome) : grossIncome;
+  const prevCapEx = prev?.capitalExpenditure != null ? Number(prev.capitalExpenditure) : capitalExpenditure;
+  const prevNetIncome = calculateNetIncome(prevGrossIncome, prevCapEx);
+
+  return (
+    <div className="form-grid form-grid--single">
+      <FieldValue label="Name" value={(payload.name as string) ?? ""} previousValue={prev?.name as string | null ?? null} />
+      <FieldValue label="Date" value={(payload.date as string) ?? ""} previousValue={prev?.date as string | null ?? null} />
+      <FieldValue label="Gross Income" value={formatMoney(grossIncome)} previousValue={prev?.grossIncome != null ? formatMoney(Number(prev.grossIncome)) : null} />
+      <FieldValue label="Capital Expenditure" value={formatMoney(capitalExpenditure)} previousValue={prev?.capitalExpenditure != null ? formatMoney(Number(prev.capitalExpenditure)) : null} />
+      <FieldValue label="Account" value={payload.accountId ? (accountNameById.get(payload.accountId as string) ?? "(unknown)") : "— None —"} previousValue={prev?.accountId != null ? (accountNameById.get(prev.accountId as string) ?? "(unknown)") : null} />
+      <FieldValue label="Category" value={payload.categoryId ? (categoryNameById.get(payload.categoryId as string) ?? "(unknown)") : "— None —"} previousValue={prev?.categoryId != null ? (categoryNameById.get(prev.categoryId as string) ?? "(unknown)") : null} />
+      <FieldValue label="Net Income" value={formatMoney(netIncome)} previousValue={formatMoney(prevNetIncome)} computed />
+    </div>
+  );
+}
+
+function ExpenseFormView({ payload }: { payload: Record<string, unknown> }) {
+  const { activeAccounts, expenseCategories } = useLiveCollections();
+  const accountNameById = useMemo(
+    () => new Map(activeAccounts.map((a) => [a.id, a.name])),
+    [activeAccounts],
+  );
+  const categoryNameById = useMemo(
+    () => new Map(expenseCategories.map((c) => [c.id, c.name])),
+    [expenseCategories],
+  );
+
+  const amount = Number(payload.amount ?? 0);
+  const interest = Number(payload.interest ?? 0);
+  const grossPrice = amount + interest;
+  const prev = payload._previous as Record<string, unknown> | undefined;
+
+  const prevAmount = prev?.amount != null ? Number(prev.amount) : amount;
+  const prevInterest = prev?.interest != null ? Number(prev.interest) : interest;
+  const prevGrossPrice = prevAmount + prevInterest;
+
+  function pv(key: string): string | null {
+    return prev?.[key] != null ? String(prev[key]) : null;
+  }
+
+  const items: Array<{ label: string; value: string; previousValue?: string | null; computed?: boolean; tone?: string }> = [
+    { label: "Description", value: (payload.description as string) ?? "", previousValue: pv("description") },
+    { label: "Purchase Date", value: payload.purchaseDate ? formatDate(payload.purchaseDate as string) : "", previousValue: prev?.purchaseDate ? formatDate(prev.purchaseDate as string) : null },
+    { label: "Date Paid", value: payload.datePaid ? formatDate(payload.datePaid as string) : "—", previousValue: prev?.datePaid ? formatDate(prev.datePaid as string) : null },
+    { label: "Amount", value: formatMoney(amount), previousValue: prev?.amount != null ? formatMoney(Number(prev.amount)) : null },
+    { label: "Interest", value: formatMoney(interest), previousValue: prev?.interest != null ? formatMoney(Number(prev.interest)) : null },
+    { label: "Gross Price", value: formatMoney(grossPrice), previousValue: formatMoney(prevGrossPrice), computed: true },
+    { label: "Account", value: payload.accountId ? (accountNameById.get(payload.accountId as string) ?? "(unknown)") : "—", previousValue: prev?.accountId != null ? (accountNameById.get(prev.accountId as string) ?? "(unknown)") : null },
+    { label: "Category", value: payload.categoryId ? (categoryNameById.get(payload.categoryId as string) ?? "(unknown)") : "—", previousValue: prev?.categoryId != null ? (categoryNameById.get(prev.categoryId as string) ?? "(unknown)") : null },
+    { label: "Payment Status", value: (payload.paymentStatus as string) ?? "Unpaid", previousValue: pv("paymentStatus") },
+  ];
+  if (payload.paymentFrequency) items.push({ label: "Payment Frequency", value: payload.paymentFrequency as string, previousValue: pv("paymentFrequency") });
+  if (payload.periodCount != null && Number(payload.periodCount) > 0) items.push({ label: "Period Count", value: String(payload.periodCount), previousValue: prev?.periodCount != null ? String(prev.periodCount) : null });
+  if (payload.paidPeriod != null && Number(payload.paidPeriod) > 0) items.push({ label: "Paid Period", value: String(payload.paidPeriod), previousValue: prev?.paidPeriod != null ? String(prev.paidPeriod) : null });
+  if (payload.pasabuyer) {
+    items.push({ label: "Pasabuyer", value: payload.pasabuyer as string, previousValue: pv("pasabuyer") });
+    items.push({ label: "Pasabuy Status", value: (payload.pasabuyStatus as string) ?? "", previousValue: pv("pasabuyStatus") });
+    if (payload.pasabuyDateOfPayment) items.push({ label: "Pasabuy DOP", value: payload.pasabuyDateOfPayment as string, previousValue: pv("pasabuyDateOfPayment") });
+  }
+
+  return (
+    <div className="form-grid form-grid--single">
+      {items.map((item, i) => (
+        <FieldValue key={i} {...item} />
+      ))}
+    </div>
+  );
+}
+
+function RecordDetailModal({
+  resource,
+  payload,
+  title,
+  subtitle,
+  openLabel,
+  onOpenRecord,
+  onClose,
+  footerExtra,
+}: {
+  resource: SyncedResource;
+  payload: Record<string, unknown> | null | undefined;
+  title: string;
+  subtitle: string;
+  openLabel: string;
+  onOpenRecord: () => void;
+  onClose: () => void;
+  footerExtra?: React.ReactNode;
+}) {
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <section className="modal-panel" role="dialog" aria-modal="true">
+        <div className="modal-panel__header">
+          <div>
+            <h2>{title}</h2>
+            <p>{subtitle}</p>
+          </div>
+          <button type="button" className="icon-button" aria-label="Close" onClick={onClose}>
+            <X size={17} />
+          </button>
+        </div>
+        <div className="modal-panel__body">
+          {payload ? (
+            resource === "incomes" ? (
+              <IncomeFormView payload={payload} />
+            ) : (
+              <ExpenseFormView payload={payload} />
+            )
+          ) : (
+            <p className="empty-state">No record data available.</p>
+          )}
+        </div>
+        <div className="modal-panel__footer" style={{ justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: "0.375rem" }}>
+            {footerExtra}
+            <button type="button" className="button" onClick={onOpenRecord}>
+              <PenLine size={14} /> Open in {openLabel}
+            </button>
+          </div>
+          <button type="button" className="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ── Main History page component ─────────────────────────────────────────────
+
+// ── Read-only form field display ──────────────────────────────────────
+function FieldValue({ label, value, previousValue, computed, tone }: { label: string; value: string; previousValue?: string | null; computed?: boolean; tone?: string }) {
+  const hasDiff = previousValue !== undefined && previousValue !== null && previousValue !== value;
+  return (
+    <div className="field-value-row">
+      <span className="field-value-row__label">{label}:</span>
+      {hasDiff ? (
+        <span className="field-value-row__value">
+          <span className="diff-old">{previousValue}</span>
+          <span className="diff-arrow"> → </span>
+          <span className="diff-new">{value}</span>
+        </span>
+      ) : computed ? (
+        <strong className="field-value-row__value computed-field__value computed-field__value--ink">{value}</strong>
+      ) : (
+        <span className="field-value-row__value">{value}</span>
+      )}
+    </div>
+  );
+}
+
 function HistoryPage() {
   const { state, refetch } = useHistory();
   const { invalidateIncomeFamily, invalidateExpenseFamily } = useFinanceInvalidation();
   const [discardItem, setDiscardItem] = useState<UnsyncedItem | null>(null);
   const [discarding, setDiscarding] = useState(false);
   const [discardError, setDiscardError] = useState<string | null>(null);
+  const [selectedUnsynced, setSelectedUnsynced] = useState<UnsyncedItem | null>(null);
+  const [selectedSynced, setSelectedSynced] = useState<ActivityEntry | null>(null);
+  const [pushItemLoading, setPushItemLoading] = useState(false);
+  const [bulkPushing, setBulkPushing] = useState(false);
+  const [bulkCancelling, setBulkCancelling] = useState(false);
 
   // Refresh when local records change or a sync completes, so the feeds stay live.
   useEffect(() => {
@@ -142,6 +328,7 @@ function HistoryPage() {
         return;
       }
       setDiscardItem(null);
+      setSelectedUnsynced(null);
       void refetch();
       if (discardItem.resource === "incomes") invalidateIncomeFamily();
       else invalidateExpenseFamily();
@@ -150,6 +337,127 @@ function HistoryPage() {
     } finally {
       setDiscarding(false);
     }
+  }
+
+  async function pushSingleItem(item: UnsyncedItem) {
+    setPushItemLoading(true);
+    setDiscardError(null);
+    try {
+      // Do a full push to send all pending changes (including this item) to Notion
+      const res = await syncApi.pushOnly();
+      if (!res.success) {
+        setDiscardError(res.error.message || "Failed to push changes.");
+        return;
+      }
+      setSelectedUnsynced(null);
+      void refetch();
+    } catch (err) {
+      setDiscardError(err instanceof Error ? err.message : "Network error pushing changes.");
+    } finally {
+      setPushItemLoading(false);
+    }
+  }
+
+  async function pushAllUnsynced() {
+    setBulkPushing(true);
+    setDiscardError(null);
+    try {
+      const res = await syncApi.pushOnly();
+      if (!res.success) {
+        setDiscardError(res.error.message || "Failed to push changes.");
+        return;
+      }
+      void refetch();
+    } catch (err) {
+      setDiscardError(err instanceof Error ? err.message : "Network error pushing changes.");
+    } finally {
+      setBulkPushing(false);
+    }
+  }
+
+  async function cancelAllUnsynced() {
+    setBulkCancelling(true);
+    setDiscardError(null);
+    try {
+      let lastErr: string | null = null;
+      for (const item of data.unsynced) {
+        const res = await historyApi.discardUnsynced(item.resource, item.recordId);
+        if (!res.success) lastErr = res.error.message || "Failed to discard item";
+      }
+      if (lastErr) {
+        setDiscardError(lastErr);
+        return;
+      }
+      void refetch();
+      invalidateIncomeFamily();
+      invalidateExpenseFamily();
+    } catch (err) {
+      setDiscardError(err instanceof Error ? err.message : "Network error discarding changes.");
+    } finally {
+      setBulkCancelling(false);
+    }
+  }
+
+  // Build a categoryId → workflow section map once
+  const { allIncomeCategories } = useLiveCollections();
+  const categoryRouteById = useMemo(() => {
+    // reverse: workflow section label → section route
+    const sectionByCategoryName: Record<string, string> = {};
+    for (const [section, name] of Object.entries(transactionWorkflowCategories)) {
+      if (name) sectionByCategoryName[name] = section;
+    }
+    const map = new Map<string, string>();
+    for (const cat of allIncomeCategories) {
+      const section = sectionByCategoryName[cat.source];
+      if (section) map.set(cat.id, section);
+    }
+    return map;
+  }, [allIncomeCategories]);
+
+  const SECTION_PENDING_RESOURCE: Record<string, PendingEditResource> = {
+    transfer: "transfers",
+    "credit-card-payment": "creditCardPayments",
+    alkansya: "alkansya",
+    receivables: "receivables",
+    income: "incomes",
+    expense: "expenses",
+  };
+
+  const SECTION_LABEL: Record<string, string> = {
+    transfer: "Transfer",
+    "credit-card-payment": "Credit Card Payment",
+    alkansya: "Alkansya",
+    receivables: "Receivables",
+    income: "Income",
+    expense: "Expense",
+  };
+
+  /** Determine the correct route, button label, and pending-edit resource for a record. */
+  function openTarget(resource: SyncedResource, payload: Record<string, unknown> | null | undefined): { route: string; label: string; pendingResource: PendingEditResource } {
+    if (resource === "expenses") {
+      return { route: "expense", label: "Expense", pendingResource: "expenses" };
+    }
+    // For incomes, check if the category maps to a workflow section
+    if (resource === "incomes" && payload) {
+      const categoryId = payload.categoryId as string | undefined;
+      if (categoryId) {
+        const section = categoryRouteById.get(categoryId);
+        if (section && SECTION_PENDING_RESOURCE[section]) {
+          return {
+            route: section,
+            label: SECTION_LABEL[section] ?? "Income",
+            pendingResource: SECTION_PENDING_RESOURCE[section],
+          };
+        }
+      }
+    }
+    return { route: "income", label: "Income", pendingResource: "incomes" };
+  }
+
+  function openRecordInPage(resource: SyncedResource, recordId: string, payload: Record<string, unknown> | null | undefined) {
+    const target = openTarget(resource, payload);
+    setPendingEdit(target.pendingResource, recordId);
+    navigate("/" + target.route);
   }
 
   return (
@@ -200,8 +508,13 @@ function HistoryPage() {
           />
         ) : (
           <DataTable
+            recordIds={data.unsynced.map((i) => i.recordId)}
             headers={["Status", "Record", "Type", "State", "Changed", ""]}
             unsortableColumns={[3, 5]}
+            onRowClick={(recordId) => {
+              const found = data.unsynced.find((i) => i.recordId === recordId);
+              if (found) setSelectedUnsynced(found);
+            }}
             rows={data.unsynced.map((item) => [
               <Badge tone={ACTION_TONE[item.action]} key="s">
                 <ActionIcon action={item.action} /> {ACTION_LABEL[item.action]}
@@ -233,6 +546,30 @@ function HistoryPage() {
             ])}
           />
         )}
+        {data.unsynced.length > 0 && (
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+            <button
+              type="button"
+              className="button"
+              onClick={cancelAllUnsynced}
+              disabled={bulkCancelling || bulkPushing}
+              style={{ fontSize: "0.8125rem" }}
+            >
+              <X size={14} />
+              {bulkCancelling ? "Cancelling…" : "Cancel Syncing Unsynced"}
+            </button>
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={pushAllUnsynced}
+              disabled={bulkPushing || bulkCancelling}
+              style={{ fontSize: "0.8125rem" }}
+            >
+              <Send size={14} />
+              {bulkPushing ? "Pushing…" : "Push Unsynced"}
+            </button>
+          </div>
+        )}
       </Panel>
 
       <Panel
@@ -251,8 +588,13 @@ function HistoryPage() {
           />
         ) : (
           <DataTable
+            recordIds={data.recent.map((e) => e.id)}
             headers={["Status", "Record", "Type", "Direction", "When"]}
             unsortableColumns={[3]}
+            onRowClick={(recordId) => {
+              const found = data.recent.find((e) => e.id === recordId);
+              if (found) setSelectedSynced(found);
+            }}
             rows={data.recent.map((entry) => [
               <Badge tone={ACTION_TONE[entry.action]} key="s">
                 <ActionIcon action={entry.action} /> {ACTION_LABEL[entry.action]}
@@ -266,6 +608,66 @@ function HistoryPage() {
         )}
       </Panel>
 
+      {/* ── Unsynced item detail modal ── */}
+      {selectedUnsynced && (
+        <RecordDetailModal
+          resource={selectedUnsynced.resource}
+          payload={selectedUnsynced.payload}
+          title={`Unsynced ${RESOURCE_LABEL[selectedUnsynced.resource]}`}
+          subtitle={`${ACTION_LABEL[selectedUnsynced.action]} — ${cleanTitle(selectedUnsynced.title)}`}
+          openLabel={openTarget(selectedUnsynced.resource, selectedUnsynced.payload).label}
+          onOpenRecord={() => {
+            setSelectedUnsynced(null);
+            openRecordInPage(selectedUnsynced.resource, selectedUnsynced.recordId, selectedUnsynced.payload);
+          }}
+          onClose={() => {
+            setSelectedUnsynced(null);
+            setDiscardError(null);
+          }}
+          footerExtra={
+            <>
+              <button
+                type="button"
+                className="button button--danger"
+                onClick={() => setDiscardItem(selectedUnsynced)}
+                disabled={pushItemLoading || discarding}
+              >
+                <Trash2 size={14} /> Discard
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={() => void pushSingleItem(selectedUnsynced)}
+                disabled={pushItemLoading || discarding}
+              >
+                <Send size={14} /> {pushItemLoading ? "Pushing…" : "Push this item"}
+              </button>
+            </>
+          }
+        />
+      )}
+
+      {/* ── Synced item detail modal ── */}
+      {selectedSynced && (
+        <RecordDetailModal
+          resource={selectedSynced.resource}
+          payload={selectedSynced.payload}
+          title={`Synced ${RESOURCE_LABEL[selectedSynced.resource]}`}
+          subtitle={`${ACTION_LABEL[selectedSynced.action]} · ` + (
+            selectedSynced.direction === "pull"
+              ? "Notion DB → App"
+              : "App → Notion DB"
+          )}
+          openLabel={openTarget(selectedSynced.resource, selectedSynced.payload).label}
+          onOpenRecord={() => {
+            setSelectedSynced(null);
+            openRecordInPage(selectedSynced.resource, selectedSynced.recordId, selectedSynced.payload);
+          }}
+          onClose={() => setSelectedSynced(null)}
+        />
+      )}
+
+      {/* ── Discard confirmation modal ── */}
       {discardItem && (
         <ConfirmModal
           {...discardCopy(discardItem)}
@@ -284,9 +686,7 @@ function HistoryPage() {
         />
       )}
       {discardError && (
-        <div className="save-notice" role="alert" style={{ marginTop: "0.5rem" }}>
-          {discardError}
-        </div>
+        <Toast tone="error" message={discardError} onDismiss={() => setDiscardError(null)} />
       )}
     </div>
   );

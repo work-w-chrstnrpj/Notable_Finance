@@ -1,6 +1,6 @@
 {
   "name": "notion-finance-service",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "description": "NestJS backend service for Notable Finance",
   "scripts": {

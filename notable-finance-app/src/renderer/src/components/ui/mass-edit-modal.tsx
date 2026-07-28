@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { Field } from "@/components/ui";
 import { parseNumberInput, parseOptionalNumberInput } from "@/lib/finance-helpers";
+import { todayIso } from "@/lib/date-range";
 
 export type MassEditFieldKind = "text" | "number" | "date" | "select" | "optionalNumber" | "optionalDate";
 
@@ -64,6 +65,8 @@ function MassEditModal({
   error,
   onClose,
   onApply,
+  presetRows,
+  showExpensePresets = false,
 }: {
   open: boolean;
   title: string;
@@ -74,13 +77,21 @@ function MassEditModal({
   onClose: () => void;
   /** Called with a sparse patch of selected field → coerced values. */
   onApply: (patch: Record<string, string | number | null>) => void | Promise<void>;
+  /** Pre-populate rows when the modal opens. Each entry selects a field key and fills a value. */
+  presetRows?: Array<{ fieldKey: string; rawValue: string }>;
+  /** Show Bulk CC Pay / Bulk Pasabuy Receive preset buttons in the footer (expense-specific). */
+  showExpensePresets?: boolean;
 }) {
   const [rows, setRows] = useState<RowState[]>(() => [newRow(fields[0]?.key ?? "")]);
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    setRows([newRow(fields[0]?.key ?? "")]);
+    if (presetRows && presetRows.length > 0) {
+      setRows(presetRows.map((p) => ({ id: newRow("").id, fieldKey: p.fieldKey, rawValue: p.rawValue })));
+    } else {
+      setRows([newRow(fields[0]?.key ?? "")]);
+    }
     setLocalError(null);
     // Reset only when the modal opens; field catalog is stable per page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,6 +101,23 @@ function MassEditModal({
     () => new Set(rows.map((r) => r.fieldKey).filter(Boolean)),
     [rows],
   );
+
+  function applyPresetCCPay() {
+    setRows([
+      { id: newRow("paymentStatus").id, fieldKey: "paymentStatus", rawValue: "Paid" },
+      { id: newRow("paidPeriod").id, fieldKey: "paidPeriod", rawValue: "1" },
+      { id: newRow("datePaid").id, fieldKey: "datePaid", rawValue: todayIso() },
+    ]);
+  }
+
+  function applyPresetPasabuy() {
+    setRows([
+      { id: newRow("pasabuyStatus").id, fieldKey: "pasabuyStatus", rawValue: "Payment fully received" },
+      { id: newRow("pasabuyDateOfPayment").id, fieldKey: "pasabuyDateOfPayment", rawValue: todayIso() },
+      { id: newRow("pasabuyAccountReceiverId").id, fieldKey: "pasabuyAccountReceiverId", rawValue: "" },
+      { id: newRow("pasabuyPaidPeriod").id, fieldKey: "pasabuyPaidPeriod", rawValue: "1" },
+    ]);
+  }
 
   if (!open) return null;
 
@@ -275,19 +303,33 @@ function MassEditModal({
           {displayError && <p className="mass-edit-error">{displayError}</p>}
         </div>
 
-        <div className="modal-panel__footer">
-          <button type="button" className="button" onClick={onClose} disabled={saving}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={handleApply}
-            disabled={saving}
-          >
-            {saving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
-            {saving ? "Applying…" : "Apply to selected"}
-          </button>
+        <div className="modal-panel__footer" style={{ justifyContent: showExpensePresets ? "space-between" : undefined }}>
+          <div style={{ display: "flex", gap: "0.375rem" }}>
+            {showExpensePresets && (
+              <>
+                <button type="button" className="button button--ghost" style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }} onClick={applyPresetCCPay} disabled={saving}>
+                  Bulk CC Pay
+                </button>
+                <button type="button" className="button button--ghost" style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }} onClick={applyPresetPasabuy} disabled={saving}>
+                  Bulk Pasabuy
+                </button>
+              </>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button type="button" className="button" onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={handleApply}
+              disabled={saving}
+            >
+              {saving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
+              {saving ? "Applying…" : "Apply to selected"}
+            </button>
+          </div>
         </div>
       </section>
     </div>

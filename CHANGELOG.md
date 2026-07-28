@@ -8,20 +8,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Sync button for explicit queued changes
-- Schema verification button after Notion integration key configuration
-- Email and Google sign-in authentication
-- PostgreSQL metadata persistence with Neon Free
-- Playwright E2E tests
+- Bulk CC Pay / Bulk Pasabuy quick-action presets in Bulk Edit modal
+- Pending edit navigation from History page to edit modals on Income/Expense/Workflow pages
+- Record detail modals in History page with field-level diff display
+- Push Unsynced / Cancel Syncing Unsynced bulk actions in History page
 
 ### Changed
-- Backend switched from development repository to live Notion API
-- Frontend data fetching migrated to React Query
+- Release v1.1.0
 
-### Fixed
-- Targeted cache invalidation for income/expense mutations
-- Stale-while-revalidate behavior for silent refetches
-- Optimistic UI updates for create/update/delete operations
+---
+
+## [1.1.0] - 2026-07-29
+
+### Added
+- Sync conflict display now distinguishes null (∅ empty) vs `""` blank vs literal values
+- Sync conflict field values resolved server-side (account/category FK UUIDs → display names)
+- Source account excluded from Transfer account dropdown
+- Transfer name prefill: "Transfer" (auto-negates grossIncome)
+- CC Payment name prefill: "CC Payment —"
+- Receipt font independently configurable via `receiptFont` in UiFontSettings (default "Instrument Serif")
+- Expense form validation: Account & Category required with red * and shake animation
+- Position-based → ID-based (UUID) refactor across data-table, income, expense, workflow, accounts pages for search-then-disable bug fix
+- Cover the expense feature: mass linking of CC expenses to CC Payment receipts via CoverExpensesModal
+- Unpaid Pasabuy view: Account column added between Name and Pasabuyer Balance
+- Bulk toolbar repositioned to prevent overlap with side nav
+- CoverExpensesModal UI refinement: custom radio indicators, tighter rows, + New ghost button
+- "Mass Edit" → "Bulk Edit" rename across expense and income pages
+- Bulk Edit modal preset quick-action buttons: Bulk CC Pay and Bulk Pasabuy
+- Toast notification system replacing inline save notices across expense, income, history, and finance-workspace pages
+- Sync success/failure toasts in finance-workspace (push, pull, full sync)
+- `receiptFont` CSS variable (`--font-receipt`) applied on receipt div
+- Database migration 0009: adds `payload` column to `activity_log` for full record payloads in history
+- History page: record detail modals with read-only form views and old→new diff display
+- Pending edit system for History→page auto-open edit modal navigation
+
+### Changed
+- Sync conflict display now clearly distinguishes null (∅ empty) vs `""` blank vs literal values
+- Account balance computation uses raw sums with single final rounding to prevent ±0.01 drift
+- `transactionAmount()` removes intermediate rounding for correctness
+- Filter state fully reset when switching Daily/Weekly/Monthly view mode
+- `selectedIds`/`disabledIds` changed from `Set<number>` to `Set<string>` (UUIDs) across all pages
+- Position-based row lookups replaced with ID-based `.find()` / `.filter()` throughout
+- Mass toolbar positioning centering changed from translateX to margin auto + width fit-content
 
 ## [0.2.0] - 2026-07-14
 

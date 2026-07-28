@@ -16,6 +16,7 @@ import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
 import { useShortcutAction } from "@/lib/shortcuts/context";
 import { applyIncomeTag, stripNotionTag, parseNumberInput, getIncomeGrossTotal, getIncomeCapitalExpenditureTotal, getIncomeNetTotal } from "@/lib/finance-helpers";
+import { consumePendingEdit } from "@/lib/pending-edit";
 import { computeRange, incomeModeToUnit } from "@/lib/date-range";
 import { calculateNetIncome, getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
@@ -51,7 +52,17 @@ function IncomePage({
   const categoryCell = (id: string) => {
     const c = incomeCategoryById.get(id);
     if (!c) return incomeCategoryNameById.get(id) ?? "—";
-    return (
+    function handleIncomeViewModeChange(nextViewMode: IncomeViewMode) {
+    // Reset all filters when view mode changes (Issue #3)
+    setAccountId("");
+    setCategoryId("");
+    setFilterActive(false);
+    setSearchActive(false);
+    setSearchQuery("");
+    onViewModeChange(nextViewMode);
+  }
+
+  return (
       <span className="cat-cell">
         <CategoryIcon icon={c.icon} />
         {c.source}
@@ -65,7 +76,17 @@ function IncomePage({
   const accountCell = (id: string | null | undefined) => {
     const a = accountById.get(id ?? "");
     if (!a) return accountNameById.get(id ?? "") ?? "—";
-    return (
+    function handleIncomeViewModeChange(nextViewMode: IncomeViewMode) {
+    // Reset all filters when view mode changes (Issue #3)
+    setAccountId("");
+    setCategoryId("");
+    setFilterActive(false);
+    setSearchActive(false);
+    setSearchQuery("");
+    onViewModeChange(nextViewMode);
+  }
+
+  return (
       <span className="cat-cell">
         <AccountIcon account={a} />
         {a.name}
@@ -87,8 +108,8 @@ function IncomePage({
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [disabledIds, setDisabledIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set());
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled, settings, ready: settingsReady, updateSettings } = useUiSettings();
   const [filtersHydrated, setFiltersHydrated] = useState(false);
@@ -143,8 +164,19 @@ function IncomePage({
       void refetch();
     };
     window.addEventListener(DATA_CHANGED_EVENT, handler);
-    return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
+    function handleIncomeViewModeChange(nextViewMode: IncomeViewMode) {
+    // Reset all filters when view mode changes (Issue #3)
+    setAccountId("");
+    setCategoryId("");
+    setFilterActive(false);
+    setSearchActive(false);
+    setSearchQuery("");
+    onViewModeChange(nextViewMode);
+  }
+
+  return () => window.removeEventListener(DATA_CHANGED_EVENT, handler);
   }, [refetch]);
+
 
   // Clear selection when view mode changes
   useEffect(() => {
@@ -209,7 +241,7 @@ function IncomePage({
   const hasSelection = selectedIds.size > 0;
   useShortcutAction(
     "mass.selectAll",
-    () => setSelectedIds(new Set(searchFilteredRecords.map((_, i) => i))),
+    () => setSelectedIds(new Set(searchFilteredRecords.map((r) => r.id).filter(Boolean))),
     !modalOpen,
   );
   useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
@@ -337,11 +369,11 @@ function IncomePage({
     setModal({ mode: "new", title: "New Income (Copy)" });
   }
 
-  function toggleRowSelect(rowIndex: number, selected: boolean) {
+  function toggleRowSelect(recordId: string, selected: boolean) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (selected) next.add(rowIndex);
-      else next.delete(rowIndex);
+      if (selected) next.add(recordId);
+      else next.delete(recordId);
       return next;
     });
   }
@@ -372,9 +404,7 @@ function IncomePage({
   );
 
   async function applyMassEdit(patch: Record<string, string | number | null>) {
-    const ids = Array.from(selectedIds)
-      .map((idx) => searchFilteredRecords[idx]?.id)
-      .filter((id): id is string => id != null);
+    const ids = Array.from(selectedIds).filter((id): id is string => id != null);
     if (ids.length === 0) {
       setMassEditOpen(false);
       setSelectedIds(new Set());
@@ -411,7 +441,7 @@ function IncomePage({
     }
   }
 
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print") {
+  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") {
     if (action === "edit") {
       if (selectedIds.size === 0) return;
       setMassEditError(null);
@@ -423,9 +453,9 @@ function IncomePage({
       const shouldDisable = action === "disable";
       setDisabledIds((prev) => {
         const next = new Set(prev);
-        for (const idx of selectedIds) {
-          if (shouldDisable) next.add(idx);
-          else next.delete(idx);
+        for (const id of selectedIds) {
+          if (shouldDisable) next.add(id);
+          else next.delete(id);
         }
         return next;
       });
@@ -434,9 +464,9 @@ function IncomePage({
     }
 
     if (action === "duplicate") {
-      const recordsToDuplicate = Array.from(selectedIds)
-        .map((idx) => visibleIncomeRecords[idx])
-        .filter((r): r is IncomeRecord => r != null);
+      const recordsToDuplicate = visibleIncomeRecords.filter(
+        (r) => selectedIds.has(r.id)
+      );
 
       if (recordsToDuplicate.length === 0) {
         setSelectedIds(new Set());
@@ -511,9 +541,7 @@ function IncomePage({
     }
 
     if (action === "delete") {
-      const idsToDelete = Array.from(selectedIds)
-        .map((idx) => visibleIncomeRecords[idx]?.id)
-        .filter((id): id is string => id != null);
+      const idsToDelete = Array.from(selectedIds).filter((id): id is string => id != null);
 
       if (idsToDelete.length === 0) {
         setSelectedIds(new Set());
@@ -589,8 +617,30 @@ function IncomePage({
   }
 
   const enabledIncomeRecords = searchFilteredRecords.filter(
-    (_, idx) => !disabledIds.has(idx),
+    (r) => !disabledIds.has(r.id),
   );
+
+  function handleIncomeViewModeChange(nextViewMode: IncomeViewMode) {
+    // Reset all filters when view mode changes (Issue #3)
+    setAccountId("");
+    setCategoryId("");
+    setFilterActive(false);
+    setSearchActive(false);
+    setSearchQuery("");
+    onViewModeChange(nextViewMode);
+  }
+
+  // Check for pending edit triggered by History page navigation
+  useEffect(() => {
+    const pending = consumePendingEdit("incomes");
+    if (pending && visibleIncomeRecords.length > 0) {
+      const record = visibleIncomeRecords.find((r) => r.id === pending.recordId);
+      if (record) {
+        openIncomeModal("edit", record.name, record.id);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleIncomeRecords.length]);
 
   return (
     <div className="page-stack">
@@ -664,7 +714,7 @@ function IncomePage({
         label="Income view"
         options={incomeViewModes.map((mode) => ({ label: mode, value: mode }))}
         value={viewMode}
-        onChange={(value) => onViewModeChange(value as IncomeViewMode)}
+        onChange={(value) => handleIncomeViewModeChange(value as IncomeViewMode)}
         shortcutId="view.filterTab"
       />
 
@@ -692,6 +742,7 @@ function IncomePage({
         ) : (
         <DataTable
           selectable
+          recordIds={searchFilteredRecords.map((r) => r.id)}
           selectedIds={selectedIds}
           disabledIds={disabledIds}
           onToggleSelect={toggleRowSelect}
@@ -699,9 +750,8 @@ function IncomePage({
           bulkDeleteLabel={deleteLabel}
           bulkDeleteDanger={hardDeleteEnabled}
           headers={["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]}
-          rowClassName={(rowIndex) => {
-            const record = visibleIncomeRecords[rowIndex];
-            if (record && pendingIds.has(record.id)) {
+          rowClassName={(recordId) => {
+            if (recordId && pendingIds.has(recordId)) {
               return "record-pending record-pending-appear";
             }
             return undefined;
@@ -733,8 +783,8 @@ function IncomePage({
               />,
             ],
           ]}
-          onRowClick={(rowIndex) => {
-            const record = visibleIncomeRecords[rowIndex];
+          onRowClick={(recordId) => {
+            const record = visibleIncomeRecords.find((r) => r.id === recordId);
             if (record) {
               openIncomeModal("edit", record.name, record.id);
             }
@@ -744,9 +794,7 @@ function IncomePage({
       </Panel>
 
       {saveNotice && (
-        <div className="save-notice" style={{ padding: "0.75rem 1rem", borderRadius: 8, background: "var(--color-warning-bg, #fef3c7)", color: "var(--color-warning-text, #92400e)", marginBottom: "0.5rem", fontSize: "0.875rem", cursor: "pointer" }} onClick={() => setSaveNotice(null)}>
-          {saveNotice}
-        </div>
+        <Toast key={saveNotice} tone="info" duration={4000} message={saveNotice} onDismiss={() => setSaveNotice(null)} />
       )}
 
       <FormModal
@@ -829,8 +877,8 @@ function IncomePage({
       </FormModal>
       <MassEditModal
         open={massEditOpen}
-        title={`Mass edit ${selectedIds.size} income${selectedIds.size === 1 ? "" : "s"}`}
-        subtitle="Name cannot be mass-edited. Add one or more fields, set the new value, then apply to every selected row."
+        title={`Bulk edit ${selectedIds.size} income${selectedIds.size === 1 ? "" : "s"}`}
+        subtitle="Name cannot be bulk-edited. Add one or more fields, set the new value, then apply to every selected row."
         fields={massEditFields}
         saving={massEditSaving}
         error={massEditError}
