@@ -779,6 +779,8 @@ export type EventChannel =
   | 'shortcut:menu'
   /** Auto-updater download progress and completion. */
   | 'updater:progress'
+  /** Auto-updater manual download fallback (macOS unsigned code-signature error). */
+  | 'updater:manual-download'
 
 export type TabsCommand = 'new' | 'close' | 'next' | 'prev'
 

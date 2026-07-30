@@ -103,7 +103,7 @@ function PageContentPanel({
               disabled={saving || markdown.length === 0}
               title="Clear the page content (the page itself is kept)"
             >
-              <Eraser size={15} />
+              <Eraser size={16} />
               Clear
             </button>
             <button
@@ -112,7 +112,7 @@ function PageContentPanel({
               onClick={() => setShowMarkdown(false)}
               disabled={saving}
             >
-              <Eye size={15} />
+              <Eye size={16} />
               Preview
             </button>
             <button
@@ -121,7 +121,7 @@ function PageContentPanel({
               onClick={() => void onSave()}
               disabled={saving}
             >
-              {saving ? <RefreshCw size={15} className="spin" /> : <Save size={15} />}
+              {saving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
               {saving ? "Saving…" : "Save"}
             </button>
           </>
@@ -132,7 +132,7 @@ function PageContentPanel({
             onClick={() => setShowMarkdown(true)}
             disabled={loading}
           >
-            <Pencil size={15} />
+            <Pencil size={16} />
             Edit Markdown
           </button>
         )}

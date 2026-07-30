@@ -1,6 +1,6 @@
 
 import type { ReactNode } from "react";
-import { Copy, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { Copy, Info, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 export type ModalState = {
@@ -20,6 +20,7 @@ function FormModal({
   onSave,
   onDelete,
   onDuplicate,
+  onInfo,
   onClose,
   children,
 }: {
@@ -37,6 +38,8 @@ function FormModal({
   onDelete: () => void;
   /** Turn the current record into a prefilled new-record draft. */
   onDuplicate?: () => void;
+  /** Open the page-content modal for detail view. */
+  onInfo?: () => void;
   onClose: () => void;
   children: ReactNode;
 }) {

@@ -21,6 +21,8 @@ import { broadcast } from '../windows'
  */
 
 let updateDownloaded = false
+/** Cached available version from the most recent check (electron-updater AppUpdater does not expose this directly). */
+let latestAvailableVersion: string | null = null
 
 const GITHUB_RELEASE_URL =
   'https://github.com/work-w-chrstnrpj/Notable_Finance/releases/latest'
@@ -45,9 +47,10 @@ export function initUpdater(): void {
     console.log('[updater] Checking for updates…')
   )
 
-  autoUpdater.on('update-available', (info) =>
+  autoUpdater.on('update-available', (info) => {
+    latestAvailableVersion = info.version
     console.log(`[updater] Update available: v${info.version}`)
-  )
+  })
 
   autoUpdater.on('update-not-available', () =>
     console.log('[updater] No update available')
@@ -81,7 +84,7 @@ export function initUpdater(): void {
     if (isMacSignatureError(msg)) {
       broadcast('updater:manual-download', {
         releaseUrl: GITHUB_RELEASE_URL,
-        version: autoUpdater.availableVersion ?? 'latest',
+        version: latestAvailableVersion ?? 'latest',
       } satisfies ManualDownloadEvent)
       return
     }
@@ -117,9 +120,9 @@ export async function checkForUpdatesNow(): Promise<{
     if (isMacSignatureError(msg)) {
       broadcast('updater:manual-download', {
         releaseUrl: GITHUB_RELEASE_URL,
-        version: autoUpdater.availableVersion ?? 'latest',
+        version: latestAvailableVersion ?? 'latest',
       } satisfies ManualDownloadEvent)
-      return { updateAvailable: false, version: autoUpdater.availableVersion ?? undefined }
+      return { updateAvailable: false, version: latestAvailableVersion ?? undefined }
     }
     return {
       updateAvailable: false,

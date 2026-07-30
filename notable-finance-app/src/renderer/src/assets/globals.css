@@ -2819,28 +2819,25 @@ th:last-child .th-sort {
 /* Page Content Panel */
 .page-content {
   display: grid;
-  gap: 14px;
+  grid-template-rows: auto 1fr auto;
+  gap: 8px;
   height: 100%;
   width: 100%;
   min-width: 0;
 }
 
 .page-content__status {
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: var(--surface-muted);
   color: var(--ink-muted);
   font-size: 12px;
+  line-height: 1.4;
 }
 
 .page-content__status[data-dirty="true"] {
-  background: var(--amber-soft);
   color: var(--amber);
 }
 
 .page-content__body {
-  flex: 1;
-  min-height: 240px;
+  min-height: 140px;
   overflow-y: auto;
 }
 
@@ -2848,14 +2845,14 @@ th:last-child .th-sort {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 240px;
+  height: 140px;
   color: var(--ink-muted);
   font-size: 14px;
 }
 
 .page-content__editor {
   width: 100%;
-  min-height: 240px;
+  min-height: 140px;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--input-bg);
@@ -2886,13 +2883,15 @@ th:last-child .th-sort {
 .page-content__actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 6px;
 }
 
 .page-content__actions .button {
-  min-height: 32px;
-  font-size: 13px;
-  padding: 5px 14px;
+  min-height: 30px;
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  gap: 5px;
 }
 
 /* Dark theme adjustments */
