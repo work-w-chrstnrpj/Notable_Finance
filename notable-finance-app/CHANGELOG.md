@@ -5,6 +5,32 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-07-30
+
+### Added
+- Page Content panel: edit a record's Notion page body as Markdown with live preview,
+  local-first save, and push-to-Notion on next sync
+- Cover Expense → Bulk CC Payment workflow in expense page
+
+### Changed
+- Page Content button layout: buttons downsized, pushed to bottom of modal,
+  status bar collapsed to a single compact row
+- App icon updated to new logo (1024×1024, resized from 1250×1250 source)
+- Favicon added to renderer HTML
+
+### Fixed
+- Unsigned macOS auto-update no longer shows error toast — gracefully falls back
+  to a manual download link pointing to the latest GitHub Release
+- `EventChannel` type missing `updater:manual-download` — channel is now recognized
+  across preload, settings, and main process
+- `form-modals.tsx` missing `onInfo` prop and `Info` import — page content button
+  now renders correctly on record modals
+- `updater/index.ts` referencing `autoUpdater.availableVersion` which does not exist
+  on `electron-updater` v6 — replaced with locally cached version from `update-available` event
+- `remark-gfm` / `rehype-raw` not declared as dependencies — properly added to package.json
+- Product name changed from `Notable Finance` to `Notable-Finance` (hyphenated) to
+  match expected artifact naming in electron-builder outputs
+
 ## [1.1.0] - 2026-07-29
 
 ### Added
@@ -148,6 +174,7 @@ and manual "Check for Updates" in Settings → Updates.
 
 Internal development milestone (not publicly released).
 
+[1.1.1]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.1.1
 [1.1.0]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.1.0
 [1.0.0]: https://github.com/work-w-chrstnrpj/Notable_Finance/releases/tag/v1.0.0
 [0.1.0]: https://example.com/notable-finance/releases/tag/v0.1.0
