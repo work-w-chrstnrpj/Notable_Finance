@@ -1,0 +1,21 @@
+{
+  "projectRoot": "C:/Users/christian.paje/Documents/Project BBB/notion-finance/notable-finance-app",
+  "batchFiles": [
+    {"path": "CHANGELOG.md", "language": "markdown", "sizeLines": 153, "fileCategory": "docs"},
+    {"path": "README.md", "language": "markdown", "sizeLines": 136, "fileCategory": "docs"},
+    {"path": "electron-builder.yml", "language": "yaml", "sizeLines": 63, "fileCategory": "config"},
+    {"path": "package.json", "language": "json", "sizeLines": 57, "fileCategory": "config"},
+    {"path": "tsconfig.json", "language": "json", "sizeLines": 7, "fileCategory": "config"},
+    {"path": "tsconfig.node.json", "language": "json", "sizeLines": 26, "fileCategory": "config"},
+    {"path": "tsconfig.web.json", "language": "json", "sizeLines": 29, "fileCategory": "config"}
+  ],
+  "batchImportData": {
+    "CHANGELOG.md": [],
+    "README.md": [],
+    "electron-builder.yml": [],
+    "package.json": [],
+    "tsconfig.json": [],
+    "tsconfig.node.json": [],
+    "tsconfig.web.json": []
+  }
+}

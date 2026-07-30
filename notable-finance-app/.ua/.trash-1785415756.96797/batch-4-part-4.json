@@ -1,0 +1,736 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/main/chat/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/main/chat/index.ts",
+      "summary": "Barrel module that re-exports all chat subsystem public symbols: orchestrator, credentials, threads, models, tools, drafts, confirm, overlays, expense-profile, and apple.",
+      "tags": ["barrel", "re-export", "chat"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/models.ts",
+      "type": "file",
+      "name": "models.ts",
+      "filePath": "src/main/chat/models.ts",
+      "summary": "Chat provider model definitions, curated model lists, and utility functions for provider detection, model normalization, and base URL resolution.",
+      "tags": ["service", "config", "provider", "model", "chat"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:listChatProviders",
+      "type": "function",
+      "name": "listChatProviders",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [196, 198],
+      "summary": "Returns all configured chat provider definitions.",
+      "tags": ["service", "query", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:getChatProvider",
+      "type": "function",
+      "name": "getChatProvider",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [200, 203],
+      "summary": "Gets a single provider definition by ID.",
+      "tags": ["service", "query", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:resolveChatBaseUrl",
+      "type": "function",
+      "name": "resolveChatBaseUrl",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [205, 208],
+      "summary": "Normalizes a chat base URL by trimming whitespace and trailing slashes.",
+      "tags": ["utility", "url", "normalization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:baseUrlForProviderPreset",
+      "type": "function",
+      "name": "baseUrlForProviderPreset",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [210, 221],
+      "summary": "Resolves the base URL for a provider preset, falling back to custom URL or the preset default.",
+      "tags": ["utility", "url", "resolution"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:providerPresetFromBaseUrl",
+      "type": "function",
+      "name": "providerPresetFromBaseUrl",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [224, 232],
+      "summary": "Detects which provider preset a base URL belongs to by matching known prefixes.",
+      "tags": ["utility", "detection", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:modelsForProvider",
+      "type": "function",
+      "name": "modelsForProvider",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [234, 237],
+      "summary": "Returns the curated model list for a given provider ID.",
+      "tags": ["service", "query", "model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:defaultModelForProvider",
+      "type": "function",
+      "name": "defaultModelForProvider",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [239, 242],
+      "summary": "Returns the default model ID for a given provider.",
+      "tags": ["service", "query", "model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:headersForProvider",
+      "type": "function",
+      "name": "headersForProvider",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [244, 246],
+      "summary": "Returns custom HTTP headers for a given provider, if any.",
+      "tags": ["utility", "provider", "http"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:normalizeChatModelId",
+      "type": "function",
+      "name": "normalizeChatModelId",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [252, 262],
+      "summary": "Normalizes a model ID string by lowercasing and replacing separators.",
+      "tags": ["utility", "normalization", "model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:pickModelForProviderList",
+      "type": "function",
+      "name": "pickModelForProviderList",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [268, 276],
+      "summary": "Selects the best model from a provider list matching a current ID, with fallback.",
+      "tags": ["utility", "selection", "model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:detectProviderFromKey",
+      "type": "function",
+      "name": "detectProviderFromKey",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [284, 294],
+      "summary": "Detects the provider ID from an API key prefix pattern.",
+      "tags": ["utility", "detection", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:decorateRemoteModels",
+      "type": "function",
+      "name": "decorateRemoteModels",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [301, 322],
+      "summary": "Decorates remote model IDs with display labels and free status from curated list.",
+      "tags": ["utility", "formatting", "model"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/models.ts:coerceModelForProvider",
+      "type": "function",
+      "name": "coerceModelForProvider",
+      "filePath": "src/main/chat/models.ts",
+      "lineRange": [325, 333],
+      "summary": "Coerces a model ID into a valid one for the given provider, with fallback to default.",
+      "tags": ["utility", "coercion", "model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/orchestrator.ts",
+      "type": "file",
+      "name": "orchestrator.ts",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "summary": "Chat message orchestrator that coordinates skill routing, tool execution loops, Apple read-only fallback, system prompt assembly, and message persistence.",
+      "tags": ["service", "orchestration", "chat", "core"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:getChatStatus",
+      "type": "function",
+      "name": "getChatStatus",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [97, 116],
+      "summary": "Returns current chat status including provider config, Apple availability, and credential state.",
+      "tags": ["service", "status", "chat"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:isAppleOs",
+      "type": "function",
+      "name": "isAppleOs",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [118, 120],
+      "summary": "Checks if the current platform is macOS.",
+      "tags": ["utility", "platform", "detection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:listRemoteModels",
+      "type": "function",
+      "name": "listRemoteModels",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [126, 137],
+      "summary": "Fetches and decorates remote model IDs for a given credential.",
+      "tags": ["service", "query", "model"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:temperatureForOverlay",
+      "type": "function",
+      "name": "temperatureForOverlay",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [145, 157],
+      "summary": "Selects the temperature setting based on active overlay type.",
+      "tags": ["utility", "config", "llm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:buildHistoryMessages",
+      "type": "function",
+      "name": "buildHistoryMessages",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [169, 192],
+      "summary": "Builds history message array for the LLM, filtering and replaying memo context.",
+      "tags": ["utility", "context", "llm"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:collectDraft",
+      "type": "function",
+      "name": "collectDraft",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [201, 219],
+      "summary": "Collects a draft from tool results into a bucket, deduplicating by draft ID.",
+      "tags": ["utility", "draft", "collection"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:runToolLoop",
+      "type": "function",
+      "name": "runToolLoop",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [244, 390],
+      "summary": "Executes multi-turn tool calling loop: invoke tool, collect results, feed back to LLM until done.",
+      "tags": ["service", "loop", "tool-execution"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:buildContextMemo",
+      "type": "function",
+      "name": "buildContextMemo",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [397, 408],
+      "summary": "Builds a memo string summarizing pending drafts and tool names for LLM context.",
+      "tags": ["utility", "context", "llm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/orchestrator.ts:sendChatMessage",
+      "type": "function",
+      "name": "sendChatMessage",
+      "filePath": "src/main/chat/orchestrator.ts",
+      "lineRange": [410, 616],
+      "summary": "Sends a chat message through the full pipeline: skill routing, Apple probe, tool loop, system prompt assembly, and provider call.",
+      "tags": ["service", "core", "chat", "orchestration"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/main/chat/overlays/catalog.ts",
+      "type": "file",
+      "name": "catalog.ts",
+      "filePath": "src/main/chat/overlays/catalog.ts",
+      "summary": "Overlay catalog defining all slash-triggerable chat overlays, their system prompts, and cheer/budget threshold constants.",
+      "tags": ["config", "overlay", "chat", "constants"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/catalog.ts:isChatOverlayId",
+      "type": "function",
+      "name": "isChatOverlayId",
+      "filePath": "src/main/chat/overlays/catalog.ts",
+      "lineRange": [33, 35],
+      "summary": "Checks if a string is a valid overlay ID from the overlay set.",
+      "tags": ["utility", "validation", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/catalog.ts:overlaySystemPrompt",
+      "type": "function",
+      "name": "overlaySystemPrompt",
+      "filePath": "src/main/chat/overlays/catalog.ts",
+      "lineRange": [37, 63],
+      "summary": "Returns the system prompt for a given overlay ID, or empty string for unknown overlays.",
+      "tags": ["service", "prompt", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/overlays/heuristics.ts",
+      "type": "file",
+      "name": "heuristics.ts",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "summary": "Overlay heuristics for keyword cheer detection, budget guard analysis, approve quip generation, and cancel acknowledgment.",
+      "tags": ["service", "heuristics", "overlay", "chat"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:detectKeywordCheer",
+      "type": "function",
+      "name": "detectKeywordCheer",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [16, 19],
+      "summary": "Checks if text contains any cheer keywords from the catalog.",
+      "tags": ["utility", "detection", "cheer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:effectiveOverlayForPrompt",
+      "type": "function",
+      "name": "effectiveOverlayForPrompt",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [25, 33],
+      "summary": "Determines the effective overlay for system prompt assembly, combining active overlay with keyword cheer.",
+      "tags": ["service", "resolution", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:detectBudgetGuardFromToolResults",
+      "type": "function",
+      "name": "detectBudgetGuardFromToolResults",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [70, 74],
+      "summary": "Detects budget guard notes from tool execution results.",
+      "tags": ["service", "detection", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:formatBudgetGuardAppendix",
+      "type": "function",
+      "name": "formatBudgetGuardAppendix",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [76, 88],
+      "summary": "Formats a budget guard appendix string for appending to the assistant reply.",
+      "tags": ["utility", "formatting", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:buildApproveQuip",
+      "type": "function",
+      "name": "buildApproveQuip",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [90, 140],
+      "summary": "Generates a context-aware approval quip with overlay personality, budget guard notes, and cheer detection.",
+      "tags": ["service", "generation", "quip", "overlay"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/overlays/heuristics.ts:buildCancelAck",
+      "type": "function",
+      "name": "buildCancelAck",
+      "filePath": "src/main/chat/overlays/heuristics.ts",
+      "lineRange": [142, 145],
+      "summary": "Generates a cancellation acknowledgment message for a given overlay.",
+      "tags": ["service", "generation", "acknowledgment"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:listChatProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:getChatProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:resolveChatBaseUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:baseUrlForProviderPreset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:providerPresetFromBaseUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:modelsForProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:defaultModelForProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:headersForProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:normalizeChatModelId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:pickModelForProviderList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:detectProviderFromKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:decorateRemoteModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:coerceModelForProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:listChatProviders",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:getChatProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:resolveChatBaseUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:baseUrlForProviderPreset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:providerPresetFromBaseUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:modelsForProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:defaultModelForProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:headersForProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:normalizeChatModelId",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:pickModelForProviderList",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:detectProviderFromKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:decorateRemoteModels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/models.ts",
+      "target": "function:src/main/chat/models.ts:coerceModelForProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:getChatStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:isAppleOs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:listRemoteModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:temperatureForOverlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:buildHistoryMessages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:collectDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:runToolLoop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:buildContextMemo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:sendChatMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:getChatStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:isAppleOs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:listRemoteModels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/orchestrator.ts",
+      "target": "function:src/main/chat/orchestrator.ts:sendChatMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/catalog.ts",
+      "target": "function:src/main/chat/overlays/catalog.ts:isChatOverlayId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/catalog.ts",
+      "target": "function:src/main/chat/overlays/catalog.ts:overlaySystemPrompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/catalog.ts",
+      "target": "function:src/main/chat/overlays/catalog.ts:isChatOverlayId",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/catalog.ts",
+      "target": "function:src/main/chat/overlays/catalog.ts:overlaySystemPrompt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:detectKeywordCheer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:effectiveOverlayForPrompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:detectBudgetGuardFromToolResults",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:formatBudgetGuardAppendix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:buildApproveQuip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:buildCancelAck",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:detectKeywordCheer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:effectiveOverlayForPrompt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:detectBudgetGuardFromToolResults",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:formatBudgetGuardAppendix",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:buildApproveQuip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/heuristics.ts",
+      "target": "function:src/main/chat/overlays/heuristics.ts:buildCancelAck",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

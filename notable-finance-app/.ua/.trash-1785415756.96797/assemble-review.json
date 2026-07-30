@@ -1,0 +1,22 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 0,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "notes": [
+    "All 187 scan-result files have corresponding graph nodes — no missing file nodes",
+    "No dangling edges: all 1416 edges have valid source/target nodes",
+    "No ID/type prefix mismatches across all 829 nodes",
+    "Systemic quality gap — 187 nodes (159 function + 25 file + 3 class) from batch 5 lack `summary` fields because the batch-5 LLM analyzer used a different schema (language/lines/params/isExported instead of summary)",
+    "Same 187 nodes also lacked `complexity` in source batch data; merge script defaulted all to 'moderate'",
+    "Despite missing summaries, the 187 nodes have structural data (type, name, filePath, tags) and participate in 511 edges",
+    "Cross-batch edge gap check skipped: importMap recovery was skipped per merge script report (no importMap field in scan-result.json)",
+    "tested_by linker produced 17 edges from path-convention matching, tagging 17 production nodes as 'tested'",
+    "Complexity distribution reasonable: moderate 403 (48.6%), simple 331 (39.9%), complex 95 (11.5%)",
+    "Edge type distribution reasonable: contains 642, exports 525, calls 186, configures 26, tested_by 17, related 10, migrates 8, documents 2",
+    "No known issue types or unknown complexity values found",
+    "Recommendation: re-run batch-5 analysis with full schema (summary + complexity) to fill gaps"
+  ]
+}

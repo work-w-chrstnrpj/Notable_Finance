@@ -1,0 +1,1322 @@
+{
+  "batch": 5,
+  "part": 3,
+  "nodes": [
+    {
+      "id": "file:src/main/db/repositories.ts",
+      "type": "file",
+      "name": "repositories.ts",
+      "filePath": "src/main/db/repositories.ts",
+      "language": "typescript",
+      "lines": 645,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listIncomeCategories",
+      "type": "function",
+      "name": "listIncomeCategories",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 6,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listExpenseCategories",
+      "type": "function",
+      "name": "listExpenseCategories",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 6,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listIncomes",
+      "type": "function",
+      "name": "listIncomes",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "params"
+      ],
+      "lines": 22,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:getIncome",
+      "type": "function",
+      "name": "getIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:resolveWorkflowIncome",
+      "type": "function",
+      "name": "resolveWorkflowIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 16,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:createIncome",
+      "type": "function",
+      "name": "createIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "rawInput"
+      ],
+      "lines": 28,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:updateIncome",
+      "type": "function",
+      "name": "updateIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id",
+        "patch"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "type": "function",
+      "name": "softDeleteIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 12,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:hardDeleteIncome",
+      "type": "function",
+      "name": "hardDeleteIncome",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:balanceContext",
+      "type": "function",
+      "name": "balanceContext",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listExpenses",
+      "type": "function",
+      "name": "listExpenses",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "params"
+      ],
+      "lines": 32,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "type": "function",
+      "name": "listExpensesForCCCoverage",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 23,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:getExpense",
+      "type": "function",
+      "name": "getExpense",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:createExpense",
+      "type": "function",
+      "name": "createExpense",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 37,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:updateExpense",
+      "type": "function",
+      "name": "updateExpense",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id",
+        "patch"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "type": "function",
+      "name": "softDeleteExpense",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 12,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:hardDeleteExpense",
+      "type": "function",
+      "name": "hardDeleteExpense",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listScheduler",
+      "type": "function",
+      "name": "listScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "function",
+      "name": "getScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:createScheduler",
+      "type": "function",
+      "name": "createScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 24,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:updateScheduler",
+      "type": "function",
+      "name": "updateScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id",
+        "patch"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "type": "function",
+      "name": "softDeleteScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 12,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:hardDeleteScheduler",
+      "type": "function",
+      "name": "hardDeleteScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "type": "function",
+      "name": "hardDeleteRecord",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "table",
+        "id",
+        "resourceName"
+      ],
+      "lines": 27,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "type": "function",
+      "name": "generateFromScheduler",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "id"
+      ],
+      "lines": 18,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:listAccounts",
+      "type": "function",
+      "name": "listAccounts",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "includeInactive"
+      ],
+      "lines": 40,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:financeSnapshot",
+      "type": "function",
+      "name": "financeSnapshot",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/repositories.ts:applyPatch",
+      "type": "function",
+      "name": "applyPatch",
+      "filePath": "src/main/db/repositories.ts",
+      "params": [
+        "table",
+        "id",
+        "patch",
+        "columnMap"
+      ],
+      "lines": 20,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listIncomeCategories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listIncomeCategories",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpenseCategories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpenseCategories",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listIncomes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listIncomes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:resolveWorkflowIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:balanceContext",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:balanceContext",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpenses",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpenses",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:createScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:updateScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listAccounts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:listAccounts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:financeSnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:financeSnapshot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/repositories.ts",
+      "target": "function:src/main/db/repositories.ts:applyPatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listIncomeCategories",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 68
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenseCategories",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 75
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listIncomes",
+      "target": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 129
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getIncome",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 136
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getIncome",
+      "target": "function:src/main/db/mappers.ts:mapIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 140
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createIncome",
+      "target": "function:src/main/db/repositories.ts:resolveWorkflowIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 166
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createIncome",
+      "target": "function:src/main/domain/validation.ts:validateCreateIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 167
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createIncome",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 170
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createIncome",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 191
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateIncome",
+      "target": "function:src/main/domain/validation.ts:validateUpdateIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 206
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateIncome",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 207
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateIncome",
+      "target": "function:src/main/db/repositories.ts:applyPatch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 210
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateIncome",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 212
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateIncome",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 217
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 221
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 223
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteIncome",
+      "target": "function:src/main/db/repositories.ts:getIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 230
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteIncome",
+      "target": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 238
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenses",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 289
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenses",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 300
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenses",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 304
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenses",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 307
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpenses",
+      "target": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 310
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 324
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 328
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listExpensesForCCCoverage",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 334
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getExpense",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 346
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getExpense",
+      "target": "function:src/main/db/mappers.ts:mapExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 350
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createExpense",
+      "target": "function:src/main/domain/validation.ts:validateCreateExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 354
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createExpense",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 357
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createExpense",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 388
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateExpense",
+      "target": "function:src/main/domain/validation.ts:validateUpdateExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 413
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateExpense",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 414
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateExpense",
+      "target": "function:src/main/db/repositories.ts:applyPatch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 415
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateExpense",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 417
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 421
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 423
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteExpense",
+      "target": "function:src/main/db/repositories.ts:getExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 430
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteExpense",
+      "target": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 435
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listScheduler",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 444
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getScheduler",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 451
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:getScheduler",
+      "target": "function:src/main/db/mappers.ts:mapScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 455
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createScheduler",
+      "target": "function:src/main/domain/validation.ts:validateCreateScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 459
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createScheduler",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 462
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:createScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 480
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateScheduler",
+      "target": "function:src/main/domain/validation.ts:validateUpdateScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 494
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 495
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateScheduler",
+      "target": "function:src/main/db/repositories.ts:applyPatch",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 496
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:updateScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 498
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 502
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 504
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:softDeleteScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 511
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteScheduler",
+      "target": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 516
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 529
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 535
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:hardDeleteRecord",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 549
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "target": "function:src/main/db/repositories.ts:getScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 554
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "target": "function:src/main/db/repositories.ts:createExpense",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 559
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "target": "function:src/main/db/repositories.ts:updateScheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 568
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:generateFromScheduler",
+      "target": "function:src/main/domain/schedule.ts:advanceDate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 568
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listAccounts",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 576
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listAccounts",
+      "target": "function:src/main/db/repositories.ts:listExpenses",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 587
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listAccounts",
+      "target": "function:src/main/db/mappers.ts:mapAccount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 589
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listAccounts",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 598
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:listAccounts",
+      "target": "function:src/main/db/repositories.ts:balanceContext",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 598
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:financeSnapshot",
+      "target": "function:src/main/db/repositories.ts:listExpenses",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 621
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:financeSnapshot",
+      "target": "function:src/main/db/repositories.ts:listAccounts",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 621
+    },
+    {
+      "source": "function:src/main/db/repositories.ts:applyPatch",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 644
+    }
+  ]
+}

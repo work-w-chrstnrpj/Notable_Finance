@@ -1,0 +1,6298 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 24,
+  "filesSkipped": [
+    ".ua/.understandignore"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 24,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 23,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "results": [
+    {
+      "path": "drizzle.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 8,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "e2e/app.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 91,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "launch",
+          "startLine": 15,
+          "endLine": 16,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "launch",
+          "callee": "electron.launch",
+          "lineNumber": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "e2e/keyboard-shortcuts.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 392,
+      "nonEmptyLines": 354,
+      "functions": [
+        {
+          "name": "launch",
+          "startLine": 11,
+          "endLine": 15,
+          "params": []
+        },
+        {
+          "name": "keyCode",
+          "startLine": 53,
+          "endLine": 64,
+          "params": [
+            "key"
+          ]
+        },
+        {
+          "name": "keyValue",
+          "startLine": 66,
+          "endLine": 78,
+          "params": [
+            "key"
+          ]
+        },
+        {
+          "name": "dispatchKeyEvent",
+          "startLine": 81,
+          "endLine": 107,
+          "params": [
+            "rawKey",
+            "modifiers"
+          ]
+        },
+        {
+          "name": "press",
+          "startLine": 110,
+          "endLine": 114,
+          "params": [
+            "combo"
+          ]
+        },
+        {
+          "name": "waitForHash",
+          "startLine": 116,
+          "endLine": 118,
+          "params": [
+            "hash"
+          ]
+        },
+        {
+          "name": "goTo",
+          "startLine": 120,
+          "endLine": 123,
+          "params": [
+            "section",
+            "hash"
+          ]
+        },
+        {
+          "name": "selectFilterDropdownItem",
+          "startLine": 125,
+          "endLine": 144,
+          "params": [
+            "index",
+            "itemText"
+          ]
+        },
+        {
+          "name": "createTestExpense",
+          "startLine": 146,
+          "endLine": 162,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "launch",
+          "callee": "electron.launch",
+          "lineNumber": 12
+        },
+        {
+          "caller": "keyCode",
+          "callee": "/^[a-zA-Z]$/.test",
+          "lineNumber": 54
+        },
+        {
+          "caller": "keyCode",
+          "callee": "key.toUpperCase",
+          "lineNumber": 54
+        },
+        {
+          "caller": "keyCode",
+          "callee": "/^\\d$/.test",
+          "lineNumber": 55
+        },
+        {
+          "caller": "keyValue",
+          "callee": "/^Digit(\\d)$/.exec",
+          "lineNumber": 68
+        },
+        {
+          "caller": "keyValue",
+          "callee": "key.toLowerCase",
+          "lineNumber": 77
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "modifiers.split('+').filter",
+          "lineNumber": 83
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "modifiers.split",
+          "lineNumber": 83
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "win.evaluate",
+          "lineNumber": 89
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "window.dispatchEvent",
+          "lineNumber": 102
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "keyValue",
+          "lineNumber": 104
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "keyCode",
+          "lineNumber": 104
+        },
+        {
+          "caller": "dispatchKeyEvent",
+          "callee": "setTimeout",
+          "lineNumber": 106
+        },
+        {
+          "caller": "press",
+          "callee": "combo.split",
+          "lineNumber": 111
+        },
+        {
+          "caller": "press",
+          "callee": "parts.pop",
+          "lineNumber": 112
+        },
+        {
+          "caller": "press",
+          "callee": "dispatchKeyEvent",
+          "lineNumber": 113
+        },
+        {
+          "caller": "press",
+          "callee": "parts.join",
+          "lineNumber": 113
+        },
+        {
+          "caller": "waitForHash",
+          "callee": "win.waitForFunction",
+          "lineNumber": 117
+        },
+        {
+          "caller": "goTo",
+          "callee": "win.locator('.nav__item', { hasText: section }).click",
+          "lineNumber": 121
+        },
+        {
+          "caller": "goTo",
+          "callee": "win.locator",
+          "lineNumber": 121
+        },
+        {
+          "caller": "goTo",
+          "callee": "waitForHash",
+          "lineNumber": 122
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "win.locator('.modal-panel .filter-dropdown').nth",
+          "lineNumber": 126
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "win.locator",
+          "lineNumber": 126
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "dd.locator('.filter-dropdown__trigger').click",
+          "lineNumber": 127
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "dd.locator",
+          "lineNumber": 127
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "setTimeout",
+          "lineNumber": 128
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "win.evaluate",
+          "lineNumber": 129
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "document.querySelectorAll",
+          "lineNumber": 130
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "dd.querySelectorAll",
+          "lineNumber": 133
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "btn.textContent?.trim",
+          "lineNumber": 135
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "t.includes",
+          "lineNumber": 136
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "btn.click",
+          "lineNumber": 137
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "Array.from(items).map(b => b.textContent?.trim()).join",
+          "lineNumber": 141
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "Array.from(items).map",
+          "lineNumber": 141
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "Array.from",
+          "lineNumber": 141
+        },
+        {
+          "caller": "selectFilterDropdownItem",
+          "callee": "b.textContent?.trim",
+          "lineNumber": 141
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "goTo",
+          "lineNumber": 147
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "press",
+          "lineNumber": 148
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "expect(win.locator('.modal-panel')).toBeVisible",
+          "lineNumber": 149
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "expect",
+          "lineNumber": 149
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator",
+          "lineNumber": 149
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator('.modal-panel input').first",
+          "lineNumber": 150
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator",
+          "lineNumber": 150
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "descInput.fill",
+          "lineNumber": 151
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator('.modal-panel input[type=\"date\"]').first",
+          "lineNumber": 152
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator",
+          "lineNumber": 152
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "purchaseDateInput.fill",
+          "lineNumber": 153
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "selectFilterDropdownItem",
+          "lineNumber": 154
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "selectFilterDropdownItem",
+          "lineNumber": 155
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator",
+          "lineNumber": 156
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "amountInput.isVisible",
+          "lineNumber": 157
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "amountInput.fill",
+          "lineNumber": 158
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "press",
+          "lineNumber": 160
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "expect(win.locator('.modal-panel')).not.toBeVisible",
+          "lineNumber": 161
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "expect",
+          "lineNumber": 161
+        },
+        {
+          "caller": "createTestExpense",
+          "callee": "win.locator",
+          "lineNumber": 161
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "e2e/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 12,
+      "nonEmptyLines": 12,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "electron.vite.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 31,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "playwright.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 13,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/seed-dev.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 42,
+      "functions": [
+        {
+          "name": "userDataDir",
+          "startLine": 11,
+          "endLine": 16,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "userDataDir",
+          "callee": "join",
+          "lineNumber": 13
+        },
+        {
+          "caller": "userDataDir",
+          "callee": "homedir",
+          "lineNumber": 13
+        },
+        {
+          "caller": "userDataDir",
+          "callee": "join",
+          "lineNumber": 14
+        },
+        {
+          "caller": "userDataDir",
+          "callee": "join",
+          "lineNumber": 15
+        },
+        {
+          "caller": "userDataDir",
+          "callee": "join",
+          "lineNumber": 15
+        },
+        {
+          "caller": "userDataDir",
+          "callee": "homedir",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/apple.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 611,
+      "nonEmptyLines": 566,
+      "functions": [
+        {
+          "name": "getClient",
+          "startLine": 50,
+          "endLine": 68,
+          "params": []
+        },
+        {
+          "name": "shutdownAppleClient",
+          "startLine": 71,
+          "endLine": 82,
+          "params": []
+        },
+        {
+          "name": "invalidateAppleProbeCache",
+          "startLine": 85,
+          "endLine": 87,
+          "params": []
+        },
+        {
+          "name": "appleReasonUserCopy",
+          "startLine": 89,
+          "endLine": 130,
+          "params": [
+            "code"
+          ]
+        },
+        {
+          "name": "forceProbeResult",
+          "startLine": 132,
+          "endLine": 142,
+          "params": []
+        },
+        {
+          "name": "fromCompat",
+          "startLine": 144,
+          "endLine": 187,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "probeAppleReadOnly",
+          "startLine": 193,
+          "endLine": 247,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "isAppleReadOnlySkill",
+          "startLine": 250,
+          "endLine": 259,
+          "params": [
+            "skill"
+          ]
+        },
+        {
+          "name": "shouldUseAppleReadOnly",
+          "startLine": 261,
+          "endLine": 267,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "monthFromText",
+          "startLine": 269,
+          "endLine": 279,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "resolveAppleAskDate",
+          "startLine": 282,
+          "endLine": 302,
+          "params": [
+            "userText",
+            "selectedDate"
+          ]
+        },
+        {
+          "name": "isDayScopedExpenseAsk",
+          "startLine": 304,
+          "endLine": 309,
+          "params": [
+            "userText"
+          ]
+        },
+        {
+          "name": "isDayScopedIncomeAsk",
+          "startLine": 311,
+          "endLine": 316,
+          "params": [
+            "userText"
+          ]
+        },
+        {
+          "name": "appleEmptyDayAnswer",
+          "startLine": 319,
+          "endLine": 337,
+          "params": [
+            "tools"
+          ]
+        },
+        {
+          "name": "gatherAppleToolResults",
+          "startLine": 340,
+          "endLine": 425,
+          "params": [
+            "skill",
+            "userText",
+            "opts"
+          ]
+        },
+        {
+          "name": "runAppleReadOnlyTurn",
+          "startLine": 437,
+          "endLine": 543,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "formatForcedFallback",
+          "startLine": 545,
+          "endLine": 611,
+          "params": [
+            "skill",
+            "tools"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "APPLE_FORCE_ENV",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "shutdownAppleClient",
+          "line": 71,
+          "isDefault": false
+        },
+        {
+          "name": "invalidateAppleProbeCache",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "appleReasonUserCopy",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "probeAppleReadOnly",
+          "line": 193,
+          "isDefault": false
+        },
+        {
+          "name": "isAppleReadOnlySkill",
+          "line": 250,
+          "isDefault": false
+        },
+        {
+          "name": "shouldUseAppleReadOnly",
+          "line": 261,
+          "isDefault": false
+        },
+        {
+          "name": "resolveAppleAskDate",
+          "line": 282,
+          "isDefault": false
+        },
+        {
+          "name": "appleEmptyDayAnswer",
+          "line": 319,
+          "isDefault": false
+        },
+        {
+          "name": "gatherAppleToolResults",
+          "line": 340,
+          "isDefault": false
+        },
+        {
+          "name": "runAppleReadOnlyTurn",
+          "line": 437,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getClient",
+          "callee": "(async () => {\n      const mod = await import('apple-local-llm')\n      const client = mod.createClient({\n        onLog: (message: string) => {\n          console.log(`[apple-local-llm] ${message}`)\n        }\n      })\n      sharedClient = client\n      return client\n    })().catch",
+          "lineNumber": 53
+        },
+        {
+          "caller": "getClient",
+          "callee": "(async () => {\n      const mod = await import('apple-local-llm')\n      const client = mod.createClient({\n        onLog: (message: string) => {\n          console.log(`[apple-local-llm] ${message}`)\n        }\n      })\n      sharedClient = client\n      return client\n    })",
+          "lineNumber": 53
+        },
+        {
+          "caller": "getClient",
+          "callee": "import",
+          "lineNumber": 54
+        },
+        {
+          "caller": "getClient",
+          "callee": "mod.createClient",
+          "lineNumber": 55
+        },
+        {
+          "caller": "getClient",
+          "callee": "console.log",
+          "lineNumber": 57
+        },
+        {
+          "caller": "shutdownAppleClient",
+          "callee": "client.shutdown",
+          "lineNumber": 78
+        },
+        {
+          "caller": "shutdownAppleClient",
+          "callee": "console.warn",
+          "lineNumber": 80
+        },
+        {
+          "caller": "fromCompat",
+          "callee": "appleReasonUserCopy",
+          "lineNumber": 151
+        },
+        {
+          "caller": "fromCompat",
+          "callee": "appleReasonUserCopy",
+          "lineNumber": 176
+        },
+        {
+          "caller": "fromCompat",
+          "callee": "String",
+          "lineNumber": 184
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "osPlatform",
+          "lineNumber": 200
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "fromCompat",
+          "lineNumber": 204
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "forceProbeResult",
+          "lineNumber": 208
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "fromCompat",
+          "lineNumber": 211
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "Date.now",
+          "lineNumber": 221
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "osPlatform",
+          "lineNumber": 222
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "getClient",
+          "lineNumber": 228
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "client.compatibility.check",
+          "lineNumber": 229
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "fromCompat",
+          "lineNumber": 230
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "Date.now",
+          "lineNumber": 235
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "fromCompat",
+          "lineNumber": 238
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "String",
+          "lineNumber": 243
+        },
+        {
+          "caller": "probeAppleReadOnly",
+          "callee": "Date.now",
+          "lineNumber": 244
+        },
+        {
+          "caller": "shouldUseAppleReadOnly",
+          "callee": "isAppleReadOnlySkill",
+          "lineNumber": 266
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "text.match",
+          "lineNumber": 270
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "text.match",
+          "lineNumber": 272
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "resolveMonth",
+          "lineNumber": 273
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "currentMonth",
+          "lineNumber": 273
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "text.match",
+          "lineNumber": 274
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "resolveMonth",
+          "lineNumber": 277
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "currentMonth",
+          "lineNumber": 277
+        },
+        {
+          "caller": "monthFromText",
+          "callee": "currentMonth",
+          "lineNumber": 278
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "userText.match",
+          "lineNumber": 289
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "/\\b(today|today'?s)\\b/i.test",
+          "lineNumber": 292
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "selectedDate?.trim",
+          "lineNumber": 294
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "/^\\d{4}-\\d{2}-\\d{2}$/.test",
+          "lineNumber": 295
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "todayIso",
+          "lineNumber": 298
+        },
+        {
+          "caller": "resolveAppleAskDate",
+          "callee": "todayIso",
+          "lineNumber": 301
+        },
+        {
+          "caller": "isDayScopedExpenseAsk",
+          "callee": "/\\b(today|today'?s)\\b/i.test",
+          "lineNumber": 306
+        },
+        {
+          "caller": "isDayScopedExpenseAsk",
+          "callee": "/\\b(expense|expenses|spent|spend|bili|gastos)\\b/i.test",
+          "lineNumber": 307
+        },
+        {
+          "caller": "isDayScopedIncomeAsk",
+          "callee": "/\\b(today|today'?s)\\b/i.test",
+          "lineNumber": 313
+        },
+        {
+          "caller": "isDayScopedIncomeAsk",
+          "callee": "/\\b(income|incomes|earned|sahod|sweldo)\\b/i.test",
+          "lineNumber": 314
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "monthFromText",
+          "lineNumber": 346
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "userText.toLowerCase",
+          "lineNumber": 347
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "isDayScopedExpenseAsk",
+          "lineNumber": 348
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "isDayScopedIncomeAsk",
+          "lineNumber": 348
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "userText.match",
+          "lineNumber": 359
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "explainAppTopic",
+          "lineNumber": 362
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getMonthlyMonitoringSnapshot",
+          "lineNumber": 366
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getMonthlyMonitoringSnapshot",
+          "lineNumber": 373
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getUiSettings",
+          "lineNumber": 384
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "resolveAppleAskDate",
+          "lineNumber": 385
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "isDayScopedExpenseAsk",
+          "lineNumber": 391
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "isDayScopedIncomeAsk",
+          "lineNumber": 391
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "queryExpenses",
+          "lineNumber": 392
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "isDayScopedIncomeAsk",
+          "lineNumber": 397
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "queryIncomes",
+          "lineNumber": 398
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getDashboardSummary",
+          "lineNumber": 406
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "/\\b(budget|left|remaining|overspend)\\b/i.test",
+          "lineNumber": 407
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "userText.match(/\\b(?:in|for)\\s+([A-Za-z][A-Za-z0-9 &/-]{1,40})\\b/i)?.[1]?.trim",
+          "lineNumber": 409
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "userText.match",
+          "lineNumber": 409
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getCategoryBudgetStatus",
+          "lineNumber": 411
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "/\\b(monitor(?:ing)?|margin|gross margin)\\b/i.test",
+          "lineNumber": 417
+        },
+        {
+          "caller": "gatherAppleToolResults",
+          "callee": "getMonthlyMonitoringSnapshot",
+          "lineNumber": 418
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "gatherAppleToolResults",
+          "lineNumber": 452
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "String",
+          "lineNumber": 458
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "appleEmptyDayAnswer",
+          "lineNumber": 472
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "[\n    APPLE_SYSTEM,\n    '',\n    `SKILL: ${skill}`,\n    '',\n    'TOOL_RESULTS (JSON):',\n    JSON.stringify(toolResults),\n    '',\n    `USER QUESTION: ${userText}`\n  ].join",
+          "lineNumber": 477
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "JSON.stringify",
+          "lineNumber": 483
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "formatForcedFallback",
+          "lineNumber": 491
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "probeAppleReadOnly",
+          "lineNumber": 497
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "getClient",
+          "lineNumber": 510
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "client.responses.create",
+          "lineNumber": 511
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "create",
+          "lineNumber": 513
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "appleReasonUserCopy",
+          "lineNumber": 519
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "result.text.trim",
+          "lineNumber": 527
+        },
+        {
+          "caller": "runAppleReadOnlyTurn",
+          "callee": "String",
+          "lineNumber": 538
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "[\n      `Monitoring summary${mon.month ? ` — ${mon.month}` : ''} (force mode)`,\n      typeof mon.monthlyIncome === 'number' ? `Income: ₱${mon.monthlyIncome.toLocaleString()}` : null,\n      typeof mon.monthlyExpense === 'number'\n        ? `Expense: ₱${mon.monthlyExpense.toLocaleString()}`\n        : null,\n      typeof mon.grossMargin === 'number' ? `Margin: ₱${mon.grossMargin.toLocaleString()}` : null\n    ]\n      .filter((x) => x != null)\n      .join",
+          "lineNumber": 569
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "[\n      `Monitoring summary${mon.month ? ` — ${mon.month}` : ''} (force mode)`,\n      typeof mon.monthlyIncome === 'number' ? `Income: ₱${mon.monthlyIncome.toLocaleString()}` : null,\n      typeof mon.monthlyExpense === 'number'\n        ? `Expense: ₱${mon.monthlyExpense.toLocaleString()}`\n        : null,\n      typeof mon.grossMargin === 'number' ? `Margin: ₱${mon.grossMargin.toLocaleString()}` : null\n    ]\n      .filter",
+          "lineNumber": 569
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "mon.monthlyIncome.toLocaleString",
+          "lineNumber": 571
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "mon.monthlyExpense.toLocaleString",
+          "lineNumber": 573
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "mon.grossMargin.toLocaleString",
+          "lineNumber": 575
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "(\n      todayExp.totalAmount ?? 0\n    ).toLocaleString",
+          "lineNumber": 588
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "[\n      `Snapshot — ${dash.month ?? currentMonth()} (force mode)`,\n      typeof dash.totalIncome === 'number' ? `Income: ₱${dash.totalIncome.toLocaleString()}` : null,\n      typeof dash.totalExpense === 'number' ? `Expense: ₱${dash.totalExpense.toLocaleString()}` : null,\n      typeof dash.grossMargin === 'number' ? `Margin: ₱${dash.grossMargin.toLocaleString()}` : null\n    ]\n      .filter((x) => x != null)\n      .join",
+          "lineNumber": 601
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "[\n      `Snapshot — ${dash.month ?? currentMonth()} (force mode)`,\n      typeof dash.totalIncome === 'number' ? `Income: ₱${dash.totalIncome.toLocaleString()}` : null,\n      typeof dash.totalExpense === 'number' ? `Expense: ₱${dash.totalExpense.toLocaleString()}` : null,\n      typeof dash.grossMargin === 'number' ? `Margin: ₱${dash.grossMargin.toLocaleString()}` : null\n    ]\n      .filter",
+          "lineNumber": 601
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "currentMonth",
+          "lineNumber": 602
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "dash.totalIncome.toLocaleString",
+          "lineNumber": 603
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "dash.totalExpense.toLocaleString",
+          "lineNumber": 604
+        },
+        {
+          "caller": "formatForcedFallback",
+          "callee": "dash.grossMargin.toLocaleString",
+          "lineNumber": 605
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 11,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/confirm.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 163,
+      "nonEmptyLines": 153,
+      "functions": [
+        {
+          "name": "assertByokForWrites",
+          "startLine": 24,
+          "endLine": 42,
+          "params": []
+        },
+        {
+          "name": "persistAssistant",
+          "startLine": 49,
+          "endLine": 59,
+          "params": [
+            "threadId",
+            "content",
+            "payloadJson"
+          ]
+        },
+        {
+          "name": "overlayForThread",
+          "startLine": 61,
+          "endLine": 71,
+          "params": [
+            "threadId"
+          ]
+        },
+        {
+          "name": "cancelDraft",
+          "startLine": 73,
+          "endLine": 83,
+          "params": [
+            "draftId"
+          ]
+        },
+        {
+          "name": "confirmDraft",
+          "startLine": 85,
+          "endLine": 144,
+          "params": [
+            "draftId"
+          ]
+        },
+        {
+          "name": "changedResourceFromDraft",
+          "startLine": 146,
+          "endLine": 150,
+          "params": [
+            "draft"
+          ]
+        },
+        {
+          "name": "changedIdsFromResult",
+          "startLine": 152,
+          "endLine": 163,
+          "params": [
+            "draft",
+            "record"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "cancelDraft",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "confirmDraft",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "changedResourceFromDraft",
+          "line": 146,
+          "isDefault": false
+        },
+        {
+          "name": "changedIdsFromResult",
+          "line": 152,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "assertByokForWrites",
+          "callee": "listCredentials",
+          "lineNumber": 26
+        },
+        {
+          "caller": "assertByokForWrites",
+          "callee": "err.message.startsWith",
+          "lineNumber": 34
+        },
+        {
+          "caller": "persistAssistant",
+          "callee": "addMessage",
+          "lineNumber": 55
+        },
+        {
+          "caller": "overlayForThread",
+          "callee": "getThread",
+          "lineNumber": 63
+        },
+        {
+          "caller": "overlayForThread",
+          "callee": "resolveActiveOverlay",
+          "lineNumber": 64
+        },
+        {
+          "caller": "cancelDraft",
+          "callee": "getDraft",
+          "lineNumber": 76
+        },
+        {
+          "caller": "cancelDraft",
+          "callee": "markDraft",
+          "lineNumber": 79
+        },
+        {
+          "caller": "cancelDraft",
+          "callee": "buildCancelAck",
+          "lineNumber": 80
+        },
+        {
+          "caller": "cancelDraft",
+          "callee": "overlayForThread",
+          "lineNumber": 80
+        },
+        {
+          "caller": "cancelDraft",
+          "callee": "persistAssistant",
+          "lineNumber": 81
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "getDraft",
+          "lineNumber": 86
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "draft.missingRequired.join",
+          "lineNumber": 92
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "assertByokForWrites",
+          "lineNumber": 98
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "repo.createIncome",
+          "lineNumber": 103
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "toCreateIncomeInput",
+          "lineNumber": 103
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "repo.createExpense",
+          "lineNumber": 105
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "toCreateExpenseInput",
+          "lineNumber": 105
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "[String(draft.payload.id ?? '')].filter",
+          "lineNumber": 110
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "String",
+          "lineNumber": 110
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "toUpdateIncomePatch",
+          "lineNumber": 112
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "ids.map",
+          "lineNumber": 113
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "repo.updateIncome",
+          "lineNumber": 113
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "[String(draft.payload.id ?? '')].filter",
+          "lineNumber": 119
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "String",
+          "lineNumber": 119
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "toUpdateExpensePatch",
+          "lineNumber": 121
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "ids.map",
+          "lineNumber": 122
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "repo.updateExpense",
+          "lineNumber": 122
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "markDraft",
+          "lineNumber": 128
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "overlayForThread",
+          "lineNumber": 129
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "JSON.stringify",
+          "lineNumber": 130
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "buildApproveQuip",
+          "lineNumber": 131
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "detectKeywordCheer",
+          "lineNumber": 134
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "persistAssistant",
+          "lineNumber": 138
+        },
+        {
+          "caller": "confirmDraft",
+          "callee": "JSON.stringify",
+          "lineNumber": 141
+        },
+        {
+          "caller": "changedIdsFromResult",
+          "callee": "String",
+          "lineNumber": 155
+        },
+        {
+          "caller": "changedIdsFromResult",
+          "callee": "Array.isArray",
+          "lineNumber": 157
+        },
+        {
+          "caller": "changedIdsFromResult",
+          "callee": "record\n      .map((r) => (r && typeof r === 'object' && 'id' in r ? String((r as { id: string }).id) : ''))\n      .filter",
+          "lineNumber": 158
+        },
+        {
+          "caller": "changedIdsFromResult",
+          "callee": "record\n      .map",
+          "lineNumber": 158
+        },
+        {
+          "caller": "changedIdsFromResult",
+          "callee": "String",
+          "lineNumber": 159
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 4,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/credentials-vault.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 123,
+      "nonEmptyLines": 109,
+      "functions": [
+        {
+          "name": "vaultDir",
+          "startLine": 15,
+          "endLine": 19,
+          "params": []
+        },
+        {
+          "name": "keyPath",
+          "startLine": 21,
+          "endLine": 23,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "encodePayload",
+          "startLine": 25,
+          "endLine": 32,
+          "params": [
+            "secret"
+          ]
+        },
+        {
+          "name": "decodePayload",
+          "startLine": 34,
+          "endLine": 59,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "storeChatCredentialSecret",
+          "startLine": 61,
+          "endLine": 78,
+          "params": [
+            "id",
+            "secret"
+          ]
+        },
+        {
+          "name": "storeChatApiKey",
+          "startLine": 80,
+          "endLine": 91,
+          "params": [
+            "id",
+            "apiKey",
+            "opts"
+          ]
+        },
+        {
+          "name": "readChatCredentialSecret",
+          "startLine": 93,
+          "endLine": 97,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "readChatApiKey",
+          "startLine": 99,
+          "endLine": 101,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "readChatBaseUrl",
+          "startLine": 103,
+          "endLine": 105,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "readChatProviderId",
+          "startLine": 107,
+          "endLine": 109,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "hasChatApiKey",
+          "startLine": 111,
+          "endLine": 113,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "deleteChatApiKey",
+          "startLine": 115,
+          "endLine": 117,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "fingerprintApiKey",
+          "startLine": 119,
+          "endLine": 123,
+          "params": [
+            "apiKey"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "storeChatCredentialSecret",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "storeChatApiKey",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "readChatCredentialSecret",
+          "line": 93,
+          "isDefault": false
+        },
+        {
+          "name": "readChatApiKey",
+          "line": 99,
+          "isDefault": false
+        },
+        {
+          "name": "readChatBaseUrl",
+          "line": 103,
+          "isDefault": false
+        },
+        {
+          "name": "readChatProviderId",
+          "line": 107,
+          "isDefault": false
+        },
+        {
+          "name": "hasChatApiKey",
+          "line": 111,
+          "isDefault": false
+        },
+        {
+          "name": "deleteChatApiKey",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "fingerprintApiKey",
+          "line": 119,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "vaultDir",
+          "callee": "join",
+          "lineNumber": 16
+        },
+        {
+          "caller": "vaultDir",
+          "callee": "app.getPath",
+          "lineNumber": 16
+        },
+        {
+          "caller": "vaultDir",
+          "callee": "mkdirSync",
+          "lineNumber": 17
+        },
+        {
+          "caller": "keyPath",
+          "callee": "join",
+          "lineNumber": 22
+        },
+        {
+          "caller": "keyPath",
+          "callee": "vaultDir",
+          "lineNumber": 22
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "JSON.stringify",
+          "lineNumber": 26
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "secret.baseUrl.trim",
+          "lineNumber": 29
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "secret.baseUrl.trim().replace",
+          "lineNumber": 29
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "secret.baseUrl.trim",
+          "lineNumber": 29
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "secret.providerId.trim",
+          "lineNumber": 30
+        },
+        {
+          "caller": "encodePayload",
+          "callee": "secret.providerId.trim",
+          "lineNumber": 30
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "raw.trim",
+          "lineNumber": 35
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "trimmed.startsWith",
+          "lineNumber": 36
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "JSON.parse",
+          "lineNumber": 38
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.apiKey.trim",
+          "lineNumber": 43
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.baseUrl.trim",
+          "lineNumber": 45
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.baseUrl.trim().replace",
+          "lineNumber": 46
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.baseUrl.trim",
+          "lineNumber": 46
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.providerId.trim",
+          "lineNumber": 49
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.providerId.trim",
+          "lineNumber": 50
+        },
+        {
+          "caller": "decodePayload",
+          "callee": "parsed.apiKey.trim",
+          "lineNumber": 52
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "safeStorage.isEncryptionAvailable",
+          "lineNumber": 62
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "secret.apiKey.trim",
+          "lineNumber": 65
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "writeFileSync",
+          "lineNumber": 67
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "keyPath",
+          "lineNumber": 68
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "safeStorage.encryptString",
+          "lineNumber": 69
+        },
+        {
+          "caller": "storeChatCredentialSecret",
+          "callee": "encodePayload",
+          "lineNumber": 70
+        },
+        {
+          "caller": "storeChatApiKey",
+          "callee": "hasChatApiKey",
+          "lineNumber": 85
+        },
+        {
+          "caller": "storeChatApiKey",
+          "callee": "readChatCredentialSecret",
+          "lineNumber": 85
+        },
+        {
+          "caller": "storeChatApiKey",
+          "callee": "storeChatCredentialSecret",
+          "lineNumber": 86
+        },
+        {
+          "caller": "readChatCredentialSecret",
+          "callee": "keyPath",
+          "lineNumber": 94
+        },
+        {
+          "caller": "readChatCredentialSecret",
+          "callee": "existsSync",
+          "lineNumber": 95
+        },
+        {
+          "caller": "readChatCredentialSecret",
+          "callee": "decodePayload",
+          "lineNumber": 96
+        },
+        {
+          "caller": "readChatCredentialSecret",
+          "callee": "safeStorage.decryptString",
+          "lineNumber": 96
+        },
+        {
+          "caller": "readChatCredentialSecret",
+          "callee": "readFileSync",
+          "lineNumber": 96
+        },
+        {
+          "caller": "readChatApiKey",
+          "callee": "readChatCredentialSecret",
+          "lineNumber": 100
+        },
+        {
+          "caller": "readChatBaseUrl",
+          "callee": "readChatCredentialSecret",
+          "lineNumber": 104
+        },
+        {
+          "caller": "readChatProviderId",
+          "callee": "readChatCredentialSecret",
+          "lineNumber": 108
+        },
+        {
+          "caller": "hasChatApiKey",
+          "callee": "existsSync",
+          "lineNumber": 112
+        },
+        {
+          "caller": "hasChatApiKey",
+          "callee": "keyPath",
+          "lineNumber": 112
+        },
+        {
+          "caller": "deleteChatApiKey",
+          "callee": "rmSync",
+          "lineNumber": 116
+        },
+        {
+          "caller": "deleteChatApiKey",
+          "callee": "keyPath",
+          "lineNumber": 116
+        },
+        {
+          "caller": "fingerprintApiKey",
+          "callee": "apiKey.trim",
+          "lineNumber": 120
+        },
+        {
+          "caller": "fingerprintApiKey",
+          "callee": "t.slice",
+          "lineNumber": 122
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 9,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/credentials.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 175,
+      "nonEmptyLines": 164,
+      "functions": [
+        {
+          "name": "mapCred",
+          "startLine": 23,
+          "endLine": 45,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "listCredentials",
+          "startLine": 47,
+          "endLine": 55,
+          "params": []
+        },
+        {
+          "name": "getCredential",
+          "startLine": 57,
+          "endLine": 64,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "getDefaultCredentialId",
+          "startLine": 66,
+          "endLine": 75,
+          "params": []
+        },
+        {
+          "name": "createCredential",
+          "startLine": 77,
+          "endLine": 109,
+          "params": [
+            "name",
+            "apiKey",
+            "opts"
+          ]
+        },
+        {
+          "name": "updateCredential",
+          "startLine": 111,
+          "endLine": 149,
+          "params": [
+            "id",
+            "patch"
+          ]
+        },
+        {
+          "name": "setDefaultCredential",
+          "startLine": 151,
+          "endLine": 157,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "deleteCredential",
+          "startLine": 159,
+          "endLine": 175,
+          "params": [
+            "id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "listCredentials",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "getCredential",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "getDefaultCredentialId",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "createCredential",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "updateCredential",
+          "line": 111,
+          "isDefault": false
+        },
+        {
+          "name": "setDefaultCredential",
+          "line": 151,
+          "isDefault": false
+        },
+        {
+          "name": "deleteCredential",
+          "line": 159,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "mapCred",
+          "callee": "hasChatApiKey",
+          "lineNumber": 27
+        },
+        {
+          "caller": "mapCred",
+          "callee": "readChatCredentialSecret",
+          "lineNumber": 28
+        },
+        {
+          "caller": "mapCred",
+          "callee": "providerPresetFromBaseUrl",
+          "lineNumber": 30
+        },
+        {
+          "caller": "listCredentials",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, name, key_fingerprint, is_default, created_at\n       FROM chat_credentials ORDER BY is_default DESC, created_at ASC`\n    )\n    .all",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listCredentials",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listCredentials",
+          "callee": "getSqlite",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listCredentials",
+          "callee": "rows.map",
+          "lineNumber": 54
+        },
+        {
+          "caller": "getCredential",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, name, key_fingerprint, is_default, created_at FROM chat_credentials WHERE id = ?`\n    )\n    .get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getCredential",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getCredential",
+          "callee": "getSqlite",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getCredential",
+          "callee": "mapCred",
+          "lineNumber": 63
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite()\n    .prepare(`SELECT id FROM chat_credentials WHERE is_default = 1 LIMIT 1`)\n    .get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite()\n    .prepare(`SELECT id FROM chat_credentials ORDER BY created_at ASC LIMIT 1`)\n    .get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getDefaultCredentialId",
+          "callee": "getSqlite",
+          "lineNumber": 71
+        },
+        {
+          "caller": "createCredential",
+          "callee": "name.trim",
+          "lineNumber": 82
+        },
+        {
+          "caller": "createCredential",
+          "callee": "randomUUID",
+          "lineNumber": 84
+        },
+        {
+          "caller": "createCredential",
+          "callee": "Date.now",
+          "lineNumber": 85
+        },
+        {
+          "caller": "createCredential",
+          "callee": "fingerprintApiKey",
+          "lineNumber": 86
+        },
+        {
+          "caller": "createCredential",
+          "callee": "providerPresetFromBaseUrl",
+          "lineNumber": 88
+        },
+        {
+          "caller": "createCredential",
+          "callee": "baseUrlForProviderPreset",
+          "lineNumber": 92
+        },
+        {
+          "caller": "createCredential",
+          "callee": "storeChatCredentialSecret",
+          "lineNumber": 93
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite().prepare(`SELECT COUNT(*) AS c FROM chat_credentials`).get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 99
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite",
+          "lineNumber": 99
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO chat_credentials (id, name, key_fingerprint, is_default, created_at)\n       VALUES (?, ?, ?, ?, ?)`\n    )\n    .run",
+          "lineNumber": 102
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 102
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getSqlite",
+          "lineNumber": 102
+        },
+        {
+          "caller": "createCredential",
+          "callee": "getCredential",
+          "lineNumber": 108
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "getCredential",
+          "lineNumber": 115
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "patch.name.trim",
+          "lineNumber": 117
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "providerPresetFromBaseUrl",
+          "lineNumber": 126
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "baseUrlForProviderPreset",
+          "lineNumber": 131
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "patch.apiKey.trim",
+          "lineNumber": 133
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "storeChatApiKey",
+          "lineNumber": 134
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "fingerprintApiKey",
+          "lineNumber": 135
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "hasChatApiKey",
+          "lineNumber": 136
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "storeChatApiKey",
+          "lineNumber": 137
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "readChatApiKey",
+          "lineNumber": 137
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "hasChatApiKey",
+          "lineNumber": 141
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "getSqlite()\n    .prepare(`UPDATE chat_credentials SET name = ?, key_fingerprint = ? WHERE id = ?`)\n    .run",
+          "lineNumber": 145
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 145
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "getSqlite",
+          "lineNumber": 145
+        },
+        {
+          "caller": "updateCredential",
+          "callee": "getCredential",
+          "lineNumber": 148
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "getCredential",
+          "lineNumber": 152
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "getSqlite",
+          "lineNumber": 153
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "db.prepare(`UPDATE chat_credentials SET is_default = 0`).run",
+          "lineNumber": 154
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "db.prepare",
+          "lineNumber": 154
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "db.prepare(`UPDATE chat_credentials SET is_default = 1 WHERE id = ?`).run",
+          "lineNumber": 155
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "db.prepare",
+          "lineNumber": 155
+        },
+        {
+          "caller": "setDefaultCredential",
+          "callee": "getCredential",
+          "lineNumber": 156
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getCredential",
+          "lineNumber": 160
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "deleteChatApiKey",
+          "lineNumber": 161
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare(`DELETE FROM chat_credentials WHERE id = ?`).run",
+          "lineNumber": 162
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 162
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite",
+          "lineNumber": 162
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare(`UPDATE chat_threads SET credential_id = NULL WHERE credential_id = ?`).run",
+          "lineNumber": 163
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 163
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite",
+          "lineNumber": 163
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite()\n    .prepare(`SELECT id FROM chat_credentials WHERE is_default = 1 LIMIT 1`)\n    .get",
+          "lineNumber": 164
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 164
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite",
+          "lineNumber": 164
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite()\n      .prepare(`SELECT id FROM chat_credentials ORDER BY created_at ASC LIMIT 1`)\n      .get",
+          "lineNumber": 168
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite()\n      .prepare",
+          "lineNumber": 168
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite",
+          "lineNumber": 168
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare(`UPDATE chat_credentials SET is_default = 1 WHERE id = ?`).run",
+          "lineNumber": 172
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 172
+        },
+        {
+          "caller": "deleteCredential",
+          "callee": "getSqlite",
+          "lineNumber": 172
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 7,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/dates.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 138,
+      "nonEmptyLines": 124,
+      "functions": [
+        {
+          "name": "padMonth",
+          "startLine": 29,
+          "endLine": 31,
+          "params": [
+            "y",
+            "m"
+          ]
+        },
+        {
+          "name": "todayIso",
+          "startLine": 33,
+          "endLine": 38,
+          "params": [
+            "now"
+          ]
+        },
+        {
+          "name": "currentMonth",
+          "startLine": 40,
+          "endLine": 42,
+          "params": [
+            "now"
+          ]
+        },
+        {
+          "name": "shiftMonth",
+          "startLine": 45,
+          "endLine": 53,
+          "params": [
+            "month",
+            "delta"
+          ]
+        },
+        {
+          "name": "resolveMonth",
+          "startLine": 60,
+          "endLine": 93,
+          "params": [
+            "raw",
+            "now"
+          ]
+        },
+        {
+          "name": "requireMonth",
+          "startLine": 95,
+          "endLine": 103,
+          "params": [
+            "raw",
+            "now"
+          ]
+        },
+        {
+          "name": "padDay",
+          "startLine": 105,
+          "endLine": 107,
+          "params": [
+            "y",
+            "m",
+            "d"
+          ]
+        },
+        {
+          "name": "addDays",
+          "startLine": 109,
+          "endLine": 114,
+          "params": [
+            "iso",
+            "delta"
+          ]
+        },
+        {
+          "name": "resolveDate",
+          "startLine": 117,
+          "endLine": 128,
+          "params": [
+            "raw",
+            "now"
+          ]
+        },
+        {
+          "name": "requireDate",
+          "startLine": 130,
+          "endLine": 138,
+          "params": [
+            "raw",
+            "field",
+            "now"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "todayIso",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "currentMonth",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "shiftMonth",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "resolveMonth",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "requireMonth",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "resolveDate",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "requireDate",
+          "line": 130,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "padMonth",
+          "callee": "String(m).padStart",
+          "lineNumber": 30
+        },
+        {
+          "caller": "padMonth",
+          "callee": "String",
+          "lineNumber": 30
+        },
+        {
+          "caller": "todayIso",
+          "callee": "now.getFullYear",
+          "lineNumber": 34
+        },
+        {
+          "caller": "todayIso",
+          "callee": "String(now.getMonth() + 1).padStart",
+          "lineNumber": 35
+        },
+        {
+          "caller": "todayIso",
+          "callee": "String",
+          "lineNumber": 35
+        },
+        {
+          "caller": "todayIso",
+          "callee": "now.getMonth",
+          "lineNumber": 35
+        },
+        {
+          "caller": "todayIso",
+          "callee": "String(now.getDate()).padStart",
+          "lineNumber": 36
+        },
+        {
+          "caller": "todayIso",
+          "callee": "String",
+          "lineNumber": 36
+        },
+        {
+          "caller": "todayIso",
+          "callee": "now.getDate",
+          "lineNumber": 36
+        },
+        {
+          "caller": "currentMonth",
+          "callee": "padMonth",
+          "lineNumber": 41
+        },
+        {
+          "caller": "currentMonth",
+          "callee": "now.getFullYear",
+          "lineNumber": 41
+        },
+        {
+          "caller": "currentMonth",
+          "callee": "now.getMonth",
+          "lineNumber": 41
+        },
+        {
+          "caller": "shiftMonth",
+          "callee": "month.split",
+          "lineNumber": 46
+        },
+        {
+          "caller": "shiftMonth",
+          "callee": "Number",
+          "lineNumber": 47
+        },
+        {
+          "caller": "shiftMonth",
+          "callee": "Number",
+          "lineNumber": 48
+        },
+        {
+          "caller": "shiftMonth",
+          "callee": "Math.floor",
+          "lineNumber": 50
+        },
+        {
+          "caller": "shiftMonth",
+          "callee": "padMonth",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "raw.trim",
+          "lineNumber": 62
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "/^\\d{4}-\\d{2}$/.test",
+          "lineNumber": 64
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "t.toLowerCase",
+          "lineNumber": 66
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "currentMonth",
+          "lineNumber": 67
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "shiftMonth",
+          "lineNumber": 77
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "shiftMonth",
+          "lineNumber": 79
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "lower.match",
+          "lineNumber": 82
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "padMonth",
+          "lineNumber": 85
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "Number",
+          "lineNumber": 85
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "padMonth",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resolveMonth",
+          "callee": "now.getFullYear",
+          "lineNumber": 90
+        },
+        {
+          "caller": "requireMonth",
+          "callee": "resolveMonth",
+          "lineNumber": 96
+        },
+        {
+          "caller": "requireMonth",
+          "callee": "currentMonth",
+          "lineNumber": 96
+        },
+        {
+          "caller": "requireMonth",
+          "callee": "String",
+          "lineNumber": 99
+        },
+        {
+          "caller": "padDay",
+          "callee": "String(m).padStart",
+          "lineNumber": 106
+        },
+        {
+          "caller": "padDay",
+          "callee": "String",
+          "lineNumber": 106
+        },
+        {
+          "caller": "padDay",
+          "callee": "String(d).padStart",
+          "lineNumber": 106
+        },
+        {
+          "caller": "padDay",
+          "callee": "String",
+          "lineNumber": 106
+        },
+        {
+          "caller": "addDays",
+          "callee": "iso.split('-').map",
+          "lineNumber": 110
+        },
+        {
+          "caller": "addDays",
+          "callee": "iso.split",
+          "lineNumber": 110
+        },
+        {
+          "caller": "addDays",
+          "callee": "Date.UTC",
+          "lineNumber": 111
+        },
+        {
+          "caller": "addDays",
+          "callee": "dt.setUTCDate",
+          "lineNumber": 112
+        },
+        {
+          "caller": "addDays",
+          "callee": "dt.getUTCDate",
+          "lineNumber": 112
+        },
+        {
+          "caller": "addDays",
+          "callee": "padDay",
+          "lineNumber": 113
+        },
+        {
+          "caller": "addDays",
+          "callee": "dt.getUTCFullYear",
+          "lineNumber": 113
+        },
+        {
+          "caller": "addDays",
+          "callee": "dt.getUTCMonth",
+          "lineNumber": 113
+        },
+        {
+          "caller": "addDays",
+          "callee": "dt.getUTCDate",
+          "lineNumber": 113
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "raw.trim",
+          "lineNumber": 119
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "/^\\d{4}-\\d{2}-\\d{2}$/.test",
+          "lineNumber": 121
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "t.toLowerCase",
+          "lineNumber": 122
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "todayIso",
+          "lineNumber": 123
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "addDays",
+          "lineNumber": 125
+        },
+        {
+          "caller": "resolveDate",
+          "callee": "addDays",
+          "lineNumber": 126
+        },
+        {
+          "caller": "requireDate",
+          "callee": "resolveDate",
+          "lineNumber": 131
+        },
+        {
+          "caller": "requireDate",
+          "callee": "String",
+          "lineNumber": 134
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/drafts.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 305,
+      "nonEmptyLines": 284,
+      "functions": [
+        {
+          "name": "safeSqlite",
+          "startLine": 32,
+          "endLine": 38,
+          "params": []
+        },
+        {
+          "name": "parseJson",
+          "startLine": 40,
+          "endLine": 47,
+          "params": [
+            "raw",
+            "fallback"
+          ]
+        },
+        {
+          "name": "rowToDraft",
+          "startLine": 49,
+          "endLine": 68,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "persist",
+          "startLine": 70,
+          "endLine": 108,
+          "params": [
+            "draft"
+          ]
+        },
+        {
+          "name": "isPending",
+          "startLine": 113,
+          "endLine": 115,
+          "params": [
+            "d"
+          ]
+        },
+        {
+          "name": "reconcilePending",
+          "startLine": 122,
+          "endLine": 147,
+          "params": []
+        },
+        {
+          "name": "hydrate",
+          "startLine": 150,
+          "endLine": 170,
+          "params": []
+        },
+        {
+          "name": "putDraft",
+          "startLine": 172,
+          "endLine": 213,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "getDraft",
+          "startLine": 215,
+          "endLine": 218,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "listDrafts",
+          "startLine": 220,
+          "endLine": 239,
+          "params": [
+            "threadId"
+          ]
+        },
+        {
+          "name": "updateDraftSpec",
+          "startLine": 253,
+          "endLine": 274,
+          "params": [
+            "id",
+            "spec"
+          ]
+        },
+        {
+          "name": "markDraft",
+          "startLine": 276,
+          "endLine": 284,
+          "params": [
+            "id",
+            "status"
+          ]
+        },
+        {
+          "name": "updateDraftMissing",
+          "startLine": 286,
+          "endLine": 305,
+          "params": [
+            "id",
+            "patch"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "putDraft",
+          "line": 172,
+          "isDefault": false
+        },
+        {
+          "name": "getDraft",
+          "line": 215,
+          "isDefault": false
+        },
+        {
+          "name": "listDrafts",
+          "line": 220,
+          "isDefault": false
+        },
+        {
+          "name": "updateDraftSpec",
+          "line": 253,
+          "isDefault": false
+        },
+        {
+          "name": "markDraft",
+          "line": 276,
+          "isDefault": false
+        },
+        {
+          "name": "updateDraftMissing",
+          "line": 286,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "safeSqlite",
+          "callee": "getSqlite",
+          "lineNumber": 34
+        },
+        {
+          "caller": "parseJson",
+          "callee": "JSON.parse",
+          "lineNumber": 43
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 59
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 60
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 61
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 62
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 64
+        },
+        {
+          "caller": "rowToDraft",
+          "callee": "parseJson",
+          "lineNumber": 66
+        },
+        {
+          "caller": "persist",
+          "callee": "safeSqlite",
+          "lineNumber": 71
+        },
+        {
+          "caller": "persist",
+          "callee": "db.prepare(\n      `INSERT INTO chat_drafts\n         (id, thread_id, resource, action, kind, status, summary,\n          missing_required, warnings, payload, target_ids, computed_preview, display, created_at)\n       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n       ON CONFLICT(id) DO UPDATE SET\n         status = excluded.status,\n         summary = excluded.summary,\n         missing_required = excluded.missing_required,\n         warnings = excluded.warnings,\n         payload = excluded.payload,\n         target_ids = excluded.target_ids,\n         computed_preview = excluded.computed_preview,\n         display = excluded.display`\n    ).run",
+          "lineNumber": 74
+        },
+        {
+          "caller": "persist",
+          "callee": "db.prepare",
+          "lineNumber": 74
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 96
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 97
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 98
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 99
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 100
+        },
+        {
+          "caller": "persist",
+          "callee": "JSON.stringify",
+          "lineNumber": 101
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "Date.now",
+          "lineNumber": 124
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "drafts.values",
+          "lineNumber": 126
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "isPending",
+          "lineNumber": 127
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "drafts.set",
+          "lineNumber": 130
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "persist",
+          "lineNumber": 131
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "newestByGroup.get",
+          "lineNumber": 135
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "newestByGroup.set",
+          "lineNumber": 137
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "drafts.set",
+          "lineNumber": 143
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "persist",
+          "lineNumber": 144
+        },
+        {
+          "caller": "reconcilePending",
+          "callee": "newestByGroup.set",
+          "lineNumber": 145
+        },
+        {
+          "caller": "hydrate",
+          "callee": "safeSqlite",
+          "lineNumber": 152
+        },
+        {
+          "caller": "hydrate",
+          "callee": "db\n      .prepare(\n        `SELECT * FROM chat_drafts WHERE status IN ('needs_input', 'ready')\n         ORDER BY created_at ASC`\n      )\n      .all",
+          "lineNumber": 156
+        },
+        {
+          "caller": "hydrate",
+          "callee": "db\n      .prepare",
+          "lineNumber": 156
+        },
+        {
+          "caller": "hydrate",
+          "callee": "drafts.has",
+          "lineNumber": 163
+        },
+        {
+          "caller": "hydrate",
+          "callee": "drafts.set",
+          "lineNumber": 163
+        },
+        {
+          "caller": "hydrate",
+          "callee": "rowToDraft",
+          "lineNumber": 163
+        },
+        {
+          "caller": "hydrate",
+          "callee": "reconcilePending",
+          "lineNumber": 166
+        },
+        {
+          "caller": "putDraft",
+          "callee": "hydrate",
+          "lineNumber": 177
+        },
+        {
+          "caller": "putDraft",
+          "callee": "randomUUID",
+          "lineNumber": 179
+        },
+        {
+          "caller": "putDraft",
+          "callee": "Date.now",
+          "lineNumber": 180
+        },
+        {
+          "caller": "putDraft",
+          "callee": "drafts.set",
+          "lineNumber": 205
+        },
+        {
+          "caller": "putDraft",
+          "callee": "persist",
+          "lineNumber": 206
+        },
+        {
+          "caller": "putDraft",
+          "callee": "drafts.set",
+          "lineNumber": 210
+        },
+        {
+          "caller": "putDraft",
+          "callee": "persist",
+          "lineNumber": 211
+        },
+        {
+          "caller": "getDraft",
+          "callee": "hydrate",
+          "lineNumber": 216
+        },
+        {
+          "caller": "getDraft",
+          "callee": "drafts.get",
+          "lineNumber": 217
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "hydrate",
+          "lineNumber": 221
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "Date.now",
+          "lineNumber": 222
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "[...drafts.values()]\n    .filter((d) => isPending(d) && now - d.createdAt <= DRAFT_TTL_MS)\n    .filter((d) => (threadId ? d.threadId === threadId : true))\n    .sort",
+          "lineNumber": 223
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "[...drafts.values()]\n    .filter((d) => isPending(d) && now - d.createdAt <= DRAFT_TTL_MS)\n    .filter",
+          "lineNumber": 223
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "[...drafts.values()]\n    .filter",
+          "lineNumber": 223
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "drafts.values",
+          "lineNumber": 223
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "isPending",
+          "lineNumber": 224
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "seen.has",
+          "lineNumber": 234
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "seen.add",
+          "lineNumber": 235
+        },
+        {
+          "caller": "listDrafts",
+          "callee": "out.push",
+          "lineNumber": 236
+        },
+        {
+          "caller": "updateDraftSpec",
+          "callee": "hydrate",
+          "lineNumber": 254
+        },
+        {
+          "caller": "updateDraftSpec",
+          "callee": "drafts.get",
+          "lineNumber": 255
+        },
+        {
+          "caller": "updateDraftSpec",
+          "callee": "drafts.set",
+          "lineNumber": 271
+        },
+        {
+          "caller": "updateDraftSpec",
+          "callee": "persist",
+          "lineNumber": 272
+        },
+        {
+          "caller": "markDraft",
+          "callee": "hydrate",
+          "lineNumber": 277
+        },
+        {
+          "caller": "markDraft",
+          "callee": "drafts.get",
+          "lineNumber": 278
+        },
+        {
+          "caller": "markDraft",
+          "callee": "drafts.set",
+          "lineNumber": 281
+        },
+        {
+          "caller": "markDraft",
+          "callee": "persist",
+          "lineNumber": 282
+        },
+        {
+          "caller": "updateDraftMissing",
+          "callee": "hydrate",
+          "lineNumber": 290
+        },
+        {
+          "caller": "updateDraftMissing",
+          "callee": "drafts.get",
+          "lineNumber": 291
+        },
+        {
+          "caller": "updateDraftMissing",
+          "callee": "drafts.set",
+          "lineNumber": 302
+        },
+        {
+          "caller": "updateDraftMissing",
+          "callee": "persist",
+          "lineNumber": 303
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/expense-profile.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 61,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "resolveExpenseProfile",
+          "startLine": 9,
+          "endLine": 24,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "expenseProfileMissingFields",
+          "startLine": 26,
+          "endLine": 54,
+          "params": [
+            "input"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "resolveExpenseProfile",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "expenseProfileMissingFields",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "WORKFLOW_LOCKED_CATEGORIES",
+          "line": 57,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolveExpenseProfile",
+          "callee": "isCreditLike",
+          "lineNumber": 18
+        },
+        {
+          "caller": "resolveExpenseProfile",
+          "callee": "/pasabuy/i.test",
+          "lineNumber": 21
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 41
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 42
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 43
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 44
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 45
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 46
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 48
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 49
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 51
+        },
+        {
+          "caller": "expenseProfileMissingFields",
+          "callee": "missing.push",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 74,
+      "exports": [
+        {
+          "name": "getChatStatus",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "isAppleOs",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "listRemoteModels",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "sendChatMessage",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "probeAppleReadOnly",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "shouldUseAppleReadOnly",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "isAppleReadOnlySkill",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "invalidateAppleProbeCache",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "shutdownAppleClient",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "appleReasonUserCopy",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "APPLE_FORCE_ENV",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "listCredentials",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "createCredential",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "updateCredential",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "setDefaultCredential",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "deleteCredential",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "listThreads",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "getThread",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "createThread",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "updateThread",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "deleteThread",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "deleteAllThreads",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "listMessages",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "CHAT_CURATED_MODELS",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "DEFAULT_CHAT_MODEL",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "listChatProviders",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "GEMINI_CHAT_BASE_URL",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "normalizeChatModelId",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "providerPresetFromBaseUrl",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "baseUrlForProviderPreset",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "modelsForProvider",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "coerceModelForProvider",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "pickModelForProviderList",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "defaultModelForProvider",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "detectProviderFromKey",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "decorateRemoteModels",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "READ_TOOL_DEFINITIONS",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "WRITE_TOOL_DEFINITIONS",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "CHAT_TOOL_DEFINITIONS",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "executeReadTool",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "executeChatTool",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "listAllowedChatToolNames",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "isChatToolAllowed",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "routeChatSkill",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "listDrafts",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "getDraft",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "editDraftFields",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "confirmDraft",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "cancelDraft",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "changedResourceFromDraft",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "changedIdsFromResult",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "CHAT_SLASH_OVERLAYS",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "parseSlashOverlay",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "resolveActiveOverlay",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "buildApproveQuip",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "detectKeywordCheer",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "resolveExpenseProfile",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "expenseProfileMissingFields",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "WORKFLOW_LOCKED_CATEGORIES",
+          "line": 70,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 59,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/models.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 333,
+      "nonEmptyLines": 311,
+      "functions": [
+        {
+          "name": "listChatProviders",
+          "startLine": 196,
+          "endLine": 198,
+          "params": []
+        },
+        {
+          "name": "getChatProvider",
+          "startLine": 200,
+          "endLine": 203,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "resolveChatBaseUrl",
+          "startLine": 205,
+          "endLine": 208,
+          "params": [
+            "baseUrl"
+          ]
+        },
+        {
+          "name": "baseUrlForProviderPreset",
+          "startLine": 210,
+          "endLine": 221,
+          "params": [
+            "preset",
+            "customBaseUrl"
+          ]
+        },
+        {
+          "name": "providerPresetFromBaseUrl",
+          "startLine": 224,
+          "endLine": 232,
+          "params": [
+            "baseUrl"
+          ]
+        },
+        {
+          "name": "modelsForProvider",
+          "startLine": 234,
+          "endLine": 237,
+          "params": [
+            "providerId"
+          ]
+        },
+        {
+          "name": "defaultModelForProvider",
+          "startLine": 239,
+          "endLine": 242,
+          "params": [
+            "providerId"
+          ]
+        },
+        {
+          "name": "headersForProvider",
+          "startLine": 244,
+          "endLine": 246,
+          "params": [
+            "providerId"
+          ]
+        },
+        {
+          "name": "normalizeChatModelId",
+          "startLine": 252,
+          "endLine": 262,
+          "params": [
+            "model"
+          ]
+        },
+        {
+          "name": "pickModelForProviderList",
+          "startLine": 268,
+          "endLine": 276,
+          "params": [
+            "currentId",
+            "models",
+            "fallbackId"
+          ]
+        },
+        {
+          "name": "detectProviderFromKey",
+          "startLine": 284,
+          "endLine": 294,
+          "params": [
+            "apiKey"
+          ]
+        },
+        {
+          "name": "decorateRemoteModels",
+          "startLine": 301,
+          "endLine": 322,
+          "params": [
+            "ids",
+            "providerId"
+          ]
+        },
+        {
+          "name": "coerceModelForProvider",
+          "startLine": 325,
+          "endLine": 333,
+          "params": [
+            "providerId",
+            "modelId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DEFAULT_CHAT_BASE_URL",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "GEMINI_CHAT_BASE_URL",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "CHAT_PROVIDERS",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "CHAT_CURATED_MODELS",
+          "line": 179,
+          "isDefault": false
+        },
+        {
+          "name": "DEFAULT_CHAT_MODEL",
+          "line": 192,
+          "isDefault": false
+        },
+        {
+          "name": "listChatProviders",
+          "line": 196,
+          "isDefault": false
+        },
+        {
+          "name": "getChatProvider",
+          "line": 200,
+          "isDefault": false
+        },
+        {
+          "name": "resolveChatBaseUrl",
+          "line": 205,
+          "isDefault": false
+        },
+        {
+          "name": "baseUrlForProviderPreset",
+          "line": 210,
+          "isDefault": false
+        },
+        {
+          "name": "providerPresetFromBaseUrl",
+          "line": 224,
+          "isDefault": false
+        },
+        {
+          "name": "modelsForProvider",
+          "line": 234,
+          "isDefault": false
+        },
+        {
+          "name": "defaultModelForProvider",
+          "line": 239,
+          "isDefault": false
+        },
+        {
+          "name": "headersForProvider",
+          "line": 244,
+          "isDefault": false
+        },
+        {
+          "name": "normalizeChatModelId",
+          "line": 252,
+          "isDefault": false
+        },
+        {
+          "name": "pickModelForProviderList",
+          "line": 268,
+          "isDefault": false
+        },
+        {
+          "name": "detectProviderFromKey",
+          "line": 284,
+          "isDefault": false
+        },
+        {
+          "name": "decorateRemoteModels",
+          "line": 301,
+          "isDefault": false
+        },
+        {
+          "name": "coerceModelForProvider",
+          "line": 325,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getChatProvider",
+          "callee": "CHAT_PROVIDERS.find",
+          "lineNumber": 202
+        },
+        {
+          "caller": "resolveChatBaseUrl",
+          "callee": "(baseUrl ?? '').trim().replace",
+          "lineNumber": 206
+        },
+        {
+          "caller": "resolveChatBaseUrl",
+          "callee": "(baseUrl ?? '').trim",
+          "lineNumber": 206
+        },
+        {
+          "caller": "baseUrlForProviderPreset",
+          "callee": "(customBaseUrl ?? '').trim().replace",
+          "lineNumber": 215
+        },
+        {
+          "caller": "baseUrlForProviderPreset",
+          "callee": "(customBaseUrl ?? '').trim",
+          "lineNumber": 215
+        },
+        {
+          "caller": "baseUrlForProviderPreset",
+          "callee": "getChatProvider",
+          "lineNumber": 219
+        },
+        {
+          "caller": "providerPresetFromBaseUrl",
+          "callee": "resolveChatBaseUrl",
+          "lineNumber": 225
+        },
+        {
+          "caller": "providerPresetFromBaseUrl",
+          "callee": "resolved.startsWith",
+          "lineNumber": 229
+        },
+        {
+          "caller": "modelsForProvider",
+          "callee": "getChatProvider",
+          "lineNumber": 235
+        },
+        {
+          "caller": "defaultModelForProvider",
+          "callee": "getChatProvider",
+          "lineNumber": 240
+        },
+        {
+          "caller": "headersForProvider",
+          "callee": "getChatProvider",
+          "lineNumber": 245
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "model.trim",
+          "lineNumber": 253
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "/^gemini[\\s._-]*\\d/i.test",
+          "lineNumber": 255
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "/^gemini[\\s._-]+(flash|pro)/i.test",
+          "lineNumber": 255
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "t\n      .toLowerCase()\n      .replace(/[_\\s]+/g, '-')\n      .replace",
+          "lineNumber": 256
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "t\n      .toLowerCase()\n      .replace",
+          "lineNumber": 256
+        },
+        {
+          "caller": "normalizeChatModelId",
+          "callee": "t\n      .toLowerCase",
+          "lineNumber": 256
+        },
+        {
+          "caller": "pickModelForProviderList",
+          "callee": "models.some",
+          "lineNumber": 273
+        },
+        {
+          "caller": "pickModelForProviderList",
+          "callee": "models.find",
+          "lineNumber": 274
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "(apiKey ?? '').trim",
+          "lineNumber": 285
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 287
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 287
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 288
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 289
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 290
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 291
+        },
+        {
+          "caller": "detectProviderFromKey",
+          "callee": "k.startsWith",
+          "lineNumber": 292
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "known.set",
+          "lineNumber": 306
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "modelsForProvider",
+          "lineNumber": 307
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "known.set",
+          "lineNumber": 307
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "ids\n    .map((id) => {\n      const hit = known.get(id)\n      return {\n        id,\n        label: hit?.label ?? id,\n        free: hit?.free === true || /:free$/.test(id)\n      }\n    })\n    .sort",
+          "lineNumber": 309
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "ids\n    .map",
+          "lineNumber": 309
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "known.get",
+          "lineNumber": 311
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "/:free$/.test",
+          "lineNumber": 315
+        },
+        {
+          "caller": "decorateRemoteModels",
+          "callee": "a.id.localeCompare",
+          "lineNumber": 320
+        },
+        {
+          "caller": "coerceModelForProvider",
+          "callee": "modelsForProvider",
+          "lineNumber": 329
+        },
+        {
+          "caller": "coerceModelForProvider",
+          "callee": "normalizeChatModelId",
+          "lineNumber": 330
+        },
+        {
+          "caller": "coerceModelForProvider",
+          "callee": "pickModelForProviderList",
+          "lineNumber": 332
+        },
+        {
+          "caller": "coerceModelForProvider",
+          "callee": "defaultModelForProvider",
+          "lineNumber": 332
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 18,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/orchestrator.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 616,
+      "nonEmptyLines": 563,
+      "functions": [
+        {
+          "name": "assertChatEnabled",
+          "startLine": 91,
+          "endLine": 95,
+          "params": []
+        },
+        {
+          "name": "getChatStatus",
+          "startLine": 97,
+          "endLine": 116,
+          "params": [
+            "opts"
+          ]
+        },
+        {
+          "name": "isAppleOs",
+          "startLine": 118,
+          "endLine": 120,
+          "params": []
+        },
+        {
+          "name": "listRemoteModels",
+          "startLine": 126,
+          "endLine": 137,
+          "params": [
+            "credentialId"
+          ]
+        },
+        {
+          "name": "temperatureForOverlay",
+          "startLine": 145,
+          "endLine": 157,
+          "params": [
+            "overlay"
+          ]
+        },
+        {
+          "name": "extractMemo",
+          "startLine": 159,
+          "endLine": 167,
+          "params": [
+            "payloadJson"
+          ]
+        },
+        {
+          "name": "buildHistoryMessages",
+          "startLine": 169,
+          "endLine": 192,
+          "params": [
+            "prior"
+          ]
+        },
+        {
+          "name": "truncateToolResult",
+          "startLine": 194,
+          "endLine": 199,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "collectDraft",
+          "startLine": 201,
+          "endLine": 219,
+          "params": [
+            "payload",
+            "bucket"
+          ]
+        },
+        {
+          "name": "claimsWrite",
+          "startLine": 228,
+          "endLine": 232,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "synthesizeDraftReply",
+          "startLine": 234,
+          "endLine": 242,
+          "params": [
+            "drafts"
+          ]
+        },
+        {
+          "name": "runToolLoop",
+          "startLine": 244,
+          "endLine": 390,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "buildContextMemo",
+          "startLine": 397,
+          "endLine": 408,
+          "params": [
+            "drafts",
+            "toolNames"
+          ]
+        },
+        {
+          "name": "sendChatMessage",
+          "startLine": 410,
+          "endLine": 616,
+          "params": [
+            "input"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getChatStatus",
+          "line": 97,
+          "isDefault": false
+        },
+        {
+          "name": "isAppleOs",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "listRemoteModels",
+          "line": 126,
+          "isDefault": false
+        },
+        {
+          "name": "sendChatMessage",
+          "line": 410,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "assertChatEnabled",
+          "callee": "getUiSettings",
+          "lineNumber": 92
+        },
+        {
+          "caller": "getChatStatus",
+          "callee": "getUiSettings",
+          "lineNumber": 98
+        },
+        {
+          "caller": "getChatStatus",
+          "callee": "listCredentials",
+          "lineNumber": 99
+        },
+        {
+          "caller": "getChatStatus",
+          "callee": "getDefaultCredentialId",
+          "lineNumber": 100
+        },
+        {
+          "caller": "getChatStatus",
+          "callee": "probeAppleReadOnly",
+          "lineNumber": 101
+        },
+        {
+          "caller": "getChatStatus",
+          "callee": "Boolean",
+          "lineNumber": 107
+        },
+        {
+          "caller": "isAppleOs",
+          "callee": "platform",
+          "lineNumber": 119
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "getCredential",
+          "lineNumber": 127
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "readChatApiKey",
+          "lineNumber": 128
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "readChatBaseUrl",
+          "lineNumber": 129
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "readChatProviderId",
+          "lineNumber": 130
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "providerPresetFromBaseUrl",
+          "lineNumber": 130
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "fetchRemoteModelIds",
+          "lineNumber": 131
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "headersForProvider",
+          "lineNumber": 134
+        },
+        {
+          "caller": "listRemoteModels",
+          "callee": "decorateRemoteModels",
+          "lineNumber": 136
+        },
+        {
+          "caller": "extractMemo",
+          "callee": "JSON.parse",
+          "lineNumber": 162
+        },
+        {
+          "caller": "extractMemo",
+          "callee": "memo.trim",
+          "lineNumber": 163
+        },
+        {
+          "caller": "extractMemo",
+          "callee": "memo.trim",
+          "lineNumber": 163
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "prior.filter",
+          "lineNumber": 170
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "usable.slice",
+          "lineNumber": 171
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "truncated\n      .filter((m) => m.role === 'assistant' && extractMemo(m.payloadJson))\n      .slice(-MEMO_REPLAY_TURNS)\n      .map",
+          "lineNumber": 176
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "truncated\n      .filter((m) => m.role === 'assistant' && extractMemo(m.payloadJson))\n      .slice",
+          "lineNumber": 176
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "truncated\n      .filter",
+          "lineNumber": 176
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "extractMemo",
+          "lineNumber": 177
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "truncated.map",
+          "lineNumber": 182
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "memoIds.has",
+          "lineNumber": 184
+        },
+        {
+          "caller": "buildHistoryMessages",
+          "callee": "extractMemo",
+          "lineNumber": 184
+        },
+        {
+          "caller": "truncateToolResult",
+          "callee": "JSON.stringify",
+          "lineNumber": 195
+        },
+        {
+          "caller": "truncateToolResult",
+          "callee": "json.slice",
+          "lineNumber": 198
+        },
+        {
+          "caller": "collectDraft",
+          "callee": "getDraft",
+          "lineNumber": 205
+        },
+        {
+          "caller": "collectDraft",
+          "callee": "bucket.findIndex",
+          "lineNumber": 208
+        },
+        {
+          "caller": "collectDraft",
+          "callee": "bucket.findIndex",
+          "lineNumber": 213
+        },
+        {
+          "caller": "collectDraft",
+          "callee": "bucket.push",
+          "lineNumber": 217
+        },
+        {
+          "caller": "claimsWrite",
+          "callee": "/\\b(drafted|logged|saved|created|recorded|added it)\\b|na-?draft|na-?log|naka-?lista|nai-?log|na-?record|na-?save/i.test",
+          "lineNumber": 229
+        },
+        {
+          "caller": "synthesizeDraftReply",
+          "callee": "drafts.map",
+          "lineNumber": 235
+        },
+        {
+          "caller": "synthesizeDraftReply",
+          "callee": "d.missingRequired.join",
+          "lineNumber": 237
+        },
+        {
+          "caller": "synthesizeDraftReply",
+          "callee": "lines.join",
+          "lineNumber": 241
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "Boolean",
+          "lineNumber": 271
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "completeChat",
+          "lineNumber": 274
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "appendDevLog",
+          "lineNumber": 288
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "completeChat",
+          "lineNumber": 296
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "result.content?.trim",
+          "lineNumber": 308
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "done",
+          "lineNumber": 309
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "done",
+          "lineNumber": 312
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "synthesizeDraftReply",
+          "lineNumber": 312
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "messages.push",
+          "lineNumber": 316
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "roundCache.has",
+          "lineNumber": 331
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "roundCache.get",
+          "lineNumber": 332
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "executeChatTool",
+          "lineNumber": 335
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "String",
+          "lineNumber": 340
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "roundCache.set",
+          "lineNumber": 343
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "toolResults.push",
+          "lineNumber": 344
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "toolNames.push",
+          "lineNumber": 345
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "collectDraft",
+          "lineNumber": 346
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "messages.push",
+          "lineNumber": 348
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "truncateToolResult",
+          "lineNumber": 351
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "completeChat",
+          "lineNumber": 356
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "final.content?.trim",
+          "lineNumber": 371
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "done",
+          "lineNumber": 372
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "done",
+          "lineNumber": 375
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "synthesizeDraftReply",
+          "lineNumber": 375
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "appendDevLog",
+          "lineNumber": 377
+        },
+        {
+          "caller": "runToolLoop",
+          "callee": "done",
+          "lineNumber": 385
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "d.missingRequired.join",
+          "lineNumber": 400
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "parts.push",
+          "lineNumber": 401
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "parts.push",
+          "lineNumber": 404
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "uniqueTools.join",
+          "lineNumber": 404
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "parts.join",
+          "lineNumber": 406
+        },
+        {
+          "caller": "buildContextMemo",
+          "callee": "memo.slice",
+          "lineNumber": 407
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "assertChatEnabled",
+          "lineNumber": 418
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "input.content.trim",
+          "lineNumber": 419
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "parseSlashOverlay",
+          "lineNumber": 422
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "text.trim",
+          "lineNumber": 424
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getUiSettings",
+          "lineNumber": 426
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "checkTopicGuard",
+          "lineNumber": 429
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "createThread",
+          "lineNumber": 431
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getDefaultCredentialId",
+          "lineNumber": 432
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 436
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 437
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "maybeSetTitleFromUserMessage",
+          "lineNumber": 438
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getThread",
+          "lineNumber": 439
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getChatStatus",
+          "lineNumber": 442
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "routeChatSkill",
+          "lineNumber": 443
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "shouldUseAppleReadOnly",
+          "lineNumber": 444
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "skill.startsWith",
+          "lineNumber": 464
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getThread",
+          "lineNumber": 471
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "createThread",
+          "lineNumber": 475
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getDefaultCredentialId",
+          "lineNumber": 476
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "resolveActiveOverlay",
+          "lineNumber": 483
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "updateThread",
+          "lineNumber": 490
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "updateThread",
+          "lineNumber": 492
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "listMessages",
+          "lineNumber": 495
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 496
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "maybeSetTitleFromUserMessage",
+          "lineNumber": 497
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 500
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getThread",
+          "lineNumber": 501
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "runAppleReadOnlyTurn",
+          "lineNumber": 505
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "JSON.stringify",
+          "lineNumber": 510
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 515
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getThread",
+          "lineNumber": 519
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getDefaultCredentialId",
+          "lineNumber": 525
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getCredential",
+          "lineNumber": 527
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "readChatApiKey",
+          "lineNumber": 530
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "readChatBaseUrl",
+          "lineNumber": 531
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "readChatProviderId",
+          "lineNumber": 533
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "providerPresetFromBaseUrl",
+          "lineNumber": 533
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "normalizeChatModelId",
+          "lineNumber": 534
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "(input.modelId ?? thread.modelId ?? ui.chatDefaultModel ?? DEFAULT_CHAT_MODEL).trim",
+          "lineNumber": 535
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "coerceModelForProvider",
+          "lineNumber": 538
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "appendDevLog",
+          "lineNumber": 542
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "updateThread",
+          "lineNumber": 553
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "detectKeywordCheer",
+          "lineNumber": 556
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "effectiveOverlayForPrompt",
+          "lineNumber": 557
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "[\n    PHASE_65_SYSTEM,\n    skillSystemAddendum(skill, todayIso(), currentMonth()),\n    overlaySystemPrompt(promptOverlay)\n  ].join",
+          "lineNumber": 559
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "skillSystemAddendum",
+          "lineNumber": 561
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "todayIso",
+          "lineNumber": 561
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "currentMonth",
+          "lineNumber": 561
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "overlaySystemPrompt",
+          "lineNumber": 562
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "buildHistoryMessages",
+          "lineNumber": 567
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "runToolLoop",
+          "lineNumber": 571
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "headersForProvider",
+          "lineNumber": 577
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "temperatureForOverlay",
+          "lineNumber": 578
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "detectBudgetGuardFromToolResults",
+          "lineNumber": 582
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "formatBudgetGuardAppendix",
+          "lineNumber": 583
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "reply.includes",
+          "lineNumber": 584
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "claimsWrite",
+          "lineNumber": 588
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "appendDevLog",
+          "lineNumber": 590
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "buildContextMemo",
+          "lineNumber": 600
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "JSON.stringify",
+          "lineNumber": 601
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "addMessage",
+          "lineNumber": 609
+        },
+        {
+          "caller": "sendChatMessage",
+          "callee": "getThread",
+          "lineNumber": 613
+        }
+      ],
+      "metrics": {
+        "importCount": 15,
+        "exportCount": 4,
+        "functionCount": 14,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/overlays/catalog.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "isChatOverlayId",
+          "startLine": 33,
+          "endLine": 35,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "overlaySystemPrompt",
+          "startLine": 37,
+          "endLine": 63,
+          "params": [
+            "overlay"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CHAT_SLASH_OVERLAYS",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "OVERLAY_IDS",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "INCOME_CELEBRATE_THRESHOLD",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SPEND_WINCE_THRESHOLD",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "CHEER_KEYWORDS",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "isChatOverlayId",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "overlaySystemPrompt",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isChatOverlayId",
+          "callee": "OVERLAY_IDS.has",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/overlays/heuristics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 145,
+      "nonEmptyLines": 127,
+      "functions": [
+        {
+          "name": "detectKeywordCheer",
+          "startLine": 16,
+          "endLine": 19,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "effectiveOverlayForPrompt",
+          "startLine": 25,
+          "endLine": 33,
+          "params": [
+            "active",
+            "keywordCheer"
+          ]
+        },
+        {
+          "name": "collectBudgetNotesFromPayload",
+          "startLine": 43,
+          "endLine": 68,
+          "params": [
+            "payload",
+            "into"
+          ]
+        },
+        {
+          "name": "detectBudgetGuardFromToolResults",
+          "startLine": 70,
+          "endLine": 74,
+          "params": [
+            "results"
+          ]
+        },
+        {
+          "name": "formatBudgetGuardAppendix",
+          "startLine": 76,
+          "endLine": 88,
+          "params": [
+            "overlay",
+            "notes"
+          ]
+        },
+        {
+          "name": "buildApproveQuip",
+          "startLine": 90,
+          "endLine": 140,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "buildCancelAck",
+          "startLine": 142,
+          "endLine": 145,
+          "params": [
+            "overlay"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "detectKeywordCheer",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "effectiveOverlayForPrompt",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "detectBudgetGuardFromToolResults",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "formatBudgetGuardAppendix",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "buildApproveQuip",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "buildCancelAck",
+          "line": 142,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "detectKeywordCheer",
+          "callee": "text.toLowerCase",
+          "lineNumber": 17
+        },
+        {
+          "caller": "detectKeywordCheer",
+          "callee": "CHEER_KEYWORDS.some",
+          "lineNumber": 18
+        },
+        {
+          "caller": "detectKeywordCheer",
+          "callee": "lower.includes",
+          "lineNumber": 18
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "Array.isArray",
+          "lineNumber": 48
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "into.push",
+          "lineNumber": 54
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "spending.toLocaleString",
+          "lineNumber": 55
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "budget.toLocaleString",
+          "lineNumber": 55
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "/budget|over/i.test",
+          "lineNumber": 65
+        },
+        {
+          "caller": "collectBudgetNotesFromPayload",
+          "callee": "into.push",
+          "lineNumber": 65
+        },
+        {
+          "caller": "detectBudgetGuardFromToolResults",
+          "callee": "collectBudgetNotesFromPayload",
+          "lineNumber": 72
+        },
+        {
+          "caller": "formatBudgetGuardAppendix",
+          "callee": "notes.slice(0, 3).join",
+          "lineNumber": 81
+        },
+        {
+          "caller": "formatBudgetGuardAppendix",
+          "callee": "notes.slice",
+          "lineNumber": 81
+        },
+        {
+          "caller": "buildApproveQuip",
+          "callee": "amount!.toLocaleString",
+          "lineNumber": 114
+        },
+        {
+          "caller": "buildApproveQuip",
+          "callee": "amount!.toLocaleString",
+          "lineNumber": 115
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/overlays/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 16,
+      "exports": [
+        {
+          "name": "CHAT_SLASH_OVERLAYS",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "INCOME_CELEBRATE_THRESHOLD",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "SPEND_WINCE_THRESHOLD",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "isChatOverlayId",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "overlaySystemPrompt",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "parseSlashOverlay",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "resolveActiveOverlay",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "detectKeywordCheer",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "effectiveOverlayForPrompt",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "detectBudgetGuardFromToolResults",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "formatBudgetGuardAppendix",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "buildApproveQuip",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "buildCancelAck",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 13,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/overlays/parse.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 30,
+      "functions": [
+        {
+          "name": "parseSlashOverlay",
+          "startLine": 14,
+          "endLine": 23,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "resolveActiveOverlay",
+          "startLine": 25,
+          "endLine": 34,
+          "params": [
+            "input"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "parseSlashOverlay",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "resolveActiveOverlay",
+          "line": 25,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "raw.matchAll",
+          "lineNumber": 16
+        },
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "(m[1] ?? '').toLowerCase",
+          "lineNumber": 18
+        },
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "isChatOverlayId",
+          "lineNumber": 19
+        },
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "raw.replace(SLASH_RE, ' ').replace(/\\s+/g, ' ').trim",
+          "lineNumber": 21
+        },
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "raw.replace(SLASH_RE, ' ').replace",
+          "lineNumber": 21
+        },
+        {
+          "caller": "parseSlashOverlay",
+          "callee": "raw.replace",
+          "lineNumber": 21
+        },
+        {
+          "caller": "resolveActiveOverlay",
+          "callee": "(input.threadOverlay ?? 'default').trim().toLowerCase",
+          "lineNumber": 32
+        },
+        {
+          "caller": "resolveActiveOverlay",
+          "callee": "(input.threadOverlay ?? 'default').trim",
+          "lineNumber": 32
+        },
+        {
+          "caller": "resolveActiveOverlay",
+          "callee": "isChatOverlayId",
+          "lineNumber": 33
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/provider.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 304,
+      "nonEmptyLines": 275,
+      "functions": [
+        {
+          "name": "looksLikeGeminiKey",
+          "startLine": 24,
+          "endLine": 27,
+          "params": [
+            "apiKey"
+          ]
+        },
+        {
+          "name": "looksLikeAnthropicKey",
+          "startLine": 29,
+          "endLine": 31,
+          "params": [
+            "apiKey"
+          ]
+        },
+        {
+          "name": "isRetryableStatus",
+          "startLine": 36,
+          "endLine": 38,
+          "params": [
+            "status"
+          ]
+        },
+        {
+          "name": "sleep",
+          "startLine": 40,
+          "endLine": 42,
+          "params": [
+            "ms"
+          ]
+        },
+        {
+          "name": "retryDelayMs",
+          "startLine": 45,
+          "endLine": 57,
+          "params": [
+            "res",
+            "attempt"
+          ]
+        },
+        {
+          "name": "supportsTemperatureOverride",
+          "startLine": 64,
+          "endLine": 67,
+          "params": [
+            "model"
+          ]
+        },
+        {
+          "name": "postChatCompletions",
+          "startLine": 69,
+          "endLine": 158,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "completeChat",
+          "startLine": 160,
+          "endLine": 242,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "fetchRemoteModelIds",
+          "startLine": 249,
+          "endLine": 293,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "completeChatText",
+          "startLine": 296,
+          "endLine": 304,
+          "params": [
+            "input"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "completeChat",
+          "line": 160,
+          "isDefault": false
+        },
+        {
+          "name": "fetchRemoteModelIds",
+          "line": 249,
+          "isDefault": false
+        },
+        {
+          "name": "completeChatText",
+          "line": 296,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "looksLikeGeminiKey",
+          "callee": "apiKey.trim",
+          "lineNumber": 25
+        },
+        {
+          "caller": "looksLikeGeminiKey",
+          "callee": "k.startsWith",
+          "lineNumber": 26
+        },
+        {
+          "caller": "looksLikeGeminiKey",
+          "callee": "k.startsWith",
+          "lineNumber": 26
+        },
+        {
+          "caller": "looksLikeAnthropicKey",
+          "callee": "apiKey.trim().startsWith",
+          "lineNumber": 30
+        },
+        {
+          "caller": "looksLikeAnthropicKey",
+          "callee": "apiKey.trim",
+          "lineNumber": 30
+        },
+        {
+          "caller": "sleep",
+          "callee": "setTimeout",
+          "lineNumber": 41
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "res.headers.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Number",
+          "lineNumber": 48
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Number.isFinite",
+          "lineNumber": 49
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Math.min",
+          "lineNumber": 49
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Date.parse",
+          "lineNumber": 50
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Number.isFinite",
+          "lineNumber": 51
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Date.now",
+          "lineNumber": 52
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Math.min",
+          "lineNumber": 53
+        },
+        {
+          "caller": "retryDelayMs",
+          "callee": "Math.min",
+          "lineNumber": 56
+        },
+        {
+          "caller": "supportsTemperatureOverride",
+          "callee": "model.trim().toLowerCase",
+          "lineNumber": 65
+        },
+        {
+          "caller": "supportsTemperatureOverride",
+          "callee": "model.trim",
+          "lineNumber": 65
+        },
+        {
+          "caller": "supportsTemperatureOverride",
+          "callee": "/^(o\\d|gpt-5)/.test",
+          "lineNumber": 66
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "resolveChatBaseUrl",
+          "lineNumber": 79
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "supportsTemperatureOverride",
+          "lineNumber": 84
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "fetch",
+          "lineNumber": 93
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "JSON.stringify",
+          "lineNumber": 100
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "res.text",
+          "lineNumber": 103
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "JSON.parse",
+          "lineNumber": 106
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "isRetryableStatus",
+          "lineNumber": 115
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "retryDelayMs",
+          "lineNumber": 116
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "appendDevLog",
+          "lineNumber": 117
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "sleep",
+          "lineNumber": 125
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "looksLikeGeminiKey",
+          "lineNumber": 142
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "/incorrect api key|invalid.*api.?key|platform\\.openai/i.test",
+          "lineNumber": 143
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "looksLikeAnthropicKey",
+          "lineNumber": 148
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "/incorrect api key|invalid.*api.?key|platform\\.openai/i.test",
+          "lineNumber": 149
+        },
+        {
+          "caller": "postChatCompletions",
+          "callee": "/model/i.test",
+          "lineNumber": 152
+        },
+        {
+          "caller": "completeChat",
+          "callee": "Date.now",
+          "lineNumber": 170
+        },
+        {
+          "caller": "completeChat",
+          "callee": "postChatCompletions",
+          "lineNumber": 173
+        },
+        {
+          "caller": "completeChat",
+          "callee": "appendDevLog",
+          "lineNumber": 175
+        },
+        {
+          "caller": "completeChat",
+          "callee": "String",
+          "lineNumber": 179
+        },
+        {
+          "caller": "completeChat",
+          "callee": "Date.now",
+          "lineNumber": 181
+        },
+        {
+          "caller": "completeChat",
+          "callee": "rawToolCalls.forEach",
+          "lineNumber": 205
+        },
+        {
+          "caller": "completeChat",
+          "callee": "tc.id.trim",
+          "lineNumber": 210
+        },
+        {
+          "caller": "completeChat",
+          "callee": "toolCalls.push",
+          "lineNumber": 211
+        },
+        {
+          "caller": "completeChat",
+          "callee": "appendDevLog",
+          "lineNumber": 223
+        },
+        {
+          "caller": "completeChat",
+          "callee": "content?.trim",
+          "lineNumber": 227
+        },
+        {
+          "caller": "completeChat",
+          "callee": "Boolean",
+          "lineNumber": 234
+        },
+        {
+          "caller": "completeChat",
+          "callee": "content?.trim",
+          "lineNumber": 234
+        },
+        {
+          "caller": "completeChat",
+          "callee": "Date.now",
+          "lineNumber": 237
+        },
+        {
+          "caller": "completeChat",
+          "callee": "Boolean",
+          "lineNumber": 238
+        },
+        {
+          "caller": "completeChat",
+          "callee": "content?.trim",
+          "lineNumber": 238
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "resolveChatBaseUrl",
+          "lineNumber": 254
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "fetch",
+          "lineNumber": 255
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "res.text",
+          "lineNumber": 263
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "JSON.parse",
+          "lineNumber": 266
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "Array.isArray",
+          "lineNumber": 283
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "row.id.replace(/^models\\//, '').trim",
+          "lineNumber": 289
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "row.id.replace",
+          "lineNumber": 289
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "ids.includes",
+          "lineNumber": 290
+        },
+        {
+          "caller": "fetchRemoteModelIds",
+          "callee": "ids.push",
+          "lineNumber": 290
+        },
+        {
+          "caller": "completeChatText",
+          "callee": "completeChat",
+          "lineNumber": 302
+        },
+        {
+          "caller": "completeChatText",
+          "callee": "result.content?.trim",
+          "lineNumber": 303
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 3,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/skills/router.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 208,
+      "nonEmptyLines": 182,
+      "functions": [
+        {
+          "name": "routeChatSkill",
+          "startLine": 28,
+          "endLine": 121,
+          "params": [
+            "userText"
+          ]
+        },
+        {
+          "name": "skillSystemAddendum",
+          "startLine": 123,
+          "endLine": 208,
+          "params": [
+            "skill",
+            "todayIso",
+            "currentMonth"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "routeChatSkill",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "skillSystemAddendum",
+          "line": 123,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "routeChatSkill",
+          "callee": "userText.toLowerCase",
+          "lineNumber": 29
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(delete|remove|trash|archive|hard\\s*delete|soft\\s*delete|burahin|i-delete|idelete|tanggalin)\\b/.test",
+          "lineNumber": 32
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(income|expense|account|record|transaction|entry|bayad|utang|pasabuy|transfer|budget)\\b/.test",
+          "lineNumber": 35
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\brebudget\\b|\\breallocate\\b|\\bredistribut/.test",
+          "lineNumber": 43
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/same\\s+(total\\s+)?budget/.test",
+          "lineNumber": 44
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/i-shuffle.*budget|shuffle.*budget/.test",
+          "lineNumber": 45
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/monitoring\\s+summary|monthly\\s+monitoring|how\\s+was\\s+(january|february|march|april|may|june|july|august|september|october|november|december)/.test",
+          "lineNumber": 51
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/summary\\s+for\\s+\\d{4}-\\d{2}|breakdown\\s+for\\s+(last|this)\\s+month|paano\\s+ang\\s+monitoring/.test",
+          "lineNumber": 54
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(transfer|ilipat|maglipat)\\b/.test",
+          "lineNumber": 63
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(from|to|→|->|galing|papunta|mula|move\\s+money)\\b/.test",
+          "lineNumber": 64
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(cc\\s*payment|credit\\s*card\\s*payment)\\b/.test",
+          "lineNumber": 69
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(bayad|bayaran|magbayad|pay)\\b/.test",
+          "lineNumber": 70
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(cc|credit(\\s*card)?)\\b/.test",
+          "lineNumber": 70
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(alkansya|mag-?ipon|nag-?ipon|savings\\s+set\\s+aside|set\\s+aside)\\b/.test",
+          "lineNumber": 74
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(receivable|utang\\s+sa\\s+akin|iou\\s+collect|pautang)\\b/.test",
+          "lineNumber": 77
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "WRITE_VERB.test",
+          "lineNumber": 81
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "INCOME_NOUN.test",
+          "lineNumber": 81
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "WRITE_VERB.test",
+          "lineNumber": 89
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "EXPENSE_NOUN.test",
+          "lineNumber": 89
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "SPEND_VERB.test",
+          "lineNumber": 90
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\d/.test",
+          "lineNumber": 90
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(change|update|edit|set|mark\\s+as|i-edit|palitan)\\b/.test",
+          "lineNumber": 96
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(income|expense|date\\s*paid|paid|amount|category)\\b/.test",
+          "lineNumber": 97
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/how\\s+does\\s+|what\\s+is\\s+|difference\\s+between|ano\\s+ang\\s+|paano\\s+(ba\\s+)?(gumagana|mag)/.test",
+          "lineNumber": 103
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/\\b(soft\\s*delete|hard\\s*delete|pasabuy|transfer|alkansya|receivables|sync)\\b/.test",
+          "lineNumber": 106
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/how|what|explain|ano|paano/.test",
+          "lineNumber": 107
+        },
+        {
+          "caller": "routeChatSkill",
+          "callee": "/how\\s+much|what.?s\\s+left|summary|list\\s+my|compare|budget|spent|spending|income|expense|unpaid|pasabuy|account|magkano|ilan|gastos|kita/.test",
+          "lineNumber": 113
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/chat/threads.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 179,
+      "nonEmptyLines": 165,
+      "functions": [
+        {
+          "name": "mapThread",
+          "startLine": 24,
+          "endLine": 34,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "mapMessage",
+          "startLine": 36,
+          "endLine": 45,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "listThreads",
+          "startLine": 47,
+          "endLine": 55,
+          "params": []
+        },
+        {
+          "name": "getThread",
+          "startLine": 57,
+          "endLine": 65,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "createThread",
+          "startLine": 67,
+          "endLine": 90,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "updateThread",
+          "startLine": 92,
+          "endLine": 117,
+          "params": [
+            "id",
+            "patch"
+          ]
+        },
+        {
+          "name": "touchThread",
+          "startLine": 119,
+          "endLine": 123,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "deleteThread",
+          "startLine": 125,
+          "endLine": 129,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "deleteAllThreads",
+          "startLine": 131,
+          "endLine": 135,
+          "params": []
+        },
+        {
+          "name": "listMessages",
+          "startLine": 137,
+          "endLine": 145,
+          "params": [
+            "threadId"
+          ]
+        },
+        {
+          "name": "addMessage",
+          "startLine": 147,
+          "endLine": 171,
+          "params": [
+            "threadId",
+            "role",
+            "content",
+            "payloadJson"
+          ]
+        },
+        {
+          "name": "maybeSetTitleFromUserMessage",
+          "startLine": 174,
+          "endLine": 179,
+          "params": [
+            "threadId",
+            "userText"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "listThreads",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "getThread",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "createThread",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "updateThread",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "touchThread",
+          "line": 119,
+          "isDefault": false
+        },
+        {
+          "name": "deleteThread",
+          "line": 125,
+          "isDefault": false
+        },
+        {
+          "name": "deleteAllThreads",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "listMessages",
+          "line": 137,
+          "isDefault": false
+        },
+        {
+          "name": "addMessage",
+          "line": 147,
+          "isDefault": false
+        },
+        {
+          "name": "maybeSetTitleFromUserMessage",
+          "line": 174,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "listThreads",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, title, credential_id, model_id, overlay, created_at, updated_at\n       FROM chat_threads ORDER BY updated_at DESC`\n    )\n    .all",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listThreads",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listThreads",
+          "callee": "getSqlite",
+          "lineNumber": 48
+        },
+        {
+          "caller": "listThreads",
+          "callee": "rows.map",
+          "lineNumber": 54
+        },
+        {
+          "caller": "getThread",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, title, credential_id, model_id, overlay, created_at, updated_at\n       FROM chat_threads WHERE id = ?`\n    )\n    .get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getThread",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getThread",
+          "callee": "getSqlite",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getThread",
+          "callee": "mapThread",
+          "lineNumber": 64
+        },
+        {
+          "caller": "createThread",
+          "callee": "randomUUID",
+          "lineNumber": 73
+        },
+        {
+          "caller": "createThread",
+          "callee": "Date.now",
+          "lineNumber": 74
+        },
+        {
+          "caller": "createThread",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO chat_threads (id, title, credential_id, model_id, overlay, created_at, updated_at)\n       VALUES (?, ?, ?, ?, ?, ?, ?)`\n    )\n    .run",
+          "lineNumber": 75
+        },
+        {
+          "caller": "createThread",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 75
+        },
+        {
+          "caller": "createThread",
+          "callee": "getSqlite",
+          "lineNumber": 75
+        },
+        {
+          "caller": "createThread",
+          "callee": "input?.title?.trim",
+          "lineNumber": 82
+        },
+        {
+          "caller": "createThread",
+          "callee": "input?.overlay?.trim",
+          "lineNumber": 85
+        },
+        {
+          "caller": "createThread",
+          "callee": "getThread",
+          "lineNumber": 89
+        },
+        {
+          "caller": "updateThread",
+          "callee": "getThread",
+          "lineNumber": 101
+        },
+        {
+          "caller": "updateThread",
+          "callee": "patch.title.trim",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updateThread",
+          "callee": "patch.overlay.trim",
+          "lineNumber": 107
+        },
+        {
+          "caller": "updateThread",
+          "callee": "Date.now",
+          "lineNumber": 108
+        },
+        {
+          "caller": "updateThread",
+          "callee": "getSqlite()\n    .prepare(\n      `UPDATE chat_threads\n       SET title = ?, credential_id = ?, model_id = ?, overlay = ?, updated_at = ?\n       WHERE id = ?`\n    )\n    .run",
+          "lineNumber": 109
+        },
+        {
+          "caller": "updateThread",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 109
+        },
+        {
+          "caller": "updateThread",
+          "callee": "getSqlite",
+          "lineNumber": 109
+        },
+        {
+          "caller": "updateThread",
+          "callee": "getThread",
+          "lineNumber": 116
+        },
+        {
+          "caller": "touchThread",
+          "callee": "getSqlite()\n    .prepare(`UPDATE chat_threads SET updated_at = ? WHERE id = ?`)\n    .run",
+          "lineNumber": 120
+        },
+        {
+          "caller": "touchThread",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 120
+        },
+        {
+          "caller": "touchThread",
+          "callee": "getSqlite",
+          "lineNumber": 120
+        },
+        {
+          "caller": "touchThread",
+          "callee": "Date.now",
+          "lineNumber": 122
+        },
+        {
+          "caller": "deleteThread",
+          "callee": "getSqlite",
+          "lineNumber": 126
+        },
+        {
+          "caller": "deleteThread",
+          "callee": "db.prepare(`DELETE FROM chat_messages WHERE thread_id = ?`).run",
+          "lineNumber": 127
+        },
+        {
+          "caller": "deleteThread",
+          "callee": "db.prepare",
+          "lineNumber": 127
+        },
+        {
+          "caller": "deleteThread",
+          "callee": "db.prepare(`DELETE FROM chat_threads WHERE id = ?`).run",
+          "lineNumber": 128
+        },
+        {
+          "caller": "deleteThread",
+          "callee": "db.prepare",
+          "lineNumber": 128
+        },
+        {
+          "caller": "deleteAllThreads",
+          "callee": "getSqlite",
+          "lineNumber": 132
+        },
+        {
+          "caller": "deleteAllThreads",
+          "callee": "db.prepare(`DELETE FROM chat_messages`).run",
+          "lineNumber": 133
+        },
+        {
+          "caller": "deleteAllThreads",
+          "callee": "db.prepare",
+          "lineNumber": 133
+        },
+        {
+          "caller": "deleteAllThreads",
+          "callee": "db.prepare(`DELETE FROM chat_threads`).run",
+          "lineNumber": 134
+        },
+        {
+          "caller": "deleteAllThreads",
+          "callee": "db.prepare",
+          "lineNumber": 134
+        },
+        {
+          "caller": "listMessages",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, thread_id, role, content, payload_json, created_at\n       FROM chat_messages WHERE thread_id = ? ORDER BY created_at ASC`\n    )\n    .all",
+          "lineNumber": 138
+        },
+        {
+          "caller": "listMessages",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 138
+        },
+        {
+          "caller": "listMessages",
+          "callee": "getSqlite",
+          "lineNumber": 138
+        },
+        {
+          "caller": "listMessages",
+          "callee": "rows.map",
+          "lineNumber": 144
+        },
+        {
+          "caller": "addMessage",
+          "callee": "getThread",
+          "lineNumber": 153
+        },
+        {
+          "caller": "addMessage",
+          "callee": "randomUUID",
+          "lineNumber": 154
+        },
+        {
+          "caller": "addMessage",
+          "callee": "Date.now",
+          "lineNumber": 155
+        },
+        {
+          "caller": "addMessage",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO chat_messages (id, thread_id, role, content, payload_json, created_at)\n       VALUES (?, ?, ?, ?, ?, ?)`\n    )\n    .run",
+          "lineNumber": 156
+        },
+        {
+          "caller": "addMessage",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 156
+        },
+        {
+          "caller": "addMessage",
+          "callee": "getSqlite",
+          "lineNumber": 156
+        },
+        {
+          "caller": "addMessage",
+          "callee": "touchThread",
+          "lineNumber": 162
+        },
+        {
+          "caller": "maybeSetTitleFromUserMessage",
+          "callee": "getThread",
+          "lineNumber": 175
+        },
+        {
+          "caller": "maybeSetTitleFromUserMessage",
+          "callee": "userText.trim().replace(/\\s+/g, ' ').slice",
+          "lineNumber": 177
+        },
+        {
+          "caller": "maybeSetTitleFromUserMessage",
+          "callee": "userText.trim().replace",
+          "lineNumber": 177
+        },
+        {
+          "caller": "maybeSetTitleFromUserMessage",
+          "callee": "userText.trim",
+          "lineNumber": 177
+        },
+        {
+          "caller": "maybeSetTitleFromUserMessage",
+          "callee": "updateThread",
+          "lineNumber": 178
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 10,
+        "functionCount": 12,
+        "classCount": 0
+      }
+    }
+  ]
+}

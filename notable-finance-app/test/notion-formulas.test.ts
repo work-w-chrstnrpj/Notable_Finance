@@ -7,7 +7,8 @@ import {
   pasabuyReceivedAmount,
   pasabuyerBalance,
   transactionAmount,
-  isTransactionCategory
+  isTransactionCategory,
+  round2
 } from '../src/main/domain/notion-formulas'
 import { expense, income } from './factories'
 
@@ -51,6 +52,17 @@ describe('Pasabuy Received Amount', () => {
   it('0 when no receiver account', () => {
     const e = expense({ amount: 900, periodCount: 3, pasabuyPaidPeriod: 2, pasabuyAccountReceiverId: null })
     expect(pasabuyReceivedAmount(e, 'Pasabuy')).toBe(0)
+  })
+
+  // Regression: non-even installment × paidPeriod must NOT double-round. Notion keeps the
+  // installment at full precision (25000/6 = 4166.6667) and only rounds at the balance, so
+  // Pasabuy Received is 8333.3333 → 8333.33, not round(4166.67 × 2) = 8333.34 (±0.01 drift).
+  it('carries full precision (no intermediate rounding) for non-even installments', () => {
+    const e = expense({ amount: 25000, interest: 0, periodCount: 6, pasabuyPaidPeriod: 2, pasabuyAccountReceiverId: 'acc' })
+    expect(installmentAmount(e)).toBeCloseTo(4166.6667, 4)
+    expect(pasabuyReceivedAmount(e, 'Pasabuy')).toBeCloseTo(8333.3333, 4)
+    // rounded for display/aggregation → 8333.33 (the Notion value), never 8333.34
+    expect(round2(pasabuyReceivedAmount(e, 'Pasabuy'))).toBe(8333.33)
   })
 })
 

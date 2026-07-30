@@ -1,0 +1,2373 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 187,
+  "totalBatches": 10,
+  "exportsByPath": {
+    ".ua/.understandignore": [],
+    "drizzle.config.ts": [],
+    "e2e/app.spec.ts": [],
+    "e2e/keyboard-shortcuts.spec.ts": [],
+    "electron.vite.config.ts": [],
+    "playwright.config.ts": [],
+    "scripts/seed-dev.mjs": [],
+    "src/main/chat/apple.ts": [
+      "APPLE_FORCE_ENV",
+      "shutdownAppleClient",
+      "invalidateAppleProbeCache",
+      "appleReasonUserCopy",
+      "probeAppleReadOnly",
+      "isAppleReadOnlySkill",
+      "shouldUseAppleReadOnly",
+      "resolveAppleAskDate",
+      "appleEmptyDayAnswer",
+      "gatherAppleToolResults",
+      "runAppleReadOnlyTurn"
+    ],
+    "src/main/chat/confirm.ts": [
+      "cancelDraft",
+      "confirmDraft",
+      "changedResourceFromDraft",
+      "changedIdsFromResult"
+    ],
+    "src/main/chat/credentials-vault.ts": [
+      "storeChatCredentialSecret",
+      "storeChatApiKey",
+      "readChatCredentialSecret",
+      "readChatApiKey",
+      "readChatBaseUrl",
+      "readChatProviderId",
+      "hasChatApiKey",
+      "deleteChatApiKey",
+      "fingerprintApiKey"
+    ],
+    "src/main/chat/credentials.ts": [
+      "listCredentials",
+      "getCredential",
+      "getDefaultCredentialId",
+      "createCredential",
+      "updateCredential",
+      "setDefaultCredential",
+      "deleteCredential"
+    ],
+    "src/main/chat/dates.ts": [
+      "todayIso",
+      "currentMonth",
+      "shiftMonth",
+      "resolveMonth",
+      "requireMonth",
+      "resolveDate",
+      "requireDate"
+    ],
+    "src/main/chat/drafts.ts": [
+      "putDraft",
+      "getDraft",
+      "listDrafts",
+      "updateDraftSpec",
+      "markDraft",
+      "updateDraftMissing"
+    ],
+    "src/main/chat/expense-profile.ts": [
+      "resolveExpenseProfile",
+      "expenseProfileMissingFields",
+      "WORKFLOW_LOCKED_CATEGORIES"
+    ],
+    "src/main/chat/index.ts": [
+      "getChatStatus",
+      "isAppleOs",
+      "listRemoteModels",
+      "sendChatMessage",
+      "probeAppleReadOnly",
+      "shouldUseAppleReadOnly",
+      "isAppleReadOnlySkill",
+      "invalidateAppleProbeCache",
+      "shutdownAppleClient",
+      "appleReasonUserCopy",
+      "APPLE_FORCE_ENV",
+      "listCredentials",
+      "createCredential",
+      "updateCredential",
+      "setDefaultCredential",
+      "deleteCredential",
+      "listThreads",
+      "getThread",
+      "createThread",
+      "updateThread",
+      "deleteThread",
+      "deleteAllThreads",
+      "listMessages",
+      "CHAT_CURATED_MODELS",
+      "DEFAULT_CHAT_MODEL",
+      "listChatProviders",
+      "GEMINI_CHAT_BASE_URL",
+      "normalizeChatModelId",
+      "providerPresetFromBaseUrl",
+      "baseUrlForProviderPreset",
+      "modelsForProvider",
+      "coerceModelForProvider",
+      "pickModelForProviderList",
+      "defaultModelForProvider",
+      "detectProviderFromKey",
+      "decorateRemoteModels",
+      "READ_TOOL_DEFINITIONS",
+      "WRITE_TOOL_DEFINITIONS",
+      "CHAT_TOOL_DEFINITIONS",
+      "executeReadTool",
+      "executeChatTool",
+      "listAllowedChatToolNames",
+      "isChatToolAllowed",
+      "routeChatSkill",
+      "listDrafts",
+      "getDraft",
+      "editDraftFields",
+      "confirmDraft",
+      "cancelDraft",
+      "changedResourceFromDraft",
+      "changedIdsFromResult",
+      "CHAT_SLASH_OVERLAYS",
+      "parseSlashOverlay",
+      "resolveActiveOverlay",
+      "buildApproveQuip",
+      "detectKeywordCheer",
+      "resolveExpenseProfile",
+      "expenseProfileMissingFields",
+      "WORKFLOW_LOCKED_CATEGORIES"
+    ],
+    "src/main/chat/models.ts": [
+      "DEFAULT_CHAT_BASE_URL",
+      "GEMINI_CHAT_BASE_URL",
+      "CHAT_PROVIDERS",
+      "CHAT_CURATED_MODELS",
+      "DEFAULT_CHAT_MODEL",
+      "listChatProviders",
+      "getChatProvider",
+      "resolveChatBaseUrl",
+      "baseUrlForProviderPreset",
+      "providerPresetFromBaseUrl",
+      "modelsForProvider",
+      "defaultModelForProvider",
+      "headersForProvider",
+      "normalizeChatModelId",
+      "pickModelForProviderList",
+      "detectProviderFromKey",
+      "decorateRemoteModels",
+      "coerceModelForProvider"
+    ],
+    "src/main/chat/orchestrator.ts": [
+      "getChatStatus",
+      "isAppleOs",
+      "listRemoteModels",
+      "sendChatMessage"
+    ],
+    "src/main/chat/overlays/catalog.ts": [
+      "CHAT_SLASH_OVERLAYS",
+      "OVERLAY_IDS",
+      "INCOME_CELEBRATE_THRESHOLD",
+      "SPEND_WINCE_THRESHOLD",
+      "CHEER_KEYWORDS",
+      "isChatOverlayId",
+      "overlaySystemPrompt"
+    ],
+    "src/main/chat/overlays/heuristics.ts": [
+      "detectKeywordCheer",
+      "effectiveOverlayForPrompt",
+      "detectBudgetGuardFromToolResults",
+      "formatBudgetGuardAppendix",
+      "buildApproveQuip",
+      "buildCancelAck"
+    ],
+    "src/main/chat/overlays/index.ts": [
+      "CHAT_SLASH_OVERLAYS",
+      "INCOME_CELEBRATE_THRESHOLD",
+      "SPEND_WINCE_THRESHOLD",
+      "isChatOverlayId",
+      "overlaySystemPrompt",
+      "parseSlashOverlay",
+      "resolveActiveOverlay",
+      "detectKeywordCheer",
+      "effectiveOverlayForPrompt",
+      "detectBudgetGuardFromToolResults",
+      "formatBudgetGuardAppendix",
+      "buildApproveQuip",
+      "buildCancelAck"
+    ],
+    "src/main/chat/overlays/parse.ts": [
+      "parseSlashOverlay",
+      "resolveActiveOverlay"
+    ],
+    "src/main/chat/provider.ts": [
+      "completeChat",
+      "fetchRemoteModelIds",
+      "completeChatText"
+    ],
+    "src/main/chat/skills/router.ts": [
+      "routeChatSkill",
+      "skillSystemAddendum"
+    ],
+    "src/main/chat/threads.ts": [
+      "listThreads",
+      "getThread",
+      "createThread",
+      "updateThread",
+      "touchThread",
+      "deleteThread",
+      "deleteAllThreads",
+      "listMessages",
+      "addMessage",
+      "maybeSetTitleFromUserMessage"
+    ],
+    "src/main/chat/tools/read-tools.ts": [
+      "getDashboardSummary",
+      "getMonthlyMonitoringSnapshot",
+      "listAccountsTool",
+      "listIncomeCategoriesTool",
+      "listExpenseCategoriesTool",
+      "queryIncomes",
+      "queryExpenses",
+      "getCategoryBudgetStatus",
+      "explainAppTopic",
+      "getExpenseFieldSchema",
+      "validateRebudgetAdjustments",
+      "planRebudget",
+      "resolveMonthTool"
+    ],
+    "src/main/chat/tools/registry.ts": [
+      "READ_TOOL_DEFINITIONS",
+      "WRITE_TOOL_DEFINITIONS",
+      "CHAT_TOOL_DEFINITIONS",
+      "listAllowedChatToolNames",
+      "isChatToolAllowed",
+      "executeChatTool",
+      "executeReadTool"
+    ],
+    "src/main/chat/tools/write-tools.ts": [
+      "MASS_EDIT_CAP",
+      "proposeCreateIncome",
+      "proposeCreateExpense",
+      "proposeCreateTransfer",
+      "proposeCreateCcPayment",
+      "proposeCreateAlkansya",
+      "proposeCreateReceivable",
+      "proposeUpdateIncome",
+      "proposeUpdateExpense",
+      "proposeMassUpdateIncomes",
+      "proposeMassUpdateExpenses",
+      "editDraftFields",
+      "toCreateIncomeInput",
+      "toCreateExpenseInput",
+      "toUpdateIncomePatch",
+      "toUpdateExpensePatch",
+      "formatDraftForHuman"
+    ],
+    "src/main/chat/topic-guard.ts": [
+      "checkTopicGuard"
+    ],
+    "src/main/db/index.ts": [
+      "initDatabase",
+      "getDb",
+      "getSqlite",
+      "getDbPath",
+      "listTables",
+      "closeDatabase"
+    ],
+    "src/main/db/mappers.ts": [
+      "mapAccount",
+      "mapIncome",
+      "mapExpense",
+      "mapScheduler",
+      "mapIncomeCategory",
+      "mapExpenseCategory"
+    ],
+    "src/main/db/repositories.ts": [
+      "listIncomeCategories",
+      "listExpenseCategories",
+      "listIncomes",
+      "getIncome",
+      "createIncome",
+      "updateIncome",
+      "softDeleteIncome",
+      "hardDeleteIncome",
+      "balanceContext",
+      "listExpenses",
+      "listExpensesForCCCoverage",
+      "getExpense",
+      "createExpense",
+      "updateExpense",
+      "softDeleteExpense",
+      "hardDeleteExpense",
+      "listScheduler",
+      "getScheduler",
+      "createScheduler",
+      "updateScheduler",
+      "softDeleteScheduler",
+      "hardDeleteScheduler",
+      "generateFromScheduler",
+      "listAccounts",
+      "financeSnapshot"
+    ],
+    "src/main/db/schema.ts": [
+      "accounts",
+      "incomeCategories",
+      "expenseCategories",
+      "incomes",
+      "expenses",
+      "expenseScheduler",
+      "conflicts",
+      "syncMeta",
+      "appSettings",
+      "mutationQueue",
+      "activityLog",
+      "chatCredentials",
+      "chatThreads",
+      "chatMessages",
+      "chatDrafts",
+      "schema"
+    ],
+    "src/main/dev-logs/store.ts": [
+      "DEV_LOG_CAPACITY",
+      "summarizeForDevLog",
+      "isDevModeEnabled",
+      "listDevLogs",
+      "clearDevLogs",
+      "appendDevLog",
+      "logDevOperation"
+    ],
+    "src/main/domain/derivations.ts": [
+      "roundMoney",
+      "netIncome",
+      "computeAccountBalance",
+      "computeAccountBalances",
+      "categorySpending",
+      "dashboardSummary",
+      "monthlyMonitoring"
+    ],
+    "src/main/domain/notion-formulas.ts": [
+      "round2",
+      "isTransactionCategory",
+      "transactionAmount",
+      "grossPrice",
+      "installmentAmount",
+      "paidAmount",
+      "remainingBalance",
+      "isPasabuyCategoryName",
+      "pasabuyReceivedAmount",
+      "pasabuyerBalance"
+    ],
+    "src/main/domain/query-filters.ts": [
+      "normalizeExpenseViewMode",
+      "filterIncomeByQuery",
+      "filterExpensesByQuery"
+    ],
+    "src/main/domain/resource-utils.ts": [
+      "isIncomeBacked",
+      "isExpenseBacked",
+      "currentMonth",
+      "isCreditLike",
+      "filterByMonth",
+      "filterByRange"
+    ],
+    "src/main/domain/schedule.ts": [
+      "advanceDate"
+    ],
+    "src/main/domain/validation.ts": [
+      "ValidationError",
+      "assertIsoDate",
+      "assertOptionalIsoDate",
+      "assertMonth",
+      "assertFiniteNumber",
+      "assertOptionalFiniteNumber",
+      "assertNonEmptyString",
+      "validateCreateIncome",
+      "validateUpdateIncome",
+      "validateCreateExpense",
+      "validateUpdateExpense",
+      "validateCreateScheduler",
+      "validateUpdateScheduler"
+    ],
+    "src/main/index.ts": [],
+    "src/main/index.ts.bak": [],
+    "src/main/ipc/index.ts": [
+      "registerIpc"
+    ],
+    "src/main/notion/client.ts": [
+      "NotionApiError",
+      "NotionClient"
+    ],
+    "src/main/notion/files.ts": [
+      "downloadImageAsDataUri",
+      "isCachedDataUri"
+    ],
+    "src/main/notion/mapping-store.ts": [
+      "saveMapping",
+      "getMapping",
+      "isMapped"
+    ],
+    "src/main/notion/monitoring-split.ts": [
+      "invalidateMonitoringSplitCache",
+      "fetchMonitoringSplit"
+    ],
+    "src/main/notion/page-extractors.ts": [
+      "extractTitle",
+      "extractRichText",
+      "extractNumber",
+      "extractSelect",
+      "extractCheckbox",
+      "extractDate",
+      "extractRelationFirst",
+      "extractRelationAll",
+      "extractFileUrl",
+      "extractNumberOrFormula",
+      "pageToAccountFields",
+      "pageToIncomeCategoryFields",
+      "pageToExpenseCategoryFields",
+      "pageToIncomeFields",
+      "pageToExpenseFields",
+      "pageLastEditedTime",
+      "extractPageIcon",
+      "isDeletedTitle"
+    ],
+    "src/main/notion/page-icons.ts": [
+      "iconForIncome",
+      "iconForExpense"
+    ],
+    "src/main/notion/property-mapper.ts": [
+      "NOTION_PROPERTY_NAMES",
+      "incomeDtoToProperties",
+      "expenseDtoToProperties"
+    ],
+    "src/main/notion/schema-spec.ts": [
+      "EXPECTED_SCHEMA",
+      "compareSchema"
+    ],
+    "src/main/notion/service.ts": [
+      "client",
+      "connect",
+      "isConnected",
+      "disconnect",
+      "discoverDatabases",
+      "verifySchema"
+    ],
+    "src/main/notion/token-store.ts": [
+      "storeToken",
+      "hasToken",
+      "readToken",
+      "deleteToken"
+    ],
+    "src/main/services/discard-unsynced.ts": [
+      "discardUnsynced",
+      "buildHardDeletePayload"
+    ],
+    "src/main/services/history.ts": [
+      "recordActivity",
+      "listUnsynced",
+      "listActivity",
+      "getItemDetail",
+      "getHistory"
+    ],
+    "src/main/services/reports.ts": [
+      "dashboard",
+      "monitoring"
+    ],
+    "src/main/settings/ui.ts": [
+      "DEFAULT_UI_SETTINGS",
+      "normalizeUiSettings",
+      "getUiSettings",
+      "setUiSettings"
+    ],
+    "src/main/sync/conflicts.ts": [
+      "recordConflicts",
+      "listConflicts",
+      "resolveConflict",
+      "resolveAllConflicts"
+    ],
+    "src/main/sync/index.ts": [
+      "pushAll",
+      "pullAll",
+      "syncStatus",
+      "getSyncSettings",
+      "setSyncSettings",
+      "listConflicts",
+      "resolveConflict",
+      "resolveAllConflicts",
+      "resetDatabase",
+      "syncNow"
+    ],
+    "src/main/sync/merge.ts": [
+      "threeWayMerge"
+    ],
+    "src/main/sync/meta.ts": [
+      "metaGet",
+      "metaSet",
+      "META_KEYS"
+    ],
+    "src/main/sync/notion-gone.ts": [
+      "isNotionGoneError",
+      "localsMissingFromNotion",
+      "acceptNotionGone"
+    ],
+    "src/main/sync/pull.ts": [
+      "pullAll"
+    ],
+    "src/main/sync/push.ts": [
+      "isPhantomDelete",
+      "pushAll"
+    ],
+    "src/main/sync/reset.ts": [
+      "resetDatabase"
+    ],
+    "src/main/sync/run.ts": [
+      "withSyncRun",
+      "currentRunId"
+    ],
+    "src/main/sync/scheduler.ts": [
+      "reschedule",
+      "stopScheduler"
+    ],
+    "src/main/sync/settings.ts": [
+      "getSyncSettings",
+      "setSyncSettings"
+    ],
+    "src/main/sync/status.ts": [
+      "isRunning",
+      "setRunning",
+      "isOnline",
+      "syncStatus",
+      "emitStatus"
+    ],
+    "src/main/sync/writable.ts": [
+      "INCOME_WRITABLE_COLS",
+      "EXPENSE_WRITABLE_COLS",
+      "incomeWritableFromRow",
+      "expenseWritableFromRow",
+      "writeIncomeWritable",
+      "writeExpenseWritable"
+    ],
+    "src/main/updater/index.ts": [
+      "initUpdater",
+      "checkForUpdatesNow",
+      "isUpdateDownloaded",
+      "installUpdate"
+    ],
+    "src/main/windows/index.ts": [
+      "appIconPath",
+      "createWindow",
+      "broadcast",
+      "sendToFocused",
+      "installMenu",
+      "onActivate",
+      "app"
+    ],
+    "src/preload/index.d.ts": [],
+    "src/preload/index.ts": [],
+    "src/renderer/src/components/charts/index.tsx": [
+      "SpendingBreakdownCard",
+      "buildAnnualGroups",
+      "GroupBySelect",
+      "AnnualBarChart",
+      "CategoryDonutChart"
+    ],
+    "src/renderer/src/components/color-picker.tsx": [
+      "ColorPicker"
+    ],
+    "src/renderer/src/components/constants.ts": [
+      "prototypeAccent",
+      "categoryPalette",
+      "expenseCategoryFilterWithoutPasabuy",
+      "ANNUAL_MONTHS"
+    ],
+    "src/renderer/src/components/dev-mode-probe.tsx": [
+      "DevModeProbe"
+    ],
+    "src/renderer/src/components/export/export-modal-shell.tsx": [
+      "ExportModalShell"
+    ],
+    "src/renderer/src/components/fab/index.tsx": [
+      "WorkspaceFab",
+      "QuickAddIncomeModal",
+      "QuickAddExpenseModal",
+      "ReceiptModal",
+      "InsightShotModal",
+      "FabModalKind"
+    ],
+    "src/renderer/src/components/fab/push-fab.tsx": [
+      "PushSyncFab"
+    ],
+    "src/renderer/src/components/finance-workspace.tsx": [
+      "FinanceWorkspace"
+    ],
+    "src/renderer/src/components/hooks.ts": [
+      "useLiveCollections",
+      "getIncomeCategorySummaries",
+      "getExpenseCategorySummaries",
+      "isWorkflowSection",
+      "isSpecificExpenseCategoryFilter",
+      "useDebounce"
+    ],
+    "src/renderer/src/components/layout/index.tsx": [
+      "sectionIcons",
+      "Sidebar",
+      "NavGroup",
+      "TopBar"
+    ],
+    "src/renderer/src/components/layout/workspace-tab-bar.tsx": [
+      "WorkspaceTabBar"
+    ],
+    "src/renderer/src/components/pages/accounts.tsx": [
+      "AccountsPage"
+    ],
+    "src/renderer/src/components/pages/chat.tsx": [
+      "ChatModePage"
+    ],
+    "src/renderer/src/components/pages/dashboard.tsx": [
+      "DashboardPage",
+      "TopExpensePurchasesCard",
+      "TopSpendingCategoriesCard",
+      "RecentTransactionsList"
+    ],
+    "src/renderer/src/components/pages/dev-logs.tsx": [
+      "DevLogsPage"
+    ],
+    "src/renderer/src/components/pages/expense.tsx": [
+      "ExpensePage",
+      "CoverExpensesModal"
+    ],
+    "src/renderer/src/components/pages/history.tsx": [
+      "HistoryPage"
+    ],
+    "src/renderer/src/components/pages/income.tsx": [
+      "IncomePage"
+    ],
+    "src/renderer/src/components/pages/monitoring.tsx": [
+      "MonthlyMonitoringPage"
+    ],
+    "src/renderer/src/components/pages/settings-modals.tsx": [
+      "KNOWN_DB_ID_KEYS",
+      "ThemeCustomizeModal",
+      "NotionConfigModal",
+      "InterfaceManageModal",
+      "ProfileManageModal",
+      "AiChatConfigModal",
+      "SettingsModalKind"
+    ],
+    "src/renderer/src/components/pages/settings.tsx": [
+      "SettingsPage"
+    ],
+    "src/renderer/src/components/pages/sync.tsx": [
+      "SyncPage"
+    ],
+    "src/renderer/src/components/pages/workflow.tsx": [
+      "WorkflowPage"
+    ],
+    "src/renderer/src/components/shortcuts/index.tsx": [
+      "SECTION_SHORTCUT_ID",
+      "ShortcutHint",
+      "GlobalShortcuts",
+      "CheatSheet"
+    ],
+    "src/renderer/src/components/ui/accounts.tsx": [
+      "AccountTypeIcon",
+      "isImageUrl",
+      "AccountIcon",
+      "CategoryIcon",
+      "AccountDetailModal"
+    ],
+    "src/renderer/src/components/ui/data-table.tsx": [
+      "cellText",
+      "cellSortKey",
+      "DataTable"
+    ],
+    "src/renderer/src/components/ui/date-range.tsx": [
+      "DateRangeSelector",
+      "StatusPill",
+      "PICKER_MONTHS"
+    ],
+    "src/renderer/src/components/ui/error-boundary.tsx": [
+      "ErrorBoundary"
+    ],
+    "src/renderer/src/components/ui/form-modals.tsx": [
+      "FormModal",
+      "SettingsModal",
+      "ConfirmModal"
+    ],
+    "src/renderer/src/components/ui/index.tsx": [
+      "PageToolbar",
+      "Panel",
+      "MetricCard",
+      "Badge",
+      "MoneyLine",
+      "Field",
+      "ComputedField",
+      "FormSectionDivider",
+      "MoneyValue",
+      "EmptyState",
+      "LoadingBlock",
+      "SegmentedControl",
+      "FilterToggle",
+      "FilterSelect",
+      "FilterDropdown",
+      "MultiSelect",
+      "BudgetRow",
+      "CategoryCard",
+      "ErrorRow",
+      "SkeletonBar",
+      "MetricCardSkeleton",
+      "PanelSkeleton",
+      "MetricCardGridSkeleton"
+    ],
+    "src/renderer/src/components/ui/mass-edit-modal.tsx": [
+      "MassEditModal"
+    ],
+    "src/renderer/src/components/ui/search-bar.tsx": [
+      "SearchToggle",
+      "SearchInput",
+      "FilterToggle"
+    ],
+    "src/renderer/src/components/ui/toast.tsx": [
+      "Toast"
+    ],
+    "src/renderer/src/lib/api-client.ts": [
+      "accountsApi",
+      "incomeCategoriesApi",
+      "expenseCategoriesApi",
+      "incomesApi",
+      "expensesApi",
+      "transactionsApi",
+      "transfersApi",
+      "creditCardPaymentsApi",
+      "alkansyaApi",
+      "receivablesApi",
+      "monthlyMonitoringApi",
+      "dashboardApi",
+      "expenseSchedulerApi",
+      "syncApi",
+      "historyApi",
+      "preferencesApi",
+      "userNotionConfigApi",
+      "financeApi"
+    ],
+    "src/renderer/src/lib/app-tabs-context.tsx": [
+      "AppTabsProvider",
+      "useAppTabs",
+      "useActiveTabSection"
+    ],
+    "src/renderer/src/lib/app-tabs.ts": [
+      "createTabId",
+      "createInitialTabsState",
+      "tabsReducer",
+      "activeSection"
+    ],
+    "src/renderer/src/lib/auth-context.tsx": [
+      "AuthProvider",
+      "useAuth"
+    ],
+    "src/renderer/src/lib/avatar.ts": [
+      "fileToAvatarDataUrl",
+      "userInitials"
+    ],
+    "src/renderer/src/lib/color-utils.ts": [
+      "hexToRgba",
+      "rgbaToHex",
+      "rgbaToCmyk",
+      "cmykToRgba",
+      "normalizeHex"
+    ],
+    "src/renderer/src/lib/date-range.ts": [
+      "todayIso",
+      "incomeModeToUnit",
+      "expenseModeToUnit",
+      "monitoringModeToUnit",
+      "computeRange",
+      "stepAnchor",
+      "rangeLabel",
+      "anchorMonth",
+      "activeSelectorUnit"
+    ],
+    "src/renderer/src/lib/dev-log.ts": [
+      "logDevEvent"
+    ],
+    "src/renderer/src/lib/export-node.ts": [
+      "SHOT_HIDE_CLASS",
+      "nodeToPngDataUrl",
+      "downloadNodeAsPng",
+      "printNode"
+    ],
+    "src/renderer/src/lib/fab-export-context.tsx": [
+      "FabExportProvider",
+      "useFabRegister",
+      "useFabExport"
+    ],
+    "src/renderer/src/lib/finance-data-context.tsx": [
+      "FinanceDataProvider",
+      "useFinanceData"
+    ],
+    "src/renderer/src/lib/finance-data.ts": [
+      "financeSections",
+      "getSectionById",
+      "getAccountName",
+      "getAccountType",
+      "getIncomeCategoryName",
+      "getExpenseCategoryName",
+      "getActiveSectionLabel"
+    ],
+    "src/renderer/src/lib/finance-events.ts": [
+      "DATA_CHANGED_EVENT",
+      "emitDataChanged"
+    ],
+    "src/renderer/src/lib/finance-helpers.ts": [
+      "applyNotionTag",
+      "applyIncomeTag",
+      "stripNotionTag",
+      "getMonthLabel",
+      "cx",
+      "parseNumberInput",
+      "parseOptionalNumberInput",
+      "getIncomeGrossTotal",
+      "getIncomeCapitalExpenditureTotal",
+      "getIncomeNetTotal",
+      "getExpenseTotal"
+    ],
+    "src/renderer/src/lib/finance-rules.test.ts": [],
+    "src/renderer/src/lib/finance-rules.ts": [
+      "normalIncomeFields",
+      "incomeTransactionOnlyFields",
+      "auxiliaryIncomeCategoryLabels",
+      "paymentStatusLabels",
+      "paymentFrequencyLabels",
+      "pasabuyerLabels",
+      "pasabuyStatusLabels",
+      "transactionWorkflowCategories",
+      "isCreditLikeAccountType",
+      "calculateTotalCashFlow",
+      "isAuxiliaryIncomeCategory",
+      "getNormalIncomeCategories",
+      "shouldShowCreditExpenseFields",
+      "shouldShowPasabuyFields",
+      "getExpenseConditionalSections",
+      "getWorkflowFixedCategory",
+      "isMonthlyMonitoringEditable",
+      "calculateNetIncome",
+      "calculateCategoryTotalOverview",
+      "calculateGrossPrice",
+      "calculateInstallmentAmount",
+      "calculatePaidAmount",
+      "calculateRemainingBalance",
+      "calculatePasabuyReceivedAmount",
+      "calculatePasabuyerBalance",
+      "calculateExpectedPaymentDate",
+      "getMoneyValueTone",
+      "isPasabuyCategoryName",
+      "isPasabuyCategory",
+      "isOutstandingExpense",
+      "shouldShowGlobalMonthSelector",
+      "getMonthKeyFromIsoDate",
+      "isIncomeRecordInViewScope",
+      "isExpenseRecordInViewScope",
+      "getExpenseStatusFromDatePaid",
+      "isUnpaidPasabuyExpense",
+      "isCreditAccountExpense"
+    ],
+    "src/renderer/src/lib/font-loader.ts": [
+      "loadGoogleFont",
+      "FONT_OPTIONS"
+    ],
+    "src/renderer/src/lib/format.ts": [
+      "formatMoney",
+      "formatDate",
+      "formatPercent",
+      "toYYMMDD"
+    ],
+    "src/renderer/src/lib/fuzzy-search.ts": [
+      "fuzzyMatch",
+      "fuzzyFilterIndices"
+    ],
+    "src/renderer/src/lib/pending-edit.ts": [
+      "setPendingEdit",
+      "consumePendingEdit",
+      "clearPendingEdit"
+    ],
+    "src/renderer/src/lib/query-provider.tsx": [
+      "QueryProvider"
+    ],
+    "src/renderer/src/lib/router.tsx": [
+      "parseSection",
+      "currentSection",
+      "setNavigateListener",
+      "syncHashToSection",
+      "navigate",
+      "useSection",
+      "Link",
+      "useRouter"
+    ],
+    "src/renderer/src/lib/shortcuts/context.tsx": [
+      "IS_MAC",
+      "ShortcutProvider",
+      "useShortcuts",
+      "useShortcutAction"
+    ],
+    "src/renderer/src/lib/shortcuts/registry.ts": [
+      "SHORTCUT_GROUPS",
+      "SHORTCUTS",
+      "displayCombo",
+      "shortcutKeys"
+    ],
+    "src/renderer/src/lib/theme-context.tsx": [
+      "ThemeProvider",
+      "useTheme"
+    ],
+    "src/renderer/src/lib/ui-settings-context.tsx": [
+      "UiSettingsProvider",
+      "useUiSettings",
+      "deleteActionLabel",
+      "deleteConfirmCopy"
+    ],
+    "src/renderer/src/lib/use-data.ts": [
+      "useDashboardData",
+      "useAccounts",
+      "useAccount",
+      "useIncomeCategories",
+      "useExpenseCategories",
+      "useIncomes",
+      "useExpenses",
+      "useExpensesForCCCoverage",
+      "useTransfers",
+      "useCreditCardPayments",
+      "useAlkansya",
+      "useReceivables",
+      "useWorkflowRecords",
+      "useSyncStatus",
+      "useSchemaStatus",
+      "useHistory",
+      "useMonthlyMonitoring",
+      "useExpenseScheduler",
+      "useFinanceInvalidation"
+    ],
+    "src/renderer/src/lib/use-debounced-persist.ts": [
+      "useDebouncedPersist"
+    ],
+    "src/renderer/src/main.tsx": [],
+    "src/renderer/src/types/finance.ts": [],
+    "src/shared/finance.types.ts": [
+      "INCOME_VIEW_FIXED_CATEGORY"
+    ],
+    "test/app-tabs.test.ts": [],
+    "test/chat-fingerprint.test.ts": [],
+    "test/chat-hardening.test.ts": [],
+    "test/chat-overlays.test.ts": [],
+    "test/chat-provider-base.test.ts": [],
+    "test/chat-read-tools.test.ts": [],
+    "test/chat-write-tools.test.ts": [],
+    "test/derivations.test.ts": [],
+    "test/dev-logs.test.ts": [],
+    "test/factories.ts": [
+      "account",
+      "income",
+      "expense",
+      "expenseCategory",
+      "incomeCategory"
+    ],
+    "test/mappers.test.ts": [],
+    "test/merge.test.ts": [],
+    "test/notion-files.test.ts": [],
+    "test/notion-formulas.test.ts": [],
+    "test/notion-gone.test.ts": [],
+    "test/notion.test.ts": [],
+    "test/page-extractors.test.ts": [],
+    "test/page-icons.test.ts": [],
+    "test/query-filters.test.ts": [],
+    "test/shortcuts.test.ts": [],
+    "test/ui-settings.test.ts": [],
+    "test/validation.test.ts": [],
+    "vitest.config.ts": []
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "src/main/db/migrations/0000_same_silver_surfer.sql",
+          "language": "sql",
+          "sizeLines": 134,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0001_kind_nekra.sql",
+          "language": "sql",
+          "sizeLines": 1,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0002_add_account_qr_code.sql",
+          "language": "sql",
+          "sizeLines": 0,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0003_reflective_angel.sql",
+          "language": "sql",
+          "sizeLines": 10,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0004_massive_maximus.sql",
+          "language": "sql",
+          "sizeLines": 0,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0005_chat.sql",
+          "language": "sql",
+          "sizeLines": 31,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0006_chat_drafts.sql",
+          "language": "sql",
+          "sizeLines": 21,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0007_chat_draft_display.sql",
+          "language": "sql",
+          "sizeLines": 3,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0008_reference_icons.sql",
+          "language": "sql",
+          "sizeLines": 7,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/main/db/migrations/0009_activity_payload.sql",
+          "language": "sql",
+          "sizeLines": 3,
+          "fileCategory": "data"
+        }
+      ],
+      "batchImportData": {
+        "src/main/db/migrations/0000_same_silver_surfer.sql": [],
+        "src/main/db/migrations/0001_kind_nekra.sql": [],
+        "src/main/db/migrations/0002_add_account_qr_code.sql": [],
+        "src/main/db/migrations/0003_reflective_angel.sql": [],
+        "src/main/db/migrations/0004_massive_maximus.sql": [],
+        "src/main/db/migrations/0005_chat.sql": [],
+        "src/main/db/migrations/0006_chat_drafts.sql": [],
+        "src/main/db/migrations/0007_chat_draft_display.sql": [],
+        "src/main/db/migrations/0008_reference_icons.sql": [],
+        "src/main/db/migrations/0009_activity_payload.sql": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "CHANGELOG.md",
+          "language": "markdown",
+          "sizeLines": 153,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 136,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "electron-builder.yml",
+          "language": "yaml",
+          "sizeLines": 63,
+          "fileCategory": "config"
+        },
+        {
+          "path": "package.json",
+          "language": "json",
+          "sizeLines": 57,
+          "fileCategory": "config"
+        },
+        {
+          "path": "tsconfig.json",
+          "language": "json",
+          "sizeLines": 7,
+          "fileCategory": "config"
+        },
+        {
+          "path": "tsconfig.node.json",
+          "language": "json",
+          "sizeLines": 26,
+          "fileCategory": "config"
+        },
+        {
+          "path": "tsconfig.web.json",
+          "language": "json",
+          "sizeLines": 29,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "CHANGELOG.md": [],
+        "README.md": [],
+        "electron-builder.yml": [],
+        "package.json": [],
+        "tsconfig.json": [],
+        "tsconfig.node.json": [],
+        "tsconfig.web.json": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "src/main/db/migrations/meta/0000_snapshot.json",
+          "language": "json",
+          "sizeLines": 872,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/main/db/migrations/meta/0001_snapshot.json",
+          "language": "json",
+          "sizeLines": 886,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/main/db/migrations/meta/0002_snapshot.json",
+          "language": "json",
+          "sizeLines": 893,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/main/db/migrations/meta/0003_snapshot.json",
+          "language": "json",
+          "sizeLines": 959,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/main/db/migrations/meta/0004_snapshot.json",
+          "language": "json",
+          "sizeLines": 966,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/main/db/migrations/meta/_journal.json",
+          "language": "json",
+          "sizeLines": 76,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/main/db/migrations/meta/0000_snapshot.json": [],
+        "src/main/db/migrations/meta/0001_snapshot.json": [],
+        "src/main/db/migrations/meta/0002_snapshot.json": [],
+        "src/main/db/migrations/meta/0003_snapshot.json": [],
+        "src/main/db/migrations/meta/0004_snapshot.json": [],
+        "src/main/db/migrations/meta/_journal.json": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": ".ua/.understandignore",
+          "language": "unknown",
+          "sizeLines": 28,
+          "fileCategory": "code"
+        },
+        {
+          "path": "drizzle.config.ts",
+          "language": "typescript",
+          "sizeLines": 9,
+          "fileCategory": "code"
+        },
+        {
+          "path": "e2e/app.spec.ts",
+          "language": "typescript",
+          "sizeLines": 91,
+          "fileCategory": "code"
+        },
+        {
+          "path": "e2e/keyboard-shortcuts.spec.ts",
+          "language": "typescript",
+          "sizeLines": 392,
+          "fileCategory": "code"
+        },
+        {
+          "path": "e2e/tsconfig.json",
+          "language": "json",
+          "sizeLines": 12,
+          "fileCategory": "config"
+        },
+        {
+          "path": "electron.vite.config.ts",
+          "language": "typescript",
+          "sizeLines": 33,
+          "fileCategory": "code"
+        },
+        {
+          "path": "playwright.config.ts",
+          "language": "typescript",
+          "sizeLines": 14,
+          "fileCategory": "code"
+        },
+        {
+          "path": "scripts/seed-dev.mjs",
+          "language": "javascript",
+          "sizeLines": 49,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/apple.ts",
+          "language": "typescript",
+          "sizeLines": 611,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/confirm.ts",
+          "language": "typescript",
+          "sizeLines": 163,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/credentials-vault.ts",
+          "language": "typescript",
+          "sizeLines": 123,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/credentials.ts",
+          "language": "typescript",
+          "sizeLines": 175,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/dates.ts",
+          "language": "typescript",
+          "sizeLines": 138,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/drafts.ts",
+          "language": "typescript",
+          "sizeLines": 305,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/expense-profile.ts",
+          "language": "typescript",
+          "sizeLines": 61,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/index.ts",
+          "language": "typescript",
+          "sizeLines": 74,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/models.ts",
+          "language": "typescript",
+          "sizeLines": 333,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/orchestrator.ts",
+          "language": "typescript",
+          "sizeLines": 616,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/overlays/catalog.ts",
+          "language": "typescript",
+          "sizeLines": 63,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/overlays/heuristics.ts",
+          "language": "typescript",
+          "sizeLines": 145,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/overlays/index.ts",
+          "language": "typescript",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/overlays/parse.ts",
+          "language": "typescript",
+          "sizeLines": 34,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/provider.ts",
+          "language": "typescript",
+          "sizeLines": 304,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/skills/router.ts",
+          "language": "typescript",
+          "sizeLines": 208,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/threads.ts",
+          "language": "typescript",
+          "sizeLines": 179,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        ".ua/.understandignore": [],
+        "drizzle.config.ts": [],
+        "e2e/app.spec.ts": [],
+        "e2e/keyboard-shortcuts.spec.ts": [],
+        "e2e/tsconfig.json": [],
+        "electron.vite.config.ts": [],
+        "playwright.config.ts": [],
+        "scripts/seed-dev.mjs": [],
+        "src/main/chat/apple.ts": [],
+        "src/main/chat/confirm.ts": [],
+        "src/main/chat/credentials-vault.ts": [],
+        "src/main/chat/credentials.ts": [],
+        "src/main/chat/dates.ts": [],
+        "src/main/chat/drafts.ts": [],
+        "src/main/chat/expense-profile.ts": [],
+        "src/main/chat/index.ts": [],
+        "src/main/chat/models.ts": [],
+        "src/main/chat/orchestrator.ts": [],
+        "src/main/chat/overlays/catalog.ts": [],
+        "src/main/chat/overlays/heuristics.ts": [],
+        "src/main/chat/overlays/index.ts": [],
+        "src/main/chat/overlays/parse.ts": [],
+        "src/main/chat/provider.ts": [],
+        "src/main/chat/skills/router.ts": [],
+        "src/main/chat/threads.ts": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": "src/main/chat/tools/read-tools.ts",
+          "language": "typescript",
+          "sizeLines": 382,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/tools/registry.ts",
+          "language": "typescript",
+          "sizeLines": 556,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/tools/write-tools.ts",
+          "language": "typescript",
+          "sizeLines": 762,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/chat/topic-guard.ts",
+          "language": "typescript",
+          "sizeLines": 181,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/db/index.ts",
+          "language": "typescript",
+          "sizeLines": 67,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/db/mappers.ts",
+          "language": "typescript",
+          "sizeLines": 225,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/db/repositories.ts",
+          "language": "typescript",
+          "sizeLines": 645,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/db/schema.ts",
+          "language": "typescript",
+          "sizeLines": 219,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/dev-logs/store.ts",
+          "language": "typescript",
+          "sizeLines": 125,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/derivations.ts",
+          "language": "typescript",
+          "sizeLines": 225,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/notion-formulas.ts",
+          "language": "typescript",
+          "sizeLines": 80,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/query-filters.ts",
+          "language": "typescript",
+          "sizeLines": 134,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/resource-utils.ts",
+          "language": "typescript",
+          "sizeLines": 53,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/schedule.ts",
+          "language": "typescript",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/domain/validation.ts",
+          "language": "typescript",
+          "sizeLines": 99,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/index.ts",
+          "language": "typescript",
+          "sizeLines": 62,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/index.ts.bak",
+          "language": "bak",
+          "sizeLines": 58,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/ipc/index.ts",
+          "language": "typescript",
+          "sizeLines": 614,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/client.ts",
+          "language": "typescript",
+          "sizeLines": 187,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/files.ts",
+          "language": "typescript",
+          "sizeLines": 42,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/mapping-store.ts",
+          "language": "typescript",
+          "sizeLines": 33,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/monitoring-split.ts",
+          "language": "typescript",
+          "sizeLines": 140,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/page-extractors.ts",
+          "language": "typescript",
+          "sizeLines": 263,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/page-icons.ts",
+          "language": "typescript",
+          "sizeLines": 64,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/property-mapper.ts",
+          "language": "typescript",
+          "sizeLines": 189,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/main/chat/tools/read-tools.ts": [],
+        "src/main/chat/tools/registry.ts": [],
+        "src/main/chat/tools/write-tools.ts": [],
+        "src/main/chat/topic-guard.ts": [],
+        "src/main/db/index.ts": [],
+        "src/main/db/mappers.ts": [],
+        "src/main/db/repositories.ts": [],
+        "src/main/db/schema.ts": [],
+        "src/main/dev-logs/store.ts": [],
+        "src/main/domain/derivations.ts": [],
+        "src/main/domain/notion-formulas.ts": [],
+        "src/main/domain/query-filters.ts": [],
+        "src/main/domain/resource-utils.ts": [],
+        "src/main/domain/schedule.ts": [],
+        "src/main/domain/validation.ts": [],
+        "src/main/index.ts": [],
+        "src/main/index.ts.bak": [],
+        "src/main/ipc/index.ts": [],
+        "src/main/notion/client.ts": [],
+        "src/main/notion/files.ts": [],
+        "src/main/notion/mapping-store.ts": [],
+        "src/main/notion/monitoring-split.ts": [],
+        "src/main/notion/page-extractors.ts": [],
+        "src/main/notion/page-icons.ts": [],
+        "src/main/notion/property-mapper.ts": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 6,
+      "files": [
+        {
+          "path": "src/main/notion/schema-spec.ts",
+          "language": "typescript",
+          "sizeLines": 109,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/service.ts",
+          "language": "typescript",
+          "sizeLines": 106,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/notion/token-store.ts",
+          "language": "typescript",
+          "sizeLines": 33,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/services/discard-unsynced.ts",
+          "language": "typescript",
+          "sizeLines": 250,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/services/history.ts",
+          "language": "typescript",
+          "sizeLines": 284,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/services/reports.ts",
+          "language": "typescript",
+          "sizeLines": 41,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/settings/ui.ts",
+          "language": "typescript",
+          "sizeLines": 347,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/conflicts.ts",
+          "language": "typescript",
+          "sizeLines": 182,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/index.ts",
+          "language": "typescript",
+          "sizeLines": 27,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/merge.ts",
+          "language": "typescript",
+          "sizeLines": 80,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/meta.ts",
+          "language": "typescript",
+          "sizeLines": 25,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/notion-gone.ts",
+          "language": "typescript",
+          "sizeLines": 102,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/pull.ts",
+          "language": "typescript",
+          "sizeLines": 487,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/push.ts",
+          "language": "typescript",
+          "sizeLines": 389,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/reset.ts",
+          "language": "typescript",
+          "sizeLines": 74,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/run.ts",
+          "language": "typescript",
+          "sizeLines": 30,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/scheduler.ts",
+          "language": "typescript",
+          "sizeLines": 34,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/settings.ts",
+          "language": "typescript",
+          "sizeLines": 36,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/status.ts",
+          "language": "typescript",
+          "sizeLines": 53,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/sync/writable.ts",
+          "language": "typescript",
+          "sizeLines": 107,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/updater/index.ts",
+          "language": "typescript",
+          "sizeLines": 143,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/main/windows/index.ts",
+          "language": "typescript",
+          "sizeLines": 164,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/preload/index.d.ts",
+          "language": "typescript",
+          "sizeLines": 13,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/preload/index.ts",
+          "language": "typescript",
+          "sizeLines": 340,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/index.html",
+          "language": "html",
+          "sizeLines": 18,
+          "fileCategory": "markup"
+        }
+      ],
+      "batchImportData": {
+        "src/main/notion/schema-spec.ts": [],
+        "src/main/notion/service.ts": [],
+        "src/main/notion/token-store.ts": [],
+        "src/main/services/discard-unsynced.ts": [],
+        "src/main/services/history.ts": [],
+        "src/main/services/reports.ts": [],
+        "src/main/settings/ui.ts": [],
+        "src/main/sync/conflicts.ts": [],
+        "src/main/sync/index.ts": [],
+        "src/main/sync/merge.ts": [],
+        "src/main/sync/meta.ts": [],
+        "src/main/sync/notion-gone.ts": [],
+        "src/main/sync/pull.ts": [],
+        "src/main/sync/push.ts": [],
+        "src/main/sync/reset.ts": [],
+        "src/main/sync/run.ts": [],
+        "src/main/sync/scheduler.ts": [],
+        "src/main/sync/settings.ts": [],
+        "src/main/sync/status.ts": [],
+        "src/main/sync/writable.ts": [],
+        "src/main/updater/index.ts": [],
+        "src/main/windows/index.ts": [],
+        "src/preload/index.d.ts": [],
+        "src/preload/index.ts": [],
+        "src/renderer/index.html": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 7,
+      "files": [
+        {
+          "path": "src/renderer/src/assets/fonts.css",
+          "language": "css",
+          "sizeLines": 165,
+          "fileCategory": "markup"
+        },
+        {
+          "path": "src/renderer/src/assets/globals.css",
+          "language": "css",
+          "sizeLines": 9972,
+          "fileCategory": "markup"
+        },
+        {
+          "path": "src/renderer/src/components/charts/index.tsx",
+          "language": "typescript",
+          "sizeLines": 221,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/color-picker.tsx",
+          "language": "typescript",
+          "sizeLines": 125,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/constants.ts",
+          "language": "typescript",
+          "sizeLines": 32,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/dev-mode-probe.tsx",
+          "language": "typescript",
+          "sizeLines": 27,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/export/export-modal-shell.tsx",
+          "language": "typescript",
+          "sizeLines": 61,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/fab/index.tsx",
+          "language": "typescript",
+          "sizeLines": 741,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/fab/push-fab.tsx",
+          "language": "typescript",
+          "sizeLines": 98,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/finance-workspace.tsx",
+          "language": "typescript",
+          "sizeLines": 381,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/hooks.ts",
+          "language": "typescript",
+          "sizeLines": 105,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/layout/index.tsx",
+          "language": "typescript",
+          "sizeLines": 326,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/layout/workspace-tab-bar.tsx",
+          "language": "typescript",
+          "sizeLines": 69,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/accounts.tsx",
+          "language": "typescript",
+          "sizeLines": 277,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/chat.tsx",
+          "language": "typescript",
+          "sizeLines": 1369,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/dashboard.tsx",
+          "language": "typescript",
+          "sizeLines": 472,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/dev-logs.tsx",
+          "language": "typescript",
+          "sizeLines": 150,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/expense.tsx",
+          "language": "typescript",
+          "sizeLines": 1935,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/history.tsx",
+          "language": "typescript",
+          "sizeLines": 695,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/income.tsx",
+          "language": "typescript",
+          "sizeLines": 907,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/monitoring.tsx",
+          "language": "typescript",
+          "sizeLines": 720,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/settings-modals.tsx",
+          "language": "typescript",
+          "sizeLines": 1023,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/settings.tsx",
+          "language": "typescript",
+          "sizeLines": 422,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/sync.tsx",
+          "language": "typescript",
+          "sizeLines": 551,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/pages/workflow.tsx",
+          "language": "typescript",
+          "sizeLines": 653,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/renderer/src/assets/fonts.css": [],
+        "src/renderer/src/assets/globals.css": [],
+        "src/renderer/src/components/charts/index.tsx": [],
+        "src/renderer/src/components/color-picker.tsx": [],
+        "src/renderer/src/components/constants.ts": [],
+        "src/renderer/src/components/dev-mode-probe.tsx": [],
+        "src/renderer/src/components/export/export-modal-shell.tsx": [],
+        "src/renderer/src/components/fab/index.tsx": [],
+        "src/renderer/src/components/fab/push-fab.tsx": [],
+        "src/renderer/src/components/finance-workspace.tsx": [],
+        "src/renderer/src/components/hooks.ts": [],
+        "src/renderer/src/components/layout/index.tsx": [],
+        "src/renderer/src/components/layout/workspace-tab-bar.tsx": [],
+        "src/renderer/src/components/pages/accounts.tsx": [],
+        "src/renderer/src/components/pages/chat.tsx": [],
+        "src/renderer/src/components/pages/dashboard.tsx": [],
+        "src/renderer/src/components/pages/dev-logs.tsx": [],
+        "src/renderer/src/components/pages/expense.tsx": [],
+        "src/renderer/src/components/pages/history.tsx": [],
+        "src/renderer/src/components/pages/income.tsx": [],
+        "src/renderer/src/components/pages/monitoring.tsx": [],
+        "src/renderer/src/components/pages/settings-modals.tsx": [],
+        "src/renderer/src/components/pages/settings.tsx": [],
+        "src/renderer/src/components/pages/sync.tsx": [],
+        "src/renderer/src/components/pages/workflow.tsx": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 8,
+      "files": [
+        {
+          "path": "src/renderer/src/components/shortcuts/index.tsx",
+          "language": "typescript",
+          "sizeLines": 147,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/accounts.tsx",
+          "language": "typescript",
+          "sizeLines": 361,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/data-table.tsx",
+          "language": "typescript",
+          "sizeLines": 470,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/date-range.tsx",
+          "language": "typescript",
+          "sizeLines": 194,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/error-boundary.tsx",
+          "language": "typescript",
+          "sizeLines": 87,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/form-modals.tsx",
+          "language": "typescript",
+          "sizeLines": 220,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/index.tsx",
+          "language": "typescript",
+          "sizeLines": 549,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/mass-edit-modal.tsx",
+          "language": "typescript",
+          "sizeLines": 339,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/search-bar.tsx",
+          "language": "typescript",
+          "sizeLines": 81,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/components/ui/toast.tsx",
+          "language": "typescript",
+          "sizeLines": 57,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/api-client.ts",
+          "language": "typescript",
+          "sizeLines": 382,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/app-tabs-context.tsx",
+          "language": "typescript",
+          "sizeLines": 161,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/app-tabs.ts",
+          "language": "typescript",
+          "sizeLines": 98,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/auth-context.tsx",
+          "language": "typescript",
+          "sizeLines": 61,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/avatar.ts",
+          "language": "typescript",
+          "sizeLines": 38,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/color-utils.ts",
+          "language": "typescript",
+          "sizeLines": 79,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/date-range.ts",
+          "language": "typescript",
+          "sizeLines": 187,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/dev-log.ts",
+          "language": "typescript",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/export-node.ts",
+          "language": "typescript",
+          "sizeLines": 93,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/fab-export-context.tsx",
+          "language": "typescript",
+          "sizeLines": 106,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/finance-data-context.tsx",
+          "language": "typescript",
+          "sizeLines": 214,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/finance-data.ts",
+          "language": "typescript",
+          "sizeLines": 41,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/finance-events.ts",
+          "language": "typescript",
+          "sizeLines": 11,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/finance-helpers.ts",
+          "language": "typescript",
+          "sizeLines": 95,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/finance-rules.test.ts",
+          "language": "typescript",
+          "sizeLines": 283,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/renderer/src/components/shortcuts/index.tsx": [],
+        "src/renderer/src/components/ui/accounts.tsx": [],
+        "src/renderer/src/components/ui/data-table.tsx": [],
+        "src/renderer/src/components/ui/date-range.tsx": [],
+        "src/renderer/src/components/ui/error-boundary.tsx": [],
+        "src/renderer/src/components/ui/form-modals.tsx": [],
+        "src/renderer/src/components/ui/index.tsx": [],
+        "src/renderer/src/components/ui/mass-edit-modal.tsx": [],
+        "src/renderer/src/components/ui/search-bar.tsx": [],
+        "src/renderer/src/components/ui/toast.tsx": [],
+        "src/renderer/src/lib/api-client.ts": [],
+        "src/renderer/src/lib/app-tabs-context.tsx": [],
+        "src/renderer/src/lib/app-tabs.ts": [],
+        "src/renderer/src/lib/auth-context.tsx": [],
+        "src/renderer/src/lib/avatar.ts": [],
+        "src/renderer/src/lib/color-utils.ts": [],
+        "src/renderer/src/lib/date-range.ts": [],
+        "src/renderer/src/lib/dev-log.ts": [],
+        "src/renderer/src/lib/export-node.ts": [],
+        "src/renderer/src/lib/fab-export-context.tsx": [],
+        "src/renderer/src/lib/finance-data-context.tsx": [],
+        "src/renderer/src/lib/finance-data.ts": [],
+        "src/renderer/src/lib/finance-events.ts": [],
+        "src/renderer/src/lib/finance-helpers.ts": [],
+        "src/renderer/src/lib/finance-rules.test.ts": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 9,
+      "files": [
+        {
+          "path": "src/renderer/src/lib/finance-rules.ts",
+          "language": "typescript",
+          "sizeLines": 402,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/font-loader.ts",
+          "language": "typescript",
+          "sizeLines": 177,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/format.ts",
+          "language": "typescript",
+          "sizeLines": 48,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/fuzzy-search.ts",
+          "language": "typescript",
+          "sizeLines": 34,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/pending-edit.ts",
+          "language": "typescript",
+          "sizeLines": 35,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/query-provider.tsx",
+          "language": "typescript",
+          "sizeLines": 32,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/router.tsx",
+          "language": "typescript",
+          "sizeLines": 85,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/shortcuts/context.tsx",
+          "language": "typescript",
+          "sizeLines": 322,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/shortcuts/registry.ts",
+          "language": "typescript",
+          "sizeLines": 133,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/theme-context.tsx",
+          "language": "typescript",
+          "sizeLines": 176,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/ui-settings-context.tsx",
+          "language": "typescript",
+          "sizeLines": 255,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/use-data.ts",
+          "language": "typescript",
+          "sizeLines": 316,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/lib/use-debounced-persist.ts",
+          "language": "typescript",
+          "sizeLines": 27,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/main.tsx",
+          "language": "typescript",
+          "sizeLines": 91,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/renderer/src/types/finance.ts",
+          "language": "typescript",
+          "sizeLines": 240,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/shared/finance.types.ts",
+          "language": "typescript",
+          "sizeLines": 796,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/app-tabs.test.ts",
+          "language": "typescript",
+          "sizeLines": 49,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-fingerprint.test.ts",
+          "language": "typescript",
+          "sizeLines": 12,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-hardening.test.ts",
+          "language": "typescript",
+          "sizeLines": 392,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-overlays.test.ts",
+          "language": "typescript",
+          "sizeLines": 99,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-provider-base.test.ts",
+          "language": "typescript",
+          "sizeLines": 107,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-read-tools.test.ts",
+          "language": "typescript",
+          "sizeLines": 72,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/chat-write-tools.test.ts",
+          "language": "typescript",
+          "sizeLines": 217,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/derivations.test.ts",
+          "language": "typescript",
+          "sizeLines": 191,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/dev-logs.test.ts",
+          "language": "typescript",
+          "sizeLines": 26,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/renderer/src/lib/finance-rules.ts": [],
+        "src/renderer/src/lib/font-loader.ts": [],
+        "src/renderer/src/lib/format.ts": [],
+        "src/renderer/src/lib/fuzzy-search.ts": [],
+        "src/renderer/src/lib/pending-edit.ts": [],
+        "src/renderer/src/lib/query-provider.tsx": [],
+        "src/renderer/src/lib/router.tsx": [],
+        "src/renderer/src/lib/shortcuts/context.tsx": [],
+        "src/renderer/src/lib/shortcuts/registry.ts": [],
+        "src/renderer/src/lib/theme-context.tsx": [],
+        "src/renderer/src/lib/ui-settings-context.tsx": [],
+        "src/renderer/src/lib/use-data.ts": [],
+        "src/renderer/src/lib/use-debounced-persist.ts": [],
+        "src/renderer/src/main.tsx": [],
+        "src/renderer/src/types/finance.ts": [],
+        "src/shared/finance.types.ts": [],
+        "test/app-tabs.test.ts": [],
+        "test/chat-fingerprint.test.ts": [],
+        "test/chat-hardening.test.ts": [],
+        "test/chat-overlays.test.ts": [],
+        "test/chat-provider-base.test.ts": [],
+        "test/chat-read-tools.test.ts": [],
+        "test/chat-write-tools.test.ts": [],
+        "test/derivations.test.ts": [],
+        "test/dev-logs.test.ts": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 10,
+      "files": [
+        {
+          "path": "test/factories.ts",
+          "language": "typescript",
+          "sizeLines": 99,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/mappers.test.ts",
+          "language": "typescript",
+          "sizeLines": 175,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/merge.test.ts",
+          "language": "typescript",
+          "sizeLines": 79,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/notion-files.test.ts",
+          "language": "typescript",
+          "sizeLines": 67,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/notion-formulas.test.ts",
+          "language": "typescript",
+          "sizeLines": 93,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/notion-gone.test.ts",
+          "language": "typescript",
+          "sizeLines": 59,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/notion.test.ts",
+          "language": "typescript",
+          "sizeLines": 127,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/page-extractors.test.ts",
+          "language": "typescript",
+          "sizeLines": 119,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/page-icons.test.ts",
+          "language": "typescript",
+          "sizeLines": 55,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/query-filters.test.ts",
+          "language": "typescript",
+          "sizeLines": 128,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/shortcuts.test.ts",
+          "language": "typescript",
+          "sizeLines": 196,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/ui-settings.test.ts",
+          "language": "typescript",
+          "sizeLines": 76,
+          "fileCategory": "code"
+        },
+        {
+          "path": "test/validation.test.ts",
+          "language": "typescript",
+          "sizeLines": 50,
+          "fileCategory": "code"
+        },
+        {
+          "path": "vitest.config.ts",
+          "language": "typescript",
+          "sizeLines": 17,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "test/factories.ts": [],
+        "test/mappers.test.ts": [],
+        "test/merge.test.ts": [],
+        "test/notion-files.test.ts": [],
+        "test/notion-formulas.test.ts": [],
+        "test/notion-gone.test.ts": [],
+        "test/notion.test.ts": [],
+        "test/page-extractors.test.ts": [],
+        "test/page-icons.test.ts": [],
+        "test/query-filters.test.ts": [],
+        "test/shortcuts.test.ts": [],
+        "test/ui-settings.test.ts": [],
+        "test/validation.test.ts": [],
+        "vitest.config.ts": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

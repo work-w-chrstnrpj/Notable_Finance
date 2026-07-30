@@ -1,0 +1,136 @@
+{
+  "nodes": [
+    {
+      "id": "file:.ua/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".ua/.understandignore",
+      "summary": "Configuration file for the Understand-Anything tool that specifies which files to ignore during project analysis scans.",
+      "tags": ["configuration", "ignore-list", "analysis"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:drizzle.config.ts",
+      "type": "file",
+      "name": "drizzle.config.ts",
+      "filePath": "drizzle.config.ts",
+      "summary": "Drizzle ORM configuration file defining the SQLite database target, schema path, and dialect for migrations.",
+      "tags": ["configuration", "database", "orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:e2e/app.spec.ts",
+      "type": "file",
+      "name": "app.spec.ts",
+      "filePath": "e2e/app.spec.ts",
+      "summary": "Playwright end-to-end test that launches the Electron app and verifies the main window loads correctly.",
+      "tags": ["test", "e2e", "playwright", "electron"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:e2e/keyboard-shortcuts.spec.ts",
+      "type": "file",
+      "name": "keyboard-shortcuts.spec.ts",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "summary": "Playwright end-to-end test suite for keyboard shortcut navigation and form interactions across finance app sections.",
+      "tags": ["test", "e2e", "keyboard-shortcuts", "playwright"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:e2e/keyboard-shortcuts.spec.ts:keyCode",
+      "type": "function",
+      "name": "keyCode",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "lineRange": [53, 64],
+      "summary": "Maps a key character to its corresponding KeyboardEvent key code string.",
+      "tags": ["utility", "keyboard", "mapping"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:e2e/keyboard-shortcuts.spec.ts:keyValue",
+      "type": "function",
+      "name": "keyValue",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "lineRange": [66, 78],
+      "summary": "Maps a key character to its corresponding KeyboardEvent key value string.",
+      "tags": ["utility", "keyboard", "mapping"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:e2e/keyboard-shortcuts.spec.ts:dispatchKeyEvent",
+      "type": "function",
+      "name": "dispatchKeyEvent",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "lineRange": [81, 107],
+      "summary": "Dispatches a keyboard event with optional modifiers on the Electron window for testing shortcut interactions.",
+      "tags": ["utility", "keyboard", "event-dispatch"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:e2e/keyboard-shortcuts.spec.ts:selectFilterDropdownItem",
+      "type": "function",
+      "name": "selectFilterDropdownItem",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "lineRange": [125, 144],
+      "summary": "Selects an item from a filter dropdown by clicking the trigger and choosing the matching option text.",
+      "tags": ["utility", "ui-interaction", "dropdown"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:e2e/keyboard-shortcuts.spec.ts:createTestExpense",
+      "type": "function",
+      "name": "createTestExpense",
+      "filePath": "e2e/keyboard-shortcuts.spec.ts",
+      "lineRange": [146, 162],
+      "summary": "Creates a test expense record by navigating, filling the form, and submitting via keyboard shortcuts.",
+      "tags": ["utility", "test-setup", "expense"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:e2e/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "e2e/tsconfig.json",
+      "summary": "TypeScript configuration for e2e test files extending the base config with Playwright types and ESNext module settings.",
+      "tags": ["configuration", "typescript", "test"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:e2e/keyboard-shortcuts.spec.ts",
+      "target": "function:e2e/keyboard-shortcuts.spec.ts:keyCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:e2e/keyboard-shortcuts.spec.ts",
+      "target": "function:e2e/keyboard-shortcuts.spec.ts:keyValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:e2e/keyboard-shortcuts.spec.ts",
+      "target": "function:e2e/keyboard-shortcuts.spec.ts:dispatchKeyEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:e2e/keyboard-shortcuts.spec.ts",
+      "target": "function:e2e/keyboard-shortcuts.spec.ts:selectFilterDropdownItem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:e2e/keyboard-shortcuts.spec.ts",
+      "target": "function:e2e/keyboard-shortcuts.spec.ts:createTestExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

@@ -1,0 +1,1567 @@
+{
+  "scriptCompleted": true,
+  "entryPointCandidates": [
+    {
+      "id": "document:README.md",
+      "score": 5,
+      "name": "README.md",
+      "summary": "Project overview describing the offline-first Electron architecture, bidirectional Notion sync via three-way merge, phase completion status (Phases 0-5), and development/packaging setup instructions."
+    },
+    {
+      "id": "file:src/main/chat/index.ts",
+      "score": 4,
+      "name": "index.ts",
+      "summary": "Barrel module that re-exports all chat subsystem public symbols: orchestrator, credentials, threads, models, tools, drafts, confirm, overlays, expense-profile, and apple."
+    },
+    {
+      "id": "file:src/main/chat/overlays/index.ts",
+      "score": 4,
+      "name": "index.ts",
+      "summary": "Barrel module that re-exports all overlay subsystem symbols from catalog, heuristics, and parse modules."
+    },
+    {
+      "id": "file:src/main/ipc/index.ts",
+      "score": 4,
+      "name": "index.ts",
+      "summary": ""
+    },
+    {
+      "id": "file:src/main/sync/index.ts",
+      "score": 4,
+      "name": "index.ts",
+      "summary": "Barrel module that re-exports all sync sub-modules and provides the top-level syncNow orchestrator."
+    }
+  ],
+  "fanInRanking": [
+    {
+      "id": "file:test/notion.test.ts",
+      "fanIn": 4,
+      "name": "notion.test.ts"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "fanIn": 3,
+      "name": "accounts"
+    },
+    {
+      "id": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+      "fanIn": 3,
+      "name": "activity_log"
+    },
+    {
+      "id": "file:src/main/index.ts",
+      "fanIn": 3,
+      "name": "index.ts"
+    },
+    {
+      "id": "file:test/mappers.test.ts",
+      "fanIn": 3,
+      "name": "mappers.test.ts"
+    },
+    {
+      "id": "file:test/notion-gone.test.ts",
+      "fanIn": 3,
+      "name": "notion-gone.test.ts"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories",
+      "fanIn": 2,
+      "name": "expense_categories"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+      "fanIn": 2,
+      "name": "expenses"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories",
+      "fanIn": 2,
+      "name": "income_categories"
+    },
+    {
+      "id": "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts",
+      "fanIn": 2,
+      "name": "chat_drafts"
+    },
+    {
+      "id": "config:package.json",
+      "fanIn": 2,
+      "name": "package.json"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0001_snapshot.json",
+      "fanIn": 2,
+      "name": "0001_snapshot.json"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0002_snapshot.json",
+      "fanIn": 2,
+      "name": "0002_snapshot.json"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0003_snapshot.json",
+      "fanIn": 2,
+      "name": "0003_snapshot.json"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0004_snapshot.json",
+      "fanIn": 2,
+      "name": "0004_snapshot.json"
+    },
+    {
+      "id": "file:src/preload/index.ts",
+      "fanIn": 2,
+      "name": "index.ts"
+    },
+    {
+      "id": "file:src/renderer/index.html",
+      "fanIn": 2,
+      "name": "index.html"
+    },
+    {
+      "id": "file:src/renderer/src/main.tsx",
+      "fanIn": 2,
+      "name": "main.tsx"
+    },
+    {
+      "id": "file:test/merge.test.ts",
+      "fanIn": 2,
+      "name": "merge.test.ts"
+    },
+    {
+      "id": "file:test/notion-files.test.ts",
+      "fanIn": 2,
+      "name": "notion-files.test.ts"
+    }
+  ],
+  "fanOutRanking": [
+    {
+      "id": "config:vitest.config.ts",
+      "fanOut": 12,
+      "name": "vitest.config.ts"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "fanOut": 10,
+      "name": "0000_same_silver_surfer.sql"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/_journal.json",
+      "fanOut": 5,
+      "name": "_journal.json"
+    },
+    {
+      "id": "config:package.json",
+      "fanOut": 4,
+      "name": "package.json"
+    },
+    {
+      "id": "table:src/main/db/migrations/0005_chat.sql",
+      "fanOut": 3,
+      "name": "0005_chat.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0008_reference_icons.sql",
+      "fanOut": 3,
+      "name": "0008_reference_icons.sql"
+    },
+    {
+      "id": "config:electron-builder.yml",
+      "fanOut": 3,
+      "name": "electron-builder.yml"
+    },
+    {
+      "id": "config:tsconfig.node.json",
+      "fanOut": 3,
+      "name": "tsconfig.node.json"
+    },
+    {
+      "id": "document:README.md",
+      "fanOut": 2,
+      "name": "README.md"
+    },
+    {
+      "id": "config:tsconfig.json",
+      "fanOut": 2,
+      "name": "tsconfig.json"
+    },
+    {
+      "id": "config:tsconfig.web.json",
+      "fanOut": 2,
+      "name": "tsconfig.web.json"
+    },
+    {
+      "id": "table:src/main/db/migrations/0001_kind_nekra.sql",
+      "fanOut": 1,
+      "name": "0001_kind_nekra.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0002_add_account_qr_code.sql",
+      "fanOut": 1,
+      "name": "0002_add_account_qr_code.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0003_reflective_angel.sql",
+      "fanOut": 1,
+      "name": "0003_reflective_angel.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0004_massive_maximus.sql",
+      "fanOut": 1,
+      "name": "0004_massive_maximus.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0006_chat_drafts.sql",
+      "fanOut": 1,
+      "name": "0006_chat_drafts.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0007_chat_draft_display.sql",
+      "fanOut": 1,
+      "name": "0007_chat_draft_display.sql"
+    },
+    {
+      "id": "table:src/main/db/migrations/0009_activity_payload.sql",
+      "fanOut": 1,
+      "name": "0009_activity_payload.sql"
+    },
+    {
+      "id": "document:CHANGELOG.md",
+      "fanOut": 1,
+      "name": "CHANGELOG.md"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0000_snapshot.json",
+      "fanOut": 1,
+      "name": "0000_snapshot.json"
+    }
+  ],
+  "bfsTraversal": {
+    "startNode": "file:src/main/chat/index.ts",
+    "order": [
+      "file:src/main/chat/index.ts"
+    ],
+    "depthMap": {
+      "file:src/main/chat/index.ts": 0
+    },
+    "byDepth": {
+      "0": [
+        "file:src/main/chat/index.ts"
+      ]
+    }
+  },
+  "nonCodeFiles": {
+    "documentation": [
+      {
+        "id": "document:CHANGELOG.md",
+        "name": "CHANGELOG.md",
+        "type": "document",
+        "summary": "Documents all notable changes across v0.1.0, v1.0.0, and v1.1.0 releases with sections for added features, changed behavior, architecture, security, platform notes, and auto-update details."
+      },
+      {
+        "id": "document:README.md",
+        "name": "README.md",
+        "type": "document",
+        "summary": "Project overview describing the offline-first Electron architecture, bidirectional Notion sync via three-way merge, phase completion status (Phases 0-5), and development/packaging setup instructions."
+      }
+    ],
+    "infrastructure": [],
+    "data": [
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+        "name": "0000_same_silver_surfer.sql",
+        "type": "table",
+        "summary": "Initial Drizzle migration that creates the baseline local SQLite schema for accounts, categories, incomes, expenses, expense scheduler, sync meta, mutation queue, conflicts, and app settings."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+        "name": "accounts",
+        "type": "table",
+        "summary": "Mirror of the Notion Accounts database: stores account identity, type, starting balance, credit metadata, and Notion edit tracking."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:app_settings",
+        "name": "app_settings",
+        "type": "table",
+        "summary": "Generic key/value table for app-level settings and small persistent flags."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:conflicts",
+        "name": "conflicts",
+        "type": "table",
+        "summary": "Records three-way merge conflicts (base/local/remote per field) detected during sync, with resolution metadata."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories",
+        "name": "expense_categories",
+        "type": "table",
+        "summary": "Mirror of Notion expense categories, including monthly budget and auxiliary flag used for workflows."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_scheduler",
+        "name": "expense_scheduler",
+        "type": "table",
+        "summary": "Recurring expense templates that generate expense rows on schedule, with frequency, next-run date, and active flag."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+        "name": "expenses",
+        "type": "table",
+        "summary": "Mirror of the Notion Expenses database with payment tracking, pasabuy fields, credit-card linkage, and soft-delete support."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories",
+        "name": "income_categories",
+        "type": "table",
+        "summary": "Mirror of Notion income categories with source label and auxiliary flag."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:incomes",
+        "name": "incomes",
+        "type": "table",
+        "summary": "Mirror of the Notion Incomes database with gross/capital split, transaction-account linkage, and credit-card payment coverage."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:mutation_queue",
+        "name": "mutation_queue",
+        "type": "table",
+        "summary": "Outbox queue of pending local mutations awaiting push to Notion, with attempts and last-error tracking."
+      },
+      {
+        "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:sync_meta",
+        "name": "sync_meta",
+        "type": "table",
+        "summary": "Generic key/value table used by the sync layer to track cursors, last-run timestamps, and configuration flags."
+      },
+      {
+        "id": "table:src/main/db/migrations/0001_kind_nekra.sql",
+        "name": "0001_kind_nekra.sql",
+        "type": "table",
+        "summary": "Adds pasabuy payment date and paid-period columns to the expenses table to support pasabuy installment tracking."
+      },
+      {
+        "id": "table:src/main/db/migrations/0002_add_account_qr_code.sql",
+        "name": "0002_add_account_qr_code.sql",
+        "type": "table",
+        "summary": "Adds a qr_code text column to the accounts table to store an optional account QR code reference."
+      },
+      {
+        "id": "table:src/main/db/migrations/0003_reflective_angel.sql",
+        "name": "0003_reflective_angel.sql",
+        "type": "table",
+        "summary": "Creates the activity_log table that records sync actions and lifecycle events for the History page."
+      },
+      {
+        "id": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+        "name": "activity_log",
+        "type": "table",
+        "summary": "Per-record activity log capturing resource, action, direction, title, and Notion page id for sync events."
+      },
+      {
+        "id": "table:src/main/db/migrations/0004_massive_maximus.sql",
+        "name": "0004_massive_maximus.sql",
+        "type": "table",
+        "summary": "Adds a run_id column to activity_log so log entries can be grouped under a single sync run identifier."
+      },
+      {
+        "id": "table:src/main/db/migrations/0005_chat.sql",
+        "name": "0005_chat.sql",
+        "type": "table",
+        "summary": "Creates the chat agent tables: chat_credentials, chat_threads, and chat_messages, with supporting indexes for thread and message lookup."
+      },
+      {
+        "id": "table:src/main/db/migrations/0005_chat.sql:chat_credentials",
+        "name": "chat_credentials",
+        "type": "table",
+        "summary": "Stores chat provider credential metadata (name, key fingerprint, default flag) while secrets remain in safeStorage."
+      },
+      {
+        "id": "table:src/main/db/migrations/0005_chat.sql:chat_threads",
+        "name": "chat_threads",
+        "type": "table",
+        "summary": "Stores chat conversation threads with title, credential, model, and overlay selection plus timestamps."
+      },
+      {
+        "id": "table:src/main/db/migrations/0005_chat.sql:chat_messages",
+        "name": "chat_messages",
+        "type": "table",
+        "summary": "Append-only message log for chat threads, with role, content, optional structured payload JSON, and created timestamp."
+      },
+      {
+        "id": "table:src/main/db/migrations/0006_chat_drafts.sql",
+        "name": "0006_chat_drafts.sql",
+        "type": "table",
+        "summary": "Creates the chat_drafts table for durable, confirm-gated proposals that survive app restarts until the user Approves or Cancels."
+      },
+      {
+        "id": "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts",
+        "name": "chat_drafts",
+        "type": "table",
+        "summary": "Durable store of chat-proposed creates/updates with status, missing required fields, warnings, payload, target ids, and a computed preview."
+      },
+      {
+        "id": "table:src/main/db/migrations/0007_chat_draft_display.sql",
+        "name": "0007_chat_draft_display.sql",
+        "type": "table",
+        "summary": "Adds a presentation-only display column to chat_drafts so the confirm card can show resolved names and amounts instead of raw ids."
+      },
+      {
+        "id": "table:src/main/db/migrations/0008_reference_icons.sql",
+        "name": "0008_reference_icons.sql",
+        "type": "table",
+        "summary": "Adds an icon column to accounts, income_categories, and expense_categories to cache Notion page icons locally (data URIs or emoji)."
+      },
+      {
+        "id": "table:src/main/db/migrations/0009_activity_payload.sql",
+        "name": "0009_activity_payload.sql",
+        "type": "table",
+        "summary": "Adds a payload column to activity_log so the History page can render full read-only form modals for synced income and expense items."
+      }
+    ],
+    "config": [
+      {
+        "id": "config:electron-builder.yml",
+        "name": "electron-builder.yml",
+        "type": "config",
+        "summary": "Electron packaging configuration targeting macOS (.dmg/.zip), Linux (AppImage), and Windows (NSIS) with GitHub Releases auto-update, bundled Drizzle migrations as extra resources, and asarUnpack for native addons."
+      },
+      {
+        "id": "config:package.json",
+        "name": "package.json",
+        "type": "config",
+        "summary": "Defines the Electron app metadata, npm scripts for dev/build/test/packaging, production dependencies (React 19, better-sqlite3, Drizzle ORM, electron-updater), and dev toolchain (electron-vite, TypeScript 6, Vitest, Playwright, electron-builder)."
+      },
+      {
+        "id": "config:tsconfig.json",
+        "name": "tsconfig.json",
+        "type": "config",
+        "summary": "Root TypeScript project configuration that references tsconfig.node.json and tsconfig.web.json as composable sub-projects via project references."
+      },
+      {
+        "id": "config:tsconfig.node.json",
+        "name": "tsconfig.node.json",
+        "type": "config",
+        "summary": "TypeScript compiler configuration for the Electron main process, preload, and shared code, targeting ES2022 with strict mode, bundler module resolution, and a @shared path alias."
+      },
+      {
+        "id": "config:tsconfig.web.json",
+        "name": "tsconfig.web.json",
+        "type": "config",
+        "summary": "TypeScript compiler configuration for the Electron renderer (React UI), targeting ES2020 with DOM types, JSX support, relaxed unused-variable checks, and path aliases for renderer and shared imports."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/0000_snapshot.json",
+        "name": "0000_snapshot.json",
+        "type": "config",
+        "summary": "Drizzle Kit schema snapshot capturing the full database schema state including all tables, columns, indexes, and foreign keys at migration step 0000."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/0001_snapshot.json",
+        "name": "0001_snapshot.json",
+        "type": "config",
+        "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0001, reflecting incremental schema changes."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/0002_snapshot.json",
+        "name": "0002_snapshot.json",
+        "type": "config",
+        "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0002, reflecting incremental schema changes."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/0003_snapshot.json",
+        "name": "0003_snapshot.json",
+        "type": "config",
+        "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0003, reflecting incremental schema changes."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/0004_snapshot.json",
+        "name": "0004_snapshot.json",
+        "type": "config",
+        "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0004, reflecting incremental schema changes."
+      },
+      {
+        "id": "config:src/main/db/migrations/meta/_journal.json",
+        "name": "_journal.json",
+        "type": "config",
+        "summary": "Drizzle Kit migration journal that tracks the sequence, status, and tags of all applied migrations from 0000 through 0004."
+      },
+      {
+        "id": "config:e2e/tsconfig.json",
+        "name": "tsconfig.json",
+        "type": "config",
+        "summary": "TypeScript configuration for e2e test files extending the base config with Playwright types and ESNext module settings."
+      },
+      {
+        "id": "config:vitest.config.ts",
+        "name": "vitest.config.ts",
+        "type": "config",
+        "summary": "Vitest configuration with Node environment, path alias for the renderer src directory, and test file patterns covering both test/ and src/ directories."
+      }
+    ]
+  },
+  "clusters": [],
+  "layers": {
+    "count": 9,
+    "list": [
+      {
+        "id": "layer:renderer",
+        "name": "Renderer UI",
+        "description": "React-based user interface with pages, components, charts, layouts, form modals, contexts, hooks, and routing for all finance sections"
+      },
+      {
+        "id": "layer:main",
+        "name": "Main Process Core",
+        "description": "Electron main process: database access, domain logic, Notion integration, sync engine, IPC handlers, services, updater, and window management"
+      },
+      {
+        "id": "layer:data",
+        "name": "Data Layer",
+        "description": "SQLite schema migrations, table definitions, and Drizzle snapshot metadata"
+      },
+      {
+        "id": "layer:test",
+        "name": "Test Suite",
+        "description": "Unit tests (Vitest) and end-to-end tests (Playwright) covering domain logic, sync, chat, and UI behavior"
+      },
+      {
+        "id": "layer:chat",
+        "name": "Chat Subsystem",
+        "description": "AI-powered chat assistant with provider orchestration, tool execution, draft management, credential vault, overlay system, and skill routing"
+      },
+      {
+        "id": "layer:infrastructure",
+        "name": "Infrastructure & Config",
+        "description": "Project configuration files: build system (electron-builder, vite), TypeScript configs, package metadata, Playwright setup, and Drizzle ORM config"
+      },
+      {
+        "id": "layer:preload",
+        "name": "Preload Bridge",
+        "description": "Electron contextBridge layer exposing typed IPC surfaces from main process to the React renderer"
+      },
+      {
+        "id": "layer:documentation",
+        "name": "Documentation",
+        "description": "Project-level documentation including changelog and setup overview"
+      },
+      {
+        "id": "layer:shared",
+        "name": "Shared Types",
+        "description": "Cross-process type contracts and DTOs shared between main, preload, and renderer processes"
+      }
+    ]
+  },
+  "nodeSummaryIndex": {
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql": {
+      "name": "0000_same_silver_surfer.sql",
+      "type": "table",
+      "summary": "Initial Drizzle migration that creates the baseline local SQLite schema for accounts, categories, incomes, expenses, expense scheduler, sync meta, mutation queue, conflicts, and app settings."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts": {
+      "name": "accounts",
+      "type": "table",
+      "summary": "Mirror of the Notion Accounts database: stores account identity, type, starting balance, credit metadata, and Notion edit tracking."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:app_settings": {
+      "name": "app_settings",
+      "type": "table",
+      "summary": "Generic key/value table for app-level settings and small persistent flags."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:conflicts": {
+      "name": "conflicts",
+      "type": "table",
+      "summary": "Records three-way merge conflicts (base/local/remote per field) detected during sync, with resolution metadata."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories": {
+      "name": "expense_categories",
+      "type": "table",
+      "summary": "Mirror of Notion expense categories, including monthly budget and auxiliary flag used for workflows."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_scheduler": {
+      "name": "expense_scheduler",
+      "type": "table",
+      "summary": "Recurring expense templates that generate expense rows on schedule, with frequency, next-run date, and active flag."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses": {
+      "name": "expenses",
+      "type": "table",
+      "summary": "Mirror of the Notion Expenses database with payment tracking, pasabuy fields, credit-card linkage, and soft-delete support."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories": {
+      "name": "income_categories",
+      "type": "table",
+      "summary": "Mirror of Notion income categories with source label and auxiliary flag."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:incomes": {
+      "name": "incomes",
+      "type": "table",
+      "summary": "Mirror of the Notion Incomes database with gross/capital split, transaction-account linkage, and credit-card payment coverage."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:mutation_queue": {
+      "name": "mutation_queue",
+      "type": "table",
+      "summary": "Outbox queue of pending local mutations awaiting push to Notion, with attempts and last-error tracking."
+    },
+    "table:src/main/db/migrations/0000_same_silver_surfer.sql:sync_meta": {
+      "name": "sync_meta",
+      "type": "table",
+      "summary": "Generic key/value table used by the sync layer to track cursors, last-run timestamps, and configuration flags."
+    },
+    "table:src/main/db/migrations/0001_kind_nekra.sql": {
+      "name": "0001_kind_nekra.sql",
+      "type": "table",
+      "summary": "Adds pasabuy payment date and paid-period columns to the expenses table to support pasabuy installment tracking."
+    },
+    "table:src/main/db/migrations/0002_add_account_qr_code.sql": {
+      "name": "0002_add_account_qr_code.sql",
+      "type": "table",
+      "summary": "Adds a qr_code text column to the accounts table to store an optional account QR code reference."
+    },
+    "table:src/main/db/migrations/0003_reflective_angel.sql": {
+      "name": "0003_reflective_angel.sql",
+      "type": "table",
+      "summary": "Creates the activity_log table that records sync actions and lifecycle events for the History page."
+    },
+    "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log": {
+      "name": "activity_log",
+      "type": "table",
+      "summary": "Per-record activity log capturing resource, action, direction, title, and Notion page id for sync events."
+    },
+    "table:src/main/db/migrations/0004_massive_maximus.sql": {
+      "name": "0004_massive_maximus.sql",
+      "type": "table",
+      "summary": "Adds a run_id column to activity_log so log entries can be grouped under a single sync run identifier."
+    },
+    "table:src/main/db/migrations/0005_chat.sql": {
+      "name": "0005_chat.sql",
+      "type": "table",
+      "summary": "Creates the chat agent tables: chat_credentials, chat_threads, and chat_messages, with supporting indexes for thread and message lookup."
+    },
+    "table:src/main/db/migrations/0005_chat.sql:chat_credentials": {
+      "name": "chat_credentials",
+      "type": "table",
+      "summary": "Stores chat provider credential metadata (name, key fingerprint, default flag) while secrets remain in safeStorage."
+    },
+    "table:src/main/db/migrations/0005_chat.sql:chat_threads": {
+      "name": "chat_threads",
+      "type": "table",
+      "summary": "Stores chat conversation threads with title, credential, model, and overlay selection plus timestamps."
+    },
+    "table:src/main/db/migrations/0005_chat.sql:chat_messages": {
+      "name": "chat_messages",
+      "type": "table",
+      "summary": "Append-only message log for chat threads, with role, content, optional structured payload JSON, and created timestamp."
+    },
+    "table:src/main/db/migrations/0006_chat_drafts.sql": {
+      "name": "0006_chat_drafts.sql",
+      "type": "table",
+      "summary": "Creates the chat_drafts table for durable, confirm-gated proposals that survive app restarts until the user Approves or Cancels."
+    },
+    "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts": {
+      "name": "chat_drafts",
+      "type": "table",
+      "summary": "Durable store of chat-proposed creates/updates with status, missing required fields, warnings, payload, target ids, and a computed preview."
+    },
+    "table:src/main/db/migrations/0007_chat_draft_display.sql": {
+      "name": "0007_chat_draft_display.sql",
+      "type": "table",
+      "summary": "Adds a presentation-only display column to chat_drafts so the confirm card can show resolved names and amounts instead of raw ids."
+    },
+    "table:src/main/db/migrations/0008_reference_icons.sql": {
+      "name": "0008_reference_icons.sql",
+      "type": "table",
+      "summary": "Adds an icon column to accounts, income_categories, and expense_categories to cache Notion page icons locally (data URIs or emoji)."
+    },
+    "table:src/main/db/migrations/0009_activity_payload.sql": {
+      "name": "0009_activity_payload.sql",
+      "type": "table",
+      "summary": "Adds a payload column to activity_log so the History page can render full read-only form modals for synced income and expense items."
+    },
+    "document:CHANGELOG.md": {
+      "name": "CHANGELOG.md",
+      "type": "document",
+      "summary": "Documents all notable changes across v0.1.0, v1.0.0, and v1.1.0 releases with sections for added features, changed behavior, architecture, security, platform notes, and auto-update details."
+    },
+    "document:README.md": {
+      "name": "README.md",
+      "type": "document",
+      "summary": "Project overview describing the offline-first Electron architecture, bidirectional Notion sync via three-way merge, phase completion status (Phases 0-5), and development/packaging setup instructions."
+    },
+    "config:electron-builder.yml": {
+      "name": "electron-builder.yml",
+      "type": "config",
+      "summary": "Electron packaging configuration targeting macOS (.dmg/.zip), Linux (AppImage), and Windows (NSIS) with GitHub Releases auto-update, bundled Drizzle migrations as extra resources, and asarUnpack for native addons."
+    },
+    "config:package.json": {
+      "name": "package.json",
+      "type": "config",
+      "summary": "Defines the Electron app metadata, npm scripts for dev/build/test/packaging, production dependencies (React 19, better-sqlite3, Drizzle ORM, electron-updater), and dev toolchain (electron-vite, TypeScript 6, Vitest, Playwright, electron-builder)."
+    },
+    "config:tsconfig.json": {
+      "name": "tsconfig.json",
+      "type": "config",
+      "summary": "Root TypeScript project configuration that references tsconfig.node.json and tsconfig.web.json as composable sub-projects via project references."
+    },
+    "config:tsconfig.node.json": {
+      "name": "tsconfig.node.json",
+      "type": "config",
+      "summary": "TypeScript compiler configuration for the Electron main process, preload, and shared code, targeting ES2022 with strict mode, bundler module resolution, and a @shared path alias."
+    },
+    "config:tsconfig.web.json": {
+      "name": "tsconfig.web.json",
+      "type": "config",
+      "summary": "TypeScript compiler configuration for the Electron renderer (React UI), targeting ES2020 with DOM types, JSX support, relaxed unused-variable checks, and path aliases for renderer and shared imports."
+    },
+    "config:src/main/db/migrations/meta/0000_snapshot.json": {
+      "name": "0000_snapshot.json",
+      "type": "config",
+      "summary": "Drizzle Kit schema snapshot capturing the full database schema state including all tables, columns, indexes, and foreign keys at migration step 0000."
+    },
+    "config:src/main/db/migrations/meta/0001_snapshot.json": {
+      "name": "0001_snapshot.json",
+      "type": "config",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0001, reflecting incremental schema changes."
+    },
+    "config:src/main/db/migrations/meta/0002_snapshot.json": {
+      "name": "0002_snapshot.json",
+      "type": "config",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0002, reflecting incremental schema changes."
+    },
+    "config:src/main/db/migrations/meta/0003_snapshot.json": {
+      "name": "0003_snapshot.json",
+      "type": "config",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0003, reflecting incremental schema changes."
+    },
+    "config:src/main/db/migrations/meta/0004_snapshot.json": {
+      "name": "0004_snapshot.json",
+      "type": "config",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0004, reflecting incremental schema changes."
+    },
+    "config:src/main/db/migrations/meta/_journal.json": {
+      "name": "_journal.json",
+      "type": "config",
+      "summary": "Drizzle Kit migration journal that tracks the sequence, status, and tags of all applied migrations from 0000 through 0004."
+    },
+    "file:.ua/.understandignore": {
+      "name": ".understandignore",
+      "type": "file",
+      "summary": "Configuration file for the Understand-Anything tool that specifies which files to ignore during project analysis scans."
+    },
+    "file:drizzle.config.ts": {
+      "name": "drizzle.config.ts",
+      "type": "file",
+      "summary": "Drizzle ORM configuration file defining the SQLite database target, schema path, and dialect for migrations."
+    },
+    "file:e2e/app.spec.ts": {
+      "name": "app.spec.ts",
+      "type": "file",
+      "summary": "Playwright end-to-end test that launches the Electron app and verifies the main window loads correctly."
+    },
+    "file:e2e/keyboard-shortcuts.spec.ts": {
+      "name": "keyboard-shortcuts.spec.ts",
+      "type": "file",
+      "summary": "Playwright end-to-end test suite for keyboard shortcut navigation and form interactions across finance app sections."
+    },
+    "config:e2e/tsconfig.json": {
+      "name": "tsconfig.json",
+      "type": "config",
+      "summary": "TypeScript configuration for e2e test files extending the base config with Playwright types and ESNext module settings."
+    },
+    "file:electron.vite.config.ts": {
+      "name": "electron.vite.config.ts",
+      "type": "file",
+      "summary": "Electron-vite build configuration defining entry points for main, preload, and renderer processes."
+    },
+    "file:playwright.config.ts": {
+      "name": "playwright.config.ts",
+      "type": "file",
+      "summary": "Playwright test runner configuration with Electron app launch settings and test directory specification."
+    },
+    "file:scripts/seed-dev.mjs": {
+      "name": "seed-dev.mjs",
+      "type": "file",
+      "summary": "Development seeding script that populates the local SQLite database with initial test data for local development."
+    },
+    "file:src/main/chat/apple.ts": {
+      "name": "apple.ts",
+      "type": "file",
+      "summary": "Apple Local LLM integration providing read-only chat completion via on-device models with probe caching and fallback formatting."
+    },
+    "file:src/main/chat/confirm.ts": {
+      "name": "confirm.ts",
+      "type": "file",
+      "summary": "Handles draft confirmation and cancellation with persistence of assistant replies and create/update operations on finance records."
+    },
+    "file:src/main/chat/credentials-vault.ts": {
+      "name": "credentials-vault.ts",
+      "type": "file",
+      "summary": "OS-level encrypted vault for chat API keys using Electron safeStorage with encode/decode and fingerprinting utilities."
+    },
+    "file:src/main/chat/credentials.ts": {
+      "name": "credentials.ts",
+      "type": "file",
+      "summary": "CRUD service for chat credential metadata stored in SQLite, with vault-backed API key management."
+    },
+    "file:src/main/chat/dates.ts": {
+      "name": "dates.ts",
+      "type": "file",
+      "summary": "Date and month utility functions for resolving relative date expressions, shifting months, and generating ISO strings."
+    },
+    "file:src/main/chat/drafts.ts": {
+      "name": "drafts.ts",
+      "type": "file",
+      "summary": "In-memory draft management with SQLite persistence for chat-generated finance record proposals, including TTL expiry and deduplication."
+    },
+    "file:src/main/chat/expense-profile.ts": {
+      "name": "expense-profile.ts",
+      "type": "file",
+      "summary": "Expense category profile resolver that determines required fields based on account type and Pasabuy detection."
+    },
+    "file:src/main/chat/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Barrel module that re-exports all chat subsystem public symbols: orchestrator, credentials, threads, models, tools, drafts, confirm, overlays, expense-profile, and apple."
+    },
+    "file:src/main/chat/models.ts": {
+      "name": "models.ts",
+      "type": "file",
+      "summary": "Chat provider model definitions, curated model lists, and utility functions for provider detection, model normalization, and base URL resolution."
+    },
+    "file:src/main/chat/orchestrator.ts": {
+      "name": "orchestrator.ts",
+      "type": "file",
+      "summary": "Chat message orchestrator that coordinates skill routing, tool execution loops, Apple read-only fallback, system prompt assembly, and message persistence."
+    },
+    "file:src/main/chat/overlays/catalog.ts": {
+      "name": "catalog.ts",
+      "type": "file",
+      "summary": "Overlay catalog defining all slash-triggerable chat overlays, their system prompts, and cheer/budget threshold constants."
+    },
+    "file:src/main/chat/overlays/heuristics.ts": {
+      "name": "heuristics.ts",
+      "type": "file",
+      "summary": "Overlay heuristics for keyword cheer detection, budget guard analysis, approve quip generation, and cancel acknowledgment."
+    },
+    "file:src/main/chat/overlays/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Barrel module that re-exports all overlay subsystem symbols from catalog, heuristics, and parse modules."
+    },
+    "file:src/main/chat/overlays/parse.ts": {
+      "name": "parse.ts",
+      "type": "file",
+      "summary": "Slash overlay parser that extracts overlay directives from raw chat input and resolves the active overlay from thread state."
+    },
+    "file:src/main/chat/provider.ts": {
+      "name": "provider.ts",
+      "type": "file",
+      "summary": "LLM provider HTTP client with streaming chat completions, retry logic, API key detection, and remote model ID fetching."
+    },
+    "file:src/main/chat/skills/router.ts": {
+      "name": "router.ts",
+      "type": "file",
+      "summary": "Chat skill router that classifies user intent by keyword matching and routes to the appropriate skill with system addendum generation."
+    },
+    "file:src/main/chat/threads.ts": {
+      "name": "threads.ts",
+      "type": "file",
+      "summary": "CRUD service for chat threads and messages stored in SQLite, with auto-titling from user messages."
+    },
+    "file:src/main/chat/tools/read-tools.ts": {
+      "name": "read-tools.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/chat/tools/registry.ts": {
+      "name": "registry.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/chat/tools/write-tools.ts": {
+      "name": "write-tools.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/chat/topic-guard.ts": {
+      "name": "topic-guard.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/db/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/db/mappers.ts": {
+      "name": "mappers.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/db/repositories.ts": {
+      "name": "repositories.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/db/schema.ts": {
+      "name": "schema.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/dev-logs/store.ts": {
+      "name": "store.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/derivations.ts": {
+      "name": "derivations.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/notion-formulas.ts": {
+      "name": "notion-formulas.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/query-filters.ts": {
+      "name": "query-filters.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/resource-utils.ts": {
+      "name": "resource-utils.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/schedule.ts": {
+      "name": "schedule.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/domain/validation.ts": {
+      "name": "validation.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/index.ts.bak": {
+      "name": "index.ts.bak",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/ipc/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/client.ts": {
+      "name": "client.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/files.ts": {
+      "name": "files.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/mapping-store.ts": {
+      "name": "mapping-store.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/monitoring-split.ts": {
+      "name": "monitoring-split.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/page-extractors.ts": {
+      "name": "page-extractors.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/page-icons.ts": {
+      "name": "page-icons.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/property-mapper.ts": {
+      "name": "property-mapper.ts",
+      "type": "file",
+      "summary": ""
+    },
+    "file:src/main/notion/schema-spec.ts": {
+      "name": "schema-spec.ts",
+      "type": "file",
+      "summary": "Defines the expected Notion database schema for all finance databases and provides a comparison function that validates actual schema against expected property definitions."
+    },
+    "file:src/main/notion/service.ts": {
+      "name": "service.ts",
+      "type": "file",
+      "summary": "Provides the Notion integration service layer including client initialization, connection management, database discovery, and schema verification."
+    },
+    "file:src/main/notion/token-store.ts": {
+      "name": "token-store.ts",
+      "type": "file",
+      "summary": "Manages secure storage and retrieval of the Notion integration token using Electron safeStorage for encryption."
+    },
+    "file:src/main/services/discard-unsynced.ts": {
+      "name": "discard-unsynced.ts",
+      "type": "file",
+      "summary": "Provides functionality to discard unsynced local changes by restoring base snapshots or re-inserting hard-deleted records from mutation queue payloads."
+    },
+    "file:src/main/services/history.ts": {
+      "name": "history.ts",
+      "type": "file",
+      "summary": "Implements activity tracking for sync operations including recording, listing unsynced records, and retrieving run history with detail."
+    },
+    "file:src/main/services/reports.ts": {
+      "name": "reports.ts",
+      "type": "file",
+      "summary": "Provides dashboard and monthly monitoring report generation by composing data from domain derivation functions."
+    },
+    "file:src/main/settings/ui.ts": {
+      "name": "ui.ts",
+      "type": "file",
+      "summary": "Manages UI settings persistence with deep merge helpers for profile, theme, fonts, workspace, income, expense, accounts, and monitoring sections."
+    },
+    "file:src/main/sync/conflicts.ts": {
+      "name": "conflicts.ts",
+      "type": "file",
+      "summary": "Manages sync conflict detection, storage, listing, and resolution between local and remote record versions."
+    },
+    "file:src/main/sync/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Barrel module that re-exports all sync sub-modules and provides the top-level syncNow orchestrator."
+    },
+    "file:src/main/sync/merge.ts": {
+      "name": "merge.ts",
+      "type": "file",
+      "summary": "Implements a three-way merge algorithm for reconciling local and remote record field differences during sync."
+    },
+    "file:src/main/sync/meta.ts": {
+      "name": "meta.ts",
+      "type": "file",
+      "summary": "Provides key-value metadata storage for sync state tracking using the sync_meta SQLite table."
+    },
+    "file:src/main/sync/notion-gone.ts": {
+      "name": "notion-gone.ts",
+      "type": "file",
+      "summary": "Handles the case where Notion pages are deleted externally, providing detection and local reconciliation."
+    },
+    "file:src/main/sync/pull.ts": {
+      "name": "pull.ts",
+      "type": "file",
+      "summary": "Implements the full pull-from-Notion data sync, including accounts, categories, incomes, and expenses with three-way merge reconciliation."
+    },
+    "file:src/main/sync/push.ts": {
+      "name": "push.ts",
+      "type": "file",
+      "summary": "Implements pushing local changes to Notion including hard-delete processing, backoff retry, relation translation, and icon sync."
+    },
+    "file:src/main/sync/reset.ts": {
+      "name": "reset.ts",
+      "type": "file",
+      "summary": "Provides the database reset function that wipes all finance data and re-pulls from Notion."
+    },
+    "file:src/main/sync/run.ts": {
+      "name": "run.ts",
+      "type": "file",
+      "summary": "Provides sync run context management with unique run IDs for tracking sync operations."
+    },
+    "file:src/main/sync/scheduler.ts": {
+      "name": "scheduler.ts",
+      "type": "file",
+      "summary": "Manages periodic sync scheduling using setInterval and reads sync interval from settings."
+    },
+    "file:src/main/sync/settings.ts": {
+      "name": "settings.ts",
+      "type": "file",
+      "summary": "Manages sync settings persistence including interval configuration with validation."
+    },
+    "file:src/main/sync/status.ts": {
+      "name": "status.ts",
+      "type": "file",
+      "summary": "Tracks and reports sync status including running state, online status, dirty counts, and connection state."
+    },
+    "file:src/main/sync/writable.ts": {
+      "name": "writable.ts",
+      "type": "file",
+      "summary": "Defines writable column lists for income and expense records and provides serialization/deserialization helpers for sync operations."
+    },
+    "file:src/main/updater/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Manages Electron auto-updater initialization, manual update checks, and install triggering with error handling for macOS signature issues."
+    },
+    "file:src/main/windows/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Manages Electron window creation, IPC broadcasting, menu installation with keyboard shortcuts, and macOS activate handling."
+    },
+    "file:src/preload/index.d.ts": {
+      "name": "index.d.ts",
+      "type": "file",
+      "summary": "TypeScript declaration file that augments the global Window interface with the preload API type."
+    },
+    "file:src/preload/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Electron preload script that exposes a structured IPC-based API to the renderer via contextBridge, wrapping invoke calls for all finance operations."
+    },
+    "file:src/renderer/index.html": {
+      "name": "index.html",
+      "type": "file",
+      "summary": "HTML entry point for the renderer process that mounts the React application via the /src/main.tsx module."
+    },
+    "file:src/renderer/src/assets/fonts.css": {
+      "name": "fonts.css",
+      "type": "file",
+      "summary": "Google Fonts import definitions used across the renderer UI."
+    },
+    "file:src/renderer/src/assets/globals.css": {
+      "name": "globals.css",
+      "type": "file",
+      "summary": "Global CSS stylesheet defining layout, theming, component styles, and responsive design for the entire renderer."
+    },
+    "file:src/renderer/src/components/charts/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Chart components for spending breakdown, annual bar chart, category donut chart, and group-by selector."
+    },
+    "file:src/renderer/src/components/color-picker.tsx": {
+      "name": "color-picker.tsx",
+      "type": "file",
+      "summary": "Color picker component with preset swatches and mode tabs using React portal."
+    },
+    "file:src/renderer/src/components/constants.ts": {
+      "name": "constants.ts",
+      "type": "file",
+      "summary": "Shared UI constants including accent color, category palette, and annual month labels."
+    },
+    "file:src/renderer/src/components/dev-mode-probe.tsx": {
+      "name": "dev-mode-probe.tsx",
+      "type": "file",
+      "summary": "Probe component that logs current section info in dev mode using UiSettings."
+    },
+    "file:src/renderer/src/components/export/export-modal-shell.tsx": {
+      "name": "export-modal-shell.tsx",
+      "type": "file",
+      "summary": "Shell wrapper for export modals providing title, subtitle, action buttons for print/save."
+    },
+    "file:src/renderer/src/components/fab/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Floating action button component with quick-add modals for income, expense, receipt, and insight shot."
+    },
+    "file:src/renderer/src/components/fab/push-fab.tsx": {
+      "name": "push-fab.tsx",
+      "type": "file",
+      "summary": "Push-to-sync floating button that monitors dirty records and triggers sync on press."
+    },
+    "file:src/renderer/src/components/finance-workspace.tsx": {
+      "name": "finance-workspace.tsx",
+      "type": "file",
+      "summary": "Main workspace orchestrator that manages layout, sync, navigation, and state hydration."
+    },
+    "file:src/renderer/src/components/hooks.ts": {
+      "name": "hooks.ts",
+      "type": "file",
+      "summary": "Shared React hooks and utilities for live collections, category summaries, section detection, and debouncing."
+    },
+    "file:src/renderer/src/components/layout/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Layout components: sidebar with navigation groups, top bar with sync controls, and badge utilities."
+    },
+    "file:src/renderer/src/components/layout/workspace-tab-bar.tsx": {
+      "name": "workspace-tab-bar.tsx",
+      "type": "file",
+      "summary": "Tab bar component for navigating between open workspace tabs."
+    },
+    "file:src/renderer/src/components/pages/accounts.tsx": {
+      "name": "accounts.tsx",
+      "type": "file",
+      "summary": "Accounts page with gallery/table views, type filtering, zero-balance toggle, and detail modal."
+    },
+    "file:src/renderer/src/components/pages/chat.tsx": {
+      "name": "chat.tsx",
+      "type": "file",
+      "summary": "AI chat page with thread management, message history, draft confirm cards, and model/provider configuration."
+    },
+    "file:src/renderer/src/components/pages/dashboard.tsx": {
+      "name": "dashboard.tsx",
+      "type": "file",
+      "summary": "Dashboard page with summary metrics, spending breakdown, top purchases, and recent transactions."
+    },
+    "file:src/renderer/src/components/pages/dev-logs.tsx": {
+      "name": "dev-logs.tsx",
+      "type": "file",
+      "summary": "Developer logs page showing real-time filtered log entries with pause/clear controls."
+    },
+    "file:src/renderer/src/components/pages/expense.tsx": {
+      "name": "expense.tsx",
+      "type": "file",
+      "summary": "Expense page with data table, conditional forms, filters, cover-expenses modal, and credit/pasabuy workflows."
+    },
+    "file:src/renderer/src/components/pages/history.tsx": {
+      "name": "history.tsx",
+      "type": "file",
+      "summary": "Activity history page with record detail modals, direction indicators, and income/expense form views."
+    },
+    "file:src/renderer/src/components/pages/income.tsx": {
+      "name": "income.tsx",
+      "type": "file",
+      "summary": "Income page with create/edit/delete, data table, category/account filters, and net income computation."
+    },
+    "file:src/renderer/src/components/pages/monitoring.tsx": {
+      "name": "monitoring.tsx",
+      "type": "file",
+      "summary": "Monthly monitoring page showing budget status, category breakdown, and period comparisons."
+    },
+    "file:src/renderer/src/components/pages/settings-modals.tsx": {
+      "name": "settings-modals.tsx",
+      "type": "file",
+      "summary": "Settings modals for theme customization, Notion config, interface preferences, profile, and AI chat config."
+    },
+    "file:src/renderer/src/components/pages/settings.tsx": {
+      "name": "settings.tsx",
+      "type": "file",
+      "summary": "Settings page with tabs for general preferences, Notion config, updates, and experimental features."
+    },
+    "file:src/renderer/src/components/pages/sync.tsx": {
+      "name": "sync.tsx",
+      "type": "file",
+      "summary": "Sync page with conflict resolution modals, desktop sync panel, and status display."
+    },
+    "file:src/renderer/src/components/pages/workflow.tsx": {
+      "name": "workflow.tsx",
+      "type": "file",
+      "summary": "Workflow page for managing transfer, credit card payment, alkansya, and receivable records."
+    },
+    "file:src/renderer/src/components/shortcuts/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Keyboard shortcut registration, hint display, and cheat-sheet overlay for the renderer UI."
+    },
+    "file:src/renderer/src/components/ui/accounts.tsx": {
+      "name": "accounts.tsx",
+      "type": "file",
+      "summary": "Account and category icon renderers with account detail modal showing account info and QR code."
+    },
+    "file:src/renderer/src/components/ui/data-table.tsx": {
+      "name": "data-table.tsx",
+      "type": "file",
+      "summary": "Sortable, paginated data table with row selection, bulk actions, and customizable headers."
+    },
+    "file:src/renderer/src/components/ui/date-range.tsx": {
+      "name": "date-range.tsx",
+      "type": "file",
+      "summary": "Date range picker and sync-status pill components for filtering financial records."
+    },
+    "file:src/renderer/src/components/ui/error-boundary.tsx": {
+      "name": "error-boundary.tsx",
+      "type": "file",
+      "summary": "React error boundary class component that catches render errors and displays a fallback UI."
+    },
+    "file:src/renderer/src/components/ui/form-modals.tsx": {
+      "name": "form-modals.tsx",
+      "type": "file",
+      "summary": "Reusable modal shells for data-entry forms, settings panels, and confirmation dialogs."
+    },
+    "file:src/renderer/src/components/ui/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Comprehensive UI component library providing panels, cards, controls, filters, and skeleton loaders."
+    },
+    "file:src/renderer/src/components/ui/mass-edit-modal.tsx": {
+      "name": "mass-edit-modal.tsx",
+      "type": "file",
+      "summary": "Modal for bulk-editing records with row-based field/value input and preset support."
+    },
+    "file:src/renderer/src/components/ui/search-bar.tsx": {
+      "name": "search-bar.tsx",
+      "type": "file",
+      "summary": "Search toggle, text input, and filter-toggle components for list filtering."
+    },
+    "file:src/renderer/src/components/ui/toast.tsx": {
+      "name": "toast.tsx",
+      "type": "file",
+      "summary": "Auto-dismissing toast notification component for transient messages."
+    },
+    "file:src/renderer/src/lib/api-client.ts": {
+      "name": "api-client.ts",
+      "type": "file",
+      "summary": "API client wrappers for every backend resource (accounts, incomes, expenses, sync, etc.) with request adaptation and error handling."
+    },
+    "file:src/renderer/src/lib/app-tabs-context.tsx": {
+      "name": "app-tabs-context.tsx",
+      "type": "file",
+      "summary": "React context for tab-based navigation state management with persistence and hash sync."
+    },
+    "file:src/renderer/src/lib/app-tabs.ts": {
+      "name": "app-tabs.ts",
+      "type": "file",
+      "summary": "Pure functions for tab state management: ID generation, initial state, reducer, and active-section lookup."
+    },
+    "file:src/renderer/src/lib/auth-context.tsx": {
+      "name": "auth-context.tsx",
+      "type": "file",
+      "summary": "React context providing authentication state from UI settings."
+    },
+    "file:src/renderer/src/lib/avatar.ts": {
+      "name": "avatar.ts",
+      "type": "file",
+      "summary": "Utilities for generating avatar data URLs from image files and extracting user initials."
+    },
+    "file:src/renderer/src/lib/color-utils.ts": {
+      "name": "color-utils.ts",
+      "type": "file",
+      "summary": "Color conversion utilities between hex, RGBA, and CMYK color spaces."
+    },
+    "file:src/renderer/src/lib/date-range.ts": {
+      "name": "date-range.ts",
+      "type": "file",
+      "summary": "Date computation utilities for range calculation, step navigation, and view-mode-to-unit mapping."
+    },
+    "file:src/renderer/src/lib/dev-log.ts": {
+      "name": "dev-log.ts",
+      "type": "file",
+      "summary": "Dev-log event capture wrapper that delegates to the backend API."
+    },
+    "file:src/renderer/src/lib/export-node.ts": {
+      "name": "export-node.ts",
+      "type": "file",
+      "summary": "DOM node export utilities: PNG capture via html-to-image and browser print."
+    },
+    "file:src/renderer/src/lib/fab-export-context.tsx": {
+      "name": "fab-export-context.tsx",
+      "type": "file",
+      "summary": "React context for coordinating FAB export snapshots (PNG/print) across components."
+    },
+    "file:src/renderer/src/lib/finance-data-context.tsx": {
+      "name": "finance-data-context.tsx",
+      "type": "file",
+      "summary": "React context fetching and providing all finance reference data (accounts, categories) to the renderer."
+    },
+    "file:src/renderer/src/lib/finance-data.ts": {
+      "name": "finance-data.ts",
+      "type": "file",
+      "summary": "Finance section definitions and lookup helpers for accounts, categories, and active section."
+    },
+    "file:src/renderer/src/lib/finance-events.ts": {
+      "name": "finance-events.ts",
+      "type": "file",
+      "summary": "Custom DOM event for signaling finance data changes across the renderer."
+    },
+    "file:src/renderer/src/lib/finance-helpers.ts": {
+      "name": "finance-helpers.ts",
+      "type": "file",
+      "summary": "Finance utility functions for notion-tagging, number parsing, totals computation, and class-name joining."
+    },
+    "file:src/renderer/src/lib/finance-rules.test.ts": {
+      "name": "finance-rules.test.ts",
+      "type": "file",
+      "summary": "Test suite for finance rules validation and computation logic."
+    },
+    "file:src/renderer/src/lib/finance-rules.ts": {
+      "name": "finance-rules.ts",
+      "type": "file",
+      "summary": "Finance domain rules and calculator functions for income/expense categorization, credit/Pasabuy detection, money calculations, and view scoping logic."
+    },
+    "file:src/renderer/src/lib/font-loader.ts": {
+      "name": "font-loader.ts",
+      "type": "file",
+      "summary": "Google Fonts loader with local/system font fallback detection and caching."
+    },
+    "file:src/renderer/src/lib/format.ts": {
+      "name": "format.ts",
+      "type": "file",
+      "summary": "Number and date formatting utilities for money, dates, percentages, and short date keys."
+    },
+    "file:src/renderer/src/lib/fuzzy-search.ts": {
+      "name": "fuzzy-search.ts",
+      "type": "file",
+      "summary": "Lightweight fuzzy string matching and filtered index search over record arrays."
+    },
+    "file:src/renderer/src/lib/pending-edit.ts": {
+      "name": "pending-edit.ts",
+      "type": "file",
+      "summary": "In-memory pending edit store for tracking unsaved edits by resource type and record ID."
+    },
+    "file:src/renderer/src/lib/query-provider.tsx": {
+      "name": "query-provider.tsx",
+      "type": "file",
+      "summary": "React Query provider wrapper that configures the QueryClient for the renderer app."
+    },
+    "file:src/renderer/src/lib/router.tsx": {
+      "name": "router.tsx",
+      "type": "file",
+      "summary": "Hash-based client-side router with section parsing, navigation hooks, and a Link component."
+    },
+    "file:src/renderer/src/lib/shortcuts/context.tsx": {
+      "name": "context.tsx",
+      "type": "file",
+      "summary": "Keyboard shortcut provider with combo detection, action registry, undo/redo stack, and cheat sheet toggle."
+    },
+    "file:src/renderer/src/lib/shortcuts/registry.ts": {
+      "name": "registry.ts",
+      "type": "file",
+      "summary": "Central keyboard shortcut definitions with platform-aware display and key mapping."
+    },
+    "file:src/renderer/src/lib/theme-context.tsx": {
+      "name": "theme-context.tsx",
+      "type": "file",
+      "summary": "Theme provider supporting light/dark mode, custom accent colors, font loading, and localStorage persistence."
+    },
+    "file:src/renderer/src/lib/ui-settings-context.tsx": {
+      "name": "ui-settings-context.tsx",
+      "type": "file",
+      "summary": "UI settings provider that loads, caches, and persists user preferences including theme, filters, fonts, and workspace layout."
+    },
+    "file:src/renderer/src/lib/use-data.ts": {
+      "name": "use-data.ts",
+      "type": "file",
+      "summary": "React Query hooks for all finance data types with inline cache invalidation and local optimistic updates."
+    },
+    "file:src/renderer/src/lib/use-debounced-persist.ts": {
+      "name": "use-debounced-persist.ts",
+      "type": "file",
+      "summary": "Debounced persistence hook that saves values after a configurable delay when enabled."
+    },
+    "file:src/renderer/src/main.tsx": {
+      "name": "main.tsx",
+      "type": "file",
+      "summary": "Render entry point that bootstraps the React app with providers, IPC invalidation bridge, and tabbed workspace layout."
+    },
+    "file:src/renderer/src/types/finance.ts": {
+      "name": "finance.ts",
+      "type": "file",
+      "summary": "TypeScript type definitions for the renderer's finance domain entities and API response shapes."
+    },
+    "file:src/shared/finance.types.ts": {
+      "name": "finance.types.ts",
+      "type": "file",
+      "summary": "Shared finance domain type definitions used across main and renderer processes, including account, income, expense, and category interfaces."
+    },
+    "file:test/app-tabs.test.ts": {
+      "name": "app-tabs.test.ts",
+      "type": "file",
+      "summary": "Tests for the app tabs context and tab state management."
+    },
+    "file:test/chat-fingerprint.test.ts": {
+      "name": "chat-fingerprint.test.ts",
+      "type": "file",
+      "summary": "Tests for chat API key fingerprinting logic."
+    },
+    "file:test/chat-hardening.test.ts": {
+      "name": "chat-hardening.test.ts",
+      "type": "file",
+      "summary": "Tests for chat input hardening, sanitization, and safety guardrails."
+    },
+    "file:test/chat-overlays.test.ts": {
+      "name": "chat-overlays.test.ts",
+      "type": "file",
+      "summary": "Tests for chat overlay parsing, detection heuristics, and keyword cheering."
+    },
+    "file:test/chat-provider-base.test.ts": {
+      "name": "chat-provider-base.test.ts",
+      "type": "file",
+      "summary": "Tests for the chat provider base URL detection and model listing logic."
+    },
+    "file:test/chat-read-tools.test.ts": {
+      "name": "chat-read-tools.test.ts",
+      "type": "file",
+      "summary": "Tests for chat read-only tool execution including dashboard and query tools."
+    },
+    "file:test/chat-write-tools.test.ts": {
+      "name": "chat-write-tools.test.ts",
+      "type": "file",
+      "summary": "Tests for chat write tool execution including income, expense, and draft proposal creation."
+    },
+    "file:test/derivations.test.ts": {
+      "name": "derivations.test.ts",
+      "type": "file",
+      "summary": "Tests for finance derivation functions including account balances, net income, and dashboard summary calculations."
+    },
+    "file:test/dev-logs.test.ts": {
+      "name": "dev-logs.test.ts",
+      "type": "file",
+      "summary": "Tests for the developer logging store including appending, listing, and clearing log entries."
+    },
+    "config:vitest.config.ts": {
+      "name": "vitest.config.ts",
+      "type": "config",
+      "summary": "Vitest configuration with Node environment, path alias for the renderer src directory, and test file patterns covering both test/ and src/ directories."
+    },
+    "file:test/factories.ts": {
+      "name": "factories.ts",
+      "type": "file",
+      "summary": "Provides minimal DTO builder functions for Account, Income, Expense, ExpenseCategory, and IncomeCategory used as test data across derivation and domain tests."
+    },
+    "file:test/mappers.test.ts": {
+      "name": "mappers.test.ts",
+      "type": "file",
+      "summary": "Tests for database mapper functions (mapIncome, mapExpense, mapAccount, mapScheduler) and the advanceDate utility, covering snake_case to camelCase conversion, pasabuy defaults, and frequency-based date advancement."
+    },
+    "file:test/merge.test.ts": {
+      "name": "merge.test.ts",
+      "type": "file",
+      "summary": "Tests for the three-way merge algorithm covering no-op, pull, push, auto-merge, conflict detection, null handling, and soft-delete scenarios."
+    },
+    "file:test/notion-files.test.ts": {
+      "name": "notion-files.test.ts",
+      "type": "file",
+      "summary": "Tests for image download and data-URI caching utilities using an in-memory HTTP server covering success, type inference, 404, unreachable hosts, and size limits."
+    },
+    "file:test/notion-formulas.test.ts": {
+      "name": "notion-formulas.test.ts",
+      "type": "file",
+      "summary": "Tests for Notion formula replicas covering gross price, installment amount, paid and remaining balance, pasabuy received amount and balance, and transaction amount calculations."
+    },
+    "file:test/notion-gone.test.ts": {
+      "name": "notion-gone.test.ts",
+      "type": "file",
+      "summary": "Tests for detecting Notion gone errors (archived, trashed, 404) and identifying local records whose Notion pages have been deleted remotely."
+    },
+    "file:test/notion.test.ts": {
+      "name": "notion.test.ts",
+      "type": "file",
+      "summary": "Tests for Notion property mapping (income/expense DTO to Notion API properties), schema comparison, and phantom delete detection logic."
+    },
+    "file:test/page-extractors.test.ts": {
+      "name": "page-extractors.test.ts",
+      "type": "file",
+      "summary": "Tests for Notion page field extraction functions covering accounts, income categories, income fields, expense fields, and deleted-title detection."
+    },
+    "file:test/page-icons.test.ts": {
+      "name": "page-icons.test.ts",
+      "type": "file",
+      "summary": "Tests for Notion page icon mapping functions covering income and expense icon selection based on category type and account context."
+    },
+    "file:test/query-filters.test.ts": {
+      "name": "query-filters.test.ts",
+      "type": "file",
+      "summary": "Tests for income and expense query filters covering view modes (unpaid pasabuy, to pay, to buy, installments, unpaid CC), category exclusion, and calendar range filtering."
+    },
+    "file:test/shortcuts.test.ts": {
+      "name": "shortcuts.test.ts",
+      "type": "file",
+      "summary": "Tests for keyboard shortcut registry integrity covering unique IDs, valid groups and scopes, combo formatting, platform display rendering, scope priority, and OS-level shortcut conflict detection."
+    },
+    "file:test/ui-settings.test.ts": {
+      "name": "ui-settings.test.ts",
+      "type": "file",
+      "summary": "Tests for UI settings normalization covering defaults merging, profile and chat flags, avatar validation, and push-FAB auto-hide delay clamping."
+    },
+    "file:test/validation.test.ts": {
+      "name": "validation.test.ts",
+      "type": "file",
+      "summary": "Tests for domain validation functions covering create and update validation for income and expense records."
+    }
+  },
+  "totalNodes": 202,
+  "totalEdges": 78
+}

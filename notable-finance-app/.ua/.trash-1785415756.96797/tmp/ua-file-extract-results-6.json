@@ -1,0 +1,5625 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 24,
+  "filesSkipped": [
+    "src/renderer/index.html"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 24,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 24,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/main/notion/schema-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 109,
+      "nonEmptyLines": 105,
+      "functions": [
+        {
+          "name": "compareSchema",
+          "startLine": 88,
+          "endLine": 109,
+          "params": [
+            "expected",
+            "actualProperties"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EXPECTED_SCHEMA",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "compareSchema",
+          "line": 88,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "compareSchema",
+          "callee": "errors.push",
+          "lineNumber": 105
+        },
+        {
+          "caller": "compareSchema",
+          "callee": "warnings.push",
+          "lineNumber": 106
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/notion/service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 106,
+      "nonEmptyLines": 96,
+      "functions": [
+        {
+          "name": "client",
+          "startLine": 15,
+          "endLine": 17,
+          "params": []
+        },
+        {
+          "name": "connect",
+          "startLine": 20,
+          "endLine": 28,
+          "params": [
+            "token"
+          ]
+        },
+        {
+          "name": "isConnected",
+          "startLine": 30,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "disconnect",
+          "startLine": 34,
+          "endLine": 36,
+          "params": []
+        },
+        {
+          "name": "extractDbTitle",
+          "startLine": 38,
+          "endLine": 43,
+          "params": [
+            "db"
+          ]
+        },
+        {
+          "name": "extractMappableId",
+          "startLine": 46,
+          "endLine": 50,
+          "params": [
+            "entry"
+          ]
+        },
+        {
+          "name": "discoverDatabases",
+          "startLine": 52,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "verifySchema",
+          "startLine": 62,
+          "endLine": 106,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "client",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "connect",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "isConnected",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "disconnect",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "discoverDatabases",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "verifySchema",
+          "line": 62,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "client",
+          "callee": "readToken",
+          "lineNumber": 16
+        },
+        {
+          "caller": "connect",
+          "callee": "token.trim",
+          "lineNumber": 21
+        },
+        {
+          "caller": "connect",
+          "callee": "token.trim",
+          "lineNumber": 24
+        },
+        {
+          "caller": "connect",
+          "callee": "probe.me",
+          "lineNumber": 25
+        },
+        {
+          "caller": "connect",
+          "callee": "storeToken",
+          "lineNumber": 26
+        },
+        {
+          "caller": "isConnected",
+          "callee": "hasToken",
+          "lineNumber": 31
+        },
+        {
+          "caller": "disconnect",
+          "callee": "deleteToken",
+          "lineNumber": 35
+        },
+        {
+          "caller": "extractDbTitle",
+          "callee": "db.name.trim",
+          "lineNumber": 40
+        },
+        {
+          "caller": "extractDbTitle",
+          "callee": "title?.map((t) => t.plain_text ?? '').join",
+          "lineNumber": 42
+        },
+        {
+          "caller": "extractDbTitle",
+          "callee": "title?.map",
+          "lineNumber": 42
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "client().searchDatabases",
+          "lineNumber": 53
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "client",
+          "lineNumber": 53
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "dbs.map",
+          "lineNumber": 54
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "extractMappableId",
+          "lineNumber": 55
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "extractDbTitle",
+          "lineNumber": 56
+        },
+        {
+          "caller": "discoverDatabases",
+          "callee": "Object.keys",
+          "lineNumber": 57
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "getMapping",
+          "lineNumber": 63
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "client",
+          "lineNumber": 64
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "Object.keys",
+          "lineNumber": 67
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "resources.push",
+          "lineNumber": 70
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "EXPECTED_SCHEMA[resource]\n          .filter((p) => p.kind === 'writable')\n          .map",
+          "lineNumber": 74
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "EXPECTED_SCHEMA[resource]\n          .filter",
+          "lineNumber": 74
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "c.getDataSourceSchema",
+          "lineNumber": 82
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "compareSchema",
+          "lineNumber": 84
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "resources.push",
+          "lineNumber": 85
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "resources.push",
+          "lineNumber": 89
+        },
+        {
+          "caller": "verifySchema",
+          "callee": "resources.every",
+          "lineNumber": 105
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 6,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/notion/token-store.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 28,
+      "functions": [
+        {
+          "name": "tokenPath",
+          "startLine": 9,
+          "endLine": 11,
+          "params": []
+        },
+        {
+          "name": "storeToken",
+          "startLine": 13,
+          "endLine": 19,
+          "params": [
+            "token"
+          ]
+        },
+        {
+          "name": "hasToken",
+          "startLine": 21,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "readToken",
+          "startLine": 26,
+          "endLine": 29,
+          "params": []
+        },
+        {
+          "name": "deleteToken",
+          "startLine": 31,
+          "endLine": 33,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "storeToken",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "hasToken",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "readToken",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "deleteToken",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "tokenPath",
+          "callee": "join",
+          "lineNumber": 10
+        },
+        {
+          "caller": "tokenPath",
+          "callee": "app.getPath",
+          "lineNumber": 10
+        },
+        {
+          "caller": "storeToken",
+          "callee": "safeStorage.isEncryptionAvailable",
+          "lineNumber": 14
+        },
+        {
+          "caller": "storeToken",
+          "callee": "safeStorage.encryptString",
+          "lineNumber": 17
+        },
+        {
+          "caller": "storeToken",
+          "callee": "token.trim",
+          "lineNumber": 17
+        },
+        {
+          "caller": "storeToken",
+          "callee": "writeFileSync",
+          "lineNumber": 18
+        },
+        {
+          "caller": "storeToken",
+          "callee": "tokenPath",
+          "lineNumber": 18
+        },
+        {
+          "caller": "hasToken",
+          "callee": "existsSync",
+          "lineNumber": 22
+        },
+        {
+          "caller": "hasToken",
+          "callee": "tokenPath",
+          "lineNumber": 22
+        },
+        {
+          "caller": "readToken",
+          "callee": "hasToken",
+          "lineNumber": 27
+        },
+        {
+          "caller": "readToken",
+          "callee": "safeStorage.decryptString",
+          "lineNumber": 28
+        },
+        {
+          "caller": "readToken",
+          "callee": "readFileSync",
+          "lineNumber": 28
+        },
+        {
+          "caller": "readToken",
+          "callee": "tokenPath",
+          "lineNumber": 28
+        },
+        {
+          "caller": "deleteToken",
+          "callee": "rmSync",
+          "lineNumber": 32
+        },
+        {
+          "caller": "deleteToken",
+          "callee": "tokenPath",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/services/discard-unsynced.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 250,
+      "nonEmptyLines": 226,
+      "functions": [
+        {
+          "name": "clearBookkeeping",
+          "startLine": 35,
+          "endLine": 45,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "restoreFromBaseSnapshot",
+          "startLine": 47,
+          "endLine": 89,
+          "params": [
+            "table",
+            "id"
+          ]
+        },
+        {
+          "name": "discardHardDelete",
+          "startLine": 91,
+          "endLine": 202,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "discardUnsynced",
+          "startLine": 208,
+          "endLine": 223,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "buildHardDeletePayload",
+          "startLine": 226,
+          "endLine": 250,
+          "params": [
+            "table",
+            "row"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "discardUnsynced",
+          "line": 208,
+          "isDefault": false
+        },
+        {
+          "name": "buildHardDeletePayload",
+          "line": 226,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clearBookkeeping",
+          "callee": "getSqlite",
+          "lineNumber": 36
+        },
+        {
+          "caller": "clearBookkeeping",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run",
+          "lineNumber": 37
+        },
+        {
+          "caller": "clearBookkeeping",
+          "callee": "db.prepare",
+          "lineNumber": 37
+        },
+        {
+          "caller": "clearBookkeeping",
+          "callee": "db.prepare('DELETE FROM conflicts WHERE record_table = ? AND record_id = ?').run",
+          "lineNumber": 41
+        },
+        {
+          "caller": "clearBookkeeping",
+          "callee": "db.prepare",
+          "lineNumber": 41
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "getSqlite",
+          "lineNumber": 48
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get",
+          "lineNumber": 49
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare",
+          "lineNumber": 49
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "clearBookkeeping",
+          "lineNumber": 54
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare(`DELETE FROM ${table} WHERE id = ?`).run",
+          "lineNumber": 58
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare",
+          "lineNumber": 58
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "JSON.parse",
+          "lineNumber": 64
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "String",
+          "lineNumber": 64
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "Object.keys",
+          "lineNumber": 70
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "incomeWritableFromRow",
+          "lineNumber": 72
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "expenseWritableFromRow",
+          "lineNumber": 72
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "writeIncomeWritable",
+          "lineNumber": 85
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "writeExpenseWritable",
+          "lineNumber": 86
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare(`UPDATE ${table} SET local_updated_at = ? WHERE id = ?`).run",
+          "lineNumber": 88
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "db.prepare",
+          "lineNumber": 88
+        },
+        {
+          "caller": "restoreFromBaseSnapshot",
+          "callee": "Date.now",
+          "lineNumber": 88
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "getSqlite",
+          "lineNumber": 92
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db\n    .prepare(\n      `SELECT id, payload FROM mutation_queue\n        WHERE resource = ? AND record_id = ? AND action = 'hardDelete'\n        LIMIT 1`\n    )\n    .get",
+          "lineNumber": 93
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db\n    .prepare",
+          "lineNumber": 93
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "JSON.parse",
+          "lineNumber": 105
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE id = ?').run",
+          "lineNumber": 110
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare",
+          "lineNumber": 110
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare(`SELECT id FROM ${resource} WHERE id = ?`).get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare",
+          "lineNumber": 115
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "writeIncomeWritable",
+          "lineNumber": 124
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "writeExpenseWritable",
+          "lineNumber": 125
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare(\n      `UPDATE ${resource} SET notion_page_id = ?, base_snapshot = ?, local_updated_at = ? WHERE id = ?`\n    ).run",
+          "lineNumber": 126
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare",
+          "lineNumber": 126
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "JSON.stringify",
+          "lineNumber": 130
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Date.now",
+          "lineNumber": 131
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Date.now",
+          "lineNumber": 137
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "JSON.stringify",
+          "lineNumber": 139
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare(\n      `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,\n         notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,\n         account_id, category_id, date, notes, is_transaction, transacted_account_id, cc_payment_covered_id)\n       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`\n    ).run",
+          "lineNumber": 142
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare",
+          "lineNumber": 142
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "String",
+          "lineNumber": 154
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 155
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 156
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Array.isArray",
+          "lineNumber": 163
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "JSON.stringify",
+          "lineNumber": 164
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare(\n      `INSERT INTO expenses (id, notion_page_id, base_snapshot, sync_state, local_updated_at,\n         notion_last_edited_at, deleted, created_at, title, amount, interest, account_id,\n         category_id, purchase_date, date_paid, payment_status, payment_frequency, period_count,\n         paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,\n         pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)\n       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`\n    ).run",
+          "lineNumber": 168
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "db.prepare",
+          "lineNumber": 168
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "String",
+          "lineNumber": 182
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 183
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 184
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 191
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 192
+        },
+        {
+          "caller": "discardHardDelete",
+          "callee": "Number",
+          "lineNumber": 197
+        },
+        {
+          "caller": "discardUnsynced",
+          "callee": "getSqlite",
+          "lineNumber": 209
+        },
+        {
+          "caller": "discardUnsynced",
+          "callee": "db\n    .prepare(\n      `SELECT 1 AS n FROM mutation_queue\n        WHERE resource = ? AND record_id = ? AND action = 'hardDelete' LIMIT 1`\n    )\n    .get",
+          "lineNumber": 210
+        },
+        {
+          "caller": "discardUnsynced",
+          "callee": "db\n    .prepare",
+          "lineNumber": 210
+        },
+        {
+          "caller": "discardUnsynced",
+          "callee": "discardHardDelete",
+          "lineNumber": 218
+        },
+        {
+          "caller": "discardUnsynced",
+          "callee": "restoreFromBaseSnapshot",
+          "lineNumber": 222
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "JSON.parse",
+          "lineNumber": 230
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "Object.keys",
+          "lineNumber": 234
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "incomeWritableFromRow",
+          "lineNumber": 235
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "expenseWritableFromRow",
+          "lineNumber": 235
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "String",
+          "lineNumber": 239
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "String",
+          "lineNumber": 240
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "Number",
+          "lineNumber": 246
+        },
+        {
+          "caller": "buildHardDeletePayload",
+          "callee": "Number",
+          "lineNumber": 247
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/services/history.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 284,
+      "nonEmptyLines": 267,
+      "functions": [
+        {
+          "name": "recordActivity",
+          "startLine": 38,
+          "endLine": 73,
+          "params": [
+            "entry"
+          ]
+        },
+        {
+          "name": "readRecordPayload",
+          "startLine": 88,
+          "endLine": 129,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "listUnsynced",
+          "startLine": 132,
+          "endLine": 205,
+          "params": []
+        },
+        {
+          "name": "listActivity",
+          "startLine": 224,
+          "endLine": 250,
+          "params": [
+            "runs"
+          ]
+        },
+        {
+          "name": "tryParsePayload",
+          "startLine": 252,
+          "endLine": 261,
+          "params": [
+            "json"
+          ]
+        },
+        {
+          "name": "getItemDetail",
+          "startLine": 268,
+          "endLine": 273,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "getHistory",
+          "startLine": 275,
+          "endLine": 284,
+          "params": [
+            "runs"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "recordActivity",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "listUnsynced",
+          "line": 132,
+          "isDefault": false
+        },
+        {
+          "name": "listActivity",
+          "line": 224,
+          "isDefault": false
+        },
+        {
+          "name": "getItemDetail",
+          "line": 268,
+          "isDefault": false
+        },
+        {
+          "name": "getHistory",
+          "line": 275,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "recordActivity",
+          "callee": "getSqlite",
+          "lineNumber": 48
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "db.prepare(\n      `INSERT INTO activity_log (id, run_id, resource, record_id, notion_page_id, title, payload, action, direction, at)\n       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`\n    ).run",
+          "lineNumber": 49
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "db.prepare",
+          "lineNumber": 49
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "randomUUID",
+          "lineNumber": 53
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "currentRunId",
+          "lineNumber": 54
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "JSON.stringify",
+          "lineNumber": 59
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "Date.now",
+          "lineNumber": 62
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "db.prepare(\n      `DELETE FROM activity_log WHERE id NOT IN (\n         SELECT id FROM activity_log ORDER BY at DESC, rowid DESC LIMIT ?\n       )`\n    ).run",
+          "lineNumber": 65
+        },
+        {
+          "caller": "recordActivity",
+          "callee": "db.prepare",
+          "lineNumber": 65
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "getSqlite",
+          "lineNumber": 93
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "db.prepare",
+          "lineNumber": 95
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "incomeWritableFromRow",
+          "lineNumber": 101
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "expenseWritableFromRow",
+          "lineNumber": 102
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "JSON.parse",
+          "lineNumber": 108
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "Object.keys",
+          "lineNumber": 112
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "JSON.stringify",
+          "lineNumber": 116
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "JSON.stringify",
+          "lineNumber": 116
+        },
+        {
+          "caller": "readRecordPayload",
+          "callee": "Object.keys",
+          "lineNumber": 120
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "getSqlite",
+          "lineNumber": 133
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "db\n    .prepare(\n      `SELECT 'incomes' AS resource, id AS record_id, title, deleted, sync_state,\n              notion_page_id, local_updated_at\n         FROM incomes  WHERE sync_state IN ('dirty', 'conflict')\n       UNION ALL\n       SELECT 'expenses' AS resource, id AS record_id, title, deleted, sync_state,\n              notion_page_id, local_updated_at\n         FROM expenses WHERE sync_state IN ('dirty', 'conflict')\n       ORDER BY local_updated_at DESC`\n    )\n    .all",
+          "lineNumber": 134
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "db\n    .prepare",
+          "lineNumber": 134
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "rows.map",
+          "lineNumber": 147
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "Boolean",
+          "lineNumber": 153
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "readRecordPayload",
+          "lineNumber": 156
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "db\n    .prepare(\n      `SELECT resource, record_id, payload, created_at\n         FROM mutation_queue\n        WHERE action = 'hardDelete'\n        ORDER BY created_at DESC`\n    )\n    .all",
+          "lineNumber": 161
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "db\n    .prepare",
+          "lineNumber": 161
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "JSON.parse",
+          "lineNumber": 182
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "fromHard.push",
+          "lineNumber": 190
+        },
+        {
+          "caller": "listUnsynced",
+          "callee": "[...fromRows, ...fromHard].sort",
+          "lineNumber": 204
+        },
+        {
+          "caller": "listActivity",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT a.* FROM activity_log a\n        WHERE a.run_id IN (\n          SELECT run_id FROM activity_log\n           WHERE run_id IS NOT NULL\n           GROUP BY run_id\n           ORDER BY MAX(at) DESC\n           LIMIT ?\n        )\n        ORDER BY a.at DESC, a.rowid DESC`\n    )\n    .all",
+          "lineNumber": 225
+        },
+        {
+          "caller": "listActivity",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 225
+        },
+        {
+          "caller": "listActivity",
+          "callee": "getSqlite",
+          "lineNumber": 225
+        },
+        {
+          "caller": "listActivity",
+          "callee": "rows.map",
+          "lineNumber": 239
+        },
+        {
+          "caller": "listActivity",
+          "callee": "tryParsePayload",
+          "lineNumber": 245
+        },
+        {
+          "caller": "tryParsePayload",
+          "callee": "JSON.parse",
+          "lineNumber": 254
+        },
+        {
+          "caller": "getItemDetail",
+          "callee": "readRecordPayload",
+          "lineNumber": 272
+        },
+        {
+          "caller": "getHistory",
+          "callee": "metaGet",
+          "lineNumber": 276
+        },
+        {
+          "caller": "getHistory",
+          "callee": "metaGet",
+          "lineNumber": 277
+        },
+        {
+          "caller": "getHistory",
+          "callee": "listUnsynced",
+          "lineNumber": 279
+        },
+        {
+          "caller": "getHistory",
+          "callee": "listActivity",
+          "lineNumber": 280
+        },
+        {
+          "caller": "getHistory",
+          "callee": "Number",
+          "lineNumber": 281
+        },
+        {
+          "caller": "getHistory",
+          "callee": "Number",
+          "lineNumber": 282
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 5,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/services/reports.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "dashboard",
+          "startLine": 8,
+          "endLine": 11,
+          "params": [
+            "month"
+          ]
+        },
+        {
+          "name": "monitoring",
+          "startLine": 13,
+          "endLine": 41,
+          "params": [
+            "month"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dashboard",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "monitoring",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "dashboard",
+          "callee": "assertMonth",
+          "lineNumber": 9
+        },
+        {
+          "caller": "dashboard",
+          "callee": "dashboardSummary",
+          "lineNumber": 10
+        },
+        {
+          "caller": "dashboard",
+          "callee": "financeSnapshot",
+          "lineNumber": 10
+        },
+        {
+          "caller": "dashboard",
+          "callee": "balanceContext",
+          "lineNumber": 10
+        },
+        {
+          "caller": "monitoring",
+          "callee": "assertMonth",
+          "lineNumber": 14
+        },
+        {
+          "caller": "monitoring",
+          "callee": "financeSnapshot",
+          "lineNumber": 15
+        },
+        {
+          "caller": "monitoring",
+          "callee": "monthlyMonitoring",
+          "lineNumber": 16
+        },
+        {
+          "caller": "monitoring",
+          "callee": "listExpenseCategories().map",
+          "lineNumber": 20
+        },
+        {
+          "caller": "monitoring",
+          "callee": "listExpenseCategories",
+          "lineNumber": 20
+        },
+        {
+          "caller": "monitoring",
+          "callee": "listIncomeCategories().map",
+          "lineNumber": 31
+        },
+        {
+          "caller": "monitoring",
+          "callee": "listIncomeCategories",
+          "lineNumber": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/settings/ui.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 347,
+      "nonEmptyLines": 321,
+      "functions": [
+        {
+          "name": "coercePushFabAutoHideMs",
+          "startLine": 46,
+          "endLine": 50,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "asRecord",
+          "startLine": 99,
+          "endLine": 103,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "mergeProfile",
+          "startLine": 105,
+          "endLine": 116,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeTheme",
+          "startLine": 118,
+          "endLine": 130,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeFonts",
+          "startLine": 132,
+          "endLine": 140,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeWorkspace",
+          "startLine": 158,
+          "endLine": 178,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeIncome",
+          "startLine": 180,
+          "endLine": 193,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeExpense",
+          "startLine": 195,
+          "endLine": 210,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeAccounts",
+          "startLine": 212,
+          "endLine": 224,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "mergeMonitoring",
+          "startLine": 226,
+          "endLine": 244,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "normalizeUiSettings",
+          "startLine": 246,
+          "endLine": 266,
+          "params": [
+            "raw"
+          ]
+        },
+        {
+          "name": "getUiSettings",
+          "startLine": 268,
+          "endLine": 278,
+          "params": []
+        },
+        {
+          "name": "setUiSettings",
+          "startLine": 280,
+          "endLine": 347,
+          "params": [
+            "patch"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DEFAULT_UI_SETTINGS",
+          "line": 83,
+          "isDefault": false
+        },
+        {
+          "name": "normalizeUiSettings",
+          "line": 246,
+          "isDefault": false
+        },
+        {
+          "name": "getUiSettings",
+          "line": 268,
+          "isDefault": false
+        },
+        {
+          "name": "setUiSettings",
+          "line": 280,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "coercePushFabAutoHideMs",
+          "callee": "Number",
+          "lineNumber": 47
+        },
+        {
+          "caller": "coercePushFabAutoHideMs",
+          "callee": "Number.isFinite",
+          "lineNumber": 48
+        },
+        {
+          "caller": "coercePushFabAutoHideMs",
+          "callee": "Math.min",
+          "lineNumber": 49
+        },
+        {
+          "caller": "coercePushFabAutoHideMs",
+          "callee": "Math.max",
+          "lineNumber": 49
+        },
+        {
+          "caller": "coercePushFabAutoHideMs",
+          "callee": "Math.round",
+          "lineNumber": 49
+        },
+        {
+          "caller": "asRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 100
+        },
+        {
+          "caller": "mergeProfile",
+          "callee": "asRecord",
+          "lineNumber": 106
+        },
+        {
+          "caller": "mergeProfile",
+          "callee": "r.displayName.trim",
+          "lineNumber": 107
+        },
+        {
+          "caller": "mergeProfile",
+          "callee": "r.avatarDataUrl.startsWith",
+          "lineNumber": 109
+        },
+        {
+          "caller": "mergeTheme",
+          "callee": "asRecord",
+          "lineNumber": 119
+        },
+        {
+          "caller": "mergeFonts",
+          "callee": "asRecord",
+          "lineNumber": 133
+        },
+        {
+          "caller": "mergeWorkspace",
+          "callee": "asRecord",
+          "lineNumber": 159
+        },
+        {
+          "caller": "mergeWorkspace",
+          "callee": "INCOME_MODES.has",
+          "lineNumber": 161
+        },
+        {
+          "caller": "mergeWorkspace",
+          "callee": "EXPENSE_MODES.has",
+          "lineNumber": 165
+        },
+        {
+          "caller": "mergeWorkspace",
+          "callee": "coercePushFabAutoHideMs",
+          "lineNumber": 174
+        },
+        {
+          "caller": "mergeIncome",
+          "callee": "asRecord",
+          "lineNumber": 181
+        },
+        {
+          "caller": "mergeIncome",
+          "callee": "GROUP_BY.has",
+          "lineNumber": 183
+        },
+        {
+          "caller": "mergeExpense",
+          "callee": "asRecord",
+          "lineNumber": 196
+        },
+        {
+          "caller": "mergeExpense",
+          "callee": "GROUP_BY.has",
+          "lineNumber": 198
+        },
+        {
+          "caller": "mergeAccounts",
+          "callee": "asRecord",
+          "lineNumber": 213
+        },
+        {
+          "caller": "mergeAccounts",
+          "callee": "ACCOUNT_SCOPES.has",
+          "lineNumber": 215
+        },
+        {
+          "caller": "mergeMonitoring",
+          "callee": "asRecord",
+          "lineNumber": 227
+        },
+        {
+          "caller": "mergeMonitoring",
+          "callee": "ZERO_FILTERS.has",
+          "lineNumber": 229
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "asRecord",
+          "lineNumber": 247
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "r.chatDefaultModel.trim",
+          "lineNumber": 253
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "r.chatDefaultModel.trim",
+          "lineNumber": 254
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeProfile",
+          "lineNumber": 257
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeTheme",
+          "lineNumber": 258
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeFonts",
+          "lineNumber": 259
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeWorkspace",
+          "lineNumber": 260
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeIncome",
+          "lineNumber": 261
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeExpense",
+          "lineNumber": 262
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeAccounts",
+          "lineNumber": 263
+        },
+        {
+          "caller": "normalizeUiSettings",
+          "callee": "mergeMonitoring",
+          "lineNumber": 264
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "getSqlite().prepare('SELECT value FROM app_settings WHERE key = ?').get",
+          "lineNumber": 269
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 269
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "getSqlite",
+          "lineNumber": 269
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "structuredClone",
+          "lineNumber": 272
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "normalizeUiSettings",
+          "lineNumber": 274
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "JSON.parse",
+          "lineNumber": 274
+        },
+        {
+          "caller": "getUiSettings",
+          "callee": "structuredClone",
+          "lineNumber": 276
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "getUiSettings",
+          "lineNumber": 295
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "normalizeUiSettings",
+          "lineNumber": 296
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO app_settings (key, value) VALUES (?, ?)\n       ON CONFLICT(key) DO UPDATE SET value = excluded.value`\n    )\n    .run",
+          "lineNumber": 325
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 325
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "getSqlite",
+          "lineNumber": 325
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "JSON.stringify",
+          "lineNumber": 330
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "require",
+          "lineNumber": 337
+        },
+        {
+          "caller": "setUiSettings",
+          "callee": "clearDevLogs",
+          "lineNumber": 340
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/conflicts.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 182,
+      "nonEmptyLines": 165,
+      "functions": [
+        {
+          "name": "norm",
+          "startLine": 17,
+          "endLine": 17,
+          "params": [
+            "v"
+          ]
+        },
+        {
+          "name": "recordConflicts",
+          "startLine": 19,
+          "endLine": 36,
+          "params": [
+            "table",
+            "recordId",
+            "conflicts"
+          ]
+        },
+        {
+          "name": "titleFor",
+          "startLine": 38,
+          "endLine": 43,
+          "params": [
+            "table",
+            "recordId"
+          ]
+        },
+        {
+          "name": "resolveFieldValue",
+          "startLine": 47,
+          "endLine": 69,
+          "params": [
+            "table",
+            "field",
+            "value"
+          ]
+        },
+        {
+          "name": "listConflicts",
+          "startLine": 71,
+          "endLine": 112,
+          "params": []
+        },
+        {
+          "name": "resolveConflict",
+          "startLine": 119,
+          "endLine": 159,
+          "params": [
+            "table",
+            "recordId",
+            "resolution"
+          ]
+        },
+        {
+          "name": "resolveAllConflicts",
+          "startLine": 165,
+          "endLine": 182,
+          "params": [
+            "resolution"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "recordConflicts",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "listConflicts",
+          "line": 71,
+          "isDefault": false
+        },
+        {
+          "name": "resolveConflict",
+          "line": 119,
+          "isDefault": false
+        },
+        {
+          "name": "resolveAllConflicts",
+          "line": 165,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "recordConflicts",
+          "callee": "getSqlite",
+          "lineNumber": 20
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "db.prepare(\n    'DELETE FROM conflicts WHERE record_table = ? AND record_id = ? AND resolved_at IS NULL'\n  ).run",
+          "lineNumber": 22
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "db.prepare",
+          "lineNumber": 22
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "db.prepare",
+          "lineNumber": 25
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "Date.now",
+          "lineNumber": 29
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "stmt.run",
+          "lineNumber": 31
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "randomUUID",
+          "lineNumber": 32
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "JSON.stringify",
+          "lineNumber": 33
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "norm",
+          "lineNumber": 33
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "JSON.stringify",
+          "lineNumber": 33
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "norm",
+          "lineNumber": 33
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "JSON.stringify",
+          "lineNumber": 33
+        },
+        {
+          "caller": "recordConflicts",
+          "callee": "norm",
+          "lineNumber": 33
+        },
+        {
+          "caller": "titleFor",
+          "callee": "getSqlite().prepare(`SELECT title FROM ${table} WHERE id = ?`).get",
+          "lineNumber": 39
+        },
+        {
+          "caller": "titleFor",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 39
+        },
+        {
+          "caller": "titleFor",
+          "callee": "getSqlite",
+          "lineNumber": 39
+        },
+        {
+          "caller": "titleFor",
+          "callee": "recordId.slice",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "String",
+          "lineNumber": 49
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "getSqlite",
+          "lineNumber": 50
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare('SELECT account_name FROM accounts WHERE id = ?').get",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare('SELECT source FROM income_categories WHERE id = ?').get",
+          "lineNumber": 57
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare",
+          "lineNumber": 57
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare('SELECT name FROM expense_categories WHERE id = ?').get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "resolveFieldValue",
+          "callee": "db.prepare",
+          "lineNumber": 60
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT record_table, record_id, field, base_value, local_value, remote_value, detected_at\n       FROM conflicts WHERE resolved_at IS NULL ORDER BY detected_at`\n    )\n    .all",
+          "lineNumber": 72
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 72
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "getSqlite",
+          "lineNumber": 72
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "groups.get",
+          "lineNumber": 90
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "titleFor",
+          "lineNumber": 95
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "groups.set",
+          "lineNumber": 99
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "JSON.parse",
+          "lineNumber": 101
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "JSON.parse",
+          "lineNumber": 102
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "JSON.parse",
+          "lineNumber": 103
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "g.fields.push",
+          "lineNumber": 104
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "resolveFieldValue",
+          "lineNumber": 106
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "resolveFieldValue",
+          "lineNumber": 107
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "resolveFieldValue",
+          "lineNumber": 108
+        },
+        {
+          "caller": "listConflicts",
+          "callee": "groups.values",
+          "lineNumber": 111
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "getSqlite",
+          "lineNumber": 124
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db\n    .prepare(\n      'SELECT field, remote_value FROM conflicts WHERE record_table = ? AND record_id = ? AND resolved_at IS NULL'\n    )\n    .all",
+          "lineNumber": 125
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db\n    .prepare",
+          "lineNumber": 125
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db.prepare",
+          "lineNumber": 132
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "incomeWritableFromRow",
+          "lineNumber": 137
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "expenseWritableFromRow",
+          "lineNumber": 137
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "JSON.parse",
+          "lineNumber": 138
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "JSON.parse",
+          "lineNumber": 143
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "Object.keys",
+          "lineNumber": 150
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "Object.keys",
+          "lineNumber": 150
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "[...keys].every",
+          "lineNumber": 151
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "Object.is",
+          "lineNumber": 151
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "norm",
+          "lineNumber": 151
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "norm",
+          "lineNumber": 151
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "writeIncomeWritable",
+          "lineNumber": 153
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "writeExpenseWritable",
+          "lineNumber": 154
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db.prepare(\n    'UPDATE conflicts SET resolved_at = ?, resolution = ? WHERE record_table = ? AND record_id = ? AND resolved_at IS NULL'\n  ).run",
+          "lineNumber": 156
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "db.prepare",
+          "lineNumber": 156
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "Date.now",
+          "lineNumber": 158
+        },
+        {
+          "caller": "resolveConflict",
+          "callee": "JSON.stringify",
+          "lineNumber": 158
+        },
+        {
+          "caller": "resolveAllConflicts",
+          "callee": "getSqlite",
+          "lineNumber": 166
+        },
+        {
+          "caller": "resolveAllConflicts",
+          "callee": "db.prepare(\n    `SELECT DISTINCT record_table, record_id FROM conflicts WHERE resolved_at IS NULL`\n  ).all",
+          "lineNumber": 169
+        },
+        {
+          "caller": "resolveAllConflicts",
+          "callee": "db.prepare",
+          "lineNumber": 169
+        },
+        {
+          "caller": "resolveAllConflicts",
+          "callee": "resolveConflict",
+          "lineNumber": 175
+        },
+        {
+          "caller": "resolveAllConflicts",
+          "callee": "listConflicts",
+          "lineNumber": 181
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 4,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 25,
+      "functions": [
+        {
+          "name": "syncNow",
+          "startLine": 20,
+          "endLine": 27,
+          "params": [
+            "sinceOverride"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "pushAll",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "pullAll",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "syncStatus",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "getSyncSettings",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "setSyncSettings",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "listConflicts",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "resolveConflict",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "resolveAllConflicts",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "resetDatabase",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "syncNow",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "syncNow",
+          "callee": "withSyncRun",
+          "lineNumber": 22
+        },
+        {
+          "caller": "syncNow",
+          "callee": "pullAll",
+          "lineNumber": 23
+        },
+        {
+          "caller": "syncNow",
+          "callee": "pushAll",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 10,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/merge.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 69,
+      "functions": [
+        {
+          "name": "norm",
+          "startLine": 34,
+          "endLine": 34,
+          "params": [
+            "v"
+          ]
+        },
+        {
+          "name": "eq",
+          "startLine": 35,
+          "endLine": 35,
+          "params": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "name": "threeWayMerge",
+          "startLine": 37,
+          "endLine": 80,
+          "params": [
+            "base",
+            "local",
+            "remote"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "threeWayMerge",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "eq",
+          "callee": "Object.is",
+          "lineNumber": 35
+        },
+        {
+          "caller": "eq",
+          "callee": "norm",
+          "lineNumber": 35
+        },
+        {
+          "caller": "eq",
+          "callee": "norm",
+          "lineNumber": 35
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "Object.keys",
+          "lineNumber": 38
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "Object.keys",
+          "lineNumber": 38
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "Object.keys",
+          "lineNumber": 38
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "eq",
+          "lineNumber": 42
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "localChanged.push",
+          "lineNumber": 42
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "eq",
+          "lineNumber": 43
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "remoteChanged.push",
+          "lineNumber": 43
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "localChanged.filter",
+          "lineNumber": 57
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "remoteChangedSet.has",
+          "lineNumber": 57
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "overlap.includes",
+          "lineNumber": 63
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "overlap.map",
+          "lineNumber": 73
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "norm",
+          "lineNumber": 75
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "norm",
+          "lineNumber": 76
+        },
+        {
+          "caller": "threeWayMerge",
+          "callee": "norm",
+          "lineNumber": 77
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/meta.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 22,
+      "functions": [
+        {
+          "name": "metaGet",
+          "startLine": 4,
+          "endLine": 9,
+          "params": [
+            "key"
+          ]
+        },
+        {
+          "name": "metaSet",
+          "startLine": 11,
+          "endLine": 18,
+          "params": [
+            "key",
+            "value"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "metaGet",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "metaSet",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "META_KEYS",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "metaGet",
+          "callee": "getSqlite().prepare('SELECT value FROM sync_meta WHERE key = ?').get",
+          "lineNumber": 5
+        },
+        {
+          "caller": "metaGet",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 5
+        },
+        {
+          "caller": "metaGet",
+          "callee": "getSqlite",
+          "lineNumber": 5
+        },
+        {
+          "caller": "metaSet",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO sync_meta (key, value) VALUES (?, ?)\n       ON CONFLICT(key) DO UPDATE SET value = excluded.value`\n    )\n    .run",
+          "lineNumber": 12
+        },
+        {
+          "caller": "metaSet",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 12
+        },
+        {
+          "caller": "metaSet",
+          "callee": "getSqlite",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/notion-gone.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 102,
+      "nonEmptyLines": 92,
+      "functions": [
+        {
+          "name": "now",
+          "startLine": 12,
+          "endLine": 12,
+          "params": []
+        },
+        {
+          "name": "isNotionGoneError",
+          "startLine": 19,
+          "endLine": 33,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "localsMissingFromNotion",
+          "startLine": 36,
+          "endLine": 43,
+          "params": [
+            "locals",
+            "remoteIds"
+          ]
+        },
+        {
+          "name": "acceptNotionGone",
+          "startLine": 53,
+          "endLine": 102,
+          "params": [
+            "table",
+            "row",
+            "direction"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isNotionGoneError",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "localsMissingFromNotion",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "acceptNotionGone",
+          "line": 53,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "now",
+          "callee": "Date.now",
+          "lineNumber": 12
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "error.message.toLowerCase",
+          "lineNumber": 21
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 22
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 23
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 23
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 24
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 25
+        },
+        {
+          "caller": "isNotionGoneError",
+          "callee": "message.includes",
+          "lineNumber": 26
+        },
+        {
+          "caller": "localsMissingFromNotion",
+          "callee": "locals.filter",
+          "lineNumber": 39
+        },
+        {
+          "caller": "localsMissingFromNotion",
+          "callee": "remoteIds.has",
+          "lineNumber": 41
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "getSqlite",
+          "lineNumber": 63
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "now",
+          "lineNumber": 64
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "Number",
+          "lineNumber": 65
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "String",
+          "lineNumber": 66
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "isDeletedTitle",
+          "lineNumber": 68
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare(\n      `UPDATE incomes SET title = ?, gross_income = 0, capital_expenditure = 0,\n         deleted = 1, sync_state = 'clean', local_updated_at = ? WHERE id = ?`\n    ).run",
+          "lineNumber": 73
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare",
+          "lineNumber": 73
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare(\n      `UPDATE expenses SET title = ?, amount = 0, interest = 0,\n         deleted = 1, sync_state = 'clean', local_updated_at = ? WHERE id = ?`\n    ).run",
+          "lineNumber": 78
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare",
+          "lineNumber": 78
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run",
+          "lineNumber": 85
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare",
+          "lineNumber": 85
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare(`SELECT title FROM ${table} WHERE id = ?`).get",
+          "lineNumber": 90
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "db.prepare",
+          "lineNumber": 90
+        },
+        {
+          "caller": "acceptNotionGone",
+          "callee": "recordActivity",
+          "lineNumber": 94
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 3,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/pull.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 487,
+      "nonEmptyLines": 452,
+      "functions": [
+        {
+          "name": "now",
+          "startLine": 45,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "pageId",
+          "startLine": 46,
+          "endLine": 46,
+          "params": [
+            "page"
+          ]
+        },
+        {
+          "name": "notionToLocal",
+          "startLine": 48,
+          "endLine": 53,
+          "params": [
+            "table"
+          ]
+        },
+        {
+          "name": "localRelation",
+          "startLine": 55,
+          "endLine": 56,
+          "params": [
+            "map",
+            "notionId"
+          ]
+        },
+        {
+          "name": "localRelationAll",
+          "startLine": 59,
+          "endLine": 60,
+          "params": [
+            "map",
+            "notionIds"
+          ]
+        },
+        {
+          "name": "upsertReference",
+          "startLine": 64,
+          "endLine": 94,
+          "params": [
+            "table",
+            "columns",
+            "values",
+            "notionPageId",
+            "lastEdited"
+          ]
+        },
+        {
+          "name": "pullAccounts",
+          "startLine": 96,
+          "endLine": 129,
+          "params": [
+            "dbId",
+            "since"
+          ]
+        },
+        {
+          "name": "resolveIcon",
+          "startLine": 136,
+          "endLine": 146,
+          "params": [
+            "page",
+            "existing"
+          ]
+        },
+        {
+          "name": "pullIncomeCategories",
+          "startLine": 148,
+          "endLine": 160,
+          "params": [
+            "dbId",
+            "since"
+          ]
+        },
+        {
+          "name": "pullExpenseCategories",
+          "startLine": 162,
+          "endLine": 174,
+          "params": [
+            "dbId",
+            "since"
+          ]
+        },
+        {
+          "name": "emptyOutcome",
+          "startLine": 185,
+          "endLine": 185,
+          "params": []
+        },
+        {
+          "name": "applyMerge",
+          "startLine": 188,
+          "endLine": 237,
+          "params": [
+            "table",
+            "id",
+            "notionPageId",
+            "base",
+            "local",
+            "remote",
+            "titleKey",
+            "lastEdited",
+            "outcome"
+          ]
+        },
+        {
+          "name": "pullIncomes",
+          "startLine": 239,
+          "endLine": 300,
+          "params": [
+            "dbId",
+            "since",
+            "accountMap",
+            "categoryMap",
+            "expenseMap"
+          ]
+        },
+        {
+          "name": "pullExpenses",
+          "startLine": 302,
+          "endLine": 374,
+          "params": [
+            "dbId",
+            "since",
+            "accountMap",
+            "categoryMap",
+            "incomeMap"
+          ]
+        },
+        {
+          "name": "reconcileMissingFromNotion",
+          "startLine": 380,
+          "endLine": 404,
+          "params": [
+            "table",
+            "databaseId"
+          ]
+        },
+        {
+          "name": "pullAll",
+          "startLine": 408,
+          "endLine": 412,
+          "params": [
+            "full",
+            "sinceOverride"
+          ]
+        },
+        {
+          "name": "pullAllInner",
+          "startLine": 414,
+          "endLine": 487,
+          "params": [
+            "full",
+            "sinceOverride"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "pullAll",
+          "line": 408,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "now",
+          "callee": "Date.now",
+          "lineNumber": 45
+        },
+        {
+          "caller": "notionToLocal",
+          "callee": "getSqlite()\n    .prepare(`SELECT id, notion_page_id FROM ${table} WHERE notion_page_id IS NOT NULL`)\n    .all",
+          "lineNumber": 49
+        },
+        {
+          "caller": "notionToLocal",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 49
+        },
+        {
+          "caller": "notionToLocal",
+          "callee": "getSqlite",
+          "lineNumber": 49
+        },
+        {
+          "caller": "notionToLocal",
+          "callee": "rows.map",
+          "lineNumber": 52
+        },
+        {
+          "caller": "localRelation",
+          "callee": "map.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "localRelationAll",
+          "callee": "notionIds.map((id) => map.get(id)).filter",
+          "lineNumber": 60
+        },
+        {
+          "caller": "localRelationAll",
+          "callee": "notionIds.map",
+          "lineNumber": 60
+        },
+        {
+          "caller": "localRelationAll",
+          "callee": "map.get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "getSqlite",
+          "lineNumber": 71
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db\n    .prepare(`SELECT id FROM ${table} WHERE notion_page_id = ?`)\n    .get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db\n    .prepare",
+          "lineNumber": 72
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "columns.map((c) => `${c} = ?`).join",
+          "lineNumber": 76
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "columns.map",
+          "lineNumber": 76
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db.prepare(`UPDATE ${table} SET ${sets}, notion_last_edited_at = ? WHERE id = ?`).run",
+          "lineNumber": 77
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db.prepare",
+          "lineNumber": 77
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "cols.map(() => '?').join",
+          "lineNumber": 84
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "cols.map",
+          "lineNumber": 84
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db.prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`).run",
+          "lineNumber": 85
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "db.prepare",
+          "lineNumber": 85
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "cols.join",
+          "lineNumber": 85
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "randomUUID",
+          "lineNumber": 86
+        },
+        {
+          "caller": "upsertReference",
+          "callee": "now",
+          "lineNumber": 90
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "getSqlite",
+          "lineNumber": 97
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "client().queryDatabase",
+          "lineNumber": 98
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "client",
+          "lineNumber": 98
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "pageToAccountFields",
+          "lineNumber": 101
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "pageId",
+          "lineNumber": 102
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "db\n      .prepare('SELECT qr_code FROM accounts WHERE notion_page_id = ?')\n      .get",
+          "lineNumber": 106
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "db\n      .prepare",
+          "lineNumber": 106
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "isCachedDataUri",
+          "lineNumber": 110
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "downloadImageAsDataUri",
+          "lineNumber": 111
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "db\n      .prepare('SELECT icon FROM accounts WHERE notion_page_id = ?')\n      .get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "db\n      .prepare",
+          "lineNumber": 115
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "resolveIcon",
+          "lineNumber": 118
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "upsertReference",
+          "lineNumber": 120
+        },
+        {
+          "caller": "pullAccounts",
+          "callee": "pageLastEditedTime",
+          "lineNumber": 125
+        },
+        {
+          "caller": "resolveIcon",
+          "callee": "extractPageIcon",
+          "lineNumber": 140
+        },
+        {
+          "caller": "resolveIcon",
+          "callee": "isCachedDataUri",
+          "lineNumber": 143
+        },
+        {
+          "caller": "resolveIcon",
+          "callee": "downloadImageAsDataUri",
+          "lineNumber": 144
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "getSqlite",
+          "lineNumber": 149
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "client().queryDatabase",
+          "lineNumber": 150
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "client",
+          "lineNumber": 150
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "pageToIncomeCategoryFields",
+          "lineNumber": 153
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "pageId",
+          "lineNumber": 154
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "db.prepare('SELECT icon FROM income_categories WHERE notion_page_id = ?').get",
+          "lineNumber": 155
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "db.prepare",
+          "lineNumber": 155
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "resolveIcon",
+          "lineNumber": 156
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "upsertReference",
+          "lineNumber": 157
+        },
+        {
+          "caller": "pullIncomeCategories",
+          "callee": "pageLastEditedTime",
+          "lineNumber": 157
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "getSqlite",
+          "lineNumber": 163
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "client().queryDatabase",
+          "lineNumber": 164
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "client",
+          "lineNumber": 164
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "pageToExpenseCategoryFields",
+          "lineNumber": 167
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "pageId",
+          "lineNumber": 168
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "db.prepare('SELECT icon FROM expense_categories WHERE notion_page_id = ?').get",
+          "lineNumber": 169
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "db.prepare",
+          "lineNumber": 169
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "resolveIcon",
+          "lineNumber": 170
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "upsertReference",
+          "lineNumber": 171
+        },
+        {
+          "caller": "pullExpenseCategories",
+          "callee": "pageLastEditedTime",
+          "lineNumber": 171
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "threeWayMerge",
+          "lineNumber": 199
+        },
+        {
+          "caller": "deletedOf",
+          "callee": "isDeletedTitle",
+          "lineNumber": 201
+        },
+        {
+          "caller": "deletedOf",
+          "callee": "String",
+          "lineNumber": 201
+        },
+        {
+          "caller": "logPull",
+          "callee": "recordActivity",
+          "lineNumber": 204
+        },
+        {
+          "caller": "logPull",
+          "callee": "deletedOf",
+          "lineNumber": 209
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "write",
+          "lineNumber": 221
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "deletedOf",
+          "lineNumber": 221
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "logPull",
+          "lineNumber": 222
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "write",
+          "lineNumber": 226
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "deletedOf",
+          "lineNumber": 226
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "logPull",
+          "lineNumber": 227
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "write",
+          "lineNumber": 231
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "deletedOf",
+          "lineNumber": 231
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "recordConflicts",
+          "lineNumber": 232
+        },
+        {
+          "caller": "applyMerge",
+          "callee": "logPull",
+          "lineNumber": 233
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "getSqlite",
+          "lineNumber": 246
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "client().queryDatabase",
+          "lineNumber": 247
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "client",
+          "lineNumber": 247
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "emptyOutcome",
+          "lineNumber": 248
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "pageToIncomeFields",
+          "lineNumber": 251
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "localRelation",
+          "lineNumber": 257
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "localRelation",
+          "lineNumber": 258
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "localRelation",
+          "lineNumber": 259
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "localRelationAll",
+          "lineNumber": 260
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "pageLastEditedTime",
+          "lineNumber": 262
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "pageId",
+          "lineNumber": 263
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "db.prepare('SELECT * FROM incomes WHERE notion_page_id = ?').get",
+          "lineNumber": 264
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "db.prepare",
+          "lineNumber": 264
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "randomUUID",
+          "lineNumber": 269
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "db.prepare(\n        `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,\n           notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,\n           account_id, category_id, date, is_transaction, transacted_account_id, cc_payment_covered_id)\n         VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`\n      ).run",
+          "lineNumber": 270
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "db.prepare",
+          "lineNumber": 270
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "JSON.stringify",
+          "lineNumber": 276
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "now",
+          "lineNumber": 276
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "isDeletedTitle",
+          "lineNumber": 276
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "now",
+          "lineNumber": 276
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "Array.isArray",
+          "lineNumber": 279
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "JSON.stringify",
+          "lineNumber": 280
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "recordActivity",
+          "lineNumber": 283
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "isDeletedTitle",
+          "lineNumber": 288
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "JSON.parse",
+          "lineNumber": 295
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "incomeWritableFromRow",
+          "lineNumber": 296
+        },
+        {
+          "caller": "pullIncomes",
+          "callee": "applyMerge",
+          "lineNumber": 297
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "getSqlite",
+          "lineNumber": 309
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "client().queryDatabase",
+          "lineNumber": 310
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "client",
+          "lineNumber": 310
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "emptyOutcome",
+          "lineNumber": 311
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "pageToExpenseFields",
+          "lineNumber": 314
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "localRelation",
+          "lineNumber": 321
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "localRelation",
+          "lineNumber": 322
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "localRelation",
+          "lineNumber": 331
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "localRelation",
+          "lineNumber": 332
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "pageLastEditedTime",
+          "lineNumber": 334
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "pageId",
+          "lineNumber": 335
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "db.prepare('SELECT * FROM expenses WHERE notion_page_id = ?').get",
+          "lineNumber": 336
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "db.prepare",
+          "lineNumber": 336
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "randomUUID",
+          "lineNumber": 341
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "db.prepare(\n        `INSERT INTO expenses (id, notion_page_id, base_snapshot, sync_state, local_updated_at,\n           notion_last_edited_at, deleted, created_at, title, amount, interest, account_id,\n           category_id, purchase_date, date_paid, payment_status, payment_frequency, period_count,\n           paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,\n           pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)\n         VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`\n      ).run",
+          "lineNumber": 342
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "db.prepare",
+          "lineNumber": 342
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "JSON.stringify",
+          "lineNumber": 350
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "now",
+          "lineNumber": 350
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "isDeletedTitle",
+          "lineNumber": 350
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "now",
+          "lineNumber": 350
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "recordActivity",
+          "lineNumber": 357
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "isDeletedTitle",
+          "lineNumber": 362
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "JSON.parse",
+          "lineNumber": 369
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "expenseWritableFromRow",
+          "lineNumber": 370
+        },
+        {
+          "caller": "pullExpenses",
+          "callee": "applyMerge",
+          "lineNumber": 371
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "client().queryDatabase",
+          "lineNumber": 384
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "client",
+          "lineNumber": 384
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "pages.map",
+          "lineNumber": 385
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "pageId",
+          "lineNumber": 385
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "getSqlite()\n    .prepare(\n      `SELECT id, title, notion_page_id, deleted FROM ${table}\n       WHERE notion_page_id IS NOT NULL AND deleted = 0`\n    )\n    .all",
+          "lineNumber": 386
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 386
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "getSqlite",
+          "lineNumber": 386
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "localsMissingFromNotion",
+          "lineNumber": 399
+        },
+        {
+          "caller": "reconcileMissingFromNotion",
+          "callee": "acceptNotionGone",
+          "lineNumber": 400
+        },
+        {
+          "caller": "pullAll",
+          "callee": "withSyncRun",
+          "lineNumber": 411
+        },
+        {
+          "caller": "pullAll",
+          "callee": "pullAllInner",
+          "lineNumber": 411
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "syncStatus",
+          "lineNumber": 415
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "isRunning",
+          "lineNumber": 418
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "metaGet",
+          "lineNumber": 419
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "setRunning",
+          "lineNumber": 422
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "emitStatus",
+          "lineNumber": 423
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "getMapping",
+          "lineNumber": 425
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "metaGet",
+          "lineNumber": 429
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "new Date().toISOString",
+          "lineNumber": 430
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "pullAccounts",
+          "lineNumber": 437
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "pullIncomeCategories",
+          "lineNumber": 438
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "pullExpenseCategories",
+          "lineNumber": 439
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "notionToLocal",
+          "lineNumber": 441
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "notionToLocal",
+          "lineNumber": 442
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "notionToLocal",
+          "lineNumber": 443
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "notionToLocal",
+          "lineNumber": 444
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "notionToLocal",
+          "lineNumber": 445
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "merge",
+          "lineNumber": 454
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "pullIncomes",
+          "lineNumber": 454
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "merge",
+          "lineNumber": 455
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "pullExpenses",
+          "lineNumber": 455
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "reconcileMissingFromNotion",
+          "lineNumber": 462
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "reconcileMissingFromNotion",
+          "lineNumber": 465
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "result.errors.push",
+          "lineNumber": 468
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "String",
+          "lineNumber": 469
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "metaSet",
+          "lineNumber": 473
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "metaSet",
+          "lineNumber": 474
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "String",
+          "lineNumber": 474
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "Date.now",
+          "lineNumber": 474
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "broadcast",
+          "lineNumber": 477
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "broadcast",
+          "lineNumber": 478
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "result.errors.push",
+          "lineNumber": 481
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "String",
+          "lineNumber": 481
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "setRunning",
+          "lineNumber": 484
+        },
+        {
+          "caller": "pullAllInner",
+          "callee": "emitStatus",
+          "lineNumber": 485
+        }
+      ],
+      "metrics": {
+        "importCount": 15,
+        "exportCount": 1,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/push.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 389,
+      "nonEmptyLines": 356,
+      "functions": [
+        {
+          "name": "sleep",
+          "startLine": 29,
+          "endLine": 29,
+          "params": [
+            "ms"
+          ]
+        },
+        {
+          "name": "notionIdLookup",
+          "startLine": 33,
+          "endLine": 38,
+          "params": [
+            "table"
+          ]
+        },
+        {
+          "name": "categoryNameLookup",
+          "startLine": 41,
+          "endLine": 47,
+          "params": [
+            "table"
+          ]
+        },
+        {
+          "name": "translate",
+          "startLine": 64,
+          "endLine": 69,
+          "params": [
+            "map",
+            "localId",
+            "field"
+          ]
+        },
+        {
+          "name": "isPhantomDelete",
+          "startLine": 88,
+          "endLine": 90,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "pushPendingHardDeletes",
+          "startLine": 100,
+          "endLine": 169,
+          "params": [
+            "c",
+            "result"
+          ]
+        },
+        {
+          "name": "sendWithBackoff",
+          "startLine": 173,
+          "endLine": 192,
+          "params": [
+            "send"
+          ]
+        },
+        {
+          "name": "pushAll",
+          "startLine": 194,
+          "endLine": 197,
+          "params": []
+        },
+        {
+          "name": "pushAllInner",
+          "startLine": 199,
+          "endLine": 389,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "UnmappedRelationError",
+          "startLine": 57,
+          "endLine": 61,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "isPhantomDelete",
+          "line": 88,
+          "isDefault": false
+        },
+        {
+          "name": "pushAll",
+          "line": 194,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "sleep",
+          "callee": "setTimeout",
+          "lineNumber": 29
+        },
+        {
+          "caller": "notionIdLookup",
+          "callee": "getSqlite()\n    .prepare(`SELECT id, notion_page_id FROM ${table} WHERE notion_page_id IS NOT NULL`)\n    .all",
+          "lineNumber": 34
+        },
+        {
+          "caller": "notionIdLookup",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 34
+        },
+        {
+          "caller": "notionIdLookup",
+          "callee": "getSqlite",
+          "lineNumber": 34
+        },
+        {
+          "caller": "notionIdLookup",
+          "callee": "rows.map",
+          "lineNumber": 37
+        },
+        {
+          "caller": "categoryNameLookup",
+          "callee": "getSqlite()\n    .prepare(`SELECT id, ${column} AS name FROM ${table}`)\n    .all",
+          "lineNumber": 43
+        },
+        {
+          "caller": "categoryNameLookup",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 43
+        },
+        {
+          "caller": "categoryNameLookup",
+          "callee": "getSqlite",
+          "lineNumber": 43
+        },
+        {
+          "caller": "categoryNameLookup",
+          "callee": "rows.map",
+          "lineNumber": 46
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 59
+        },
+        {
+          "caller": "translate",
+          "callee": "map.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "getSqlite",
+          "lineNumber": 104
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db\n    .prepare(`SELECT id, resource, record_id, payload FROM mutation_queue WHERE action = 'hardDelete' ORDER BY created_at`)\n    .all",
+          "lineNumber": 105
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db\n    .prepare",
+          "lineNumber": 105
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "JSON.parse",
+          "lineNumber": 113
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE id = ?').run",
+          "lineNumber": 117
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare",
+          "lineNumber": 117
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE id = ?').run",
+          "lineNumber": 123
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare",
+          "lineNumber": 123
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "sendWithBackoff",
+          "lineNumber": 129
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "c.archivePage",
+          "lineNumber": 129
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE id = ?').run",
+          "lineNumber": 130
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare",
+          "lineNumber": 130
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "recordActivity",
+          "lineNumber": 132
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "(() => { try { return JSON.parse(row.payload); } catch { return null; } })",
+          "lineNumber": 139
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "JSON.parse",
+          "lineNumber": 139
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "isNotionGoneError",
+          "lineNumber": 145
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE id = ?').run",
+          "lineNumber": 147
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "db.prepare",
+          "lineNumber": 147
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "recordActivity",
+          "lineNumber": 149
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "String",
+          "lineNumber": 161
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "result.errors.push",
+          "lineNumber": 162
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "emitStatus",
+          "lineNumber": 166
+        },
+        {
+          "caller": "pushPendingHardDeletes",
+          "callee": "sleep",
+          "lineNumber": 167
+        },
+        {
+          "caller": "sendWithBackoff",
+          "callee": "send",
+          "lineNumber": 179
+        },
+        {
+          "caller": "sendWithBackoff",
+          "callee": "Math.min",
+          "lineNumber": 185
+        },
+        {
+          "caller": "sendWithBackoff",
+          "callee": "sleep",
+          "lineNumber": 186
+        },
+        {
+          "caller": "pushAll",
+          "callee": "withSyncRun",
+          "lineNumber": 196
+        },
+        {
+          "caller": "pushAll",
+          "callee": "pushAllInner",
+          "lineNumber": 196
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "isRunning",
+          "lineNumber": 200
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "syncStatus",
+          "lineNumber": 201
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "setRunning",
+          "lineNumber": 205
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "emitStatus",
+          "lineNumber": 206
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "getSqlite",
+          "lineNumber": 208
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "client",
+          "lineNumber": 209
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "getMapping",
+          "lineNumber": 210
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "notionIdLookup",
+          "lineNumber": 213
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "notionIdLookup",
+          "lineNumber": 214
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "notionIdLookup",
+          "lineNumber": 215
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "notionIdLookup",
+          "lineNumber": 216
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "notionIdLookup",
+          "lineNumber": 217
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "categoryNameLookup",
+          "lineNumber": 219
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "categoryNameLookup",
+          "lineNumber": 220
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 236
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 237
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 238
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "(dto.ccPaymentCoveredIds as string[] | null | undefined)\n          ?.map",
+          "lineNumber": 239
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 240
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 251
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 252
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 253
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "translate",
+          "lineNumber": 254
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "pushPendingHardDeletes",
+          "lineNumber": 261
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db\n        .prepare(`SELECT * FROM ${t.table} WHERE sync_state = 'dirty' ORDER BY local_updated_at`)\n        .all",
+          "lineNumber": 264
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db\n        .prepare",
+          "lineNumber": 264
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "isPhantomDelete",
+          "lineNumber": 272
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "Number",
+          "lineNumber": 272
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare(`UPDATE ${t.table} SET sync_state = 'clean' WHERE id = ?`).run",
+          "lineNumber": 273
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare",
+          "lineNumber": 273
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run",
+          "lineNumber": 274
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare",
+          "lineNumber": 274
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "recordActivity",
+          "lineNumber": 278
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "(() => { try { return t.writable(row) as Record<string, unknown>; } catch { return null; } })",
+          "lineNumber": 285
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "t.writable",
+          "lineNumber": 285
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "t.writable",
+          "lineNumber": 291
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "t.translateRelations",
+          "lineNumber": 294
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "result.errors.push",
+          "lineNumber": 298
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "t.toProperties",
+          "lineNumber": 303
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "iconForIncome",
+          "lineNumber": 306
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "incomeCategoryNames.get",
+          "lineNumber": 307
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "String",
+          "lineNumber": 307
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "iconForExpense",
+          "lineNumber": 310
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "expenseCategoryNames.get",
+          "lineNumber": 311
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "String",
+          "lineNumber": 311
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "Number",
+          "lineNumber": 312
+        },
+        {
+          "caller": "isIconError",
+          "callee": "/icon/i.test",
+          "lineNumber": 320
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "sendWithBackoff",
+          "lineNumber": 323
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "c.updatePage",
+          "lineNumber": 323
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "isIconError",
+          "lineNumber": 325
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "sendWithBackoff",
+          "lineNumber": 326
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "c.updatePage",
+          "lineNumber": 326
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "sendWithBackoff",
+          "lineNumber": 332
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "c.createPage",
+          "lineNumber": 332
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "isIconError",
+          "lineNumber": 334
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "sendWithBackoff",
+          "lineNumber": 335
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "c.createPage",
+          "lineNumber": 335
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "relations.incomes.set",
+          "lineNumber": 340
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare(\n            `UPDATE ${t.table} SET notion_page_id = ?, base_snapshot = ?, sync_state = 'clean' WHERE id = ?`\n          ).run",
+          "lineNumber": 344
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare",
+          "lineNumber": 344
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "JSON.stringify",
+          "lineNumber": 346
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run",
+          "lineNumber": 347
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "db.prepare",
+          "lineNumber": 347
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "recordActivity",
+          "lineNumber": 353
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "Number",
+          "lineNumber": 358
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "isNotionGoneError",
+          "lineNumber": 366
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "Number",
+          "lineNumber": 367
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "acceptNotionGone",
+          "lineNumber": 368
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "String",
+          "lineNumber": 373
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "result.errors.push",
+          "lineNumber": 374
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "emitStatus",
+          "lineNumber": 377
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "sleep",
+          "lineNumber": 378
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "metaSet",
+          "lineNumber": 382
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "String",
+          "lineNumber": 382
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "Date.now",
+          "lineNumber": 382
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "metaSet",
+          "lineNumber": 383
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "result.errors.join",
+          "lineNumber": 383
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "setRunning",
+          "lineNumber": 386
+        },
+        {
+          "caller": "pushAllInner",
+          "callee": "emitStatus",
+          "lineNumber": 387
+        }
+      ],
+      "metrics": {
+        "importCount": 13,
+        "exportCount": 2,
+        "functionCount": 9,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/main/sync/reset.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "resetDatabase",
+          "startLine": 34,
+          "endLine": 74,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "resetDatabase",
+          "line": 34,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resetDatabase",
+          "callee": "isRunning",
+          "lineNumber": 35
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "setRunning",
+          "lineNumber": 39
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "emitStatus",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "stopScheduler",
+          "lineNumber": 41
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "getSqlite",
+          "lineNumber": 43
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "sqlite.transaction",
+          "lineNumber": 47
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "sqlite.prepare(`DELETE FROM ${table}`).run",
+          "lineNumber": 49
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "sqlite.prepare",
+          "lineNumber": 49
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "wipe",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "logDevOperation",
+          "lineNumber": 54
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "broadcast",
+          "lineNumber": 55
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "broadcast",
+          "lineNumber": 56
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "broadcast",
+          "lineNumber": 57
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "emitStatus",
+          "lineNumber": 58
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "pullAll",
+          "lineNumber": 61
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "logDevOperation",
+          "lineNumber": 63
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "reschedule",
+          "lineNumber": 64
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "reschedule",
+          "lineNumber": 68
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "setRunning",
+          "lineNumber": 71
+        },
+        {
+          "caller": "resetDatabase",
+          "callee": "emitStatus",
+          "lineNumber": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/run.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 26,
+      "functions": [
+        {
+          "name": "newRunId",
+          "startLine": 11,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "withSyncRun",
+          "startLine": 16,
+          "endLine": 24,
+          "params": [
+            "fn"
+          ]
+        },
+        {
+          "name": "currentRunId",
+          "startLine": 27,
+          "endLine": 30,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "withSyncRun",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "currentRunId",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "newRunId",
+          "callee": "Date.now().toString",
+          "lineNumber": 12
+        },
+        {
+          "caller": "newRunId",
+          "callee": "Date.now",
+          "lineNumber": 12
+        },
+        {
+          "caller": "newRunId",
+          "callee": "randomUUID().slice",
+          "lineNumber": 12
+        },
+        {
+          "caller": "newRunId",
+          "callee": "randomUUID",
+          "lineNumber": 12
+        },
+        {
+          "caller": "withSyncRun",
+          "callee": "newRunId",
+          "lineNumber": 18
+        },
+        {
+          "caller": "withSyncRun",
+          "callee": "fn",
+          "lineNumber": 20
+        },
+        {
+          "caller": "currentRunId",
+          "callee": "newRunId",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/scheduler.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 30,
+      "functions": [
+        {
+          "name": "tick",
+          "startLine": 9,
+          "endLine": 17,
+          "params": []
+        },
+        {
+          "name": "reschedule",
+          "startLine": 20,
+          "endLine": 29,
+          "params": []
+        },
+        {
+          "name": "stopScheduler",
+          "startLine": 31,
+          "endLine": 34,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "reschedule",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "stopScheduler",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "tick",
+          "callee": "syncStatus",
+          "lineNumber": 10
+        },
+        {
+          "caller": "tick",
+          "callee": "syncNow",
+          "lineNumber": 13
+        },
+        {
+          "caller": "reschedule",
+          "callee": "clearInterval",
+          "lineNumber": 22
+        },
+        {
+          "caller": "reschedule",
+          "callee": "getSyncSettings",
+          "lineNumber": 25
+        },
+        {
+          "caller": "reschedule",
+          "callee": "setInterval",
+          "lineNumber": 27
+        },
+        {
+          "caller": "reschedule",
+          "callee": "tick",
+          "lineNumber": 27
+        },
+        {
+          "caller": "stopScheduler",
+          "callee": "clearInterval",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/settings.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "getSyncSettings",
+          "startLine": 9,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "setSyncSettings",
+          "startLine": 25,
+          "endLine": 36,
+          "params": [
+            "patch"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getSyncSettings",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "setSyncSettings",
+          "line": 25,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getSyncSettings",
+          "callee": "getSqlite().prepare('SELECT value FROM app_settings WHERE key = ?').get",
+          "lineNumber": 10
+        },
+        {
+          "caller": "getSyncSettings",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 10
+        },
+        {
+          "caller": "getSyncSettings",
+          "callee": "getSqlite",
+          "lineNumber": 10
+        },
+        {
+          "caller": "getSyncSettings",
+          "callee": "JSON.parse",
+          "lineNumber": 15
+        },
+        {
+          "caller": "getSyncSettings",
+          "callee": "Math.max",
+          "lineNumber": 18
+        },
+        {
+          "caller": "getSyncSettings",
+          "callee": "Number",
+          "lineNumber": 18
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "getSyncSettings",
+          "lineNumber": 26
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "Math.max",
+          "lineNumber": 28
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "Number",
+          "lineNumber": 28
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "getSqlite()\n    .prepare(\n      `INSERT INTO app_settings (key, value) VALUES (?, ?)\n       ON CONFLICT(key) DO UPDATE SET value = excluded.value`\n    )\n    .run",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "getSqlite()\n    .prepare",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "getSqlite",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setSyncSettings",
+          "callee": "JSON.stringify",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/status.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 49,
+      "functions": [
+        {
+          "name": "isRunning",
+          "startLine": 12,
+          "endLine": 12,
+          "params": []
+        },
+        {
+          "name": "setRunning",
+          "startLine": 13,
+          "endLine": 15,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isOnline",
+          "startLine": 17,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "syncStatus",
+          "startLine": 22,
+          "endLine": 49,
+          "params": []
+        },
+        {
+          "name": "emitStatus",
+          "startLine": 51,
+          "endLine": 53,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "isRunning",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "setRunning",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "isOnline",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "syncStatus",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "emitStatus",
+          "line": 51,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isOnline",
+          "callee": "net.isOnline",
+          "lineNumber": 19
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "getSqlite",
+          "lineNumber": 23
+        },
+        {
+          "caller": "count",
+          "callee": "db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE sync_state = ?`).get",
+          "lineNumber": 25
+        },
+        {
+          "caller": "count",
+          "callee": "db.prepare",
+          "lineNumber": 25
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "getSyncSettings",
+          "lineNumber": 28
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "metaGet",
+          "lineNumber": 29
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "metaGet",
+          "lineNumber": 30
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "db.prepare(`SELECT COUNT(*) AS n FROM mutation_queue WHERE action = 'hardDelete'`).get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "db.prepare",
+          "lineNumber": 32
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "isConnected",
+          "lineNumber": 37
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "isMapped",
+          "lineNumber": 38
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "isOnline",
+          "lineNumber": 39
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "count",
+          "lineNumber": 43
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "count",
+          "lineNumber": 43
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "count",
+          "lineNumber": 44
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "count",
+          "lineNumber": 44
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "Number",
+          "lineNumber": 45
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "Number",
+          "lineNumber": 46
+        },
+        {
+          "caller": "syncStatus",
+          "callee": "metaGet",
+          "lineNumber": 47
+        },
+        {
+          "caller": "emitStatus",
+          "callee": "broadcast",
+          "lineNumber": 52
+        },
+        {
+          "caller": "emitStatus",
+          "callee": "syncStatus",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/sync/writable.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 97,
+      "functions": [
+        {
+          "name": "rowToWritable",
+          "startLine": 43,
+          "endLine": 59,
+          "params": [
+            "row",
+            "cols"
+          ]
+        },
+        {
+          "name": "incomeWritableFromRow",
+          "startLine": 61,
+          "endLine": 61,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "expenseWritableFromRow",
+          "startLine": 62,
+          "endLine": 62,
+          "params": [
+            "row"
+          ]
+        },
+        {
+          "name": "writeWritable",
+          "startLine": 71,
+          "endLine": 101,
+          "params": [
+            "table",
+            "cols",
+            "id",
+            "writable",
+            "opts"
+          ]
+        },
+        {
+          "name": "writeIncomeWritable",
+          "startLine": 103,
+          "endLine": 104,
+          "params": [
+            "id",
+            "w",
+            "opts"
+          ]
+        },
+        {
+          "name": "writeExpenseWritable",
+          "startLine": 106,
+          "endLine": 107,
+          "params": [
+            "id",
+            "w",
+            "opts"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "INCOME_WRITABLE_COLS",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "EXPENSE_WRITABLE_COLS",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "incomeWritableFromRow",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "expenseWritableFromRow",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "writeIncomeWritable",
+          "line": 103,
+          "isDefault": false
+        },
+        {
+          "name": "writeExpenseWritable",
+          "line": 106,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "rowToWritable",
+          "callee": "Object.entries",
+          "lineNumber": 45
+        },
+        {
+          "caller": "rowToWritable",
+          "callee": "JSON.parse",
+          "lineNumber": 50
+        },
+        {
+          "caller": "rowToWritable",
+          "callee": "Array.isArray",
+          "lineNumber": 51
+        },
+        {
+          "caller": "incomeWritableFromRow",
+          "callee": "rowToWritable",
+          "lineNumber": 61
+        },
+        {
+          "caller": "expenseWritableFromRow",
+          "callee": "rowToWritable",
+          "lineNumber": 62
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "Object.entries",
+          "lineNumber": 80
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "sets.push",
+          "lineNumber": 81
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "Array.isArray",
+          "lineNumber": 84
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "JSON.stringify",
+          "lineNumber": 85
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "values.push",
+          "lineNumber": 87
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "sets.push",
+          "lineNumber": 89
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "values.push",
+          "lineNumber": 90
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "JSON.stringify",
+          "lineNumber": 90
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "sets.push",
+          "lineNumber": 92
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "values.push",
+          "lineNumber": 93
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "sets.push",
+          "lineNumber": 96
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "values.push",
+          "lineNumber": 97
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "values.push",
+          "lineNumber": 99
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "getSqlite().prepare(`UPDATE ${table} SET ${sets.join(', ')} WHERE id = ?`).run",
+          "lineNumber": 100
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "getSqlite().prepare",
+          "lineNumber": 100
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "getSqlite",
+          "lineNumber": 100
+        },
+        {
+          "caller": "writeWritable",
+          "callee": "sets.join",
+          "lineNumber": 100
+        },
+        {
+          "caller": "writeIncomeWritable",
+          "callee": "writeWritable",
+          "lineNumber": 104
+        },
+        {
+          "caller": "writeExpenseWritable",
+          "callee": "writeWritable",
+          "lineNumber": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/updater/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 143,
+      "nonEmptyLines": 126,
+      "functions": [
+        {
+          "name": "isMacSignatureError",
+          "startLine": 29,
+          "endLine": 35,
+          "params": [
+            "msg"
+          ]
+        },
+        {
+          "name": "initUpdater",
+          "startLine": 38,
+          "endLine": 101,
+          "params": []
+        },
+        {
+          "name": "checkForUpdatesNow",
+          "startLine": 104,
+          "endLine": 129,
+          "params": []
+        },
+        {
+          "name": "isUpdateDownloaded",
+          "startLine": 132,
+          "endLine": 134,
+          "params": []
+        },
+        {
+          "name": "installUpdate",
+          "startLine": 137,
+          "endLine": 143,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "initUpdater",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "checkForUpdatesNow",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "isUpdateDownloaded",
+          "line": 132,
+          "isDefault": false
+        },
+        {
+          "name": "installUpdate",
+          "line": 137,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isMacSignatureError",
+          "callee": "msg.includes",
+          "lineNumber": 31
+        },
+        {
+          "caller": "isMacSignatureError",
+          "callee": "msg.includes",
+          "lineNumber": 32
+        },
+        {
+          "caller": "isMacSignatureError",
+          "callee": "msg.includes",
+          "lineNumber": 33
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 40
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 44
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 45
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 48
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 49
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 52
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 53
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 56
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 57
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "Math.round",
+          "lineNumber": 57
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "broadcast",
+          "lineNumber": 58
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "Math.round",
+          "lineNumber": 60
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 67
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.log",
+          "lineNumber": 69
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "broadcast",
+          "lineNumber": 70
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.on",
+          "lineNumber": 77
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "String",
+          "lineNumber": 78
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.error",
+          "lineNumber": 79
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "isMacSignatureError",
+          "lineNumber": 81
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "broadcast",
+          "lineNumber": 82
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "broadcast",
+          "lineNumber": 89
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "setTimeout",
+          "lineNumber": 96
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.checkForUpdates().catch",
+          "lineNumber": 97
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "autoUpdater.checkForUpdates",
+          "lineNumber": 97
+        },
+        {
+          "caller": "initUpdater",
+          "callee": "console.error",
+          "lineNumber": 98
+        },
+        {
+          "caller": "checkForUpdatesNow",
+          "callee": "autoUpdater.checkForUpdates",
+          "lineNumber": 110
+        },
+        {
+          "caller": "checkForUpdatesNow",
+          "callee": "String",
+          "lineNumber": 116
+        },
+        {
+          "caller": "checkForUpdatesNow",
+          "callee": "isMacSignatureError",
+          "lineNumber": 117
+        },
+        {
+          "caller": "checkForUpdatesNow",
+          "callee": "broadcast",
+          "lineNumber": 118
+        },
+        {
+          "caller": "installUpdate",
+          "callee": "autoUpdater.quitAndInstall",
+          "lineNumber": 139
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/main/windows/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 164,
+      "nonEmptyLines": 153,
+      "functions": [
+        {
+          "name": "appIconPath",
+          "startLine": 18,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "createWindow",
+          "startLine": 22,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "broadcast",
+          "startLine": 62,
+          "endLine": 66,
+          "params": [
+            "channel",
+            "payload"
+          ]
+        },
+        {
+          "name": "sendToFocused",
+          "startLine": 69,
+          "endLine": 73,
+          "params": [
+            "channel",
+            "payload"
+          ]
+        },
+        {
+          "name": "installMenu",
+          "startLine": 76,
+          "endLine": 157,
+          "params": []
+        },
+        {
+          "name": "onActivate",
+          "startLine": 159,
+          "endLine": 161,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "appIconPath",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "createWindow",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "broadcast",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "sendToFocused",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "installMenu",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "onActivate",
+          "line": 159,
+          "isDefault": false
+        },
+        {
+          "name": "app",
+          "line": 164,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "appIconPath",
+          "callee": "join",
+          "lineNumber": 19
+        },
+        {
+          "caller": "appIconPath",
+          "callee": "app.getAppPath",
+          "lineNumber": 19
+        },
+        {
+          "caller": "createWindow",
+          "callee": "appIconPath",
+          "lineNumber": 31
+        },
+        {
+          "caller": "createWindow",
+          "callee": "join",
+          "lineNumber": 33
+        },
+        {
+          "caller": "createWindow",
+          "callee": "window.on",
+          "lineNumber": 41
+        },
+        {
+          "caller": "createWindow",
+          "callee": "window.show",
+          "lineNumber": 42
+        },
+        {
+          "caller": "createWindow",
+          "callee": "console.log",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createWindow",
+          "callee": "window.webContents.setWindowOpenHandler",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createWindow",
+          "callee": "shell.openExternal",
+          "lineNumber": 48
+        },
+        {
+          "caller": "createWindow",
+          "callee": "window.loadURL",
+          "lineNumber": 54
+        },
+        {
+          "caller": "createWindow",
+          "callee": "window.loadFile",
+          "lineNumber": 56
+        },
+        {
+          "caller": "createWindow",
+          "callee": "join",
+          "lineNumber": 56
+        },
+        {
+          "caller": "broadcast",
+          "callee": "BrowserWindow.getAllWindows",
+          "lineNumber": 63
+        },
+        {
+          "caller": "broadcast",
+          "callee": "w.webContents.send",
+          "lineNumber": 64
+        },
+        {
+          "caller": "sendToFocused",
+          "callee": "BrowserWindow.getFocusedWindow",
+          "lineNumber": 70
+        },
+        {
+          "caller": "sendToFocused",
+          "callee": "focused.isDestroyed",
+          "lineNumber": 71
+        },
+        {
+          "caller": "sendToFocused",
+          "callee": "focused.webContents.send",
+          "lineNumber": 72
+        },
+        {
+          "caller": "installMenu",
+          "callee": "sendToFocused",
+          "lineNumber": 85
+        },
+        {
+          "caller": "installMenu",
+          "callee": "sendToFocused",
+          "lineNumber": 90
+        },
+        {
+          "caller": "installMenu",
+          "callee": "createWindow",
+          "lineNumber": 97
+        },
+        {
+          "caller": "installMenu",
+          "callee": "sendToFocused",
+          "lineNumber": 140
+        },
+        {
+          "caller": "installMenu",
+          "callee": "sendToFocused",
+          "lineNumber": 145
+        },
+        {
+          "caller": "installMenu",
+          "callee": "Menu.setApplicationMenu",
+          "lineNumber": 156
+        },
+        {
+          "caller": "installMenu",
+          "callee": "Menu.buildFromTemplate",
+          "lineNumber": 156
+        },
+        {
+          "caller": "onActivate",
+          "callee": "BrowserWindow.getAllWindows",
+          "lineNumber": 160
+        },
+        {
+          "caller": "onActivate",
+          "callee": "createWindow",
+          "lineNumber": 160
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/preload/index.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/preload/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 340,
+      "nonEmptyLines": 320,
+      "callGraph": [
+        {
+          "caller": "listener",
+          "callee": "handler",
+          "lineNumber": 317
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

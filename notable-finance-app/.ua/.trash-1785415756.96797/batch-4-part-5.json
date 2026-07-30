@@ -1,0 +1,527 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/main/chat/overlays/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/main/chat/overlays/index.ts",
+      "summary": "Barrel module that re-exports all overlay subsystem symbols from catalog, heuristics, and parse modules.",
+      "tags": ["barrel", "re-export", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/overlays/parse.ts",
+      "type": "file",
+      "name": "parse.ts",
+      "filePath": "src/main/chat/overlays/parse.ts",
+      "summary": "Slash overlay parser that extracts overlay directives from raw chat input and resolves the active overlay from thread state.",
+      "tags": ["service", "parsing", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/parse.ts:parseSlashOverlay",
+      "type": "function",
+      "name": "parseSlashOverlay",
+      "filePath": "src/main/chat/overlays/parse.ts",
+      "lineRange": [14, 23],
+      "summary": "Parses slash overlay directives from raw input text, extracting overlay IDs and cleaning the text.",
+      "tags": ["service", "parsing", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/overlays/parse.ts:resolveActiveOverlay",
+      "type": "function",
+      "name": "resolveActiveOverlay",
+      "filePath": "src/main/chat/overlays/parse.ts",
+      "lineRange": [25, 34],
+      "summary": "Resolves the active overlay ID from thread metadata, defaulting to 'default' if not set.",
+      "tags": ["service", "resolution", "overlay"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/provider.ts",
+      "type": "file",
+      "name": "provider.ts",
+      "filePath": "src/main/chat/provider.ts",
+      "summary": "LLM provider HTTP client with streaming chat completions, retry logic, API key detection, and remote model ID fetching.",
+      "tags": ["service", "provider", "llm", "http", "chat"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/provider.ts:postChatCompletions",
+      "type": "function",
+      "name": "postChatCompletions",
+      "filePath": "src/main/chat/provider.ts",
+      "lineRange": [69, 158],
+      "summary": "Posts a chat completion request to the provider API with retry logic, error classification, and dev logging.",
+      "tags": ["service", "http", "llm", "retry"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/provider.ts:retryDelayMs",
+      "type": "function",
+      "name": "retryDelayMs",
+      "filePath": "src/main/chat/provider.ts",
+      "lineRange": [45, 57],
+      "summary": "Computes retry delay in ms from response headers with exponential backoff cap.",
+      "tags": ["utility", "retry", "http"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/provider.ts:completeChat",
+      "type": "function",
+      "name": "completeChat",
+      "filePath": "src/main/chat/provider.ts",
+      "lineRange": [160, 242],
+      "summary": "Completes a chat turn by posting messages and parsing tool calls from the response.",
+      "tags": ["service", "llm", "tool-calls"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/provider.ts:fetchRemoteModelIds",
+      "type": "function",
+      "name": "fetchRemoteModelIds",
+      "filePath": "src/main/chat/provider.ts",
+      "lineRange": [249, 293],
+      "summary": "Fetches available model IDs from the provider's model listing endpoint.",
+      "tags": ["service", "http", "model", "discovery"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/provider.ts:completeChatText",
+      "type": "function",
+      "name": "completeChatText",
+      "filePath": "src/main/chat/provider.ts",
+      "lineRange": [296, 304],
+      "summary": "Completes a chat turn and returns only the text content, discarding tool calls.",
+      "tags": ["service", "llm", "text"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/skills/router.ts",
+      "type": "file",
+      "name": "router.ts",
+      "filePath": "src/main/chat/skills/router.ts",
+      "summary": "Chat skill router that classifies user intent by keyword matching and routes to the appropriate skill with system addendum generation.",
+      "tags": ["service", "routing", "skill", "chat"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/skills/router.ts:routeChatSkill",
+      "type": "function",
+      "name": "routeChatSkill",
+      "filePath": "src/main/chat/skills/router.ts",
+      "lineRange": [28, 121],
+      "summary": "Routes user text to a named skill by matching against keyword patterns for delete, rebudget, monitoring, transfer, CC payment, alkansya, receivable, income, expense, update, explain, and query intents.",
+      "tags": ["service", "routing", "intent", "classification"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/skills/router.ts:skillSystemAddendum",
+      "type": "function",
+      "name": "skillSystemAddendum",
+      "filePath": "src/main/chat/skills/router.ts",
+      "lineRange": [123, 208],
+      "summary": "Generates a system prompt addendum for the active skill with today's date, current month, and skill-specific instructions.",
+      "tags": ["service", "prompt", "generation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/main/chat/threads.ts",
+      "type": "file",
+      "name": "threads.ts",
+      "filePath": "src/main/chat/threads.ts",
+      "summary": "CRUD service for chat threads and messages stored in SQLite, with auto-titling from user messages.",
+      "tags": ["service", "crud", "thread", "message", "database"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:mapThread",
+      "type": "function",
+      "name": "mapThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [24, 34],
+      "summary": "Maps a database row to a Thread object.",
+      "tags": ["utility", "mapping", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:mapMessage",
+      "type": "function",
+      "name": "mapMessage",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [36, 45],
+      "summary": "Maps a database row to a Message object.",
+      "tags": ["utility", "mapping", "message"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:listThreads",
+      "type": "function",
+      "name": "listThreads",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [47, 55],
+      "summary": "Lists all chat threads ordered by last activity descending.",
+      "tags": ["service", "query", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:getThread",
+      "type": "function",
+      "name": "getThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [57, 65],
+      "summary": "Gets a single thread by ID with message count.",
+      "tags": ["service", "query", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:createThread",
+      "type": "function",
+      "name": "createThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [67, 90],
+      "summary": "Creates a new chat thread with optional credential, overlay, and model defaults.",
+      "tags": ["service", "create", "thread"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:updateThread",
+      "type": "function",
+      "name": "updateThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [92, 117],
+      "summary": "Updates a thread's metadata fields including overlay, model, and credential.",
+      "tags": ["service", "update", "thread"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:touchThread",
+      "type": "function",
+      "name": "touchThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [119, 123],
+      "summary": "Updates a thread's last_activity timestamp to now.",
+      "tags": ["service", "update", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:deleteThread",
+      "type": "function",
+      "name": "deleteThread",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [125, 129],
+      "summary": "Deletes a thread and its messages by ID.",
+      "tags": ["service", "delete", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:deleteAllThreads",
+      "type": "function",
+      "name": "deleteAllThreads",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [131, 135],
+      "summary": "Deletes all threads and their messages from the database.",
+      "tags": ["service", "delete", "thread"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:listMessages",
+      "type": "function",
+      "name": "listMessages",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [137, 145],
+      "summary": "Lists all messages for a thread ordered by creation time.",
+      "tags": ["service", "query", "message"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:addMessage",
+      "type": "function",
+      "name": "addMessage",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [147, 171],
+      "summary": "Adds a message to a thread and touches the thread's last_activity.",
+      "tags": ["service", "create", "message"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/threads.ts:maybeSetTitleFromUserMessage",
+      "type": "function",
+      "name": "maybeSetTitleFromUserMessage",
+      "filePath": "src/main/chat/threads.ts",
+      "lineRange": [174, 179],
+      "summary": "Auto-sets the thread title from the first user message if the title is still default.",
+      "tags": ["service", "update", "thread", "auto-title"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/chat/overlays/parse.ts",
+      "target": "function:src/main/chat/overlays/parse.ts:parseSlashOverlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/parse.ts",
+      "target": "function:src/main/chat/overlays/parse.ts:resolveActiveOverlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/overlays/parse.ts",
+      "target": "function:src/main/chat/overlays/parse.ts:parseSlashOverlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/overlays/parse.ts",
+      "target": "function:src/main/chat/overlays/parse.ts:resolveActiveOverlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:postChatCompletions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:retryDelayMs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:completeChat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:fetchRemoteModelIds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:completeChatText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:completeChat",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:fetchRemoteModelIds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/provider.ts",
+      "target": "function:src/main/chat/provider.ts:completeChatText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/skills/router.ts",
+      "target": "function:src/main/chat/skills/router.ts:routeChatSkill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/skills/router.ts",
+      "target": "function:src/main/chat/skills/router.ts:skillSystemAddendum",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/skills/router.ts",
+      "target": "function:src/main/chat/skills/router.ts:routeChatSkill",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/skills/router.ts",
+      "target": "function:src/main/chat/skills/router.ts:skillSystemAddendum",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:mapThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:mapMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:listThreads",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:getThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:createThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:updateThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:touchThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:deleteThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:deleteAllThreads",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:listMessages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:addMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:maybeSetTitleFromUserMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:listThreads",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:getThread",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:createThread",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:updateThread",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:touchThread",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:deleteThread",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:deleteAllThreads",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:listMessages",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:addMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/threads.ts",
+      "target": "function:src/main/chat/threads.ts:maybeSetTitleFromUserMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

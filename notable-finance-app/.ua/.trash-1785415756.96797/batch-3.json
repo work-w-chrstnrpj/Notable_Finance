@@ -1,0 +1,123 @@
+{
+  "nodes": [
+    {
+      "id": "config:src/main/db/migrations/meta/0000_snapshot.json",
+      "type": "config",
+      "name": "0000_snapshot.json",
+      "filePath": "src/main/db/migrations/meta/0000_snapshot.json",
+      "summary": "Drizzle Kit schema snapshot capturing the full database schema state including all tables, columns, indexes, and foreign keys at migration step 0000.",
+      "tags": ["configuration", "database", "migration", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0001_snapshot.json",
+      "type": "config",
+      "name": "0001_snapshot.json",
+      "filePath": "src/main/db/migrations/meta/0001_snapshot.json",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0001, reflecting incremental schema changes.",
+      "tags": ["configuration", "database", "migration", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0002_snapshot.json",
+      "type": "config",
+      "name": "0002_snapshot.json",
+      "filePath": "src/main/db/migrations/meta/0002_snapshot.json",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0002, reflecting incremental schema changes.",
+      "tags": ["configuration", "database", "migration", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0003_snapshot.json",
+      "type": "config",
+      "name": "0003_snapshot.json",
+      "filePath": "src/main/db/migrations/meta/0003_snapshot.json",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0003, reflecting incremental schema changes.",
+      "tags": ["configuration", "database", "migration", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/0004_snapshot.json",
+      "type": "config",
+      "name": "0004_snapshot.json",
+      "filePath": "src/main/db/migrations/meta/0004_snapshot.json",
+      "summary": "Drizzle Kit schema snapshot capturing the database schema state after migration 0004, reflecting incremental schema changes.",
+      "tags": ["configuration", "database", "migration", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:src/main/db/migrations/meta/_journal.json",
+      "type": "config",
+      "name": "_journal.json",
+      "filePath": "src/main/db/migrations/meta/_journal.json",
+      "summary": "Drizzle Kit migration journal that tracks the sequence, status, and tags of all applied migrations from 0000 through 0004.",
+      "tags": ["configuration", "database", "migration", "metadata"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:src/main/db/migrations/meta/_journal.json",
+      "target": "config:src/main/db/migrations/meta/0000_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/_journal.json",
+      "target": "config:src/main/db/migrations/meta/0001_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/_journal.json",
+      "target": "config:src/main/db/migrations/meta/0002_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/_journal.json",
+      "target": "config:src/main/db/migrations/meta/0003_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/_journal.json",
+      "target": "config:src/main/db/migrations/meta/0004_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/0000_snapshot.json",
+      "target": "config:src/main/db/migrations/meta/0001_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/0001_snapshot.json",
+      "target": "config:src/main/db/migrations/meta/0002_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/0002_snapshot.json",
+      "target": "config:src/main/db/migrations/meta/0003_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/main/db/migrations/meta/0003_snapshot.json",
+      "target": "config:src/main/db/migrations/meta/0004_snapshot.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

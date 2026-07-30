@@ -1,0 +1,165 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/renderer/src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "src/renderer/src/main.tsx",
+      "summary": "Render entry point that bootstraps the React app with providers, IPC invalidation bridge, and tabbed workspace layout.",
+      "tags": ["entry-point", "react", "app-shell"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/types/finance.ts",
+      "type": "file",
+      "name": "finance.ts",
+      "filePath": "src/renderer/src/types/finance.ts",
+      "summary": "TypeScript type definitions for the renderer's finance domain entities and API response shapes.",
+      "tags": ["type-definition", "typescript", "data-model"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/shared/finance.types.ts",
+      "type": "file",
+      "name": "finance.types.ts",
+      "filePath": "src/shared/finance.types.ts",
+      "summary": "Shared finance domain type definitions used across main and renderer processes, including account, income, expense, and category interfaces.",
+      "tags": ["type-definition", "shared", "data-model", "typescript"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:test/app-tabs.test.ts",
+      "type": "file",
+      "name": "app-tabs.test.ts",
+      "filePath": "test/app-tabs.test.ts",
+      "summary": "Tests for the app tabs context and tab state management.",
+      "tags": ["test", "unit", "app-tabs"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/chat-fingerprint.test.ts",
+      "type": "file",
+      "name": "chat-fingerprint.test.ts",
+      "filePath": "test/chat-fingerprint.test.ts",
+      "summary": "Tests for chat API key fingerprinting logic.",
+      "tags": ["test", "unit", "chat", "security"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/chat-hardening.test.ts",
+      "type": "file",
+      "name": "chat-hardening.test.ts",
+      "filePath": "test/chat-hardening.test.ts",
+      "summary": "Tests for chat input hardening, sanitization, and safety guardrails.",
+      "tags": ["test", "unit", "chat", "security", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/chat-overlays.test.ts",
+      "type": "file",
+      "name": "chat-overlays.test.ts",
+      "filePath": "test/chat-overlays.test.ts",
+      "summary": "Tests for chat overlay parsing, detection heuristics, and keyword cheering.",
+      "tags": ["test", "unit", "chat", "overlays"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/chat-provider-base.test.ts",
+      "type": "file",
+      "name": "chat-provider-base.test.ts",
+      "filePath": "test/chat-provider-base.test.ts",
+      "summary": "Tests for the chat provider base URL detection and model listing logic.",
+      "tags": ["test", "unit", "chat", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/chat-read-tools.test.ts",
+      "type": "file",
+      "name": "chat-read-tools.test.ts",
+      "filePath": "test/chat-read-tools.test.ts",
+      "summary": "Tests for chat read-only tool execution including dashboard and query tools.",
+      "tags": ["test", "unit", "chat", "tools"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/chat-write-tools.test.ts",
+      "type": "file",
+      "name": "chat-write-tools.test.ts",
+      "filePath": "test/chat-write-tools.test.ts",
+      "summary": "Tests for chat write tool execution including income, expense, and draft proposal creation.",
+      "tags": ["test", "unit", "chat", "tools"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/derivations.test.ts",
+      "type": "file",
+      "name": "derivations.test.ts",
+      "filePath": "test/derivations.test.ts",
+      "summary": "Tests for finance derivation functions including account balances, net income, and dashboard summary calculations.",
+      "tags": ["test", "unit", "finance", "derivations"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/dev-logs.test.ts",
+      "type": "file",
+      "name": "dev-logs.test.ts",
+      "filePath": "test/dev-logs.test.ts",
+      "summary": "Tests for the developer logging store including appending, listing, and clearing log entries.",
+      "tags": ["test", "unit", "dev-logs"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/main.tsx:IpcInvalidationBridge",
+      "type": "function",
+      "name": "IpcInvalidationBridge",
+      "filePath": "src/renderer/src/main.tsx",
+      "lineRange": [25, 51],
+      "summary": "React component that listens for IPC invalidation events and triggers React Query cache invalidation.",
+      "tags": ["react", "ipc", "invalidation", "bridge"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/main.tsx:App",
+      "type": "function",
+      "name": "App",
+      "filePath": "src/renderer/src/main.tsx",
+      "lineRange": [63, 85],
+      "summary": "Root React component composing all context providers, error boundaries, layout, and the workspace router.",
+      "tags": ["react", "component", "app-shell", "root"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test/chat-overlays.test.ts:draft",
+      "type": "function",
+      "name": "draft",
+      "filePath": "test/chat-overlays.test.ts",
+      "lineRange": [12, 25],
+      "summary": "Test helper that builds a draft object with test defaults and partial overrides.",
+      "tags": ["test", "helper", "fixture"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/renderer/src/main.tsx",
+      "target": "function:src/renderer/src/main.tsx:IpcInvalidationBridge",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/main.tsx",
+      "target": "function:src/renderer/src/main.tsx:App",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/chat-overlays.test.ts",
+      "target": "function:test/chat-overlays.test.ts:draft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

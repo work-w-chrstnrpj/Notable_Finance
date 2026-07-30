@@ -58,6 +58,23 @@ describe('computeAccountBalance — Notion formula (no starting balance, gross i
     expect(bal.totalPasabuy).toBe(150)
     expect(bal.totalCcDebtTransfer).toBe(-300)
   })
+
+  // Regression: Total Pasabuy must sum full-precision Pasabuy Received and round ONCE,
+  // matching Notion. A 25000/6-over-2-periods pasabuy is 8333.3333, so the balance is
+  // 8333.33 — not 8333.34, which double-rounding (round(4166.67 × 2)) would produce.
+  it('rounds Total Pasabuy once (no per-row double rounding drift)', () => {
+    const acc = account({ id: 'cash', type: 'Cash' })
+    const ctx = {
+      incomeCategoryName: () => 'Salary',
+      expenseCategoryName: (id: string) => (id === 'pasabuy' ? 'Pasabuy' : 'Food')
+    }
+    const expenses = [
+      expense({ id: 'p1', accountId: 'other', pasabuyAccountReceiverId: 'cash', amount: 25000, interest: 0, categoryId: 'pasabuy', periodCount: 6, paidPeriod: 2, pasabuyPaidPeriod: 2 })
+    ]
+    const bal = computeAccountBalance(acc, [], expenses, ctx)
+    expect(bal.totalPasabuy).toBe(8333.33)
+    expect(bal.currentBalance).toBe(8333.33)
+  })
 })
 
 describe('computeAccountBalance — credit-like', () => {

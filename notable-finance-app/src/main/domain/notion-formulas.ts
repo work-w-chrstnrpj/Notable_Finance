@@ -11,6 +11,15 @@
 //   Expense · Pasabuy Received   = (pasabuy category & receiver) ? InstallmentAmount × pasabuyPaidPeriod : 0
 //   Expense · Pasabuyer Balance  = (pasabuy category & status) ? (status="fully received" ? 0
 //                                    : Amount − InstallmentAmount × pasabuyPaidPeriod) : —
+//
+// ROUNDING MODEL (matches Notion): Notion formulas compute at full floating-point
+// precision and a 2-decimal "number format" is DISPLAY-ONLY — it never rounds the stored
+// value, and rollup Sums aggregate the full-precision numbers. So these ports keep
+// intermediate results (Installment Amount, Pasabuy Received) UNROUNDED and round only at
+// the final consumer: each displayed scalar rounds once, and the Total Pasabuy rollup is
+// summed then rounded once in computeAccountBalance. Rounding an intermediate before a
+// later multiply double-rounds and drifts the balance by ±0.01 (e.g. 25000/6 → 4166.6667,
+// which must not collapse to 4166.67 before ×2).
 import type { ExpenseRecordDto, IncomeRecordDto } from '../../shared/finance.types'
 
 export const round2 = (v: number): number => Math.round((v + Number.EPSILON) * 100) / 100
@@ -43,17 +52,22 @@ export const grossPrice = (e: Pick<ExpenseRecordDto, 'amount' | 'interest'>): nu
 
 export function installmentAmount(e: ExpenseCalc): number | null {
   if (!e.periodCount || e.periodCount <= 0) return null
-  return round2(grossPrice(e) / e.periodCount) // periodCount === 1 → GrossPrice
+  // FULL PRECISION (unrounded) — Notion's Installment Amount is unrounded; the 2-decimal
+  // display is formatting-only. Consumers below round at the end so a value like
+  // 25000/6 = 4166.6667 isn't prematurely collapsed to 4166.67 and then multiplied.
+  return grossPrice(e) / e.periodCount // periodCount === 1 → GrossPrice
 }
 
 export function paidAmount(e: ExpenseCalc): number | null {
   if (!e.periodCount || !e.paymentStatus) return null
+  // Single round from the full-precision installment (displayed scalar).
   return round2((installmentAmount(e) ?? 0) * (e.paidPeriod ?? 0))
 }
 
 export function remainingBalance(e: ExpenseCalc): number | null {
   if (!e.periodCount || !e.paymentStatus) return null
-  return round2(grossPrice(e) - (paidAmount(e) ?? 0))
+  // Subtract the full-precision paid amount, then round once (not gross − roundedPaid).
+  return round2(grossPrice(e) - (installmentAmount(e) ?? 0) * (e.paidPeriod ?? 0))
 }
 
 export function isPasabuyCategoryName(categoryName: string | undefined): boolean {
@@ -65,7 +79,10 @@ export function pasabuyReceivedAmount(
   categoryName: string | undefined
 ): number {
   if (!e.pasabuyAccountReceiverId || !isPasabuyCategoryName(categoryName)) return 0
-  return round2((installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0))
+  // FULL PRECISION — feeds the Total Pasabuy rollup, which computeAccountBalance sums and
+  // rounds ONCE (mirrors Notion summing full-precision rollups). Rounding here would
+  // double-round and drift Current Balance by a centavo on non-even installments.
+  return (installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0)
 }
 
 /** Notion "Pasabuyer Balance": Amount − (InstallmentAmount × pasabuyPaidPeriod); 0 if fully received. */
@@ -75,6 +92,7 @@ export function pasabuyerBalance(
 ): number | null {
   if (!isPasabuyCategoryName(categoryName) || !e.pasabuyStatus) return null
   if (e.pasabuyStatus === 'Payment fully received') return 0
-  const received = round2((installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0))
+  // Received at full precision; round the displayed balance once (not amount − roundedReceived).
+  const received = (installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0)
   return round2(e.amount - received)
 }

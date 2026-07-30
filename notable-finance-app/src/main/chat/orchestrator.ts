@@ -428,11 +428,15 @@ export async function sendChatMessage(input: {
   // Topic guard — block off-topic questions (non-finance, non-app).
   const guardResult = checkTopicGuard(text)
   if (guardResult) {
-    const thread = createThread({
-      credentialId: input.credentialId ?? getDefaultCredentialId(),
-      modelId: input.modelId ?? ui.chatDefaultModel ?? DEFAULT_CHAT_MODEL,
-      overlay: 'default'
-    })
+    // Reply IN the current thread when one is open — an off-topic message must never
+    // spawn a duplicate chat. Only mint a new thread when none was supplied.
+    const thread =
+      (input.threadId ? getThread(input.threadId) : null) ??
+      createThread({
+        credentialId: input.credentialId ?? getDefaultCredentialId(),
+        modelId: input.modelId ?? ui.chatDefaultModel ?? DEFAULT_CHAT_MODEL,
+        overlay: 'default'
+      })
     const userMessage = addMessage(thread.id, 'user', text)
     const assistantMessage = addMessage(thread.id, 'assistant', guardResult)
     maybeSetTitleFromUserMessage(thread.id, text)

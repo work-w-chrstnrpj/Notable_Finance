@@ -1,0 +1,91 @@
+[
+  {
+    "order": 1,
+    "title": "Project Overview",
+    "description": "Start with README.md to understand what Notable Finance is: an offline-first Electron desktop app where local SQLite is the source of truth and Notion is a bidirectional mirror. The README explains the architecture, phase completion status (Phases 0-5), and development setup so you get the big picture before diving into code.",
+    "nodeIds": ["document:README.md"]
+  },
+  {
+    "order": 2,
+    "title": "Electron Entry & Window Management",
+    "description": "The Electron main process entry point bootstraps the app, initializes the database, registers IPC handlers, creates the main window, and starts the auto-updater. The window manager handles window creation, menu installation with keyboard shortcuts, and macOS activate handling. These two files together are where the app comes to life.",
+    "nodeIds": ["file:src/main/index.ts", "file:src/main/windows/index.ts"],
+    "languageLesson": "Electron apps have a main process (Node.js) that creates BrowserWindow instances. The renderer process runs the UI. Communication between them uses IPC via contextBridge for security."
+  },
+  {
+    "order": 3,
+    "title": "Project Configuration & Build Pipeline",
+    "description": "package.json defines the entire dependency tree (React 19, better-sqlite3, Drizzle ORM, electron-updater) and npm scripts for dev/build/test. electron-builder.yml configures packaging for macOS, Linux, and Windows with auto-update support. electron-vite orchestrates the build for main, preload, and renderer processes.",
+    "nodeIds": ["config:package.json", "config:electron-builder.yml", "file:electron.vite.config.ts"]
+  },
+  {
+    "order": 4,
+    "title": "Database Schema",
+    "description": "The baseline Drizzle migration defines the full local SQLite schema: accounts, income/expense categories, incomes, expenses, expense scheduler, mutation queue (outbox), conflicts (three-way merge), sync_meta, and app_settings. Later migrations add pasabuy tracking, activity log, chat tables, draft display, reference icons, and activity payloads. This schema is the backbone of the offline-first architecture.",
+    "nodeIds": [
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql:incomes",
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql:mutation_queue",
+      "table:src/main/db/migrations/0000_same_silver_surfer.sql:conflicts"
+    ],
+    "languageLesson": "Drizzle migrations use '-- statement-breakpoint' markers so the migrator runs each statement separately under a single transaction. Migrations are idempotent and ordered sequentially."
+  },
+  {
+    "order": 5,
+    "title": "Data Access Layer",
+    "description": "The database index initializes the SQLite connection and runs pending migrations on startup. The Drizzle schema file defines typed table objects that mirror the SQL schema. Repositories contain all CRUD operations for incomes, expenses, accounts, categories, and scheduler records with soft-delete support. Mappers translate database rows into typed domain objects.",
+    "nodeIds": ["file:src/main/db/index.ts", "file:src/main/db/schema.ts", "file:src/main/db/repositories.ts", "file:src/main/db/mappers.ts"]
+  },
+  {
+    "order": 6,
+    "title": "Domain Logic & Validation",
+    "description": "Domain derivations compute account balances, category spending, dashboard summaries, and monthly monitoring reports by composing raw data. Validation enforces ISO dates, finite numbers, and required fields on create/update inputs. Notion formulas replicate the hidden Notion formula logic (transaction amounts, installment math, pasabuy splits) so the app remains consistent with Notion.",
+    "nodeIds": ["file:src/main/domain/derivations.ts", "file:src/main/domain/validation.ts", "file:src/main/domain/notion-formulas.ts", "file:src/main/domain/resource-utils.ts"]
+  },
+  {
+    "order": 7,
+    "title": "Notion Integration",
+    "description": "The Notion service layer manages client initialization, database discovery, and schema verification against the expected Notion database definitions. The HTTP client handles all Notion API calls with error classification. Page extractors parse Notion API responses into typed field values. The property mapper converts app DTOs back into Notion page properties for writes.",
+    "nodeIds": ["file:src/main/notion/service.ts", "file:src/main/notion/client.ts", "file:src/main/notion/page-extractors.ts", "file:src/main/notion/property-mapper.ts", "file:src/main/notion/schema-spec.ts"]
+  },
+  {
+    "order": 8,
+    "title": "Bidirectional Sync Engine",
+    "description": "The sync engine is the heart of the offline-first design. Pull fetches the latest Notion data and reconciles it locally via a three-way merge algorithm that detects per-field differences between base, local, and remote versions. Push sends local mutations (from the outbox queue) to Notion with retry/backoff. Conflicts are stored for user resolution. The scheduler runs periodic sync.",
+    "nodeIds": ["file:src/main/sync/index.ts", "file:src/main/sync/pull.ts", "file:src/main/sync/push.ts", "file:src/main/sync/merge.ts", "file:src/main/sync/conflicts.ts"],
+    "languageLesson": "Three-way merge compares base (last-synced state), local (current SQLite), and remote (current Notion). When local and remote diverge from the same base, a conflict is recorded per field, and the user must choose which version to keep."
+  },
+  {
+    "order": 9,
+    "title": "IPC Handlers & Preload Bridge",
+    "description": "IPC handlers register all invoke-based channels that the renderer calls for finance operations, settings, sync, chat, and dev logs. The preload script exposes a structured, typed API to the renderer via contextBridge, wrapping every invoke call. This is the security boundary: the renderer never accesses Node.js APIs directly.",
+    "nodeIds": ["file:src/main/ipc/index.ts", "file:src/preload/index.ts", "file:src/preload/index.d.ts"],
+    "languageLesson": "contextBridge creates a safe, isolated bridge between the renderer and main process. The renderer gets a window.api object with typed methods instead of raw ipcRenderer access, following Electron security best practices."
+  },
+  {
+    "order": 10,
+    "title": "Renderer Entry & Workspace",
+    "description": "The HTML entry point mounts the React app. The main.tsx renders the root component inside providers for theme, finance data, UI settings, app tabs, and keyboard shortcuts. FinanceWorkspace orchestrates the entire UI: it manages layout, sync state, navigation between pages, and data hydration on startup.",
+    "nodeIds": ["file:src/renderer/index.html", "file:src/renderer/src/main.tsx", "file:src/renderer/src/components/finance-workspace.tsx", "file:src/renderer/src/lib/finance-data-context.tsx"]
+  },
+  {
+    "order": 11,
+    "title": "Finance Pages & UI Components",
+    "description": "Each finance section has a dedicated page component: Dashboard shows summary metrics and charts, Income and Expense provide data tables with create/edit/delete forms, Monitoring displays budget status, Accounts shows gallery/table views, and History renders activity log entries with detail modals. The UI layer uses shared form modals, data tables, search bars, and charts.",
+    "nodeIds": ["file:src/renderer/src/components/pages/dashboard.tsx", "file:src/renderer/src/components/pages/income.tsx", "file:src/renderer/src/components/pages/expense.tsx", "file:src/renderer/src/components/pages/monitoring.tsx", "file:src/renderer/src/components/pages/accounts.tsx"]
+  },
+  {
+    "order": 12,
+    "title": "AI Chat Subsystem",
+    "description": "The chat subsystem provides an AI assistant for natural-language finance queries and operations. The orchestrator routes user intent through skill detection, tool execution loops, and provider calls. Read tools query the database (dashboard summary, incomes, expenses, budgets), while write tools propose creates/updates through a draft-and-confirm workflow. API keys are stored encrypted via Electron safeStorage.",
+    "nodeIds": ["file:src/main/chat/orchestrator.ts", "file:src/main/chat/provider.ts", "file:src/main/chat/tools/read-tools.ts", "file:src/main/chat/tools/write-tools.ts", "file:src/main/chat/credentials-vault.ts"]
+  },
+  {
+    "order": 13,
+    "title": "Testing & Packaging",
+    "description": "The project uses Vitest for unit tests (domain logic, sync, chat, mappers) and Playwright for Electron end-to-end tests (window loading, keyboard shortcuts). The test suite covers validation, derivations, merge logic, Notion integration, and chat hardening. electron-builder packages the app for distribution with auto-update support via GitHub Releases.",
+    "nodeIds": ["file:playwright.config.ts", "file:e2e/app.spec.ts", "file:e2e/keyboard-shortcuts.spec.ts", "file:scripts/seed-dev.mjs"]
+  }
+]

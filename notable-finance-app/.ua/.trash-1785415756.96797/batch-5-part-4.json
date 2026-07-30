@@ -1,0 +1,1287 @@
+{
+  "batch": 5,
+  "part": 4,
+  "nodes": [
+    {
+      "id": "file:src/main/db/schema.ts",
+      "type": "file",
+      "name": "schema.ts",
+      "filePath": "src/main/db/schema.ts",
+      "language": "typescript",
+      "lines": 219,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:src/main/dev-logs/store.ts",
+      "type": "file",
+      "name": "store.ts",
+      "filePath": "src/main/dev-logs/store.ts",
+      "language": "typescript",
+      "lines": 125,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "function",
+      "name": "summarizeForDevLog",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [
+        "value",
+        "depth"
+      ],
+      "lines": 22,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:isDevModeEnabled",
+      "type": "function",
+      "name": "isDevModeEnabled",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:listDevLogs",
+      "type": "function",
+      "name": "listDevLogs",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [
+        "limit"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:clearDevLogs",
+      "type": "function",
+      "name": "clearDevLogs",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [],
+      "lines": 5,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "function",
+      "name": "appendDevLog",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 43,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "type": "function",
+      "name": "logDevOperation",
+      "filePath": "src/main/dev-logs/store.ts",
+      "params": [
+        "action",
+        "message",
+        "detail",
+        "ok"
+      ],
+      "lines": 15,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/domain/derivations.ts",
+      "type": "file",
+      "name": "derivations.ts",
+      "filePath": "src/main/domain/derivations.ts",
+      "language": "typescript",
+      "lines": 225,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "function",
+      "name": "roundMoney",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "value"
+      ],
+      "lines": 2,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "function",
+      "name": "netIncome",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "income"
+      ],
+      "lines": 2,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "type": "function",
+      "name": "computeAccountBalance",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "account",
+        "incomes",
+        "expenses",
+        "ctx"
+      ],
+      "lines": 42,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "type": "function",
+      "name": "computeAccountBalances",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "accounts",
+        "incomes",
+        "expenses",
+        "ctx"
+      ],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:categorySpending",
+      "type": "function",
+      "name": "categorySpending",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "categoryId",
+        "monthExpenses"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "type": "function",
+      "name": "dashboardSummary",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "month",
+        "snap",
+        "ctx"
+      ],
+      "lines": 30,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "type": "function",
+      "name": "monthlyMonitoring",
+      "filePath": "src/main/domain/derivations.ts",
+      "params": [
+        "month",
+        "input"
+      ],
+      "lines": 44,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/domain/notion-formulas.ts",
+      "type": "file",
+      "name": "notion-formulas.ts",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "language": "typescript",
+      "lines": 80,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "function",
+      "name": "round2",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "v"
+      ],
+      "lines": 1,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:isTransactionCategory",
+      "type": "function",
+      "name": "isTransactionCategory",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "categoryName"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:transactionAmount",
+      "type": "function",
+      "name": "transactionAmount",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "income",
+        "categoryName"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "type": "function",
+      "name": "grossPrice",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e"
+      ],
+      "lines": 2,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "function",
+      "name": "installmentAmount",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "type": "function",
+      "name": "paidAmount",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "type": "function",
+      "name": "remainingBalance",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "function",
+      "name": "isPasabuyCategoryName",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "categoryName"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "type": "function",
+      "name": "pasabuyReceivedAmount",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e",
+        "categoryName"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "type": "function",
+      "name": "pasabuyerBalance",
+      "filePath": "src/main/domain/notion-formulas.ts",
+      "params": [
+        "e",
+        "categoryName"
+      ],
+      "lines": 9,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/domain/query-filters.ts",
+      "type": "file",
+      "name": "query-filters.ts",
+      "filePath": "src/main/domain/query-filters.ts",
+      "language": "typescript",
+      "lines": 134,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/query-filters.ts:normalizeExpenseViewMode",
+      "type": "function",
+      "name": "normalizeExpenseViewMode",
+      "filePath": "src/main/domain/query-filters.ts",
+      "params": [
+        "mode"
+      ],
+      "lines": 27,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "type": "function",
+      "name": "filterIncomeByQuery",
+      "filePath": "src/main/domain/query-filters.ts",
+      "params": [
+        "records",
+        "query"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "type": "function",
+      "name": "filterExpensesByQuery",
+      "filePath": "src/main/domain/query-filters.ts",
+      "params": [
+        "records",
+        "query",
+        "ctx"
+      ],
+      "lines": 69,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:isDevModeEnabled",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:isDevModeEnabled",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:listDevLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:listDevLogs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:clearDevLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:clearDevLogs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/dev-logs/store.ts",
+      "target": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 32
+    },
+    {
+      "source": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 41
+    },
+    {
+      "source": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "target": "function:src/main/dev-logs/store.ts:isDevModeEnabled",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 82
+    },
+    {
+      "source": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 117
+    },
+    {
+      "source": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 122
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:categorySpending",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:categorySpending",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/derivations.ts",
+      "target": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 91
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:transactionAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 94
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 97
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 101
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 107
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 108
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 109
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 110
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalance",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 121
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:categorySpending",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 126
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 148
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 149
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 151
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 151
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 152
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:computeAccountBalances",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 156
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 157
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 159
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:dashboardSummary",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 167
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 183
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 184
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 186
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 187
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 187
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 188
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:categorySpending",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 193
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 199
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 200
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 210
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 211
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 212
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 213
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:roundMoney",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 217
+    },
+    {
+      "source": "function:src/main/domain/derivations.ts:monthlyMonitoring",
+      "target": "function:src/main/domain/derivations.ts:netIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 220
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:isTransactionCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:isTransactionCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:transactionAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:transactionAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:transactionAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:isTransactionCategory",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 32
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 42
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 46
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 46
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 51
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 51
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 56
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:grossPrice",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 56
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:remainingBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:paidAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 56
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 67
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 68
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyReceivedAmount",
+      "target": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 68
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 76
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 78
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:installmentAmount",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 78
+    },
+    {
+      "source": "function:src/main/domain/notion-formulas.ts:pasabuyerBalance",
+      "target": "function:src/main/domain/notion-formulas.ts:round2",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 79
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:normalizeExpenseViewMode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:normalizeExpenseViewMode",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "target": "function:src/main/domain/resource-utils.ts:filterByRange",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 60
+    },
+    {
+      "source": "function:src/main/domain/query-filters.ts:filterIncomeByQuery",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 62
+    },
+    {
+      "source": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "target": "function:src/main/domain/query-filters.ts:normalizeExpenseViewMode",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 72
+    },
+    {
+      "source": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "target": "function:src/main/domain/resource-utils.ts:filterByRange",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 116
+    },
+    {
+      "source": "function:src/main/domain/query-filters.ts:filterExpensesByQuery",
+      "target": "function:src/main/domain/resource-utils.ts:filterByMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 118
+    }
+  ]
+}

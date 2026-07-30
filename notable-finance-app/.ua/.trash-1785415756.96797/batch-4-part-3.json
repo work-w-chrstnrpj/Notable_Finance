@@ -1,0 +1,897 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/main/chat/credentials-vault.ts",
+      "type": "file",
+      "name": "credentials-vault.ts",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "summary": "OS-level encrypted vault for chat API keys using Electron safeStorage with encode/decode and fingerprinting utilities.",
+      "tags": ["service", "security", "encryption", "credential-storage"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:decodePayload",
+      "type": "function",
+      "name": "decodePayload",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [34, 59],
+      "summary": "Decrypts and parses a stored credential payload from the vault file system.",
+      "tags": ["utility", "decryption", "parsing"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:storeChatCredentialSecret",
+      "type": "function",
+      "name": "storeChatCredentialSecret",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [61, 78],
+      "summary": "Encrypts and writes a credential secret to disk using Electron safeStorage.",
+      "tags": ["service", "encryption", "persistence"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:storeChatApiKey",
+      "type": "function",
+      "name": "storeChatApiKey",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [80, 91],
+      "summary": "Stores or updates an API key in the vault, merging with existing credential metadata.",
+      "tags": ["service", "credential", "update"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:readChatCredentialSecret",
+      "type": "function",
+      "name": "readChatCredentialSecret",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [93, 97],
+      "summary": "Reads and decrypts a stored credential secret from the vault file.",
+      "tags": ["service", "decryption", "read"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:readChatApiKey",
+      "type": "function",
+      "name": "readChatApiKey",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [99, 101],
+      "summary": "Reads the API key from a stored credential secret.",
+      "tags": ["service", "credential", "read"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:readChatBaseUrl",
+      "type": "function",
+      "name": "readChatBaseUrl",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [103, 105],
+      "summary": "Reads the base URL from a stored credential secret.",
+      "tags": ["service", "credential", "read"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:readChatProviderId",
+      "type": "function",
+      "name": "readChatProviderId",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [107, 109],
+      "summary": "Reads the provider ID from a stored credential secret.",
+      "tags": ["service", "credential", "read"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:hasChatApiKey",
+      "type": "function",
+      "name": "hasChatApiKey",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [111, 113],
+      "summary": "Checks whether a vault file exists for the given credential ID.",
+      "tags": ["utility", "credential", "check"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:deleteChatApiKey",
+      "type": "function",
+      "name": "deleteChatApiKey",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [115, 117],
+      "summary": "Deletes a stored credential vault file.",
+      "tags": ["service", "credential", "deletion"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials-vault.ts:fingerprintApiKey",
+      "type": "function",
+      "name": "fingerprintApiKey",
+      "filePath": "src/main/chat/credentials-vault.ts",
+      "lineRange": [119, 123],
+      "summary": "Generates a short prefix fingerprint of an API key for display without exposing the full key.",
+      "tags": ["utility", "security", "fingerprint"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/credentials.ts",
+      "type": "file",
+      "name": "credentials.ts",
+      "filePath": "src/main/chat/credentials.ts",
+      "summary": "CRUD service for chat credential metadata stored in SQLite, with vault-backed API key management.",
+      "tags": ["service", "crud", "credential", "database"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:mapCred",
+      "type": "function",
+      "name": "mapCred",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [23, 45],
+      "summary": "Maps a database row to a credential object including vault read and provider preset detection.",
+      "tags": ["utility", "mapping", "database"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:listCredentials",
+      "type": "function",
+      "name": "listCredentials",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [47, 55],
+      "summary": "Lists all credentials from SQLite ordered by default status then creation date.",
+      "tags": ["service", "query", "credential"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:getCredential",
+      "type": "function",
+      "name": "getCredential",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [57, 64],
+      "summary": "Gets a single credential by ID from SQLite and maps it with vault data.",
+      "tags": ["service", "query", "credential"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:getDefaultCredentialId",
+      "type": "function",
+      "name": "getDefaultCredentialId",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [66, 75],
+      "summary": "Returns the default credential ID, falling back to the oldest credential if none is set.",
+      "tags": ["service", "query", "credential"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:createCredential",
+      "type": "function",
+      "name": "createCredential",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [77, 109],
+      "summary": "Creates a new credential with API key, vault storage, and SQLite persistence with auto-default.",
+      "tags": ["service", "create", "credential"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:updateCredential",
+      "type": "function",
+      "name": "updateCredential",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [111, 149],
+      "summary": "Updates an existing credential's name and API key, with vault re-storage on key change.",
+      "tags": ["service", "update", "credential"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:setDefaultCredential",
+      "type": "function",
+      "name": "setDefaultCredential",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [151, 157],
+      "summary": "Sets a credential as the default by ID, clearing other defaults first.",
+      "tags": ["service", "update", "credential"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/credentials.ts:deleteCredential",
+      "type": "function",
+      "name": "deleteCredential",
+      "filePath": "src/main/chat/credentials.ts",
+      "lineRange": [159, 175],
+      "summary": "Deletes a credential by removing vault key, database row, and reassigning default if needed.",
+      "tags": ["service", "delete", "credential"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/main/chat/dates.ts",
+      "type": "file",
+      "name": "dates.ts",
+      "filePath": "src/main/chat/dates.ts",
+      "summary": "Date and month utility functions for resolving relative date expressions, shifting months, and generating ISO strings.",
+      "tags": ["utility", "date", "parsing", "formatting"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:todayIso",
+      "type": "function",
+      "name": "todayIso",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [33, 38],
+      "summary": "Returns today's date as an ISO string (YYYY-MM-DD).",
+      "tags": ["utility", "date", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:currentMonth",
+      "type": "function",
+      "name": "currentMonth",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [40, 42],
+      "summary": "Returns the current month as a YYYY-MM string.",
+      "tags": ["utility", "date", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:shiftMonth",
+      "type": "function",
+      "name": "shiftMonth",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [45, 53],
+      "summary": "Shifts a YYYY-MM string by a delta number of months.",
+      "tags": ["utility", "date", "calculation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:resolveMonth",
+      "type": "function",
+      "name": "resolveMonth",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [60, 93],
+      "summary": "Resolves a raw month string to YYYY-MM, supporting relative terms like last month, next month, and named months.",
+      "tags": ["utility", "date", "resolution", "parsing"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:requireMonth",
+      "type": "function",
+      "name": "requireMonth",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [95, 103],
+      "summary": "Resolves a month string and throws if the result is empty.",
+      "tags": ["utility", "validation", "date"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:resolveDate",
+      "type": "function",
+      "name": "resolveDate",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [117, 128],
+      "summary": "Resolves a raw date string to YYYY-MM-DD, supporting today, tomorrow, yesterday.",
+      "tags": ["utility", "date", "resolution", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/dates.ts:requireDate",
+      "type": "function",
+      "name": "requireDate",
+      "filePath": "src/main/chat/dates.ts",
+      "lineRange": [130, 138],
+      "summary": "Resolves a date string and throws a descriptive error if the result is empty.",
+      "tags": ["utility", "validation", "date"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/drafts.ts",
+      "type": "file",
+      "name": "drafts.ts",
+      "filePath": "src/main/chat/drafts.ts",
+      "summary": "In-memory draft management with SQLite persistence for chat-generated finance record proposals, including TTL expiry and deduplication.",
+      "tags": ["service", "draft", "persistence", "in-memory"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:rowToDraft",
+      "type": "function",
+      "name": "rowToDraft",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [49, 68],
+      "summary": "Maps a database row to a Draft object by parsing JSON fields.",
+      "tags": ["utility", "mapping", "database"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:persist",
+      "type": "function",
+      "name": "persist",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [70, 108],
+      "summary": "Persists or updates a draft in SQLite with upsert semantics.",
+      "tags": ["service", "persistence", "database"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:reconcilePending",
+      "type": "function",
+      "name": "reconcilePending",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [122, 147],
+      "summary": "Reconciles pending drafts by collapsing duplicates and keeping only the newest per group.",
+      "tags": ["service", "deduplication", "cleanup"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:hydrate",
+      "type": "function",
+      "name": "hydrate",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [150, 170],
+      "summary": "Loads active drafts from SQLite into the in-memory map and reconciles pending ones.",
+      "tags": ["service", "initialization", "database"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:putDraft",
+      "type": "function",
+      "name": "putDraft",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [172, 213],
+      "summary": "Creates or replaces a draft with deduplication on kind+resource, persisting the change.",
+      "tags": ["service", "create", "draft"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:getDraft",
+      "type": "function",
+      "name": "getDraft",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [215, 218],
+      "summary": "Gets a single draft by ID from the in-memory map.",
+      "tags": ["service", "query", "draft"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:listDrafts",
+      "type": "function",
+      "name": "listDrafts",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [220, 239],
+      "summary": "Lists pending drafts filtered by thread ID with TTL expiry and deduplication.",
+      "tags": ["service", "query", "draft"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:updateDraftSpec",
+      "type": "function",
+      "name": "updateDraftSpec",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [253, 274],
+      "summary": "Updates a draft's spec fields to track missing required data during multi-turn conversation.",
+      "tags": ["service", "update", "draft"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:markDraft",
+      "type": "function",
+      "name": "markDraft",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [276, 284],
+      "summary": "Updates a draft's status to reflect lifecycle transitions.",
+      "tags": ["service", "update", "draft"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/drafts.ts:updateDraftMissing",
+      "type": "function",
+      "name": "updateDraftMissing",
+      "filePath": "src/main/chat/drafts.ts",
+      "lineRange": [286, 305],
+      "summary": "Updates a draft's missingRequired and warnings fields during multi-turn refinement.",
+      "tags": ["service", "update", "draft"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/main/chat/expense-profile.ts",
+      "type": "file",
+      "name": "expense-profile.ts",
+      "filePath": "src/main/chat/expense-profile.ts",
+      "summary": "Expense category profile resolver that determines required fields based on account type and Pasabuy detection.",
+      "tags": ["service", "expense", "profile", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/expense-profile.ts:resolveExpenseProfile",
+      "type": "function",
+      "name": "resolveExpenseProfile",
+      "filePath": "src/main/chat/expense-profile.ts",
+      "lineRange": [9, 24],
+      "summary": "Determines the expense profile based on account credit-likeness and category Pasabuy status.",
+      "tags": ["service", "resolution", "expense"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/expense-profile.ts:expenseProfileMissingFields",
+      "type": "function",
+      "name": "expenseProfileMissingFields",
+      "filePath": "src/main/chat/expense-profile.ts",
+      "lineRange": [26, 54],
+      "summary": "Returns missing required fields for a given expense input based on its profile rules.",
+      "tags": ["service", "validation", "expense"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:decodePayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:storeChatCredentialSecret",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:storeChatApiKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatCredentialSecret",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatApiKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatBaseUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatProviderId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:hasChatApiKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:deleteChatApiKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:fingerprintApiKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:storeChatCredentialSecret",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:storeChatApiKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatCredentialSecret",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatApiKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatBaseUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:readChatProviderId",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:hasChatApiKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:deleteChatApiKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials-vault.ts",
+      "target": "function:src/main/chat/credentials-vault.ts:fingerprintApiKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:mapCred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:listCredentials",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:getCredential",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:getDefaultCredentialId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:createCredential",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:updateCredential",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:setDefaultCredential",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:deleteCredential",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:listCredentials",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:getCredential",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:getDefaultCredentialId",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:createCredential",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:updateCredential",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:setDefaultCredential",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/credentials.ts",
+      "target": "function:src/main/chat/credentials.ts:deleteCredential",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:todayIso",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:currentMonth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:shiftMonth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:resolveMonth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:requireMonth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:resolveDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:requireDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:todayIso",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:currentMonth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:shiftMonth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:resolveMonth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:requireMonth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:resolveDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/dates.ts",
+      "target": "function:src/main/chat/dates.ts:requireDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:rowToDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:persist",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:reconcilePending",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:hydrate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:putDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:getDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:listDrafts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:updateDraftSpec",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:markDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:updateDraftMissing",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:putDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:getDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:listDrafts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:updateDraftSpec",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:markDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/drafts.ts",
+      "target": "function:src/main/chat/drafts.ts:updateDraftMissing",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/expense-profile.ts",
+      "target": "function:src/main/chat/expense-profile.ts:resolveExpenseProfile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/expense-profile.ts",
+      "target": "function:src/main/chat/expense-profile.ts:expenseProfileMissingFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/expense-profile.ts",
+      "target": "function:src/main/chat/expense-profile.ts:resolveExpenseProfile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/expense-profile.ts",
+      "target": "function:src/main/chat/expense-profile.ts:expenseProfileMissingFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

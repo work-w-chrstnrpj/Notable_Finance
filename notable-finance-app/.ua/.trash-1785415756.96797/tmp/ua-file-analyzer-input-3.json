@@ -1,0 +1,20 @@
+{
+  "projectRoot": "C:/Users/christian.paje/Documents/Project BBB/notion-finance/notable-finance-app",
+  "batchFiles": [
+    {"path": "src/main/db/migrations/meta/0000_snapshot.json", "language": "json", "sizeLines": 872, "fileCategory": "config"},
+    {"path": "src/main/db/migrations/meta/0001_snapshot.json", "language": "json", "sizeLines": 886, "fileCategory": "config"},
+    {"path": "src/main/db/migrations/meta/0002_snapshot.json", "language": "json", "sizeLines": 893, "fileCategory": "config"},
+    {"path": "src/main/db/migrations/meta/0003_snapshot.json", "language": "json", "sizeLines": 959, "fileCategory": "config"},
+    {"path": "src/main/db/migrations/meta/0004_snapshot.json", "language": "json", "sizeLines": 966, "fileCategory": "config"},
+    {"path": "src/main/db/migrations/meta/_journal.json", "language": "json", "sizeLines": 76, "fileCategory": "config"}
+  ],
+  "batchImportData": {
+    "src/main/db/migrations/meta/0000_snapshot.json": [],
+    "src/main/db/migrations/meta/0001_snapshot.json": [],
+    "src/main/db/migrations/meta/0002_snapshot.json": [],
+    "src/main/db/migrations/meta/0003_snapshot.json": [],
+    "src/main/db/migrations/meta/0004_snapshot.json": [],
+    "src/main/db/migrations/meta/_journal.json": []
+  },
+  "neighborMap": {}
+}

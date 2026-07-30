@@ -1,0 +1,188 @@
+{
+  "nodes": [
+    {
+      "id": "document:CHANGELOG.md",
+      "type": "document",
+      "name": "CHANGELOG.md",
+      "filePath": "CHANGELOG.md",
+      "summary": "Documents all notable changes across v0.1.0, v1.0.0, and v1.1.0 releases with sections for added features, changed behavior, architecture, security, platform notes, and auto-update details.",
+      "tags": ["documentation", "changelog", "release-notes"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Project overview describing the offline-first Electron architecture, bidirectional Notion sync via three-way merge, phase completion status (Phases 0-5), and development/packaging setup instructions.",
+      "tags": ["documentation", "entry-point", "overview"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:electron-builder.yml",
+      "type": "config",
+      "name": "electron-builder.yml",
+      "filePath": "electron-builder.yml",
+      "summary": "Electron packaging configuration targeting macOS (.dmg/.zip), Linux (AppImage), and Windows (NSIS) with GitHub Releases auto-update, bundled Drizzle migrations as extra resources, and asarUnpack for native addons.",
+      "tags": ["configuration", "build-system", "deployment", "containerization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "Defines the Electron app metadata, npm scripts for dev/build/test/packaging, production dependencies (React 19, better-sqlite3, Drizzle ORM, electron-updater), and dev toolchain (electron-vite, TypeScript 6, Vitest, Playwright, electron-builder).",
+      "tags": ["configuration", "build-system", "dependencies"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "summary": "Root TypeScript project configuration that references tsconfig.node.json and tsconfig.web.json as composable sub-projects via project references.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "tsconfig.node.json",
+      "summary": "TypeScript compiler configuration for the Electron main process, preload, and shared code, targeting ES2022 with strict mode, bundler module resolution, and a @shared path alias.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.web.json",
+      "type": "config",
+      "name": "tsconfig.web.json",
+      "filePath": "tsconfig.web.json",
+      "summary": "TypeScript compiler configuration for the Electron renderer (React UI), targeting ES2020 with DOM types, JSX support, relaxed unused-variable checks, and path aliases for renderer and shared imports.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:CHANGELOG.md",
+      "target": "config:package.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:package.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:electron-builder.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:electron-builder.yml",
+      "target": "file:src/main/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:electron-builder.yml",
+      "target": "file:src/preload/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:electron-builder.yml",
+      "target": "file:src/renderer/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/main/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/main/db/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/main/notion/service.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/renderer/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "config:tsconfig.node.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "config:tsconfig.web.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.node.json",
+      "target": "file:src/main/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.node.json",
+      "target": "file:src/preload/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.node.json",
+      "target": "file:src/shared/finance.types.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.web.json",
+      "target": "file:src/renderer/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.web.json",
+      "target": "file:src/renderer/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

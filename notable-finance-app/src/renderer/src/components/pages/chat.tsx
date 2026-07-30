@@ -518,6 +518,7 @@ function ChatModePage() {
   const [providers, setProviders] = useState<ChatProviderCatalogDto[]>([]);
   const [models, setModels] = useState<Array<{ id: string; label: string; free?: boolean }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [threadsReady, setThreadsReady] = useState(false);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
   const [credentialId, setCredentialId] = useState<string>("");
   const [modelId, setModelId] = useState<string>(settings.chatDefaultModel || "gemini-2.5-flash");
@@ -538,6 +539,8 @@ function ChatModePage() {
   const [overlays, setOverlays] = useState(FALLBACK_OVERLAYS);
   const [activeOverlay, setActiveOverlay] = useState<ChatOverlayId>("default");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  /** Guards the auto-create in the "always keep one chat" effect from double-firing. */
+  const ensuringThreadRef = useRef(false);
   /** Ignore stale chat:models responses when Key changes quickly. */
   const modelsFetchGen = useRef(0);
   const modelIdRef = useRef(modelId);
@@ -696,6 +699,8 @@ function ChatModePage() {
       }
       await refreshCredentials();
       await refreshThreads();
+      // Threads have loaded at least once — the "always keep one chat" effect may run.
+      setThreadsReady(true);
       // Reference data for the editable confirm card dropdowns.
       const [accRes, incRes, expRes] = await Promise.all([
         window.api?.accounts?.list({ includeInactive: false }),
@@ -763,6 +768,26 @@ function ChatModePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- thread switch only
   }, [activeId]);
 
+  // Always keep exactly one usable chat. If the active thread is gone (e.g. the user
+  // deleted the last one), select the most recent remaining thread, or create a fresh
+  // blank one when none exist — so the sidebar always shows a "New chat" and the
+  // composer always has a home to type into.
+  useEffect(() => {
+    if (!chatEnabled || !threadsReady) return;
+    if (activeId && threads.some((t) => t.id === activeId)) return;
+    if (threads.length > 0) {
+      setActiveId(threads[0].id); // list is ordered by updatedAt DESC
+      return;
+    }
+    if (ensuringThreadRef.current) return;
+    ensuringThreadRef.current = true;
+    void onNewChat().finally(() => {
+      ensuringThreadRef.current = false;
+    });
+    // onNewChat is stable in practice; re-run only on these signals.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keep-one-chat guard
+  }, [chatEnabled, threadsReady, threads, activeId]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, busy, pendingDrafts]);
@@ -782,6 +807,14 @@ function ChatModePage() {
 
   async function onNewChat() {
     setError(null);
+    // Don't pile up blank chats: a thread keeps the title "New chat" until its first
+    // user message, so an existing "New chat" is unused — just open it instead.
+    const reusable = threads.find((t) => t.title === "New chat");
+    if (reusable) {
+      setActiveId(reusable.id);
+      setMessages([]);
+      return;
+    }
     const res = await window.api.chat.createThread({
       credentialId: credentialId || null,
       modelId: modelId || null,
@@ -824,6 +857,26 @@ function ChatModePage() {
       setMessages([]);
     }
     await refreshThreads();
+  }
+
+  async function onClearAllChats() {
+    if (threads.length === 0) return;
+    if (
+      !window.confirm(
+        "Delete all chats? This permanently removes every conversation and cannot be undone.",
+      )
+    )
+      return;
+    const res = await window.api.chat.deleteAllThreads();
+    if (!res.ok) {
+      setError(res.error.message);
+      return;
+    }
+    setActiveId(null);
+    setMessages([]);
+    setPendingDrafts([]);
+    await refreshThreads();
+    // The "always keep one chat" effect then creates a fresh blank chat to type into.
   }
 
   async function onSend() {
@@ -1038,6 +1091,16 @@ function ChatModePage() {
             </div>
           ))}
         </div>
+        {threads.length > 0 && (
+          <button
+            type="button"
+            className="chat-mode__clear-all"
+            onClick={() => void onClearAllChats()}
+          >
+            <Trash2 size={14} />
+            Clear all chats
+          </button>
+        )}
       </aside>
 
       <section className="chat-mode__pane">

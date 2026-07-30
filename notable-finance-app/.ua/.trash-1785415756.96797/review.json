@@ -1,0 +1,53 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'file:.ua/.understandignore' has no edges (orphan)",
+    "Node 'file:drizzle.config.ts' has no edges (orphan)",
+    "Node 'file:e2e/app.spec.ts' has no edges (orphan)",
+    "Node 'config:e2e/tsconfig.json' has no edges (orphan)",
+    "Node 'file:electron.vite.config.ts' has no edges (orphan)",
+    "Node 'file:playwright.config.ts' has no edges (orphan)",
+    "Node 'file:scripts/seed-dev.mjs' has no edges (orphan)",
+    "Node 'file:src/main/chat/index.ts' has no edges (orphan)",
+    "Node 'file:src/main/chat/overlays/index.ts' has no edges (orphan)",
+    "Node 'file:src/main/db/schema.ts' has no edges (orphan)",
+    "Node 'file:src/main/index.ts.bak' has no edges (orphan)",
+    "Node 'file:src/preload/index.d.ts' has no edges (orphan)",
+    "Node 'file:src/renderer/src/assets/fonts.css' has no edges (orphan)",
+    "Node 'file:src/renderer/src/assets/globals.css' has no edges (orphan)",
+    "Node 'file:src/renderer/src/components/constants.ts' has no edges (orphan)",
+    "Node 'file:src/renderer/src/types/finance.ts' has no edges (orphan)",
+    "Node 'file:test/app-tabs.test.ts' has no edges (orphan)",
+    "Node 'file:test/chat-fingerprint.test.ts' has no edges (orphan)",
+    "Node 'file:test/chat-hardening.test.ts' has no edges (orphan)",
+    "Node 'file:test/chat-provider-base.test.ts' has no edges (orphan)",
+    "Node 'file:test/chat-read-tools.test.ts' has no edges (orphan)",
+    "Node 'file:test/chat-write-tools.test.ts' has no edges (orphan)",
+    "Node 'file:test/derivations.test.ts' has no edges (orphan)",
+    "Node 'file:test/dev-logs.test.ts' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 829,
+    "totalEdges": 1416,
+    "totalLayers": 9,
+    "tourSteps": 13,
+    "nodeTypes": {
+      "table": 25,
+      "document": 2,
+      "config": 13,
+      "file": 162,
+      "function": 623,
+      "class": 4
+    },
+    "edgeTypes": {
+      "contains": 642,
+      "migrates": 8,
+      "related": 10,
+      "documents": 2,
+      "configures": 26,
+      "exports": 525,
+      "calls": 186,
+      "tested_by": 17
+    }
+  }
+}

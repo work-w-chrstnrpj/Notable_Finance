@@ -1,0 +1,27 @@
+{
+  "projectRoot": "C:\\Users\\christian.paje\\Documents\\Project BBB\\notion-finance\\notable-finance-app",
+  "batchFiles": [
+    {"path": "src/main/db/migrations/0000_same_silver_surfer.sql", "language": "sql", "sizeLines": 134, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0001_kind_nekra.sql", "language": "sql", "sizeLines": 1, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0002_add_account_qr_code.sql", "language": "sql", "sizeLines": 0, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0003_reflective_angel.sql", "language": "sql", "sizeLines": 10, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0004_massive_maximus.sql", "language": "sql", "sizeLines": 0, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0005_chat.sql", "language": "sql", "sizeLines": 31, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0006_chat_drafts.sql", "language": "sql", "sizeLines": 21, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0007_chat_draft_display.sql", "language": "sql", "sizeLines": 3, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0008_reference_icons.sql", "language": "sql", "sizeLines": 7, "fileCategory": "data"},
+    {"path": "src/main/db/migrations/0009_activity_payload.sql", "language": "sql", "sizeLines": 3, "fileCategory": "data"}
+  ],
+  "batchImportData": {
+    "src/main/db/migrations/0000_same_silver_surfer.sql": [],
+    "src/main/db/migrations/0001_kind_nekra.sql": [],
+    "src/main/db/migrations/0002_add_account_qr_code.sql": [],
+    "src/main/db/migrations/0003_reflective_angel.sql": [],
+    "src/main/db/migrations/0004_massive_maximus.sql": [],
+    "src/main/db/migrations/0005_chat.sql": [],
+    "src/main/db/migrations/0006_chat_drafts.sql": [],
+    "src/main/db/migrations/0007_chat_draft_display.sql": [],
+    "src/main/db/migrations/0008_reference_icons.sql": [],
+    "src/main/db/migrations/0009_activity_payload.sql": []
+  }
+}

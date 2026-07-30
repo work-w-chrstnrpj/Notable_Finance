@@ -1,0 +1,394 @@
+{
+  "nodes": [
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "type": "table",
+      "name": "0000_same_silver_surfer.sql",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Initial Drizzle migration that creates the baseline local SQLite schema for accounts, categories, incomes, expenses, expense scheduler, sync meta, mutation queue, conflicts, and app settings.",
+      "tags": ["database", "migration", "schema-baseline", "drizzle-orm", "sqlite"],
+      "complexity": "complex",
+      "languageNotes": "Uses Drizzle's '--> statement-breakpoint' marker between statements so the migrator can run them in separate statements under a single transaction."
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "type": "table",
+      "name": "accounts",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Mirror of the Notion Accounts database: stores account identity, type, starting balance, credit metadata, and Notion edit tracking.",
+      "tags": ["database", "accounts", "notion-mirror", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:app_settings",
+      "type": "table",
+      "name": "app_settings",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Generic key/value table for app-level settings and small persistent flags.",
+      "tags": ["database", "app-settings", "key-value", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:conflicts",
+      "type": "table",
+      "name": "conflicts",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Records three-way merge conflicts (base/local/remote per field) detected during sync, with resolution metadata.",
+      "tags": ["database", "sync", "conflicts", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories",
+      "type": "table",
+      "name": "expense_categories",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Mirror of Notion expense categories, including monthly budget and auxiliary flag used for workflows.",
+      "tags": ["database", "expense-categories", "notion-mirror", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_scheduler",
+      "type": "table",
+      "name": "expense_scheduler",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Recurring expense templates that generate expense rows on schedule, with frequency, next-run date, and active flag.",
+      "tags": ["database", "expenses", "scheduler", "notion-mirror", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+      "type": "table",
+      "name": "expenses",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Mirror of the Notion Expenses database with payment tracking, pasabuy fields, credit-card linkage, and soft-delete support.",
+      "tags": ["database", "expenses", "notion-mirror", "soft-delete", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories",
+      "type": "table",
+      "name": "income_categories",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Mirror of Notion income categories with source label and auxiliary flag.",
+      "tags": ["database", "income-categories", "notion-mirror", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:incomes",
+      "type": "table",
+      "name": "incomes",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Mirror of the Notion Incomes database with gross/capital split, transaction-account linkage, and credit-card payment coverage.",
+      "tags": ["database", "incomes", "notion-mirror", "soft-delete", "schema-definition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:mutation_queue",
+      "type": "table",
+      "name": "mutation_queue",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Outbox queue of pending local mutations awaiting push to Notion, with attempts and last-error tracking.",
+      "tags": ["database", "sync", "outbox", "mutation-queue", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0000_same_silver_surfer.sql:sync_meta",
+      "type": "table",
+      "name": "sync_meta",
+      "filePath": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "summary": "Generic key/value table used by the sync layer to track cursors, last-run timestamps, and configuration flags.",
+      "tags": ["database", "sync", "key-value", "metadata", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0001_kind_nekra.sql",
+      "type": "table",
+      "name": "0001_kind_nekra.sql",
+      "filePath": "src/main/db/migrations/0001_kind_nekra.sql",
+      "summary": "Adds pasabuy payment date and paid-period columns to the expenses table to support pasabuy installment tracking.",
+      "tags": ["database", "migration", "schema-alteration", "pasabuy", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0002_add_account_qr_code.sql",
+      "type": "table",
+      "name": "0002_add_account_qr_code.sql",
+      "filePath": "src/main/db/migrations/0002_add_account_qr_code.sql",
+      "summary": "Adds a qr_code text column to the accounts table to store an optional account QR code reference.",
+      "tags": ["database", "migration", "schema-alteration", "accounts", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0003_reflective_angel.sql",
+      "type": "table",
+      "name": "0003_reflective_angel.sql",
+      "filePath": "src/main/db/migrations/0003_reflective_angel.sql",
+      "summary": "Creates the activity_log table that records sync actions and lifecycle events for the History page.",
+      "tags": ["database", "migration", "activity-log", "audit", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+      "type": "table",
+      "name": "activity_log",
+      "filePath": "src/main/db/migrations/0003_reflective_angel.sql",
+      "summary": "Per-record activity log capturing resource, action, direction, title, and Notion page id for sync events.",
+      "tags": ["database", "activity-log", "audit", "history", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0004_massive_maximus.sql",
+      "type": "table",
+      "name": "0004_massive_maximus.sql",
+      "filePath": "src/main/db/migrations/0004_massive_maximus.sql",
+      "summary": "Adds a run_id column to activity_log so log entries can be grouped under a single sync run identifier.",
+      "tags": ["database", "migration", "schema-alteration", "activity-log", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0005_chat.sql",
+      "type": "table",
+      "name": "0005_chat.sql",
+      "filePath": "src/main/db/migrations/0005_chat.sql",
+      "summary": "Creates the chat agent tables: chat_credentials, chat_threads, and chat_messages, with supporting indexes for thread and message lookup.",
+      "tags": ["database", "migration", "chat", "ai-agent", "drizzle-orm"],
+      "complexity": "moderate",
+      "languageNotes": "API keys are intentionally NOT stored here; only a key_fingerprint is persisted while secrets live in the OS safeStorage vault."
+    },
+    {
+      "id": "table:src/main/db/migrations/0005_chat.sql:chat_credentials",
+      "type": "table",
+      "name": "chat_credentials",
+      "filePath": "src/main/db/migrations/0005_chat.sql",
+      "summary": "Stores chat provider credential metadata (name, key fingerprint, default flag) while secrets remain in safeStorage.",
+      "tags": ["database", "chat", "credentials", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0005_chat.sql:chat_threads",
+      "type": "table",
+      "name": "chat_threads",
+      "filePath": "src/main/db/migrations/0005_chat.sql",
+      "summary": "Stores chat conversation threads with title, credential, model, and overlay selection plus timestamps.",
+      "tags": ["database", "chat", "threads", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0005_chat.sql:chat_messages",
+      "type": "table",
+      "name": "chat_messages",
+      "filePath": "src/main/db/migrations/0005_chat.sql",
+      "summary": "Append-only message log for chat threads, with role, content, optional structured payload JSON, and created timestamp.",
+      "tags": ["database", "chat", "messages", "schema-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0006_chat_drafts.sql",
+      "type": "table",
+      "name": "0006_chat_drafts.sql",
+      "filePath": "src/main/db/migrations/0006_chat_drafts.sql",
+      "summary": "Creates the chat_drafts table for durable, confirm-gated proposals that survive app restarts until the user Approves or Cancels.",
+      "tags": ["database", "migration", "chat", "drafts", "drizzle-orm"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts",
+      "type": "table",
+      "name": "chat_drafts",
+      "filePath": "src/main/db/migrations/0006_chat_drafts.sql",
+      "summary": "Durable store of chat-proposed creates/updates with status, missing required fields, warnings, payload, target ids, and a computed preview.",
+      "tags": ["database", "chat", "drafts", "approval-flow", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "table:src/main/db/migrations/0007_chat_draft_display.sql",
+      "type": "table",
+      "name": "0007_chat_draft_display.sql",
+      "filePath": "src/main/db/migrations/0007_chat_draft_display.sql",
+      "summary": "Adds a presentation-only display column to chat_drafts so the confirm card can show resolved names and amounts instead of raw ids.",
+      "tags": ["database", "migration", "schema-alteration", "chat", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0008_reference_icons.sql",
+      "type": "table",
+      "name": "0008_reference_icons.sql",
+      "filePath": "src/main/db/migrations/0008_reference_icons.sql",
+      "summary": "Adds an icon column to accounts, income_categories, and expense_categories to cache Notion page icons locally (data URIs or emoji).",
+      "tags": ["database", "migration", "icons", "reference-data", "drizzle-orm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "table:src/main/db/migrations/0009_activity_payload.sql",
+      "type": "table",
+      "name": "0009_activity_payload.sql",
+      "filePath": "src/main/db/migrations/0009_activity_payload.sql",
+      "summary": "Adds a payload column to activity_log so the History page can render full read-only form modals for synced income and expense items.",
+      "tags": ["database", "migration", "schema-alteration", "activity-log", "drizzle-orm"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:app_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:conflicts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_scheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:incomes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:mutation_queue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0000_same_silver_surfer.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:sync_meta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0001_kind_nekra.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expenses",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0002_add_account_qr_code.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0003_reflective_angel.sql",
+      "target": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0004_massive_maximus.sql",
+      "target": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0005_chat.sql",
+      "target": "table:src/main/db/migrations/0005_chat.sql:chat_credentials",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0005_chat.sql",
+      "target": "table:src/main/db/migrations/0005_chat.sql:chat_threads",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0005_chat.sql",
+      "target": "table:src/main/db/migrations/0005_chat.sql:chat_messages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0006_chat_drafts.sql",
+      "target": "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "table:src/main/db/migrations/0007_chat_draft_display.sql",
+      "target": "table:src/main/db/migrations/0006_chat_drafts.sql:chat_drafts",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0008_reference_icons.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:accounts",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0008_reference_icons.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:income_categories",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0008_reference_icons.sql",
+      "target": "table:src/main/db/migrations/0000_same_silver_surfer.sql:expense_categories",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "table:src/main/db/migrations/0009_activity_payload.sql",
+      "target": "table:src/main/db/migrations/0003_reflective_angel.sql:activity_log",
+      "type": "migrates",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

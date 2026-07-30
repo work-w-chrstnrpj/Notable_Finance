@@ -1,0 +1,458 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 10,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 10
+    }
+  },
+  "results": [
+    {
+      "path": "src/main/db/migrations/0000_same_silver_surfer.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 134,
+      "nonEmptyLines": 134,
+      "definitions": [
+        {
+          "name": "accounts",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "account_name",
+            "account_type",
+            "starting_balance",
+            "credit_limit",
+            "inactive",
+            "billing_day",
+            "due_day",
+            "annual_fee",
+            "credit_points",
+            "notion_last_edited_at",
+            "created_at"
+          ],
+          "startLine": 1,
+          "endLine": 15
+        },
+        {
+          "name": "app_settings",
+          "kind": "table",
+          "fields": [
+            "key",
+            "value"
+          ],
+          "startLine": 17,
+          "endLine": 20
+        },
+        {
+          "name": "conflicts",
+          "kind": "table",
+          "fields": [
+            "id",
+            "record_table",
+            "record_id",
+            "field",
+            "base_value",
+            "local_value",
+            "remote_value",
+            "detected_at",
+            "resolved_at",
+            "resolution"
+          ],
+          "startLine": 22,
+          "endLine": 33
+        },
+        {
+          "name": "expense_categories",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "name",
+            "monthly_budget",
+            "auxiliary",
+            "notion_last_edited_at",
+            "created_at"
+          ],
+          "startLine": 35,
+          "endLine": 43
+        },
+        {
+          "name": "expense_scheduler",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "base_snapshot",
+            "sync_state",
+            "local_updated_at",
+            "notion_last_edited_at",
+            "deleted",
+            "created_at",
+            "title",
+            "amount",
+            "account_id",
+            "category_id",
+            "frequency",
+            "next_run_date",
+            "active"
+          ],
+          "startLine": 45,
+          "endLine": 61
+        },
+        {
+          "name": "expenses",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "base_snapshot",
+            "sync_state",
+            "local_updated_at",
+            "notion_last_edited_at",
+            "deleted",
+            "created_at",
+            "title",
+            "amount",
+            "interest",
+            "account_id",
+            "category_id",
+            "purchase_date",
+            "date_paid",
+            "payment_status",
+            "payment_frequency",
+            "period_count",
+            "paid_period",
+            "is_pasabuy",
+            "pasabuyer",
+            "pasabuy_status",
+            "pasabuy_account_receiver_id",
+            "cc_link_payment_receipt_id"
+          ],
+          "startLine": 63,
+          "endLine": 88
+        },
+        {
+          "name": "income_categories",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "source",
+            "auxiliary",
+            "notion_last_edited_at",
+            "created_at"
+          ],
+          "startLine": 90,
+          "endLine": 97
+        },
+        {
+          "name": "incomes",
+          "kind": "table",
+          "fields": [
+            "id",
+            "notion_page_id",
+            "base_snapshot",
+            "sync_state",
+            "local_updated_at",
+            "notion_last_edited_at",
+            "deleted",
+            "created_at",
+            "title",
+            "gross_income",
+            "capital_expenditure",
+            "account_id",
+            "category_id",
+            "date",
+            "notes",
+            "is_transaction",
+            "transacted_account_id",
+            "cc_payment_covered_id"
+          ],
+          "startLine": 99,
+          "endLine": 118
+        },
+        {
+          "name": "mutation_queue",
+          "kind": "table",
+          "fields": [
+            "id",
+            "resource",
+            "action",
+            "record_id",
+            "payload",
+            "created_at",
+            "attempts",
+            "last_error"
+          ],
+          "startLine": 120,
+          "endLine": 129
+        },
+        {
+          "name": "sync_meta",
+          "kind": "table",
+          "fields": [
+            "key",
+            "value"
+          ],
+          "startLine": 131,
+          "endLine": 134
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 10
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0001_kind_nekra.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0002_add_account_qr_code.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0003_reflective_angel.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 10,
+      "nonEmptyLines": 10,
+      "definitions": [
+        {
+          "name": "activity_log",
+          "kind": "table",
+          "fields": [
+            "id",
+            "resource",
+            "record_id",
+            "notion_page_id",
+            "title",
+            "action",
+            "direction",
+            "at"
+          ],
+          "startLine": 1,
+          "endLine": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 1
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0004_massive_maximus.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0005_chat.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 31,
+      "nonEmptyLines": 31,
+      "definitions": [
+        {
+          "name": "chat_credentials",
+          "kind": "table",
+          "fields": [
+            "id",
+            "name",
+            "key_fingerprint",
+            "is_default",
+            "created_at"
+          ],
+          "startLine": 2,
+          "endLine": 8
+        },
+        {
+          "name": "chat_threads",
+          "kind": "table",
+          "fields": [
+            "id",
+            "title",
+            "credential_id",
+            "model_id",
+            "overlay",
+            "created_at",
+            "updated_at"
+          ],
+          "startLine": 10,
+          "endLine": 18
+        },
+        {
+          "name": "chat_messages",
+          "kind": "table",
+          "fields": [
+            "id",
+            "thread_id",
+            "role",
+            "content",
+            "payload_json",
+            "created_at"
+          ],
+          "startLine": 20,
+          "endLine": 27
+        },
+        {
+          "name": "chat_messages_thread_id_idx",
+          "kind": "index",
+          "fields": [],
+          "startLine": 29,
+          "endLine": 29
+        },
+        {
+          "name": "chat_threads_updated_at_idx",
+          "kind": "index",
+          "fields": [],
+          "startLine": 31,
+          "endLine": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 5
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0006_chat_drafts.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 21,
+      "nonEmptyLines": 21,
+      "definitions": [
+        {
+          "name": "chat_drafts",
+          "kind": "table",
+          "fields": [
+            "id",
+            "thread_id",
+            "resource",
+            "action",
+            "kind",
+            "status",
+            "summary",
+            "missing_required",
+            "warnings",
+            "payload",
+            "target_ids",
+            "computed_preview",
+            "created_at"
+          ],
+          "startLine": 3,
+          "endLine": 17
+        },
+        {
+          "name": "chat_drafts_thread_id_idx",
+          "kind": "index",
+          "fields": [],
+          "startLine": 19,
+          "endLine": 19
+        },
+        {
+          "name": "chat_drafts_status_idx",
+          "kind": "index",
+          "fields": [],
+          "startLine": 21,
+          "endLine": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 3
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0007_chat_draft_display.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0008_reference_icons.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "src/main/db/migrations/0009_activity_payload.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    }
+  ]
+}

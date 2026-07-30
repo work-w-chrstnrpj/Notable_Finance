@@ -1,0 +1,3432 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 25,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 25,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/renderer/src/lib/finance-rules.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 402,
+      "nonEmptyLines": 328,
+      "functions": [
+        {
+          "name": "isCreditLikeAccountType",
+          "startLine": 68,
+          "endLine": 70,
+          "params": [
+            "type"
+          ]
+        },
+        {
+          "name": "calculateTotalCashFlow",
+          "startLine": 72,
+          "endLine": 78,
+          "params": [
+            "accounts"
+          ]
+        },
+        {
+          "name": "isAuxiliaryIncomeCategory",
+          "startLine": 80,
+          "endLine": 84,
+          "params": [
+            "label"
+          ]
+        },
+        {
+          "name": "getNormalIncomeCategories",
+          "startLine": 86,
+          "endLine": 88,
+          "params": [
+            "categories"
+          ]
+        },
+        {
+          "name": "shouldShowCreditExpenseFields",
+          "startLine": 90,
+          "endLine": 92,
+          "params": [
+            "accountType"
+          ]
+        },
+        {
+          "name": "shouldShowPasabuyFields",
+          "startLine": 94,
+          "endLine": 96,
+          "params": [
+            "viewMode",
+            "categoryName"
+          ]
+        },
+        {
+          "name": "getExpenseConditionalSections",
+          "startLine": 98,
+          "endLine": 107,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "getWorkflowFixedCategory",
+          "startLine": 109,
+          "endLine": 111,
+          "params": [
+            "section"
+          ]
+        },
+        {
+          "name": "isMonthlyMonitoringEditable",
+          "startLine": 113,
+          "endLine": 115,
+          "params": [
+            "section"
+          ]
+        },
+        {
+          "name": "calculateNetIncome",
+          "startLine": 117,
+          "endLine": 119,
+          "params": [
+            "grossIncome",
+            "capitalExpenditure"
+          ]
+        },
+        {
+          "name": "calculateCategoryTotalOverview",
+          "startLine": 121,
+          "endLine": 127,
+          "params": [
+            "categorySpending",
+            "totalSpending"
+          ]
+        },
+        {
+          "name": "calculateGrossPrice",
+          "startLine": 129,
+          "endLine": 131,
+          "params": [
+            "expenseAmount",
+            "interest"
+          ]
+        },
+        {
+          "name": "calculateInstallmentAmount",
+          "startLine": 133,
+          "endLine": 143,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "calculatePaidAmount",
+          "startLine": 145,
+          "endLine": 160,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "calculateRemainingBalance",
+          "startLine": 162,
+          "endLine": 164,
+          "params": [
+            "grossPrice",
+            "paidAmount"
+          ]
+        },
+        {
+          "name": "calculatePasabuyReceivedAmount",
+          "startLine": 166,
+          "endLine": 195,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "calculatePasabuyerBalance",
+          "startLine": 197,
+          "endLine": 199,
+          "params": [
+            "grossPrice",
+            "receivedAmount"
+          ]
+        },
+        {
+          "name": "calculateExpectedPaymentDate",
+          "startLine": 201,
+          "endLine": 229,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "getMoneyValueTone",
+          "startLine": 231,
+          "endLine": 241,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isPasabuyCategoryName",
+          "startLine": 243,
+          "endLine": 245,
+          "params": [
+            "categoryName"
+          ]
+        },
+        {
+          "name": "isPasabuyCategory",
+          "startLine": 247,
+          "endLine": 249,
+          "params": [
+            "category"
+          ]
+        },
+        {
+          "name": "isOutstandingExpense",
+          "startLine": 251,
+          "endLine": 253,
+          "params": [
+            "record"
+          ]
+        },
+        {
+          "name": "shouldShowGlobalMonthSelector",
+          "startLine": 255,
+          "endLine": 273,
+          "params": [
+            "options"
+          ]
+        },
+        {
+          "name": "getMonthKeyFromIsoDate",
+          "startLine": 275,
+          "endLine": 277,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIncomeRecordInViewScope",
+          "startLine": 279,
+          "endLine": 286,
+          "params": [
+            "record",
+            "viewMode",
+            "selectedMonth",
+            "referenceDate"
+          ]
+        },
+        {
+          "name": "isExpenseRecordInViewScope",
+          "startLine": 288,
+          "endLine": 299,
+          "params": [
+            "record",
+            "viewMode",
+            "selectedMonth",
+            "referenceDate"
+          ]
+        },
+        {
+          "name": "getExpenseStatusFromDatePaid",
+          "startLine": 301,
+          "endLine": 303,
+          "params": [
+            "datePaid"
+          ]
+        },
+        {
+          "name": "isUnpaidPasabuyExpense",
+          "startLine": 305,
+          "endLine": 314,
+          "params": [
+            "record",
+            "categoryName"
+          ]
+        },
+        {
+          "name": "isCreditAccountExpense",
+          "startLine": 316,
+          "endLine": 320,
+          "params": [
+            "record",
+            "accounts"
+          ]
+        },
+        {
+          "name": "roundMoney",
+          "startLine": 322,
+          "endLine": 324,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "parseIsoDate",
+          "startLine": 326,
+          "endLine": 338,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "createClampedDate",
+          "startLine": 340,
+          "endLine": 344,
+          "params": [
+            "year",
+            "monthIndex",
+            "day"
+          ]
+        },
+        {
+          "name": "formatIsoDate",
+          "startLine": 346,
+          "endLine": 352,
+          "params": [
+            "date"
+          ]
+        },
+        {
+          "name": "isIsoDateInViewScope",
+          "startLine": 354,
+          "endLine": 392,
+          "params": [
+            "value",
+            "viewMode",
+            "selectedMonth",
+            "referenceDate"
+          ]
+        },
+        {
+          "name": "parseDateObject",
+          "startLine": 394,
+          "endLine": 402,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalIncomeFields",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "incomeTransactionOnlyFields",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "auxiliaryIncomeCategoryLabels",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "paymentStatusLabels",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "paymentFrequencyLabels",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "pasabuyerLabels",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "pasabuyStatusLabels",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "transactionWorkflowCategories",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "isCreditLikeAccountType",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "calculateTotalCashFlow",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "isAuxiliaryIncomeCategory",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "getNormalIncomeCategories",
+          "line": 86,
+          "isDefault": false
+        },
+        {
+          "name": "shouldShowCreditExpenseFields",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "shouldShowPasabuyFields",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "getExpenseConditionalSections",
+          "line": 98,
+          "isDefault": false
+        },
+        {
+          "name": "getWorkflowFixedCategory",
+          "line": 109,
+          "isDefault": false
+        },
+        {
+          "name": "isMonthlyMonitoringEditable",
+          "line": 113,
+          "isDefault": false
+        },
+        {
+          "name": "calculateNetIncome",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "calculateCategoryTotalOverview",
+          "line": 121,
+          "isDefault": false
+        },
+        {
+          "name": "calculateGrossPrice",
+          "line": 129,
+          "isDefault": false
+        },
+        {
+          "name": "calculateInstallmentAmount",
+          "line": 133,
+          "isDefault": false
+        },
+        {
+          "name": "calculatePaidAmount",
+          "line": 145,
+          "isDefault": false
+        },
+        {
+          "name": "calculateRemainingBalance",
+          "line": 162,
+          "isDefault": false
+        },
+        {
+          "name": "calculatePasabuyReceivedAmount",
+          "line": 166,
+          "isDefault": false
+        },
+        {
+          "name": "calculatePasabuyerBalance",
+          "line": 197,
+          "isDefault": false
+        },
+        {
+          "name": "calculateExpectedPaymentDate",
+          "line": 201,
+          "isDefault": false
+        },
+        {
+          "name": "getMoneyValueTone",
+          "line": 231,
+          "isDefault": false
+        },
+        {
+          "name": "isPasabuyCategoryName",
+          "line": 243,
+          "isDefault": false
+        },
+        {
+          "name": "isPasabuyCategory",
+          "line": 247,
+          "isDefault": false
+        },
+        {
+          "name": "isOutstandingExpense",
+          "line": 251,
+          "isDefault": false
+        },
+        {
+          "name": "shouldShowGlobalMonthSelector",
+          "line": 255,
+          "isDefault": false
+        },
+        {
+          "name": "getMonthKeyFromIsoDate",
+          "line": 275,
+          "isDefault": false
+        },
+        {
+          "name": "isIncomeRecordInViewScope",
+          "line": 279,
+          "isDefault": false
+        },
+        {
+          "name": "isExpenseRecordInViewScope",
+          "line": 288,
+          "isDefault": false
+        },
+        {
+          "name": "getExpenseStatusFromDatePaid",
+          "line": 301,
+          "isDefault": false
+        },
+        {
+          "name": "isUnpaidPasabuyExpense",
+          "line": 305,
+          "isDefault": false
+        },
+        {
+          "name": "isCreditAccountExpense",
+          "line": 316,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "calculateTotalCashFlow",
+          "callee": "roundMoney",
+          "lineNumber": 73
+        },
+        {
+          "caller": "calculateTotalCashFlow",
+          "callee": "accounts\n      .filter((account) => !account.inactive && !isCreditLikeAccountType(account.type))\n      .reduce",
+          "lineNumber": 74
+        },
+        {
+          "caller": "calculateTotalCashFlow",
+          "callee": "accounts\n      .filter",
+          "lineNumber": 74
+        },
+        {
+          "caller": "calculateTotalCashFlow",
+          "callee": "isCreditLikeAccountType",
+          "lineNumber": 75
+        },
+        {
+          "caller": "isAuxiliaryIncomeCategory",
+          "callee": "auxiliaryIncomeCategoryLabels.some",
+          "lineNumber": 81
+        },
+        {
+          "caller": "isAuxiliaryIncomeCategory",
+          "callee": "category.toLowerCase",
+          "lineNumber": 82
+        },
+        {
+          "caller": "isAuxiliaryIncomeCategory",
+          "callee": "label.toLowerCase",
+          "lineNumber": 82
+        },
+        {
+          "caller": "getNormalIncomeCategories",
+          "callee": "categories.filter",
+          "lineNumber": 87
+        },
+        {
+          "caller": "getNormalIncomeCategories",
+          "callee": "isAuxiliaryIncomeCategory",
+          "lineNumber": 87
+        },
+        {
+          "caller": "shouldShowCreditExpenseFields",
+          "callee": "isCreditLikeAccountType",
+          "lineNumber": 91
+        },
+        {
+          "caller": "shouldShowPasabuyFields",
+          "callee": "isPasabuyCategoryName",
+          "lineNumber": 95
+        },
+        {
+          "caller": "getExpenseConditionalSections",
+          "callee": "shouldShowCreditExpenseFields",
+          "lineNumber": 104
+        },
+        {
+          "caller": "getExpenseConditionalSections",
+          "callee": "shouldShowPasabuyFields",
+          "lineNumber": 105
+        },
+        {
+          "caller": "calculateNetIncome",
+          "callee": "roundMoney",
+          "lineNumber": 118
+        },
+        {
+          "caller": "calculateCategoryTotalOverview",
+          "callee": "roundMoney",
+          "lineNumber": 126
+        },
+        {
+          "caller": "calculateGrossPrice",
+          "callee": "roundMoney",
+          "lineNumber": 130
+        },
+        {
+          "caller": "calculateInstallmentAmount",
+          "callee": "roundMoney",
+          "lineNumber": 142
+        },
+        {
+          "caller": "calculatePaidAmount",
+          "callee": "roundMoney",
+          "lineNumber": 152
+        },
+        {
+          "caller": "calculatePaidAmount",
+          "callee": "roundMoney",
+          "lineNumber": 156
+        },
+        {
+          "caller": "calculateRemainingBalance",
+          "callee": "roundMoney",
+          "lineNumber": 163
+        },
+        {
+          "caller": "calculateRemainingBalance",
+          "callee": "Math.max",
+          "lineNumber": 163
+        },
+        {
+          "caller": "calculatePasabuyReceivedAmount",
+          "callee": "roundMoney",
+          "lineNumber": 174
+        },
+        {
+          "caller": "calculatePasabuyReceivedAmount",
+          "callee": "roundMoney",
+          "lineNumber": 182
+        },
+        {
+          "caller": "calculatePasabuyReceivedAmount",
+          "callee": "roundMoney",
+          "lineNumber": 191
+        },
+        {
+          "caller": "calculatePasabuyerBalance",
+          "callee": "calculateRemainingBalance",
+          "lineNumber": 198
+        },
+        {
+          "caller": "calculateExpectedPaymentDate",
+          "callee": "parseIsoDate",
+          "lineNumber": 211
+        },
+        {
+          "caller": "calculateExpectedPaymentDate",
+          "callee": "createClampedDate",
+          "lineNumber": 222
+        },
+        {
+          "caller": "calculateExpectedPaymentDate",
+          "callee": "formatIsoDate",
+          "lineNumber": 228
+        },
+        {
+          "caller": "isPasabuyCategoryName",
+          "callee": "categoryName.toLowerCase",
+          "lineNumber": 244
+        },
+        {
+          "caller": "isPasabuyCategory",
+          "callee": "isPasabuyCategoryName",
+          "lineNumber": 248
+        },
+        {
+          "caller": "getMonthKeyFromIsoDate",
+          "callee": "value.slice",
+          "lineNumber": 276
+        },
+        {
+          "caller": "isIncomeRecordInViewScope",
+          "callee": "isIsoDateInViewScope",
+          "lineNumber": 285
+        },
+        {
+          "caller": "isExpenseRecordInViewScope",
+          "callee": "isIsoDateInViewScope",
+          "lineNumber": 295
+        },
+        {
+          "caller": "isUnpaidPasabuyExpense",
+          "callee": "isPasabuyCategoryName",
+          "lineNumber": 306
+        },
+        {
+          "caller": "isCreditAccountExpense",
+          "callee": "accounts.find",
+          "lineNumber": 317
+        },
+        {
+          "caller": "isCreditAccountExpense",
+          "callee": "isCreditLikeAccountType",
+          "lineNumber": 319
+        },
+        {
+          "caller": "roundMoney",
+          "callee": "Math.round",
+          "lineNumber": 323
+        },
+        {
+          "caller": "parseIsoDate",
+          "callee": "/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec",
+          "lineNumber": 327
+        },
+        {
+          "caller": "parseIsoDate",
+          "callee": "Number",
+          "lineNumber": 334
+        },
+        {
+          "caller": "parseIsoDate",
+          "callee": "Number",
+          "lineNumber": 335
+        },
+        {
+          "caller": "parseIsoDate",
+          "callee": "Number",
+          "lineNumber": 336
+        },
+        {
+          "caller": "createClampedDate",
+          "callee": "new Date(year, monthIndex + 1, 0).getDate",
+          "lineNumber": 341
+        },
+        {
+          "caller": "createClampedDate",
+          "callee": "Math.min",
+          "lineNumber": 343
+        },
+        {
+          "caller": "formatIsoDate",
+          "callee": "date.getFullYear",
+          "lineNumber": 347
+        },
+        {
+          "caller": "formatIsoDate",
+          "callee": "`${date.getMonth() + 1}`.padStart",
+          "lineNumber": 348
+        },
+        {
+          "caller": "formatIsoDate",
+          "callee": "date.getMonth",
+          "lineNumber": 348
+        },
+        {
+          "caller": "formatIsoDate",
+          "callee": "`${date.getDate()}`.padStart",
+          "lineNumber": 349
+        },
+        {
+          "caller": "formatIsoDate",
+          "callee": "date.getDate",
+          "lineNumber": 349
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "getMonthKeyFromIsoDate",
+          "lineNumber": 361
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "value.slice",
+          "lineNumber": 365
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "referenceDate.getFullYear",
+          "lineNumber": 365
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "parseDateObject",
+          "lineNumber": 368
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "formatIsoDate",
+          "lineNumber": 375
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "formatIsoDate",
+          "lineNumber": 375
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "referenceDate.getFullYear",
+          "lineNumber": 379
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "referenceDate.getMonth",
+          "lineNumber": 380
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "referenceDate.getDate",
+          "lineNumber": 381
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "startOfWeek.getDay",
+          "lineNumber": 383
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "startOfWeek.setDate",
+          "lineNumber": 384
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "startOfWeek.getDate",
+          "lineNumber": 384
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "startOfWeek.setHours",
+          "lineNumber": 385
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "endOfWeek.setDate",
+          "lineNumber": 388
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "startOfWeek.getDate",
+          "lineNumber": 388
+        },
+        {
+          "caller": "isIsoDateInViewScope",
+          "callee": "endOfWeek.setHours",
+          "lineNumber": 389
+        },
+        {
+          "caller": "parseDateObject",
+          "callee": "parseIsoDate",
+          "lineNumber": 395
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 37,
+        "functionCount": 35,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/font-loader.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 177,
+      "nonEmptyLines": 167,
+      "functions": [
+        {
+          "name": "loadGoogleFont",
+          "startLine": 84,
+          "endLine": 104,
+          "params": [
+            "family"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "loadGoogleFont",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "FONT_OPTIONS",
+          "line": 112,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "loadGoogleFont",
+          "callee": "loaded.has",
+          "lineNumber": 85
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "LOCAL_FONTS.has",
+          "lineNumber": 85
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "SYSTEM_FONTS.has",
+          "lineNumber": 85
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "query.toLowerCase",
+          "lineNumber": 92
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "document.getElementById",
+          "lineNumber": 93
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "loaded.add",
+          "lineNumber": 94
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "document.createElement",
+          "lineNumber": 98
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "document.head.appendChild",
+          "lineNumber": 102
+        },
+        {
+          "caller": "loadGoogleFont",
+          "callee": "loaded.add",
+          "lineNumber": 103
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/format.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "formatMoney",
+          "startLine": 19,
+          "endLine": 25,
+          "params": [
+            "value",
+            "options"
+          ]
+        },
+        {
+          "name": "formatDate",
+          "startLine": 27,
+          "endLine": 36,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "formatPercent",
+          "startLine": 38,
+          "endLine": 40,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "toYYMMDD",
+          "startLine": 43,
+          "endLine": 48,
+          "params": [
+            "isoDate"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "formatMoney",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "formatDate",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "formatPercent",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "toYYMMDD",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatMoney",
+          "callee": "wholeMoneyFormatter.format",
+          "lineNumber": 21
+        },
+        {
+          "caller": "formatMoney",
+          "callee": "moneyFormatter.format",
+          "lineNumber": 24
+        },
+        {
+          "caller": "formatDate",
+          "callee": "Number.isNaN",
+          "lineNumber": 32
+        },
+        {
+          "caller": "formatDate",
+          "callee": "parsed.getTime",
+          "lineNumber": 32
+        },
+        {
+          "caller": "formatDate",
+          "callee": "dateFormatter.format",
+          "lineNumber": 35
+        },
+        {
+          "caller": "formatPercent",
+          "callee": "value.toFixed",
+          "lineNumber": 39
+        },
+        {
+          "caller": "toYYMMDD",
+          "callee": "isoDate.match",
+          "lineNumber": 45
+        },
+        {
+          "caller": "toYYMMDD",
+          "callee": "match[1].slice",
+          "lineNumber": 47
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/fuzzy-search.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "fuzzyMatch",
+          "startLine": 5,
+          "endLine": 14,
+          "params": [
+            "query",
+            "target"
+          ]
+        },
+        {
+          "name": "fuzzyFilterIndices",
+          "startLine": 21,
+          "endLine": 34,
+          "params": [
+            "records",
+            "query",
+            "getFields"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "fuzzyMatch",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "fuzzyFilterIndices",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fuzzyMatch",
+          "callee": "query.toLowerCase",
+          "lineNumber": 7
+        },
+        {
+          "caller": "fuzzyMatch",
+          "callee": "target.toLowerCase",
+          "lineNumber": 8
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "query.trim",
+          "lineNumber": 26
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "records.map",
+          "lineNumber": 26
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "records.reduce",
+          "lineNumber": 27
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "getFields",
+          "lineNumber": 28
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "fields.some",
+          "lineNumber": 29
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "fuzzyMatch",
+          "lineNumber": 29
+        },
+        {
+          "caller": "fuzzyFilterIndices",
+          "callee": "indices.push",
+          "lineNumber": 30
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/pending-edit.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 30,
+      "functions": [
+        {
+          "name": "setPendingEdit",
+          "startLine": 20,
+          "endLine": 22,
+          "params": [
+            "resource",
+            "recordId"
+          ]
+        },
+        {
+          "name": "consumePendingEdit",
+          "startLine": 24,
+          "endLine": 31,
+          "params": [
+            "resource"
+          ]
+        },
+        {
+          "name": "clearPendingEdit",
+          "startLine": 33,
+          "endLine": 35,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "setPendingEdit",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "consumePendingEdit",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "clearPendingEdit",
+          "line": 33,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/query-provider.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "QueryProvider",
+          "startLine": 14,
+          "endLine": 32,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "QueryProvider",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "QueryProvider",
+          "callee": "useState",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/router.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 85,
+      "nonEmptyLines": 73,
+      "functions": [
+        {
+          "name": "parseSection",
+          "startLine": 13,
+          "endLine": 16,
+          "params": [
+            "hrefOrHash"
+          ]
+        },
+        {
+          "name": "currentSection",
+          "startLine": 18,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "setNavigateListener",
+          "startLine": 26,
+          "endLine": 28,
+          "params": [
+            "listener"
+          ]
+        },
+        {
+          "name": "syncHashToSection",
+          "startLine": 31,
+          "endLine": 36,
+          "params": [
+            "section"
+          ]
+        },
+        {
+          "name": "navigate",
+          "startLine": 38,
+          "endLine": 42,
+          "params": [
+            "href"
+          ]
+        },
+        {
+          "name": "useSection",
+          "startLine": 45,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "Link",
+          "startLine": 60,
+          "endLine": 75,
+          "params": [
+            "{ href, children, onClick, ...rest }"
+          ]
+        },
+        {
+          "name": "useRouter",
+          "startLine": 79,
+          "endLine": 85,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "parseSection",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "currentSection",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "setNavigateListener",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "syncHashToSection",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "navigate",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "useSection",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "Link",
+          "line": 60,
+          "isDefault": true
+        },
+        {
+          "name": "useRouter",
+          "line": 79,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseSection",
+          "callee": "hrefOrHash.replace(/^#\\/?/, \"\").replace(/^\\/+/, \"\").split",
+          "lineNumber": 14
+        },
+        {
+          "caller": "parseSection",
+          "callee": "hrefOrHash.replace(/^#\\/?/, \"\").replace",
+          "lineNumber": 14
+        },
+        {
+          "caller": "parseSection",
+          "callee": "hrefOrHash.replace",
+          "lineNumber": 14
+        },
+        {
+          "caller": "parseSection",
+          "callee": "(VALID_SECTIONS as string[]).includes",
+          "lineNumber": 15
+        },
+        {
+          "caller": "currentSection",
+          "callee": "parseSection",
+          "lineNumber": 19
+        },
+        {
+          "caller": "syncHashToSection",
+          "callee": "window.history.replaceState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "navigate",
+          "callee": "parseSection",
+          "lineNumber": 39
+        },
+        {
+          "caller": "navigate",
+          "callee": "navigateListener",
+          "lineNumber": 40
+        },
+        {
+          "caller": "navigate",
+          "callee": "syncHashToSection",
+          "lineNumber": 41
+        },
+        {
+          "caller": "useSection",
+          "callee": "useState",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useSection",
+          "callee": "currentSection",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useSection",
+          "callee": "useEffect",
+          "lineNumber": 47
+        },
+        {
+          "caller": "onChange",
+          "callee": "setSection",
+          "lineNumber": 48
+        },
+        {
+          "caller": "onChange",
+          "callee": "currentSection",
+          "lineNumber": 48
+        },
+        {
+          "caller": "useSection",
+          "callee": "window.addEventListener",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useSection",
+          "callee": "window.removeEventListener",
+          "lineNumber": 50
+        },
+        {
+          "caller": "Link",
+          "callee": "href.replace",
+          "lineNumber": 63
+        },
+        {
+          "caller": "Link",
+          "callee": "e.preventDefault",
+          "lineNumber": 66
+        },
+        {
+          "caller": "Link",
+          "callee": "navigate",
+          "lineNumber": 67
+        },
+        {
+          "caller": "Link",
+          "callee": "onClick",
+          "lineNumber": 68
+        },
+        {
+          "caller": "useRouter",
+          "callee": "window.history.back",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/shortcuts/context.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 322,
+      "nonEmptyLines": 288,
+      "functions": [
+        {
+          "name": "tokenFromCode",
+          "startLine": 47,
+          "endLine": 62,
+          "params": [
+            "code",
+            "key"
+          ]
+        },
+        {
+          "name": "isModKey",
+          "startLine": 65,
+          "endLine": 67,
+          "params": [
+            "e"
+          ]
+        },
+        {
+          "name": "comboFromEvent",
+          "startLine": 70,
+          "endLine": 86,
+          "params": [
+            "e"
+          ]
+        },
+        {
+          "name": "isTypingTarget",
+          "startLine": 97,
+          "endLine": 107,
+          "params": [
+            "el"
+          ]
+        },
+        {
+          "name": "ShortcutProvider",
+          "startLine": 109,
+          "endLine": 301,
+          "params": [
+            "{ children }"
+          ]
+        },
+        {
+          "name": "useShortcuts",
+          "startLine": 303,
+          "endLine": 307,
+          "params": []
+        },
+        {
+          "name": "useShortcutAction",
+          "startLine": 314,
+          "endLine": 322,
+          "params": [
+            "id",
+            "handler",
+            "active"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "IS_MAC",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "ShortcutProvider",
+          "line": 109,
+          "isDefault": false
+        },
+        {
+          "name": "useShortcuts",
+          "line": 303,
+          "isDefault": false
+        },
+        {
+          "name": "useShortcutAction",
+          "line": 314,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "tokenFromCode",
+          "callee": "/^Key([A-Z])$/.exec",
+          "lineNumber": 48
+        },
+        {
+          "caller": "tokenFromCode",
+          "callee": "/^(?:Digit|Numpad)(\\d)$/.exec",
+          "lineNumber": 50
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "tokenFromCode",
+          "lineNumber": 77
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "parts.push",
+          "lineNumber": 80
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "parts.push",
+          "lineNumber": 81
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "parts.push",
+          "lineNumber": 82
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "parts.push",
+          "lineNumber": 83
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "/^\\d$/.test",
+          "lineNumber": 84
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "Number",
+          "lineNumber": 84
+        },
+        {
+          "caller": "comboFromEvent",
+          "callee": "parts.join",
+          "lineNumber": 85
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useState",
+          "lineNumber": 110
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useState",
+          "lineNumber": 111
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useRef",
+          "lineNumber": 112
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useRef",
+          "lineNumber": 115
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useRef",
+          "lineNumber": 116
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useState",
+          "lineNumber": 117
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 119
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "list.push",
+          "lineNumber": 121
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.set",
+          "lineNumber": 122
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "cur.lastIndexOf",
+          "lineNumber": 126
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "cur.splice",
+          "lineNumber": 127
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.delete",
+          "lineNumber": 128
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 132
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 133
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "registry.current.get",
+          "lineNumber": 134
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "list[list.length - 1]!",
+          "lineNumber": 136
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 140
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "undoStack.current.push",
+          "lineNumber": 141
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setUndoVersion",
+          "lineNumber": 143
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 146
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "undoStack.current.pop",
+          "lineNumber": 147
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "redoStack.current.push",
+          "lineNumber": 149
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setUndoVersion",
+          "lineNumber": 150
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "entry.undo",
+          "lineNumber": 151
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 153
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "redoStack.current.pop",
+          "lineNumber": 154
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "undoStack.current.push",
+          "lineNumber": 156
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setUndoVersion",
+          "lineNumber": 157
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "entry.redo",
+          "lineNumber": 158
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 161
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setCheatOpen",
+          "lineNumber": 161
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 162
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setCheatOpen",
+          "lineNumber": 162
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 164
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setRevealed",
+          "lineNumber": 165
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useMemo",
+          "lineNumber": 169
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "byCombo.get",
+          "lineNumber": 172
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "list.push",
+          "lineNumber": 173
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "byCombo.set",
+          "lineNumber": 174
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "byCombo.values",
+          "lineNumber": 176
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "list.sort",
+          "lineNumber": 177
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useCallback",
+          "lineNumber": 182
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "comboFromEvent",
+          "lineNumber": 184
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "isTypingTarget",
+          "lineNumber": 186
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "candidates.get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "candidates.get",
+          "lineNumber": 192
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "SHORTCUTS.some",
+          "lineNumber": 197
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "hasHandler",
+          "lineNumber": 197
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "hasHandler",
+          "lineNumber": 206
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 211
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "setCheatOpen",
+          "lineNumber": 212
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 217
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "runUndo",
+          "lineNumber": 218
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 222
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "runRedo",
+          "lineNumber": 223
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "fire",
+          "lineNumber": 228
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 230
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "fire",
+          "lineNumber": 237
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 239
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useEffect",
+          "lineNumber": 248
+        },
+        {
+          "caller": "onKeyDown",
+          "callee": "isModKey",
+          "lineNumber": 252
+        },
+        {
+          "caller": "onKeyDown",
+          "callee": "setRevealed",
+          "lineNumber": 253
+        },
+        {
+          "caller": "onKeyDown",
+          "callee": "setRevealed",
+          "lineNumber": 257
+        },
+        {
+          "caller": "onKeyDown",
+          "callee": "dispatch",
+          "lineNumber": 258
+        },
+        {
+          "caller": "onKeyUp",
+          "callee": "isModKey",
+          "lineNumber": 262
+        },
+        {
+          "caller": "onKeyUp",
+          "callee": "setRevealed",
+          "lineNumber": 262
+        },
+        {
+          "caller": "onPointer",
+          "callee": "clearReveal",
+          "lineNumber": 264
+        },
+        {
+          "caller": "onBlur",
+          "callee": "clearReveal",
+          "lineNumber": 265
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 267
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 268
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 269
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 270
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 272
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 273
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 274
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 275
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useEffect",
+          "lineNumber": 280
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "document.body.classList.toggle",
+          "lineNumber": 281
+        },
+        {
+          "caller": "ShortcutProvider",
+          "callee": "useMemo",
+          "lineNumber": 284
+        },
+        {
+          "caller": "useShortcuts",
+          "callee": "useContext",
+          "lineNumber": 304
+        },
+        {
+          "caller": "useShortcutAction",
+          "callee": "useShortcuts",
+          "lineNumber": 315
+        },
+        {
+          "caller": "useShortcutAction",
+          "callee": "useRef",
+          "lineNumber": 316
+        },
+        {
+          "caller": "useShortcutAction",
+          "callee": "useEffect",
+          "lineNumber": 318
+        },
+        {
+          "caller": "useShortcutAction",
+          "callee": "registerAction",
+          "lineNumber": 320
+        },
+        {
+          "caller": "useShortcutAction",
+          "callee": "ref.current",
+          "lineNumber": 320
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/shortcuts/registry.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 133,
+      "nonEmptyLines": 121,
+      "functions": [
+        {
+          "name": "displayCombo",
+          "startLine": 117,
+          "endLine": 127,
+          "params": [
+            "combo",
+            "isMac"
+          ]
+        },
+        {
+          "name": "shortcutKeys",
+          "startLine": 130,
+          "endLine": 133,
+          "params": [
+            "def",
+            "isMac"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SHORTCUT_GROUPS",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "SHORTCUTS",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "displayCombo",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "shortcutKeys",
+          "line": 130,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "displayCombo",
+          "callee": "combo.split",
+          "lineNumber": 118
+        },
+        {
+          "caller": "displayCombo",
+          "callee": "parts.map((p) => map[p] ?? p).join",
+          "lineNumber": 126
+        },
+        {
+          "caller": "displayCombo",
+          "callee": "parts.map",
+          "lineNumber": 126
+        },
+        {
+          "caller": "shortcutKeys",
+          "callee": "displayCombo",
+          "lineNumber": 131
+        },
+        {
+          "caller": "shortcutKeys",
+          "callee": "displayCombo",
+          "lineNumber": 132
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/theme-context.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 176,
+      "nonEmptyLines": 155,
+      "functions": [
+        {
+          "name": "loadLocalTheme",
+          "startLine": 40,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "saveLocalTheme",
+          "startLine": 52,
+          "endLine": 58,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "resolveEffectiveMode",
+          "startLine": 60,
+          "endLine": 64,
+          "params": [
+            "mode"
+          ]
+        },
+        {
+          "name": "ThemeProvider",
+          "startLine": 70,
+          "endLine": 170,
+          "params": [
+            "{ children }"
+          ]
+        },
+        {
+          "name": "useTheme",
+          "startLine": 172,
+          "endLine": 176,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ThemeProvider",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "useTheme",
+          "line": 172,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "loadLocalTheme",
+          "callee": "localStorage.getItem",
+          "lineNumber": 43
+        },
+        {
+          "caller": "loadLocalTheme",
+          "callee": "JSON.parse",
+          "lineNumber": 45
+        },
+        {
+          "caller": "saveLocalTheme",
+          "callee": "localStorage.setItem",
+          "lineNumber": 54
+        },
+        {
+          "caller": "saveLocalTheme",
+          "callee": "JSON.stringify",
+          "lineNumber": 54
+        },
+        {
+          "caller": "resolveEffectiveMode",
+          "callee": "window.matchMedia",
+          "lineNumber": 63
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useUiSettings",
+          "lineNumber": 71
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useState",
+          "lineNumber": 72
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "loadLocalTheme",
+          "lineNumber": 72
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useState",
+          "lineNumber": 73
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useRef",
+          "lineNumber": 74
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useEffect",
+          "lineNumber": 76
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "setMounted",
+          "lineNumber": 77
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useEffect",
+          "lineNumber": 81
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "setStored",
+          "lineNumber": 89
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "saveLocalTheme",
+          "lineNumber": 90
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useEffect",
+          "lineNumber": 93
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "resolveEffectiveMode",
+          "lineNumber": 95
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.setAttribute",
+          "lineNumber": 96
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 97
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 98
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 99
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "loadGoogleFont",
+          "lineNumber": 106
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "loadGoogleFont",
+          "lineNumber": 107
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "loadGoogleFont",
+          "lineNumber": 108
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "loadGoogleFont",
+          "lineNumber": 109
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 110
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 111
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 112
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "document.documentElement.style.setProperty",
+          "lineNumber": 113
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useEffect",
+          "lineNumber": 116
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "window.matchMedia",
+          "lineNumber": 118
+        },
+        {
+          "caller": "handler",
+          "callee": "resolveEffectiveMode",
+          "lineNumber": 120
+        },
+        {
+          "caller": "handler",
+          "callee": "document.documentElement.setAttribute",
+          "lineNumber": 121
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "mq.addEventListener",
+          "lineNumber": 123
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "mq.removeEventListener",
+          "lineNumber": 124
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useCallback",
+          "lineNumber": 127
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "setStored",
+          "lineNumber": 129
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "saveLocalTheme",
+          "lineNumber": 130
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "updateSettings",
+          "lineNumber": 131
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useCallback",
+          "lineNumber": 136
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "persist",
+          "lineNumber": 138
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useCallback",
+          "lineNumber": 143
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "persist",
+          "lineNumber": 145
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useCallback",
+          "lineNumber": 150
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "persist",
+          "lineNumber": 152
+        },
+        {
+          "caller": "ThemeProvider",
+          "callee": "useMemo",
+          "lineNumber": 157
+        },
+        {
+          "caller": "useTheme",
+          "callee": "useContext",
+          "lineNumber": 173
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/ui-settings-context.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 255,
+      "nonEmptyLines": 239,
+      "functions": [
+        {
+          "name": "UiSettingsProvider",
+          "startLine": 100,
+          "endLine": 224,
+          "params": [
+            "{ children }"
+          ]
+        },
+        {
+          "name": "useUiSettings",
+          "startLine": 226,
+          "endLine": 228,
+          "params": []
+        },
+        {
+          "name": "deleteActionLabel",
+          "startLine": 230,
+          "endLine": 232,
+          "params": [
+            "hardDeleteEnabled"
+          ]
+        },
+        {
+          "name": "deleteConfirmCopy",
+          "startLine": 234,
+          "endLine": 255,
+          "params": [
+            "hardDeleteEnabled",
+            "count"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "UiSettingsProvider",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "useUiSettings",
+          "line": 226,
+          "isDefault": false
+        },
+        {
+          "name": "deleteActionLabel",
+          "line": 230,
+          "isDefault": false
+        },
+        {
+          "name": "deleteConfirmCopy",
+          "line": 234,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useState",
+          "lineNumber": 101
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useState",
+          "lineNumber": 102
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useRef",
+          "lineNumber": 103
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useEffect",
+          "lineNumber": 106
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "setReady",
+          "lineNumber": 110
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "api.settings\n      .get()\n      .then((res) => {\n        if (cancelled || !res.ok) return;\n        // Merge with defaults so newly-added fields (e.g. fonts) are always present\n        // even when loading settings saved before the field existed.\n        setSettings({\n          ...DEFAULT_SETTINGS,\n          ...res.data,\n          theme: { ...DEFAULT_SETTINGS.theme, ...res.data.theme },\n          fonts: { ...DEFAULT_SETTINGS.fonts, ...res.data.fonts },\n          profile: { ...DEFAULT_SETTINGS.profile, ...res.data.profile },\n          workspace: { ...DEFAULT_SETTINGS.workspace, ...res.data.workspace },\n          incomeFilters: { ...DEFAULT_SETTINGS.incomeFilters, ...res.data.incomeFilters },\n          expenseFilters: { ...DEFAULT_SETTINGS.expenseFilters, ...res.data.expenseFilters },\n          accountsFilters: { ...DEFAULT_SETTINGS.accountsFilters, ...res.data.accountsFilters },\n          monitoringFilters: { ...DEFAULT_SETTINGS.monitoringFilters, ...res.data.monitoringFilters },\n        });\n      })\n      .finally",
+          "lineNumber": 113
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "api.settings\n      .get()\n      .then",
+          "lineNumber": 113
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "api.settings\n      .get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "setSettings",
+          "lineNumber": 119
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "setReady",
+          "lineNumber": 133
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useCallback",
+          "lineNumber": 140
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "setSettings",
+          "lineNumber": 141
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "patch.chatDefaultModel.trim",
+          "lineNumber": 156
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "api.settings.update",
+          "lineNumber": 179
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "setSettings",
+          "lineNumber": 181
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useCallback",
+          "lineNumber": 187
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "updateSettings",
+          "lineNumber": 189
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useCallback",
+          "lineNumber": 194
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "updateSettings",
+          "lineNumber": 196
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useCallback",
+          "lineNumber": 201
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "updateSettings",
+          "lineNumber": 203
+        },
+        {
+          "caller": "UiSettingsProvider",
+          "callee": "useMemo",
+          "lineNumber": 208
+        },
+        {
+          "caller": "useUiSettings",
+          "callee": "useContext",
+          "lineNumber": 227
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/use-data.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 316,
+      "nonEmptyLines": 269,
+      "functions": [
+        {
+          "name": "useApiQuery",
+          "startLine": 61,
+          "endLine": 114,
+          "params": [
+            "queryKey",
+            "fetcher",
+            "options"
+          ]
+        },
+        {
+          "name": "useDashboardData",
+          "startLine": 118,
+          "endLine": 122,
+          "params": [
+            "month"
+          ]
+        },
+        {
+          "name": "useAccounts",
+          "startLine": 126,
+          "endLine": 132,
+          "params": [
+            "includeInactive"
+          ]
+        },
+        {
+          "name": "useAccount",
+          "startLine": 134,
+          "endLine": 138,
+          "params": [
+            "id"
+          ]
+        },
+        {
+          "name": "useIncomeCategories",
+          "startLine": 142,
+          "endLine": 148,
+          "params": [
+            "normalOnly"
+          ]
+        },
+        {
+          "name": "useExpenseCategories",
+          "startLine": 152,
+          "endLine": 156,
+          "params": []
+        },
+        {
+          "name": "useIncomes",
+          "startLine": 160,
+          "endLine": 170,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useExpenses",
+          "startLine": 174,
+          "endLine": 187,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useExpensesForCCCoverage",
+          "startLine": 189,
+          "endLine": 194,
+          "params": []
+        },
+        {
+          "name": "useTransfers",
+          "startLine": 198,
+          "endLine": 202,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useCreditCardPayments",
+          "startLine": 204,
+          "endLine": 209,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useAlkansya",
+          "startLine": 211,
+          "endLine": 215,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useReceivables",
+          "startLine": 217,
+          "endLine": 222,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "useWorkflowRecords",
+          "startLine": 237,
+          "endLine": 245,
+          "params": [
+            "section",
+            "params"
+          ]
+        },
+        {
+          "name": "useSyncStatus",
+          "startLine": 249,
+          "endLine": 258,
+          "params": []
+        },
+        {
+          "name": "useSchemaStatus",
+          "startLine": 260,
+          "endLine": 262,
+          "params": []
+        },
+        {
+          "name": "useHistory",
+          "startLine": 266,
+          "endLine": 274,
+          "params": [
+            "runs"
+          ]
+        },
+        {
+          "name": "useMonthlyMonitoring",
+          "startLine": 278,
+          "endLine": 282,
+          "params": [
+            "month"
+          ]
+        },
+        {
+          "name": "useExpenseScheduler",
+          "startLine": 286,
+          "endLine": 290,
+          "params": []
+        },
+        {
+          "name": "useFinanceInvalidation",
+          "startLine": 300,
+          "endLine": 316,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDashboardData",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "useAccounts",
+          "line": 126,
+          "isDefault": false
+        },
+        {
+          "name": "useAccount",
+          "line": 134,
+          "isDefault": false
+        },
+        {
+          "name": "useIncomeCategories",
+          "line": 142,
+          "isDefault": false
+        },
+        {
+          "name": "useExpenseCategories",
+          "line": 152,
+          "isDefault": false
+        },
+        {
+          "name": "useIncomes",
+          "line": 160,
+          "isDefault": false
+        },
+        {
+          "name": "useExpenses",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "useExpensesForCCCoverage",
+          "line": 189,
+          "isDefault": false
+        },
+        {
+          "name": "useTransfers",
+          "line": 198,
+          "isDefault": false
+        },
+        {
+          "name": "useCreditCardPayments",
+          "line": 204,
+          "isDefault": false
+        },
+        {
+          "name": "useAlkansya",
+          "line": 211,
+          "isDefault": false
+        },
+        {
+          "name": "useReceivables",
+          "line": 217,
+          "isDefault": false
+        },
+        {
+          "name": "useWorkflowRecords",
+          "line": 237,
+          "isDefault": false
+        },
+        {
+          "name": "useSyncStatus",
+          "line": 249,
+          "isDefault": false
+        },
+        {
+          "name": "useSchemaStatus",
+          "line": 260,
+          "isDefault": false
+        },
+        {
+          "name": "useHistory",
+          "line": 266,
+          "isDefault": false
+        },
+        {
+          "name": "useMonthlyMonitoring",
+          "line": 278,
+          "isDefault": false
+        },
+        {
+          "name": "useExpenseScheduler",
+          "line": 286,
+          "isDefault": false
+        },
+        {
+          "name": "useFinanceInvalidation",
+          "line": 300,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useApiQuery",
+          "callee": "useAuth",
+          "lineNumber": 66
+        },
+        {
+          "caller": "useApiQuery",
+          "callee": "useQueryClient",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useApiQuery",
+          "callee": "useQuery",
+          "lineNumber": 70
+        },
+        {
+          "caller": "useApiQuery",
+          "callee": "fetcher",
+          "lineNumber": 76
+        },
+        {
+          "caller": "useApiQuery",
+          "callee": "useCallback",
+          "lineNumber": 100
+        },
+        {
+          "caller": "useApiQuery",
+          "callee": "rqRefetch",
+          "lineNumber": 101
+        },
+        {
+          "caller": "applyLocal",
+          "callee": "queryClient.setQueryData",
+          "lineNumber": 108
+        },
+        {
+          "caller": "applyLocal",
+          "callee": "updater",
+          "lineNumber": 109
+        },
+        {
+          "caller": "useDashboardData",
+          "callee": "useApiQuery",
+          "lineNumber": 119
+        },
+        {
+          "caller": "useDashboardData",
+          "callee": "dashboardApi.summary",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useAccounts",
+          "callee": "useApiQuery",
+          "lineNumber": 127
+        },
+        {
+          "caller": "useAccounts",
+          "callee": "accountsApi.list",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useAccount",
+          "callee": "useApiQuery",
+          "lineNumber": 135
+        },
+        {
+          "caller": "useAccount",
+          "callee": "accountsApi.detail",
+          "lineNumber": 135
+        },
+        {
+          "caller": "useIncomeCategories",
+          "callee": "useApiQuery",
+          "lineNumber": 143
+        },
+        {
+          "caller": "useIncomeCategories",
+          "callee": "incomeCategoriesApi.list",
+          "lineNumber": 145
+        },
+        {
+          "caller": "useExpenseCategories",
+          "callee": "useApiQuery",
+          "lineNumber": 153
+        },
+        {
+          "caller": "useExpenseCategories",
+          "callee": "expenseCategoriesApi.list",
+          "lineNumber": 153
+        },
+        {
+          "caller": "useIncomes",
+          "callee": "useApiQuery",
+          "lineNumber": 167
+        },
+        {
+          "caller": "useIncomes",
+          "callee": "incomesApi.list",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useExpenses",
+          "callee": "useApiQuery",
+          "lineNumber": 184
+        },
+        {
+          "caller": "useExpenses",
+          "callee": "expensesApi.list",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useExpensesForCCCoverage",
+          "callee": "useApiQuery",
+          "lineNumber": 190
+        },
+        {
+          "caller": "useExpensesForCCCoverage",
+          "callee": "expensesApi.listForCCCoverage",
+          "lineNumber": 192
+        },
+        {
+          "caller": "useTransfers",
+          "callee": "useApiQuery",
+          "lineNumber": 199
+        },
+        {
+          "caller": "useTransfers",
+          "callee": "transfersApi.list",
+          "lineNumber": 200
+        },
+        {
+          "caller": "useCreditCardPayments",
+          "callee": "useApiQuery",
+          "lineNumber": 205
+        },
+        {
+          "caller": "useCreditCardPayments",
+          "callee": "creditCardPaymentsApi.list",
+          "lineNumber": 207
+        },
+        {
+          "caller": "useAlkansya",
+          "callee": "useApiQuery",
+          "lineNumber": 212
+        },
+        {
+          "caller": "useAlkansya",
+          "callee": "alkansyaApi.list",
+          "lineNumber": 213
+        },
+        {
+          "caller": "useReceivables",
+          "callee": "useApiQuery",
+          "lineNumber": 218
+        },
+        {
+          "caller": "useReceivables",
+          "callee": "receivablesApi.list",
+          "lineNumber": 220
+        },
+        {
+          "caller": "useWorkflowRecords",
+          "callee": "useApiQuery",
+          "lineNumber": 242
+        },
+        {
+          "caller": "useWorkflowRecords",
+          "callee": "api.list",
+          "lineNumber": 243
+        },
+        {
+          "caller": "useSyncStatus",
+          "callee": "useApiQuery",
+          "lineNumber": 250
+        },
+        {
+          "caller": "useSyncStatus",
+          "callee": "syncApi.status",
+          "lineNumber": 250
+        },
+        {
+          "caller": "useSchemaStatus",
+          "callee": "useApiQuery",
+          "lineNumber": 261
+        },
+        {
+          "caller": "useSchemaStatus",
+          "callee": "syncApi.schemaStatus",
+          "lineNumber": 261
+        },
+        {
+          "caller": "useHistory",
+          "callee": "useApiQuery",
+          "lineNumber": 267
+        },
+        {
+          "caller": "useHistory",
+          "callee": "historyApi.get",
+          "lineNumber": 269
+        },
+        {
+          "caller": "useMonthlyMonitoring",
+          "callee": "useApiQuery",
+          "lineNumber": 279
+        },
+        {
+          "caller": "useMonthlyMonitoring",
+          "callee": "monthlyMonitoringApi.list",
+          "lineNumber": 280
+        },
+        {
+          "caller": "useExpenseScheduler",
+          "callee": "useApiQuery",
+          "lineNumber": 287
+        },
+        {
+          "caller": "useExpenseScheduler",
+          "callee": "expenseSchedulerApi.list",
+          "lineNumber": 288
+        },
+        {
+          "caller": "useFinanceInvalidation",
+          "callee": "useQueryClient",
+          "lineNumber": 301
+        },
+        {
+          "caller": "useFinanceInvalidation",
+          "callee": "useCallback",
+          "lineNumber": 303
+        },
+        {
+          "caller": "useFinanceInvalidation",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 305
+        },
+        {
+          "caller": "useFinanceInvalidation",
+          "callee": "useCallback",
+          "lineNumber": 309
+        },
+        {
+          "caller": "useFinanceInvalidation",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 311
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 19,
+        "functionCount": 20,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/lib/use-debounced-persist.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 25,
+      "functions": [
+        {
+          "name": "useDebouncedPersist",
+          "startLine": 7,
+          "endLine": 27,
+          "params": [
+            "enabled",
+            "deps",
+            "save",
+            "delayMs"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDebouncedPersist",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "useRef",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "useRef",
+          "lineNumber": 14
+        },
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "useEffect",
+          "lineNumber": 17
+        },
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "window.setTimeout",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "saveRef.current",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useDebouncedPersist",
+          "callee": "window.clearTimeout",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/main.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 91,
+      "nonEmptyLines": 86,
+      "functions": [
+        {
+          "name": "IpcInvalidationBridge",
+          "startLine": 25,
+          "endLine": 51,
+          "params": []
+        },
+        {
+          "name": "TabbedWorkspace",
+          "startLine": 53,
+          "endLine": 61,
+          "params": []
+        },
+        {
+          "name": "App",
+          "startLine": 63,
+          "endLine": 85,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "useQueryClient",
+          "lineNumber": 26
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "useEffect",
+          "lineNumber": 27
+        },
+        {
+          "caller": "invalidateAll",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 36
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "api.on",
+          "lineNumber": 39
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "api.on",
+          "lineNumber": 40
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "api.on",
+          "lineNumber": 41
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 42
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "offRecords",
+          "lineNumber": 45
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "offDerived",
+          "lineNumber": 46
+        },
+        {
+          "caller": "IpcInvalidationBridge",
+          "callee": "offSync",
+          "lineNumber": 47
+        },
+        {
+          "caller": "TabbedWorkspace",
+          "callee": "useActiveTabSection",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/types/finance.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 240,
+      "nonEmptyLines": 215,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/shared/finance.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 796,
+      "nonEmptyLines": 711,
+      "exports": [
+        {
+          "name": "INCOME_VIEW_FIXED_CATEGORY",
+          "line": 211,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/app-tabs.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 44,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-fingerprint.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-hardening.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 392,
+      "nonEmptyLines": 364,
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-overlays.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 91,
+      "functions": [
+        {
+          "name": "draft",
+          "startLine": 12,
+          "endLine": 25,
+          "params": [
+            "partial"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "draft",
+          "callee": "Date.now",
+          "lineNumber": 22
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-provider-base.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 97,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-read-tools.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 72,
+      "nonEmptyLines": 64,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/chat-write-tools.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 217,
+      "nonEmptyLines": 202,
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/derivations.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 191,
+      "nonEmptyLines": 173,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/dev-logs.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 24,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

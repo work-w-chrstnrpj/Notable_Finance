@@ -235,7 +235,13 @@ function ExpensePage({
   const [massEditOpen, setMassEditOpen] = useState(false);
   const [massEditSaving, setMassEditSaving] = useState(false);
   const [massEditError, setMassEditError] = useState<string | null>(null);
+  /** When set, the bulk-edit modal opens pre-filled with these rows (e.g. Bulk CC Pay). */
+  const [massEditPreset, setMassEditPreset] = useState<
+    Array<{ fieldKey: string; rawValue: string }> | undefined
+  >(undefined);
   const [coverExpensesOpen, setCoverExpensesOpen] = useState(false);
+  /** After covering, offer to continue into the Bulk CC Pay workflow with the same selection. */
+  const [bulkPayPromptOpen, setBulkPayPromptOpen] = useState(false);
   const [receiptModalCtx, setReceiptModalCtx] = useState<ReceiptContext | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
@@ -687,6 +693,7 @@ function ExpensePage({
         }),
       );
       setMassEditOpen(false);
+      setMassEditPreset(undefined);
       setSelectedIds(new Set());
       invalidateExpenseFamily();
       if (failed.length > 0) {
@@ -705,6 +712,7 @@ function ExpensePage({
     if (action === "edit") {
       if (selectedIds.size === 0) return;
       setMassEditError(null);
+      setMassEditPreset(undefined); // plain bulk edit starts with an empty row
       setMassEditOpen(true);
       return;
     }
@@ -1618,9 +1626,13 @@ function ExpensePage({
         saving={massEditSaving}
         error={massEditError}
         onClose={() => {
-          if (!massEditSaving) setMassEditOpen(false);
+          if (!massEditSaving) {
+            setMassEditOpen(false);
+            setMassEditPreset(undefined);
+          }
         }}
         onApply={applyMassEdit}
+        presetRows={massEditPreset}
         showExpensePresets
       />
       {deleteConfirmIds && (
@@ -1656,11 +1668,36 @@ function ExpensePage({
         selectedExpenseIds={Array.from(selectedIds)}
         onClose={() => setCoverExpensesOpen(false)}
         onCovered={() => {
+          // Keep the selection so the user can continue into Bulk CC Pay if they choose.
           setCoverExpensesOpen(false);
-          setSelectedIds(new Set());
           invalidateExpenseFamily();
+          setBulkPayPromptOpen(true);
         }}
       />
+      {bulkPayPromptOpen && (
+        <ConfirmModal
+          title="Continue to Bulk CC Pay?"
+          message="Do you want to continue editing these selected items using the Bulk CC Pay workflow?"
+          confirmLabel="Yes"
+          cancelLabel="No"
+          onConfirm={() => {
+            setBulkPayPromptOpen(false);
+            // Pre-fill the bulk-edit modal with the Bulk CC Pay defaults, still on the
+            // same selected expenses (paymentStatus → Paid, paidPeriod → 1, datePaid → today).
+            setMassEditError(null);
+            setMassEditPreset([
+              { fieldKey: "paymentStatus", rawValue: "Paid" },
+              { fieldKey: "paidPeriod", rawValue: "1" },
+              { fieldKey: "datePaid", rawValue: todayIso() },
+            ]);
+            setMassEditOpen(true);
+          }}
+          onCancel={() => {
+            setBulkPayPromptOpen(false);
+            setSelectedIds(new Set());
+          }}
+        />
+      )}
     </div>
   );
 }

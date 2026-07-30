@@ -1,0 +1,354 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 6
+    }
+  },
+  "results": [
+    {
+      "path": "src/main/db/migrations/meta/0000_snapshot.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 873,
+      "nonEmptyLines": 873,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "prevId",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "tables",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "views",
+          "level": 1,
+          "line": 863
+        },
+        {
+          "heading": "enums",
+          "level": 1,
+          "line": 864
+        },
+        {
+          "heading": "_meta",
+          "level": 1,
+          "line": 865
+        },
+        {
+          "heading": "internal",
+          "level": 1,
+          "line": 870
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "src/main/db/migrations/meta/0001_snapshot.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 887,
+      "nonEmptyLines": 887,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "prevId",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "tables",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "views",
+          "level": 1,
+          "line": 877
+        },
+        {
+          "heading": "enums",
+          "level": 1,
+          "line": 878
+        },
+        {
+          "heading": "_meta",
+          "level": 1,
+          "line": 879
+        },
+        {
+          "heading": "internal",
+          "level": 1,
+          "line": 884
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "src/main/db/migrations/meta/0002_snapshot.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 894,
+      "nonEmptyLines": 894,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "prevId",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "tables",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "views",
+          "level": 1,
+          "line": 884
+        },
+        {
+          "heading": "enums",
+          "level": 1,
+          "line": 885
+        },
+        {
+          "heading": "_meta",
+          "level": 1,
+          "line": 886
+        },
+        {
+          "heading": "internal",
+          "level": 1,
+          "line": 891
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "src/main/db/migrations/meta/0003_snapshot.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 960,
+      "nonEmptyLines": 960,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "prevId",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "tables",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "views",
+          "level": 1,
+          "line": 950
+        },
+        {
+          "heading": "enums",
+          "level": 1,
+          "line": 951
+        },
+        {
+          "heading": "_meta",
+          "level": 1,
+          "line": 952
+        },
+        {
+          "heading": "internal",
+          "level": 1,
+          "line": 957
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "src/main/db/migrations/meta/0004_snapshot.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 967,
+      "nonEmptyLines": 967,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "prevId",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "tables",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "views",
+          "level": 1,
+          "line": 957
+        },
+        {
+          "heading": "enums",
+          "level": 1,
+          "line": 958
+        },
+        {
+          "heading": "_meta",
+          "level": 1,
+          "line": 959
+        },
+        {
+          "heading": "internal",
+          "level": 1,
+          "line": 964
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "src/main/db/migrations/meta/_journal.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 76,
+      "nonEmptyLines": 76,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "dialect",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "entries",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    }
+  ]
+}

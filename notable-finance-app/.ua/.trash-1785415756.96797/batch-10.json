@@ -1,0 +1,448 @@
+{
+  "nodes": [
+    {
+      "id": "config:vitest.config.ts",
+      "type": "config",
+      "name": "vitest.config.ts",
+      "filePath": "vitest.config.ts",
+      "summary": "Vitest configuration with Node environment, path alias for the renderer src directory, and test file patterns covering both test/ and src/ directories.",
+      "tags": ["configuration", "testing", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/factories.ts",
+      "type": "file",
+      "name": "factories.ts",
+      "filePath": "test/factories.ts",
+      "summary": "Provides minimal DTO builder functions for Account, Income, Expense, ExpenseCategory, and IncomeCategory used as test data across derivation and domain tests.",
+      "tags": ["factory", "test-utility", "type-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test/factories.ts:account",
+      "type": "function",
+      "name": "account",
+      "filePath": "test/factories.ts",
+      "lineRange": [10, 34],
+      "summary": "Creates an AccountDto with sensible defaults, accepting partial overrides for test-specific fields.",
+      "tags": ["factory", "dto-builder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test/factories.ts:income",
+      "type": "function",
+      "name": "income",
+      "filePath": "test/factories.ts",
+      "lineRange": [36, 47],
+      "summary": "Creates an IncomeRecordDto with sensible defaults, accepting partial overrides for test-specific fields.",
+      "tags": ["factory", "dto-builder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test/factories.ts:expense",
+      "type": "function",
+      "name": "expense",
+      "filePath": "test/factories.ts",
+      "lineRange": [49, 71],
+      "summary": "Creates an ExpenseRecordDto with sensible defaults including pasabuy fields, accepting partial overrides for test-specific fields.",
+      "tags": ["factory", "dto-builder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test/factories.ts:expenseCategory",
+      "type": "function",
+      "name": "expenseCategory",
+      "filePath": "test/factories.ts",
+      "lineRange": [73, 86],
+      "summary": "Creates an ExpenseCategoryDto with sensible defaults, accepting partial overrides for test-specific fields.",
+      "tags": ["factory", "dto-builder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test/factories.ts:incomeCategory",
+      "type": "function",
+      "name": "incomeCategory",
+      "filePath": "test/factories.ts",
+      "lineRange": [88, 99],
+      "summary": "Creates an IncomeCategoryDto with sensible defaults, accepting partial overrides for test-specific fields.",
+      "tags": ["factory", "dto-builder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/mappers.test.ts",
+      "type": "file",
+      "name": "mappers.test.ts",
+      "filePath": "test/mappers.test.ts",
+      "summary": "Tests for database mapper functions (mapIncome, mapExpense, mapAccount, mapScheduler) and the advanceDate utility, covering snake_case to camelCase conversion, pasabuy defaults, and frequency-based date advancement.",
+      "tags": ["test", "mapping", "serialization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/merge.test.ts",
+      "type": "file",
+      "name": "merge.test.ts",
+      "filePath": "test/merge.test.ts",
+      "summary": "Tests for the three-way merge algorithm covering no-op, pull, push, auto-merge, conflict detection, null handling, and soft-delete scenarios.",
+      "tags": ["test", "merge", "conflict-resolution"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/notion-files.test.ts",
+      "type": "file",
+      "name": "notion-files.test.ts",
+      "filePath": "test/notion-files.test.ts",
+      "summary": "Tests for image download and data-URI caching utilities using an in-memory HTTP server covering success, type inference, 404, unreachable hosts, and size limits.",
+      "tags": ["test", "network", "file-download"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/notion-formulas.test.ts",
+      "type": "file",
+      "name": "notion-formulas.test.ts",
+      "filePath": "test/notion-formulas.test.ts",
+      "summary": "Tests for Notion formula replicas covering gross price, installment amount, paid and remaining balance, pasabuy received amount and balance, and transaction amount calculations.",
+      "tags": ["test", "computation", "notion-formulas"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/notion-gone.test.ts",
+      "type": "file",
+      "name": "notion-gone.test.ts",
+      "filePath": "test/notion-gone.test.ts",
+      "summary": "Tests for detecting Notion gone errors (archived, trashed, 404) and identifying local records whose Notion pages have been deleted remotely.",
+      "tags": ["test", "error-detection", "sync"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/notion.test.ts",
+      "type": "file",
+      "name": "notion.test.ts",
+      "filePath": "test/notion.test.ts",
+      "summary": "Tests for Notion property mapping (income/expense DTO to Notion API properties), schema comparison, and phantom delete detection logic.",
+      "tags": ["test", "notion-api", "property-mapping"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/page-extractors.test.ts",
+      "type": "file",
+      "name": "page-extractors.test.ts",
+      "filePath": "test/page-extractors.test.ts",
+      "summary": "Tests for Notion page field extraction functions covering accounts, income categories, income fields, expense fields, and deleted-title detection.",
+      "tags": ["test", "notion-api", "extraction"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/page-icons.test.ts",
+      "type": "file",
+      "name": "page-icons.test.ts",
+      "filePath": "test/page-icons.test.ts",
+      "summary": "Tests for Notion page icon mapping functions covering income and expense icon selection based on category type and account context.",
+      "tags": ["test", "notion-api", "icons"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/query-filters.test.ts",
+      "type": "file",
+      "name": "query-filters.test.ts",
+      "filePath": "test/query-filters.test.ts",
+      "summary": "Tests for income and expense query filters covering view modes (unpaid pasabuy, to pay, to buy, installments, unpaid CC), category exclusion, and calendar range filtering.",
+      "tags": ["test", "filtering", "queries"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/shortcuts.test.ts",
+      "type": "file",
+      "name": "shortcuts.test.ts",
+      "filePath": "test/shortcuts.test.ts",
+      "summary": "Tests for keyboard shortcut registry integrity covering unique IDs, valid groups and scopes, combo formatting, platform display rendering, scope priority, and OS-level shortcut conflict detection.",
+      "tags": ["test", "keyboard-shortcuts", "registry"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test/ui-settings.test.ts",
+      "type": "file",
+      "name": "ui-settings.test.ts",
+      "filePath": "test/ui-settings.test.ts",
+      "summary": "Tests for UI settings normalization covering defaults merging, profile and chat flags, avatar validation, and push-FAB auto-hide delay clamping.",
+      "tags": ["test", "settings", "normalization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:test/validation.test.ts",
+      "type": "file",
+      "name": "validation.test.ts",
+      "filePath": "test/validation.test.ts",
+      "summary": "Tests for domain validation functions covering create and update validation for income and expense records.",
+      "tags": ["test", "validation", "domain"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/mappers.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/merge.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/notion-files.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/notion-formulas.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/notion-gone.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/notion.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/page-extractors.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/page-icons.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/query-filters.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/shortcuts.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/ui-settings.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:vitest.config.ts",
+      "target": "file:test/validation.test.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:account",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:income",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:expense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:expenseCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:incomeCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:account",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:income",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:expense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:expenseCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test/factories.ts",
+      "target": "function:test/factories.ts:incomeCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/mappers.ts",
+      "target": "file:test/mappers.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/domain/schedule.ts",
+      "target": "file:test/mappers.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/sync/merge.ts",
+      "target": "file:test/merge.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/files.ts",
+      "target": "file:test/notion-files.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/domain/notion-formulas.ts",
+      "target": "file:test/notion-formulas.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/client.ts",
+      "target": "file:test/notion-gone.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/sync/notion-gone.ts",
+      "target": "file:test/notion-gone.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/property-mapper.ts",
+      "target": "file:test/notion.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/schema-spec.ts",
+      "target": "file:test/notion.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/sync/push.ts",
+      "target": "file:test/notion.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "file:test/page-extractors.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/notion/page-icons.ts",
+      "target": "file:test/page-icons.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/domain/query-filters.ts",
+      "target": "file:test/query-filters.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "target": "file:test/shortcuts.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/settings/ui.ts",
+      "target": "file:test/ui-settings.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/main/domain/validation.ts",
+      "target": "file:test/validation.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

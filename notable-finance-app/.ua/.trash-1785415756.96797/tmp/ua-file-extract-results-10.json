@@ -1,0 +1,319 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 14,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 14,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 14,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "test/factories.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 94,
+      "functions": [
+        {
+          "name": "account",
+          "startLine": 10,
+          "endLine": 34,
+          "params": [
+            "over"
+          ]
+        },
+        {
+          "name": "income",
+          "startLine": 36,
+          "endLine": 47,
+          "params": [
+            "over"
+          ]
+        },
+        {
+          "name": "expense",
+          "startLine": 49,
+          "endLine": 71,
+          "params": [
+            "over"
+          ]
+        },
+        {
+          "name": "expenseCategory",
+          "startLine": 73,
+          "endLine": 86,
+          "params": [
+            "over"
+          ]
+        },
+        {
+          "name": "incomeCategory",
+          "startLine": 88,
+          "endLine": 99,
+          "params": [
+            "over"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "account",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "income",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "expense",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "expenseCategory",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "incomeCategory",
+          "line": 88,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/mappers.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 175,
+      "nonEmptyLines": 163,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/merge.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 70,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/notion-files.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 57,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/notion-formulas.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 87,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/notion-gone.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 59,
+      "nonEmptyLines": 52,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/notion.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 127,
+      "nonEmptyLines": 115,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/page-extractors.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 119,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "title",
+          "startLine": 11,
+          "endLine": 11,
+          "params": [
+            "s"
+          ]
+        },
+        {
+          "name": "num",
+          "startLine": 12,
+          "endLine": 12,
+          "params": [
+            "n"
+          ]
+        },
+        {
+          "name": "sel",
+          "startLine": 13,
+          "endLine": 13,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "chk",
+          "startLine": 14,
+          "endLine": 14,
+          "params": [
+            "b"
+          ]
+        },
+        {
+          "name": "date",
+          "startLine": 15,
+          "endLine": 15,
+          "params": [
+            "s"
+          ]
+        },
+        {
+          "name": "rel",
+          "startLine": 16,
+          "endLine": 16,
+          "params": [
+            "id"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/page-icons.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 48,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/query-filters.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 128,
+      "nonEmptyLines": 115,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/shortcuts.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 196,
+      "nonEmptyLines": 173,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/ui-settings.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 69,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test/validation.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "vitest.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

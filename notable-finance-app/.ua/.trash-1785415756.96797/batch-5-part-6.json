@@ -1,0 +1,1113 @@
+{
+  "batch": 5,
+  "part": 6,
+  "nodes": [
+    {
+      "id": "file:src/main/ipc/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/main/ipc/index.ts",
+      "language": "typescript",
+      "lines": 614,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/ipc/index.ts:result",
+      "type": "function",
+      "name": "result",
+      "filePath": "src/main/ipc/index.ts",
+      "params": [
+        "fn"
+      ],
+      "lines": 13,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "type": "function",
+      "name": "installDevLogIpcWrapper",
+      "filePath": "src/main/ipc/index.ts",
+      "params": [],
+      "lines": 46,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/ipc/index.ts:registerIpc",
+      "type": "function",
+      "name": "registerIpc",
+      "filePath": "src/main/ipc/index.ts",
+      "params": [],
+      "lines": 469,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/client.ts",
+      "type": "file",
+      "name": "client.ts",
+      "filePath": "src/main/notion/client.ts",
+      "language": "typescript",
+      "lines": 187,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "class:src/main/notion/client.ts:NotionApiError",
+      "type": "class",
+      "name": "NotionApiError",
+      "filePath": "src/main/notion/client.ts",
+      "methods": [
+        "constructor"
+      ],
+      "lines": 11,
+      "isExported": true,
+      "tags": [
+        "class"
+      ]
+    },
+    {
+      "id": "class:src/main/notion/client.ts:NotionClient",
+      "type": "class",
+      "name": "NotionClient",
+      "filePath": "src/main/notion/client.ts",
+      "methods": [
+        "constructor",
+        "request",
+        "me",
+        "resolveDataSourceId",
+        "searchDatabases",
+        "getDatabase",
+        "getDataSourceSchema",
+        "queryDatabase",
+        "createPage",
+        "updatePage",
+        "archivePage"
+      ],
+      "lines": 163,
+      "isExported": true,
+      "tags": [
+        "class"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/files.ts",
+      "type": "file",
+      "name": "files.ts",
+      "filePath": "src/main/notion/files.ts",
+      "language": "typescript",
+      "lines": 42,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/files.ts:downloadImageAsDataUri",
+      "type": "function",
+      "name": "downloadImageAsDataUri",
+      "filePath": "src/main/notion/files.ts",
+      "params": [
+        "url",
+        "fetchImpl"
+      ],
+      "lines": 16,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/files.ts:isCachedDataUri",
+      "type": "function",
+      "name": "isCachedDataUri",
+      "filePath": "src/main/notion/files.ts",
+      "params": [
+        "value"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/mapping-store.ts",
+      "type": "file",
+      "name": "mapping-store.ts",
+      "filePath": "src/main/notion/mapping-store.ts",
+      "language": "typescript",
+      "lines": 33,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/mapping-store.ts:saveMapping",
+      "type": "function",
+      "name": "saveMapping",
+      "filePath": "src/main/notion/mapping-store.ts",
+      "params": [
+        "mapping"
+      ],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/mapping-store.ts:getMapping",
+      "type": "function",
+      "name": "getMapping",
+      "filePath": "src/main/notion/mapping-store.ts",
+      "params": [],
+      "lines": 11,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/mapping-store.ts:isMapped",
+      "type": "function",
+      "name": "isMapped",
+      "filePath": "src/main/notion/mapping-store.ts",
+      "params": [],
+      "lines": 5,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/ipc/index.ts",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/ipc/index.ts",
+      "target": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/ipc/index.ts",
+      "target": "function:src/main/ipc/index.ts:registerIpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/ipc/index.ts",
+      "target": "function:src/main/ipc/index.ts:registerIpc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 108
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 114
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 122
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 128
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:installDevLogIpcWrapper",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 141
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 145
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:listDevLogs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 145
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 147
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:clearDevLogs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 147
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 160
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:appendDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 161
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:summarizeForDevLog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 167
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 176
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 178
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/db/index.ts:getDbPath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 178
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/db/index.ts:listTables",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 178
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 183
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 187
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 188
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 192
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 195
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 198
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 205
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 212
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 219
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 228
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 231
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 234
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 241
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 248
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 255
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 263
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 265
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 272
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 279
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 286
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 293
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 302
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 306
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 313
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 318
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 321
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 324
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 324
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 329
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 336
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 337
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 339
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 344
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 345
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/notion/mapping-store.ts:getMapping",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 345
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 347
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/notion/mapping-store.ts:saveMapping",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 348
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 352
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 355
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 356
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 357
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 358
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 359
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 360
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 361
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 363
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 372
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 374
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 384
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 394
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 396
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 402
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 405
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 419
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 432
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 435
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 437
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 438
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 440
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 448
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 456
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 459
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 462
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 469
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 475
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 493
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 510
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 516
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 523
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 530
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 546
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 550
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 556
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 562
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 572
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/dev-logs/store.ts:logDevOperation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 575
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 582
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 590
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 595
+    },
+    {
+      "source": "function:src/main/ipc/index.ts:registerIpc",
+      "target": "function:src/main/ipc/index.ts:result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 600
+    },
+    {
+      "source": "file:src/main/notion/client.ts",
+      "target": "class:src/main/notion/client.ts:NotionApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/client.ts",
+      "target": "class:src/main/notion/client.ts:NotionApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/client.ts",
+      "target": "class:src/main/notion/client.ts:NotionClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/client.ts",
+      "target": "class:src/main/notion/client.ts:NotionClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/files.ts",
+      "target": "function:src/main/notion/files.ts:downloadImageAsDataUri",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/files.ts",
+      "target": "function:src/main/notion/files.ts:downloadImageAsDataUri",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/files.ts",
+      "target": "function:src/main/notion/files.ts:isCachedDataUri",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/files.ts",
+      "target": "function:src/main/notion/files.ts:isCachedDataUri",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:saveMapping",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:saveMapping",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:getMapping",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:getMapping",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:isMapped",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/mapping-store.ts",
+      "target": "function:src/main/notion/mapping-store.ts:isMapped",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/notion/mapping-store.ts:saveMapping",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 9
+    },
+    {
+      "source": "function:src/main/notion/mapping-store.ts:getMapping",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 18
+    },
+    {
+      "source": "function:src/main/notion/mapping-store.ts:isMapped",
+      "target": "function:src/main/notion/mapping-store.ts:getMapping",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 30
+    }
+  ]
+}

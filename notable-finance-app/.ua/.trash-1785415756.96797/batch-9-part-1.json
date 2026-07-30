@@ -1,0 +1,2138 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/renderer/src/lib/finance-rules.ts",
+      "type": "file",
+      "name": "finance-rules.ts",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "summary": "Finance domain rules and calculator functions for income/expense categorization, credit/Pasabuy detection, money calculations, and view scoping logic.",
+      "tags": ["utility", "finance", "business-logic", "validation"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/renderer/src/lib/font-loader.ts",
+      "type": "file",
+      "name": "font-loader.ts",
+      "filePath": "src/renderer/src/lib/font-loader.ts",
+      "summary": "Google Fonts loader with local/system font fallback detection and caching.",
+      "tags": ["utility", "ui", "font-loading"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/lib/format.ts",
+      "type": "file",
+      "name": "format.ts",
+      "filePath": "src/renderer/src/lib/format.ts",
+      "summary": "Number and date formatting utilities for money, dates, percentages, and short date keys.",
+      "tags": ["utility", "formatting", "ui"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/renderer/src/lib/fuzzy-search.ts",
+      "type": "file",
+      "name": "fuzzy-search.ts",
+      "filePath": "src/renderer/src/lib/fuzzy-search.ts",
+      "summary": "Lightweight fuzzy string matching and filtered index search over record arrays.",
+      "tags": ["utility", "search", "filter"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/renderer/src/lib/pending-edit.ts",
+      "type": "file",
+      "name": "pending-edit.ts",
+      "filePath": "src/renderer/src/lib/pending-edit.ts",
+      "summary": "In-memory pending edit store for tracking unsaved edits by resource type and record ID.",
+      "tags": ["utility", "state", "edit-tracking"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/renderer/src/lib/query-provider.tsx",
+      "type": "file",
+      "name": "query-provider.tsx",
+      "filePath": "src/renderer/src/lib/query-provider.tsx",
+      "summary": "React Query provider wrapper that configures the QueryClient for the renderer app.",
+      "tags": ["react-context", "provider", "data-fetching", "query"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/renderer/src/lib/router.tsx",
+      "type": "file",
+      "name": "router.tsx",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "summary": "Hash-based client-side router with section parsing, navigation hooks, and a Link component.",
+      "tags": ["utility", "router", "navigation", "ui"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "type": "file",
+      "name": "context.tsx",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "summary": "Keyboard shortcut provider with combo detection, action registry, undo/redo stack, and cheat sheet toggle.",
+      "tags": ["react-context", "provider", "shortcuts", "keyboard"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "type": "file",
+      "name": "registry.ts",
+      "filePath": "src/renderer/src/lib/shortcuts/registry.ts",
+      "summary": "Central keyboard shortcut definitions with platform-aware display and key mapping.",
+      "tags": ["configuration", "shortcuts", "keyboard", "constants"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/lib/theme-context.tsx",
+      "type": "file",
+      "name": "theme-context.tsx",
+      "filePath": "src/renderer/src/lib/theme-context.tsx",
+      "summary": "Theme provider supporting light/dark mode, custom accent colors, font loading, and localStorage persistence.",
+      "tags": ["react-context", "provider", "theme", "ui"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "type": "file",
+      "name": "ui-settings-context.tsx",
+      "filePath": "src/renderer/src/lib/ui-settings-context.tsx",
+      "summary": "UI settings provider that loads, caches, and persists user preferences including theme, filters, fonts, and workspace layout.",
+      "tags": ["react-context", "provider", "settings", "persistence"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/renderer/src/lib/use-data.ts",
+      "type": "file",
+      "name": "use-data.ts",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "summary": "React Query hooks for all finance data types with inline cache invalidation and local optimistic updates.",
+      "tags": ["hook", "data-fetching", "query", "api"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/renderer/src/lib/use-debounced-persist.ts",
+      "type": "file",
+      "name": "use-debounced-persist.ts",
+      "filePath": "src/renderer/src/lib/use-debounced-persist.ts",
+      "summary": "Debounced persistence hook that saves values after a configurable delay when enabled.",
+      "tags": ["hook", "utility", "persistence", "debounce"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isCreditLikeAccountType",
+      "type": "function",
+      "name": "isCreditLikeAccountType",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [68, 70],
+      "summary": "Checks if an account type string indicates a credit-like account.",
+      "tags": ["finance", "account", "credit", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateTotalCashFlow",
+      "type": "function",
+      "name": "calculateTotalCashFlow",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [72, 78],
+      "summary": "Sums cash balances across non-credit, active accounts.",
+      "tags": ["finance", "calculation", "cash-flow"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isAuxiliaryIncomeCategory",
+      "type": "function",
+      "name": "isAuxiliaryIncomeCategory",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [80, 84],
+      "summary": "Returns true if the income category label is an auxiliary/workflow-only category.",
+      "tags": ["finance", "income", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getNormalIncomeCategories",
+      "type": "function",
+      "name": "getNormalIncomeCategories",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [86, 88],
+      "summary": "Filters a list of income categories to exclude auxiliary categories.",
+      "tags": ["finance", "income", "filter"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:shouldShowCreditExpenseFields",
+      "type": "function",
+      "name": "shouldShowCreditExpenseFields",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [90, 92],
+      "summary": "Determines whether credit-card-specific expense fields should be visible based on account type.",
+      "tags": ["finance", "expense", "credit", "conditional-ui"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:shouldShowPasabuyFields",
+      "type": "function",
+      "name": "shouldShowPasabuyFields",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [94, 96],
+      "summary": "Determines whether Pasabuy-specific expense fields should be visible based on view mode and category.",
+      "tags": ["finance", "expense", "pasabuy", "conditional-ui"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getExpenseConditionalSections",
+      "type": "function",
+      "name": "getExpenseConditionalSections",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [98, 107],
+      "summary": "Returns conditional field sections for the expense form based on account type and category.",
+      "tags": ["finance", "expense", "form", "conditional-ui"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getWorkflowFixedCategory",
+      "type": "function",
+      "name": "getWorkflowFixedCategory",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [109, 111],
+      "summary": "Returns the fixed category name for a workflow section.",
+      "tags": ["finance", "workflow", "category"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isMonthlyMonitoringEditable",
+      "type": "function",
+      "name": "isMonthlyMonitoringEditable",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [113, 115],
+      "summary": "Checks whether the monthly monitoring section is user-editable.",
+      "tags": ["finance", "monitoring", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateNetIncome",
+      "type": "function",
+      "name": "calculateNetIncome",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [117, 119],
+      "summary": "Subtracts capital expenditure from gross income and rounds the result.",
+      "tags": ["finance", "calculation", "income"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateCategoryTotalOverview",
+      "type": "function",
+      "name": "calculateCategoryTotalOverview",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [121, 127],
+      "summary": "Computes total overshoot from category spending with a breakdown of over-budget amounts.",
+      "tags": ["finance", "calculation", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateGrossPrice",
+      "type": "function",
+      "name": "calculateGrossPrice",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [129, 131],
+      "summary": "Calculates gross price from expense amount plus interest.",
+      "tags": ["finance", "calculation", "credit"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateInstallmentAmount",
+      "type": "function",
+      "name": "calculateInstallmentAmount",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [133, 143],
+      "summary": "Computes per-installment amount from gross price and number of installments with zero-division guard.",
+      "tags": ["finance", "calculation", "credit", "installment"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculatePaidAmount",
+      "type": "function",
+      "name": "calculatePaidAmount",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [145, 160],
+      "summary": "Calculates total paid amount from installments, considering partial payments and remaining balance.",
+      "tags": ["finance", "calculation", "credit", "payment"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateRemainingBalance",
+      "type": "function",
+      "name": "calculateRemainingBalance",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [162, 164],
+      "summary": "Subtracts paid amount from gross price with floor at zero.",
+      "tags": ["finance", "calculation", "credit"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyReceivedAmount",
+      "type": "function",
+      "name": "calculatePasabuyReceivedAmount",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [166, 195],
+      "summary": "Computes total received amount for a Pasabuy expense across all installment-like splits.",
+      "tags": ["finance", "calculation", "pasabuy"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyerBalance",
+      "type": "function",
+      "name": "calculatePasabuyerBalance",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [197, 199],
+      "summary": "Computes remaining Pasabuyer balance as gross price minus received amount.",
+      "tags": ["finance", "calculation", "pasabuy"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:calculateExpectedPaymentDate",
+      "type": "function",
+      "name": "calculateExpectedPaymentDate",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [201, 229],
+      "summary": "Calculates expected payment date given purchase date, cutoff day, and statement cycle.",
+      "tags": ["finance", "calculation", "credit", "date"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getMoneyValueTone",
+      "type": "function",
+      "name": "getMoneyValueTone",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [231, 241],
+      "summary": "Returns a qualitative tone label for a numeric money value (e.g. significant, manageable).",
+      "tags": ["finance", "ui", "classification"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategoryName",
+      "type": "function",
+      "name": "isPasabuyCategoryName",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [243, 245],
+      "summary": "Checks if a category name string matches the Pasabuy pattern.",
+      "tags": ["finance", "pasabuy", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategory",
+      "type": "function",
+      "name": "isPasabuyCategory",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [247, 249],
+      "summary": "Checks if an expense category object is a Pasabuy category.",
+      "tags": ["finance", "pasabuy", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isOutstandingExpense",
+      "type": "function",
+      "name": "isOutstandingExpense",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [251, 253],
+      "summary": "Returns true if an expense record is unpaid and not a scheduled recurring entry.",
+      "tags": ["finance", "expense", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:shouldShowGlobalMonthSelector",
+      "type": "function",
+      "name": "shouldShowGlobalMonthSelector",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [255, 273],
+      "summary": "Determines whether the global month selector should be displayed based on current section and data availability.",
+      "tags": ["finance", "ui", "navigation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getMonthKeyFromIsoDate",
+      "type": "function",
+      "name": "getMonthKeyFromIsoDate",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [275, 277],
+      "summary": "Extracts a YYYY-MM key from an ISO date string.",
+      "tags": ["utility", "date", "key"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isIncomeRecordInViewScope",
+      "type": "function",
+      "name": "isIncomeRecordInViewScope",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [279, 286],
+      "summary": "Checks if an income record should be visible in the current view scope (month/week/day).",
+      "tags": ["finance", "income", "filter", "scope"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isExpenseRecordInViewScope",
+      "type": "function",
+      "name": "isExpenseRecordInViewScope",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [288, 299],
+      "summary": "Checks if an expense record should be visible in the current view scope (month/week/day).",
+      "tags": ["finance", "expense", "filter", "scope"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:getExpenseStatusFromDatePaid",
+      "type": "function",
+      "name": "getExpenseStatusFromDatePaid",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [301, 303],
+      "summary": "Returns expense payment status label from date_paid presence.",
+      "tags": ["finance", "expense", "status"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isUnpaidPasabuyExpense",
+      "type": "function",
+      "name": "isUnpaidPasabuyExpense",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [305, 314],
+      "summary": "Checks if a Pasabuy expense is unpaid by comparing sent vs received amounts.",
+      "tags": ["finance", "expense", "pasabuy", "payment"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isCreditAccountExpense",
+      "type": "function",
+      "name": "isCreditAccountExpense",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [316, 320],
+      "summary": "Checks if an expense record's account is a credit-like account.",
+      "tags": ["finance", "expense", "credit", "predicate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:parseIsoDate",
+      "type": "function",
+      "name": "parseIsoDate",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [326, 338],
+      "summary": "Parses an ISO date string into a Date object with validation.",
+      "tags": ["utility", "date", "parsing"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/finance-rules.ts:isIsoDateInViewScope",
+      "type": "function",
+      "name": "isIsoDateInViewScope",
+      "filePath": "src/renderer/src/lib/finance-rules.ts",
+      "lineRange": [354, 392],
+      "summary": "Determines if a raw ISO date falls within month, week, or day view scope relative to a reference date.",
+      "tags": ["utility", "date", "filter", "scope"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/renderer/src/lib/font-loader.ts:loadGoogleFont",
+      "type": "function",
+      "name": "loadGoogleFont",
+      "filePath": "src/renderer/src/lib/font-loader.ts",
+      "lineRange": [84, 104],
+      "summary": "Loads a Google Font by injecting a link element, with caching and local/system font guard.",
+      "tags": ["ui", "font-loading", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/format.ts:formatMoney",
+      "type": "function",
+      "name": "formatMoney",
+      "filePath": "src/renderer/src/lib/format.ts",
+      "lineRange": [19, 25],
+      "summary": "Formats a numeric value as localized currency string with configurable precision.",
+      "tags": ["utility", "formatting", "money"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/format.ts:formatDate",
+      "type": "function",
+      "name": "formatDate",
+      "filePath": "src/renderer/src/lib/format.ts",
+      "lineRange": [27, 36],
+      "summary": "Formats a date input to a localized date string with validation.",
+      "tags": ["utility", "formatting", "date"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/format.ts:formatPercent",
+      "type": "function",
+      "name": "formatPercent",
+      "filePath": "src/renderer/src/lib/format.ts",
+      "lineRange": [38, 40],
+      "summary": "Formats a decimal value as a percentage string with one decimal place.",
+      "tags": ["utility", "formatting", "percentage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/format.ts:toYYMMDD",
+      "type": "function",
+      "name": "toYYMMDD",
+      "filePath": "src/renderer/src/lib/format.ts",
+      "lineRange": [43, 48],
+      "summary": "Converts an ISO date string to compact YYMMDD format.",
+      "tags": ["utility", "formatting", "date"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyMatch",
+      "type": "function",
+      "name": "fuzzyMatch",
+      "filePath": "src/renderer/src/lib/fuzzy-search.ts",
+      "lineRange": [5, 14],
+      "summary": "Performs case-insensitive fuzzy character-by-character matching between query and target strings.",
+      "tags": ["utility", "search", "fuzzy"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyFilterIndices",
+      "type": "function",
+      "name": "fuzzyFilterIndices",
+      "filePath": "src/renderer/src/lib/fuzzy-search.ts",
+      "lineRange": [21, 34],
+      "summary": "Filters an array of records by fuzzy-matching specified string fields against a query.",
+      "tags": ["utility", "search", "filter"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/pending-edit.ts:setPendingEdit",
+      "type": "function",
+      "name": "setPendingEdit",
+      "filePath": "src/renderer/src/lib/pending-edit.ts",
+      "lineRange": [20, 22],
+      "summary": "Records a pending edit entry for a given resource type and record ID.",
+      "tags": ["utility", "state", "edit-tracking"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/pending-edit.ts:consumePendingEdit",
+      "type": "function",
+      "name": "consumePendingEdit",
+      "filePath": "src/renderer/src/lib/pending-edit.ts",
+      "lineRange": [24, 31],
+      "summary": "Retrieves and removes the pending edit for a resource type.",
+      "tags": ["utility", "state", "edit-tracking"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/pending-edit.ts:clearPendingEdit",
+      "type": "function",
+      "name": "clearPendingEdit",
+      "filePath": "src/renderer/src/lib/pending-edit.ts",
+      "lineRange": [33, 35],
+      "summary": "Clears all pending edits from the store.",
+      "tags": ["utility", "state", "edit-tracking"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/query-provider.tsx:QueryProvider",
+      "type": "function",
+      "name": "QueryProvider",
+      "filePath": "src/renderer/src/lib/query-provider.tsx",
+      "lineRange": [14, 32],
+      "summary": "React component wrapping children in a QueryClientProvider with a preconfigured QueryClient.",
+      "tags": ["react-context", "provider", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:parseSection",
+      "type": "function",
+      "name": "parseSection",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [13, 16],
+      "summary": "Parses a hash or path string to extract the section identifier, validating against known sections.",
+      "tags": ["utility", "router", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:currentSection",
+      "type": "function",
+      "name": "currentSection",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [18, 20],
+      "summary": "Returns the currently active section from the browser hash.",
+      "tags": ["utility", "router", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:setNavigateListener",
+      "type": "function",
+      "name": "setNavigateListener",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [26, 28],
+      "summary": "Registers a callback invoked on programmatic navigation.",
+      "tags": ["utility", "router", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:syncHashToSection",
+      "type": "function",
+      "name": "syncHashToSection",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [31, 36],
+      "summary": "Updates the browser URL hash to match a given section without triggering navigation.",
+      "tags": ["utility", "router", "hash"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:navigate",
+      "type": "function",
+      "name": "navigate",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [38, 42],
+      "summary": "Programmatically navigates to a given href by parsing the section and syncing the hash.",
+      "tags": ["utility", "router", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:useSection",
+      "type": "function",
+      "name": "useSection",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [45, 53],
+      "summary": "React hook that returns the current section and listens for hashchange events.",
+      "tags": ["hook", "router", "navigation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:Link",
+      "type": "function",
+      "name": "Link",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [60, 75],
+      "summary": "React component rendering an anchor tag that intercepts clicks for client-side navigation.",
+      "tags": ["component", "router", "navigation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/router.tsx:useRouter",
+      "type": "function",
+      "name": "useRouter",
+      "filePath": "src/renderer/src/lib/router.tsx",
+      "lineRange": [79, 85],
+      "summary": "React hook providing programmatic back navigation via the History API.",
+      "tags": ["hook", "router", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:tokenFromCode",
+      "type": "function",
+      "name": "tokenFromCode",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [47, 62],
+      "summary": "Converts a KeyboardEvent code to a shortcut token string, handling letter, digit, and F-key patterns.",
+      "tags": ["utility", "shortcuts", "keyboard"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:comboFromEvent",
+      "type": "function",
+      "name": "comboFromEvent",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [70, 86],
+      "summary": "Builds a normalized shortcut combo string from a KeyboardEvent with modifier keys.",
+      "tags": ["utility", "shortcuts", "keyboard"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:isTypingTarget",
+      "type": "function",
+      "name": "isTypingTarget",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [97, 107],
+      "summary": "Checks if an element is an input, textarea, or contenteditable target where shortcuts should be suppressed.",
+      "tags": ["utility", "shortcuts", "keyboard"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:ShortcutProvider",
+      "type": "function",
+      "name": "ShortcutProvider",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [109, 301],
+      "summary": "React context provider that manages shortcut registration, dispatch, undo/redo stack, and cheat sheet state.",
+      "tags": ["react-context", "provider", "shortcuts", "keyboard"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcuts",
+      "type": "function",
+      "name": "useShortcuts",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [303, 307],
+      "summary": "Hook to access the ShortcutProvider context value.",
+      "tags": ["hook", "shortcuts", "context"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcutAction",
+      "type": "function",
+      "name": "useShortcutAction",
+      "filePath": "src/renderer/src/lib/shortcuts/context.tsx",
+      "lineRange": [314, 322],
+      "summary": "Hook that registers a handler for a specific shortcut ID with automatic cleanup.",
+      "tags": ["hook", "shortcuts", "action"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/registry.ts:displayCombo",
+      "type": "function",
+      "name": "displayCombo",
+      "filePath": "src/renderer/src/lib/shortcuts/registry.ts",
+      "lineRange": [117, 127],
+      "summary": "Converts a shortcut combo string to a human-readable display string with platform-aware key symbols.",
+      "tags": ["utility", "shortcuts", "display"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/shortcuts/registry.ts:shortcutKeys",
+      "type": "function",
+      "name": "shortcutKeys",
+      "filePath": "src/renderer/src/lib/shortcuts/registry.ts",
+      "lineRange": [130, 133],
+      "summary": "Extracts display combo strings for both macOS and non-macOS from a shortcut definition.",
+      "tags": ["utility", "shortcuts", "keyboard"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/theme-context.tsx:loadLocalTheme",
+      "type": "function",
+      "name": "loadLocalTheme",
+      "filePath": "src/renderer/src/lib/theme-context.tsx",
+      "lineRange": [40, 50],
+      "summary": "Loads persisted theme state from localStorage with JSON parsing and validation.",
+      "tags": ["utility", "theme", "persistence"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/theme-context.tsx:ThemeProvider",
+      "type": "function",
+      "name": "ThemeProvider",
+      "filePath": "src/renderer/src/lib/theme-context.tsx",
+      "lineRange": [70, 170],
+      "summary": "React provider that manages theme mode, accent color, font loading, and applies CSS custom properties to the document.",
+      "tags": ["react-context", "provider", "theme", "ui"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/renderer/src/lib/theme-context.tsx:useTheme",
+      "type": "function",
+      "name": "useTheme",
+      "filePath": "src/renderer/src/lib/theme-context.tsx",
+      "lineRange": [172, 176],
+      "summary": "Hook to access the ThemeContext with mode, accent color, and font settings.",
+      "tags": ["hook", "theme", "context"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/ui-settings-context.tsx:UiSettingsProvider",
+      "type": "function",
+      "name": "UiSettingsProvider",
+      "filePath": "src/renderer/src/lib/ui-settings-context.tsx",
+      "lineRange": [100, 224],
+      "summary": "React provider that loads UI settings via API, provides update/delete helpers, and merges with defaults.",
+      "tags": ["react-context", "provider", "settings", "persistence"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/renderer/src/lib/ui-settings-context.tsx:useUiSettings",
+      "type": "function",
+      "name": "useUiSettings",
+      "filePath": "src/renderer/src/lib/ui-settings-context.tsx",
+      "lineRange": [226, 228],
+      "summary": "Hook to access UI settings and update callbacks from UiSettingsProvider.",
+      "tags": ["hook", "settings", "context"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteActionLabel",
+      "type": "function",
+      "name": "deleteActionLabel",
+      "filePath": "src/renderer/src/lib/ui-settings-context.tsx",
+      "lineRange": [230, 232],
+      "summary": "Returns the localized delete action label based on hard-delete setting.",
+      "tags": ["utility", "ui", "label"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteConfirmCopy",
+      "type": "function",
+      "name": "deleteConfirmCopy",
+      "filePath": "src/renderer/src/lib/ui-settings-context.tsx",
+      "lineRange": [234, 255],
+      "summary": "Generates delete confirmation message with record count and deletion mode.",
+      "tags": ["utility", "ui", "confirmation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useApiQuery",
+      "type": "function",
+      "name": "useApiQuery",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [61, 114],
+      "summary": "Internal hook wrapping React Query with auth header injection and local optimistic updates.",
+      "tags": ["hook", "data-fetching", "query", "internal"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useDashboardData",
+      "type": "function",
+      "name": "useDashboardData",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [118, 122],
+      "summary": "Hook fetching dashboard summary data for a given month.",
+      "tags": ["hook", "dashboard", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useAccounts",
+      "type": "function",
+      "name": "useAccounts",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [126, 132],
+      "summary": "Hook fetching accounts list with optional inactive account inclusion.",
+      "tags": ["hook", "accounts", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useAccount",
+      "type": "function",
+      "name": "useAccount",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [134, 138],
+      "summary": "Hook fetching a single account by ID.",
+      "tags": ["hook", "accounts", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useIncomeCategories",
+      "type": "function",
+      "name": "useIncomeCategories",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [142, 148],
+      "summary": "Hook fetching income categories, optionally filtering to normal-only categories.",
+      "tags": ["hook", "income", "categories", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useExpenseCategories",
+      "type": "function",
+      "name": "useExpenseCategories",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [152, 156],
+      "summary": "Hook fetching all expense categories.",
+      "tags": ["hook", "expense", "categories", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useIncomes",
+      "type": "function",
+      "name": "useIncomes",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [160, 170],
+      "summary": "Hook fetching incomes with optional query parameters and category-based normal filtering.",
+      "tags": ["hook", "income", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useExpenses",
+      "type": "function",
+      "name": "useExpenses",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [174, 187],
+      "summary": "Hook fetching expenses with optional query parameters and view-mode-based status filtering.",
+      "tags": ["hook", "expense", "data-fetching"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useExpensesForCCCoverage",
+      "type": "function",
+      "name": "useExpensesForCCCoverage",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [189, 194],
+      "summary": "Hook fetching expenses eligible for credit card coverage payments.",
+      "tags": ["hook", "expense", "credit-card", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useTransfers",
+      "type": "function",
+      "name": "useTransfers",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [198, 202],
+      "summary": "Hook fetching transfer records with optional query parameters.",
+      "tags": ["hook", "transfer", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useCreditCardPayments",
+      "type": "function",
+      "name": "useCreditCardPayments",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [204, 209],
+      "summary": "Hook fetching credit card payment records with optional query parameters.",
+      "tags": ["hook", "credit-card", "payment", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useAlkansya",
+      "type": "function",
+      "name": "useAlkansya",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [211, 215],
+      "summary": "Hook fetching Alkansya savings records with optional query parameters.",
+      "tags": ["hook", "savings", "alkansya", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useReceivables",
+      "type": "function",
+      "name": "useReceivables",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [217, 222],
+      "summary": "Hook fetching receivables records with optional query parameters.",
+      "tags": ["hook", "receivables", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useWorkflowRecords",
+      "type": "function",
+      "name": "useWorkflowRecords",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [237, 245],
+      "summary": "Hook fetching workflow-specific records using the correct API endpoint for each section.",
+      "tags": ["hook", "workflow", "data-fetching"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useSyncStatus",
+      "type": "function",
+      "name": "useSyncStatus",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [249, 258],
+      "summary": "Hook polling sync status from the sync API.",
+      "tags": ["hook", "sync", "status", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useSchemaStatus",
+      "type": "function",
+      "name": "useSchemaStatus",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [260, 262],
+      "summary": "Hook fetching schema verification status.",
+      "tags": ["hook", "schema", "status", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useHistory",
+      "type": "function",
+      "name": "useHistory",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [266, 274],
+      "summary": "Hook fetching activity history records.",
+      "tags": ["hook", "history", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useMonthlyMonitoring",
+      "type": "function",
+      "name": "useMonthlyMonitoring",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [278, 282],
+      "summary": "Hook fetching monthly monitoring data for a given month.",
+      "tags": ["hook", "monitoring", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useExpenseScheduler",
+      "type": "function",
+      "name": "useExpenseScheduler",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [286, 290],
+      "summary": "Hook fetching scheduled expense records.",
+      "tags": ["hook", "expense", "scheduler", "data-fetching"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-data.ts:useFinanceInvalidation",
+      "type": "function",
+      "name": "useFinanceInvalidation",
+      "filePath": "src/renderer/src/lib/use-data.ts",
+      "lineRange": [300, 316],
+      "summary": "Hook providing invalidation helpers for all finance query keys.",
+      "tags": ["hook", "query", "invalidation", "data-fetching"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/renderer/src/lib/use-debounced-persist.ts:useDebouncedPersist",
+      "type": "function",
+      "name": "useDebouncedPersist",
+      "filePath": "src/renderer/src/lib/use-debounced-persist.ts",
+      "lineRange": [7, 27],
+      "summary": "React hook that debounces a save callback and triggers it when dependencies change.",
+      "tags": ["hook", "utility", "persistence", "debounce"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isCreditLikeAccountType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateTotalCashFlow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isAuxiliaryIncomeCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getNormalIncomeCategories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowCreditExpenseFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowPasabuyFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getExpenseConditionalSections",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getWorkflowFixedCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isMonthlyMonitoringEditable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateNetIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateCategoryTotalOverview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateGrossPrice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateInstallmentAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePaidAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateRemainingBalance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyReceivedAmount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyerBalance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateExpectedPaymentDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getMoneyValueTone",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategoryName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isOutstandingExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowGlobalMonthSelector",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getMonthKeyFromIsoDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isIncomeRecordInViewScope",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isExpenseRecordInViewScope",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getExpenseStatusFromDatePaid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isUnpaidPasabuyExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isCreditAccountExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:parseIsoDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isIsoDateInViewScope",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/font-loader.ts",
+      "target": "function:src/renderer/src/lib/font-loader.ts:loadGoogleFont",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatMoney",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatPercent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:toYYMMDD",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/fuzzy-search.ts",
+      "target": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyMatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/fuzzy-search.ts",
+      "target": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyFilterIndices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:setPendingEdit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:consumePendingEdit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:clearPendingEdit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/query-provider.tsx",
+      "target": "function:src/renderer/src/lib/query-provider.tsx:QueryProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:parseSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:currentSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:setNavigateListener",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:syncHashToSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:navigate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:useSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:Link",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:useRouter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:tokenFromCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:comboFromEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:isTypingTarget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:ShortcutProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcuts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcutAction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "target": "function:src/renderer/src/lib/shortcuts/registry.ts:displayCombo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "target": "function:src/renderer/src/lib/shortcuts/registry.ts:shortcutKeys",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/theme-context.tsx",
+      "target": "function:src/renderer/src/lib/theme-context.tsx:loadLocalTheme",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/theme-context.tsx",
+      "target": "function:src/renderer/src/lib/theme-context.tsx:ThemeProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/theme-context.tsx",
+      "target": "function:src/renderer/src/lib/theme-context.tsx:useTheme",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:UiSettingsProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:useUiSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteActionLabel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteConfirmCopy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useApiQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useDashboardData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAccounts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useIncomeCategories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenseCategories",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useIncomes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenses",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpensesForCCCoverage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useTransfers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useCreditCardPayments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAlkansya",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useReceivables",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useWorkflowRecords",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useSyncStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useSchemaStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useHistory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useMonthlyMonitoring",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenseScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useFinanceInvalidation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-debounced-persist.ts",
+      "target": "function:src/renderer/src/lib/use-debounced-persist.ts:useDebouncedPersist",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isCreditLikeAccountType",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateTotalCashFlow",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isAuxiliaryIncomeCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getNormalIncomeCategories",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowCreditExpenseFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowPasabuyFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getExpenseConditionalSections",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getWorkflowFixedCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isMonthlyMonitoringEditable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateNetIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateCategoryTotalOverview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateGrossPrice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateInstallmentAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePaidAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateRemainingBalance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyReceivedAmount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculatePasabuyerBalance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:calculateExpectedPaymentDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getMoneyValueTone",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategoryName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isPasabuyCategory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isOutstandingExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:shouldShowGlobalMonthSelector",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getMonthKeyFromIsoDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isIncomeRecordInViewScope",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isExpenseRecordInViewScope",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:getExpenseStatusFromDatePaid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isUnpaidPasabuyExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/finance-rules.ts",
+      "target": "function:src/renderer/src/lib/finance-rules.ts:isCreditAccountExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/font-loader.ts",
+      "target": "function:src/renderer/src/lib/font-loader.ts:loadGoogleFont",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatMoney",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:formatPercent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/format.ts",
+      "target": "function:src/renderer/src/lib/format.ts:toYYMMDD",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/fuzzy-search.ts",
+      "target": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyMatch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/fuzzy-search.ts",
+      "target": "function:src/renderer/src/lib/fuzzy-search.ts:fuzzyFilterIndices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:setPendingEdit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:consumePendingEdit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/pending-edit.ts",
+      "target": "function:src/renderer/src/lib/pending-edit.ts:clearPendingEdit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/query-provider.tsx",
+      "target": "function:src/renderer/src/lib/query-provider.tsx:QueryProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:parseSection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:currentSection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:setNavigateListener",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:syncHashToSection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:navigate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:useSection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:Link",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/router.tsx",
+      "target": "function:src/renderer/src/lib/router.tsx:useRouter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:ShortcutProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcuts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/context.tsx",
+      "target": "function:src/renderer/src/lib/shortcuts/context.tsx:useShortcutAction",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "target": "function:src/renderer/src/lib/shortcuts/registry.ts:displayCombo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/shortcuts/registry.ts",
+      "target": "function:src/renderer/src/lib/shortcuts/registry.ts:shortcutKeys",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/theme-context.tsx",
+      "target": "function:src/renderer/src/lib/theme-context.tsx:ThemeProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/theme-context.tsx",
+      "target": "function:src/renderer/src/lib/theme-context.tsx:useTheme",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:UiSettingsProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:useUiSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteActionLabel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/ui-settings-context.tsx",
+      "target": "function:src/renderer/src/lib/ui-settings-context.tsx:deleteConfirmCopy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useDashboardData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAccounts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAccount",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useIncomeCategories",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenseCategories",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useIncomes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenses",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpensesForCCCoverage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useTransfers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useCreditCardPayments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useAlkansya",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useReceivables",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useWorkflowRecords",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useSyncStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useSchemaStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useHistory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useMonthlyMonitoring",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useExpenseScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-data.ts",
+      "target": "function:src/renderer/src/lib/use-data.ts:useFinanceInvalidation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/renderer/src/lib/use-debounced-persist.ts",
+      "target": "function:src/renderer/src/lib/use-debounced-persist.ts:useDebouncedPersist",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

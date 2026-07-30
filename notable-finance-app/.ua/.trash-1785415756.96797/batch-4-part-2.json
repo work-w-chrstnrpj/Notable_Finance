@@ -1,0 +1,524 @@
+{
+  "nodes": [
+    {
+      "id": "file:electron.vite.config.ts",
+      "type": "file",
+      "name": "electron.vite.config.ts",
+      "filePath": "electron.vite.config.ts",
+      "summary": "Electron-vite build configuration defining entry points for main, preload, and renderer processes.",
+      "tags": ["configuration", "build", "electron", "vite"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:playwright.config.ts",
+      "type": "file",
+      "name": "playwright.config.ts",
+      "filePath": "playwright.config.ts",
+      "summary": "Playwright test runner configuration with Electron app launch settings and test directory specification.",
+      "tags": ["configuration", "test", "playwright", "e2e"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/seed-dev.mjs",
+      "type": "file",
+      "name": "seed-dev.mjs",
+      "filePath": "scripts/seed-dev.mjs",
+      "summary": "Development seeding script that populates the local SQLite database with initial test data for local development.",
+      "tags": ["script", "seed", "development", "database"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/main/chat/apple.ts",
+      "type": "file",
+      "name": "apple.ts",
+      "filePath": "src/main/chat/apple.ts",
+      "summary": "Apple Local LLM integration providing read-only chat completion via on-device models with probe caching and fallback formatting.",
+      "tags": ["service", "apple", "llm", "integration"],
+      "complexity": "complex",
+      "languageNotes": "Lazy client initialization with dynamic import of apple-local-llm and OS platform detection."
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:getClient",
+      "type": "function",
+      "name": "getClient",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [50, 68],
+      "summary": "Lazily initializes and returns a singleton Apple local LLM client via dynamic import.",
+      "tags": ["utility", "lazy-init", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:shutdownAppleClient",
+      "type": "function",
+      "name": "shutdownAppleClient",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [71, 82],
+      "summary": "Shuts down the Apple LLM client gracefully, clearing the shared instance.",
+      "tags": ["utility", "lifecycle", "cleanup"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:invalidateAppleProbeCache",
+      "type": "function",
+      "name": "invalidateAppleProbeCache",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [85, 87],
+      "summary": "Resets the probe result cache to force a fresh Apple read-only capability check.",
+      "tags": ["utility", "cache", "invalidation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:appleReasonUserCopy",
+      "type": "function",
+      "name": "appleReasonUserCopy",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [89, 130],
+      "summary": "Maps Apple reason codes to human-readable user-facing explanations for read-only turn usage.",
+      "tags": ["utility", "mapping", "user-facing"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:forceProbeResult",
+      "type": "function",
+      "name": "forceProbeResult",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [132, 142],
+      "summary": "Reads APPLE_FORCE_ENV to override Apple probe result for testing.",
+      "tags": ["utility", "testing", "environment"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:fromCompat",
+      "type": "function",
+      "name": "fromCompat",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [144, 187],
+      "summary": "Transforms apple-local-llm compatibility check result into a normalized probe result with reason codes.",
+      "tags": ["utility", "transformation", "normalization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:probeAppleReadOnly",
+      "type": "function",
+      "name": "probeAppleReadOnly",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [193, 247],
+      "summary": "Probes Apple local LLM read-only availability by checking platform and running a compatibility check with caching.",
+      "tags": ["utility", "probe", "capability-check"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:isAppleReadOnlySkill",
+      "type": "function",
+      "name": "isAppleReadOnlySkill",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [250, 259],
+      "summary": "Checks whether a given skill string matches the read-only skill identifier pattern.",
+      "tags": ["utility", "skill-detection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:shouldUseAppleReadOnly",
+      "type": "function",
+      "name": "shouldUseAppleReadOnly",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [261, 267],
+      "summary": "Determines if Apple read-only mode should be used based on skill and probe result.",
+      "tags": ["utility", "routing", "decision"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:monthFromText",
+      "type": "function",
+      "name": "monthFromText",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [269, 279],
+      "summary": "Extracts and resolves a month identifier from user text using regex patterns.",
+      "tags": ["utility", "date", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:resolveAppleAskDate",
+      "type": "function",
+      "name": "resolveAppleAskDate",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [282, 302],
+      "summary": "Resolves a user date query to an ISO date string, supporting keywords like today and selected dates.",
+      "tags": ["utility", "date", "resolution"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:appleEmptyDayAnswer",
+      "type": "function",
+      "name": "appleEmptyDayAnswer",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [319, 337],
+      "summary": "Produces a fallback answer indicating no data found for the requested day tool results.",
+      "tags": ["utility", "fallback", "response"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:gatherAppleToolResults",
+      "type": "function",
+      "name": "gatherAppleToolResults",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [340, 425],
+      "summary": "Executes read-only tool calls based on intent keywords in user text and returns structured results for Apple LLM.",
+      "tags": ["service", "tool-execution", "routing"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:runAppleReadOnlyTurn",
+      "type": "function",
+      "name": "runAppleReadOnlyTurn",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [437, 543],
+      "summary": "Runs a complete read-only chat turn: gathers tool results, builds prompt, calls Apple local LLM, and returns reply.",
+      "tags": ["service", "orchestrator", "llm"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/apple.ts:formatForcedFallback",
+      "type": "function",
+      "name": "formatForcedFallback",
+      "filePath": "src/main/chat/apple.ts",
+      "lineRange": [545, 611],
+      "summary": "Formats a forced fallback response with monitoring or dashboard summary when Apple connection fails.",
+      "tags": ["utility", "fallback", "formatting"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/main/chat/confirm.ts",
+      "type": "file",
+      "name": "confirm.ts",
+      "filePath": "src/main/chat/confirm.ts",
+      "summary": "Handles draft confirmation and cancellation with persistence of assistant replies and create/update operations on finance records.",
+      "tags": ["service", "draft", "confirmation", "persistence"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:assertByokForWrites",
+      "type": "function",
+      "name": "assertByokForWrites",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [24, 42],
+      "summary": "Validates that a BYOK credential is configured before allowing write operations.",
+      "tags": ["validation", "security", "credential"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:persistAssistant",
+      "type": "function",
+      "name": "persistAssistant",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [49, 59],
+      "summary": "Stores an assistant message with JSON payload into the chat thread.",
+      "tags": ["utility", "persistence", "chat"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:overlayForThread",
+      "type": "function",
+      "name": "overlayForThread",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [61, 71],
+      "summary": "Resolves the active overlay for a thread by fetching thread metadata.",
+      "tags": ["utility", "overlay", "resolution"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:cancelDraft",
+      "type": "function",
+      "name": "cancelDraft",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [73, 83],
+      "summary": "Cancels a pending draft by marking it cancelled and posting a cancellation acknowledgment.",
+      "tags": ["service", "draft", "cancellation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:confirmDraft",
+      "type": "function",
+      "name": "confirmDraft",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [85, 144],
+      "summary": "Confirms a draft by executing create or update operations on finance records through repositories.",
+      "tags": ["service", "draft", "execution", "persistence"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:changedResourceFromDraft",
+      "type": "function",
+      "name": "changedResourceFromDraft",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [146, 150],
+      "summary": "Extracts the resource type from a draft payload for change tracking.",
+      "tags": ["utility", "change-tracking", "extraction"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/main/chat/confirm.ts:changedIdsFromResult",
+      "type": "function",
+      "name": "changedIdsFromResult",
+      "filePath": "src/main/chat/confirm.ts",
+      "lineRange": [152, 163],
+      "summary": "Extracts record IDs from create/update results for change tracking responses.",
+      "tags": ["utility", "change-tracking", "extraction"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:getClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:shutdownAppleClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:invalidateAppleProbeCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:appleReasonUserCopy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:forceProbeResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:fromCompat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:probeAppleReadOnly",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:isAppleReadOnlySkill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:shouldUseAppleReadOnly",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:monthFromText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:resolveAppleAskDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:appleEmptyDayAnswer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:gatherAppleToolResults",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:runAppleReadOnlyTurn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:formatForcedFallback",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:shutdownAppleClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:invalidateAppleProbeCache",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:appleReasonUserCopy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:probeAppleReadOnly",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:isAppleReadOnlySkill",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:shouldUseAppleReadOnly",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:resolveAppleAskDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:appleEmptyDayAnswer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:gatherAppleToolResults",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/apple.ts",
+      "target": "function:src/main/chat/apple.ts:runAppleReadOnlyTurn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:assertByokForWrites",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:persistAssistant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:overlayForThread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:cancelDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:confirmDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:changedResourceFromDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:changedIdsFromResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:cancelDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:confirmDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:changedResourceFromDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/confirm.ts",
+      "target": "function:src/main/chat/confirm.ts:changedIdsFromResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

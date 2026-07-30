@@ -1,0 +1,1130 @@
+{
+  "batch": 5,
+  "part": 7,
+  "nodes": [
+    {
+      "id": "file:src/main/notion/monitoring-split.ts",
+      "type": "file",
+      "name": "monitoring-split.ts",
+      "filePath": "src/main/notion/monitoring-split.ts",
+      "language": "typescript",
+      "lines": 140,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/monitoring-split.ts:readPct",
+      "type": "function",
+      "name": "readPct",
+      "filePath": "src/main/notion/monitoring-split.ts",
+      "params": [
+        "props",
+        "candidates"
+      ],
+      "lines": 18,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/monitoring-split.ts:invalidateMonitoringSplitCache",
+      "type": "function",
+      "name": "invalidateMonitoringSplitCache",
+      "filePath": "src/main/notion/monitoring-split.ts",
+      "params": [],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "type": "function",
+      "name": "fetchMonitoringSplit",
+      "filePath": "src/main/notion/monitoring-split.ts",
+      "params": [
+        "opts"
+      ],
+      "lines": 67,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/page-extractors.ts",
+      "type": "file",
+      "name": "page-extractors.ts",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "language": "typescript",
+      "lines": 263,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "function",
+      "name": "extractTitle",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractRichText",
+      "type": "function",
+      "name": "extractRichText",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "function",
+      "name": "extractNumber",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "function",
+      "name": "extractSelect",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractCheckbox",
+      "type": "function",
+      "name": "extractCheckbox",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "function",
+      "name": "extractDate",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "function",
+      "name": "extractRelationFirst",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractRelationAll",
+      "type": "function",
+      "name": "extractRelationAll",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractFileUrl",
+      "type": "function",
+      "name": "extractFileUrl",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractNumberOrFormula",
+      "type": "function",
+      "name": "extractNumberOrFormula",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "props",
+        "name"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "type": "function",
+      "name": "pageToAccountFields",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 16,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageToIncomeCategoryFields",
+      "type": "function",
+      "name": "pageToIncomeCategoryFields",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 9,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "type": "function",
+      "name": "pageToExpenseCategoryFields",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 9,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "type": "function",
+      "name": "pageToIncomeFields",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 17,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "type": "function",
+      "name": "pageToExpenseFields",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 23,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:pageLastEditedTime",
+      "type": "function",
+      "name": "pageLastEditedTime",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:extractPageIcon",
+      "type": "function",
+      "name": "extractPageIcon",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "page"
+      ],
+      "lines": 27,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-extractors.ts:isDeletedTitle",
+      "type": "function",
+      "name": "isDeletedTitle",
+      "filePath": "src/main/notion/page-extractors.ts",
+      "params": [
+        "title"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/page-icons.ts",
+      "type": "file",
+      "name": "page-icons.ts",
+      "filePath": "src/main/notion/page-icons.ts",
+      "language": "typescript",
+      "lines": 64,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-icons.ts:iconForIncome",
+      "type": "function",
+      "name": "iconForIncome",
+      "filePath": "src/main/notion/page-icons.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 10,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/page-icons.ts:iconForExpense",
+      "type": "function",
+      "name": "iconForExpense",
+      "filePath": "src/main/notion/page-icons.ts",
+      "params": [
+        "input"
+      ],
+      "lines": 9,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/notion/property-mapper.ts",
+      "type": "file",
+      "name": "property-mapper.ts",
+      "filePath": "src/main/notion/property-mapper.ts",
+      "language": "typescript",
+      "lines": 189,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/property-mapper.ts:incomeDtoToProperties",
+      "type": "function",
+      "name": "incomeDtoToProperties",
+      "filePath": "src/main/notion/property-mapper.ts",
+      "params": [
+        "dto"
+      ],
+      "lines": 24,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/notion/property-mapper.ts:expenseDtoToProperties",
+      "type": "function",
+      "name": "expenseDtoToProperties",
+      "filePath": "src/main/notion/property-mapper.ts",
+      "params": [
+        "dto"
+      ],
+      "lines": 52,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/notion/monitoring-split.ts",
+      "target": "function:src/main/notion/monitoring-split.ts:readPct",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/monitoring-split.ts",
+      "target": "function:src/main/notion/monitoring-split.ts:invalidateMonitoringSplitCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/monitoring-split.ts",
+      "target": "function:src/main/notion/monitoring-split.ts:invalidateMonitoringSplitCache",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/monitoring-split.ts",
+      "target": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/monitoring-split.ts",
+      "target": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:readPct",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumberOrFormula",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 46
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:readPct",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumberOrFormula",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 55
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 94
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "target": "function:src/main/notion/monitoring-split.ts:readPct",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 108
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "target": "function:src/main/notion/monitoring-split.ts:readPct",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 109
+    },
+    {
+      "source": "function:src/main/notion/monitoring-split.ts:fetchMonitoringSplit",
+      "target": "function:src/main/notion/monitoring-split.ts:readPct",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 110
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRichText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRichText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractCheckbox",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractCheckbox",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationAll",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationAll",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractFileUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractFileUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumberOrFormula",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumberOrFormula",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToIncomeCategoryFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToIncomeCategoryFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageLastEditedTime",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:pageLastEditedTime",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractPageIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:extractPageIcon",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:isDeletedTitle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-extractors.ts",
+      "target": "function:src/main/notion/page-extractors.ts:isDeletedTitle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 145
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 146
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 147
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 148
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractCheckbox",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 149
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 150
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 151
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 152
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 153
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToAccountFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractFileUrl",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 154
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeCategoryFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 161
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeCategoryFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractCheckbox",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 163
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 172
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 173
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseCategoryFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 174
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 181
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationAll",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 182
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 184
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 185
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 186
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 187
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 188
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToIncomeFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 189
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractTitle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 200
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 201
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 202
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 203
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 204
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 205
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 206
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 207
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 208
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 209
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 210
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 211
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractSelect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 212
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractDate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 213
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractNumber",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 214
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 215
+    },
+    {
+      "source": "function:src/main/notion/page-extractors.ts:pageToExpenseFields",
+      "target": "function:src/main/notion/page-extractors.ts:extractRelationFirst",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 216
+    },
+    {
+      "source": "file:src/main/notion/page-icons.ts",
+      "target": "function:src/main/notion/page-icons.ts:iconForIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-icons.ts",
+      "target": "function:src/main/notion/page-icons.ts:iconForIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/page-icons.ts",
+      "target": "function:src/main/notion/page-icons.ts:iconForExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/page-icons.ts",
+      "target": "function:src/main/notion/page-icons.ts:iconForExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/notion/page-icons.ts:iconForExpense",
+      "target": "function:src/main/domain/notion-formulas.ts:isPasabuyCategoryName",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 60
+    },
+    {
+      "source": "file:src/main/notion/property-mapper.ts",
+      "target": "function:src/main/notion/property-mapper.ts:incomeDtoToProperties",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/property-mapper.ts",
+      "target": "function:src/main/notion/property-mapper.ts:incomeDtoToProperties",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/notion/property-mapper.ts",
+      "target": "function:src/main/notion/property-mapper.ts:expenseDtoToProperties",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/notion/property-mapper.ts",
+      "target": "function:src/main/notion/property-mapper.ts:expenseDtoToProperties",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

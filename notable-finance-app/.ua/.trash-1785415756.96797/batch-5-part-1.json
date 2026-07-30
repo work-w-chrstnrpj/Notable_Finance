@@ -1,0 +1,1533 @@
+{
+  "batch": 5,
+  "part": 1,
+  "nodes": [
+    {
+      "id": "file:src/main/chat/tools/read-tools.ts",
+      "type": "file",
+      "name": "read-tools.ts",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "language": "typescript",
+      "lines": 382,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:slimIncome",
+      "type": "function",
+      "name": "slimIncome",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "r"
+      ],
+      "lines": 11,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:slimExpense",
+      "type": "function",
+      "name": "slimExpense",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "r"
+      ],
+      "lines": 15,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:getDashboardSummary",
+      "type": "function",
+      "name": "getDashboardSummary",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 5,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:getMonthlyMonitoringSnapshot",
+      "type": "function",
+      "name": "getMonthlyMonitoringSnapshot",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 5,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:listAccountsTool",
+      "type": "function",
+      "name": "listAccountsTool",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 13,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:listIncomeCategoriesTool",
+      "type": "function",
+      "name": "listIncomeCategoriesTool",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 13,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:listExpenseCategoriesTool",
+      "type": "function",
+      "name": "listExpenseCategoriesTool",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "_args"
+      ],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:queryIncomes",
+      "type": "function",
+      "name": "queryIncomes",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 25,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:queryExpenses",
+      "type": "function",
+      "name": "queryExpenses",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 22,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:getCategoryBudgetStatus",
+      "type": "function",
+      "name": "getCategoryBudgetStatus",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 26,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:explainAppTopic",
+      "type": "function",
+      "name": "explainAppTopic",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 20,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:getExpenseFieldSchema",
+      "type": "function",
+      "name": "getExpenseFieldSchema",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 57,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:validateRebudgetAdjustments",
+      "type": "function",
+      "name": "validateRebudgetAdjustments",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "adjustments"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:planRebudget",
+      "type": "function",
+      "name": "planRebudget",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 63,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/read-tools.ts:resolveMonthTool",
+      "type": "function",
+      "name": "resolveMonthTool",
+      "filePath": "src/main/chat/tools/read-tools.ts",
+      "params": [
+        "args"
+      ],
+      "lines": 9,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/chat/tools/registry.ts",
+      "type": "file",
+      "name": "registry.ts",
+      "filePath": "src/main/chat/tools/registry.ts",
+      "language": "typescript",
+      "lines": 556,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/registry.ts:listAllowedChatToolNames",
+      "type": "function",
+      "name": "listAllowedChatToolNames",
+      "filePath": "src/main/chat/tools/registry.ts",
+      "params": [],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/registry.ts:isChatToolAllowed",
+      "type": "function",
+      "name": "isChatToolAllowed",
+      "filePath": "src/main/chat/tools/registry.ts",
+      "params": [
+        "name"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/registry.ts:executeChatTool",
+      "type": "function",
+      "name": "executeChatTool",
+      "filePath": "src/main/chat/tools/registry.ts",
+      "params": [
+        "name",
+        "argsJson",
+        "ctx"
+      ],
+      "lines": 68,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/registry.ts:executeReadTool",
+      "type": "function",
+      "name": "executeReadTool",
+      "filePath": "src/main/chat/tools/registry.ts",
+      "params": [
+        "name",
+        "argsJson"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/chat/tools/write-tools.ts",
+      "type": "file",
+      "name": "write-tools.ts",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "language": "typescript",
+      "lines": 762,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "function",
+      "name": "draftResult",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "draft"
+      ],
+      "lines": 11,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateIncome",
+      "type": "function",
+      "name": "proposeCreateIncome",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 56,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "type": "function",
+      "name": "proposeCreateExpense",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 116,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "function",
+      "name": "proposeWorkflowIncome",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "ctx",
+        "kind",
+        "lockedSource",
+        "args",
+        "opts"
+      ],
+      "lines": 119,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateTransfer",
+      "type": "function",
+      "name": "proposeCreateTransfer",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 8,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateCcPayment",
+      "type": "function",
+      "name": "proposeCreateCcPayment",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateAlkansya",
+      "type": "function",
+      "name": "proposeCreateAlkansya",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeCreateReceivable",
+      "type": "function",
+      "name": "proposeCreateReceivable",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeUpdateIncome",
+      "type": "function",
+      "name": "proposeUpdateIncome",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 51,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeUpdateExpense",
+      "type": "function",
+      "name": "proposeUpdateExpense",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 54,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdate",
+      "type": "function",
+      "name": "proposeMassUpdate",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "ctx",
+        "resource",
+        "kind",
+        "args"
+      ],
+      "lines": 52,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateIncomes",
+      "type": "function",
+      "name": "proposeMassUpdateIncomes",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateExpenses",
+      "type": "function",
+      "name": "proposeMassUpdateExpenses",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "args",
+        "ctx"
+      ],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:buildEditArgs",
+      "type": "function",
+      "name": "buildEditArgs",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "draft",
+        "edits"
+      ],
+      "lines": 30,
+      "isExported": false,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:editDraftFields",
+      "type": "function",
+      "name": "editDraftFields",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "draftId",
+        "edits"
+      ],
+      "lines": 14,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:toCreateIncomeInput",
+      "type": "function",
+      "name": "toCreateIncomeInput",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "payload"
+      ],
+      "lines": 18,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:toCreateExpenseInput",
+      "type": "function",
+      "name": "toCreateExpenseInput",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "payload"
+      ],
+      "lines": 23,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:toUpdateIncomePatch",
+      "type": "function",
+      "name": "toUpdateIncomePatch",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "payload"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:toUpdateExpensePatch",
+      "type": "function",
+      "name": "toUpdateExpensePatch",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "payload"
+      ],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/tools/write-tools.ts:formatDraftForHuman",
+      "type": "function",
+      "name": "formatDraftForHuman",
+      "filePath": "src/main/chat/tools/write-tools.ts",
+      "params": [
+        "draft"
+      ],
+      "lines": 13,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/chat/topic-guard.ts",
+      "type": "file",
+      "name": "topic-guard.ts",
+      "filePath": "src/main/chat/topic-guard.ts",
+      "language": "typescript",
+      "lines": 181,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/chat/topic-guard.ts:checkTopicGuard",
+      "type": "function",
+      "name": "checkTopicGuard",
+      "filePath": "src/main/chat/topic-guard.ts",
+      "params": [
+        "userText"
+      ],
+      "lines": 56,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "file:src/main/db/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/main/db/index.ts",
+      "language": "typescript",
+      "lines": 67,
+      "tags": [
+        "code"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:initDatabase",
+      "type": "function",
+      "name": "initDatabase",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 13,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:getDb",
+      "type": "function",
+      "name": "getDb",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:getSqlite",
+      "type": "function",
+      "name": "getSqlite",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 4,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:getDbPath",
+      "type": "function",
+      "name": "getDbPath",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 3,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:listTables",
+      "type": "function",
+      "name": "listTables",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 7,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    },
+    {
+      "id": "function:src/main/db/index.ts:closeDatabase",
+      "type": "function",
+      "name": "closeDatabase",
+      "filePath": "src/main/db/index.ts",
+      "params": [],
+      "lines": 5,
+      "isExported": true,
+      "tags": [
+        "function"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:slimIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:slimExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getDashboardSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getDashboardSummary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getMonthlyMonitoringSnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getMonthlyMonitoringSnapshot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listAccountsTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listAccountsTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listIncomeCategoriesTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listIncomeCategoriesTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listExpenseCategoriesTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:listExpenseCategoriesTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:queryIncomes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:queryIncomes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:queryExpenses",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:queryExpenses",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getCategoryBudgetStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getCategoryBudgetStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:explainAppTopic",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:explainAppTopic",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getExpenseFieldSchema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:getExpenseFieldSchema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:validateRebudgetAdjustments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:validateRebudgetAdjustments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:planRebudget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:planRebudget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:resolveMonthTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/read-tools.ts",
+      "target": "function:src/main/chat/tools/read-tools.ts:resolveMonthTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:getDashboardSummary",
+      "target": "function:src/main/domain/resource-utils.ts:currentMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 66
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:getMonthlyMonitoringSnapshot",
+      "target": "function:src/main/domain/resource-utils.ts:currentMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 72
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:getCategoryBudgetStatus",
+      "target": "function:src/main/domain/resource-utils.ts:currentMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 164
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:planRebudget",
+      "target": "function:src/main/domain/resource-utils.ts:currentMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 312
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:planRebudget",
+      "target": "function:src/main/chat/tools/read-tools.ts:validateRebudgetAdjustments",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 328
+    },
+    {
+      "source": "function:src/main/chat/tools/read-tools.ts:resolveMonthTool",
+      "target": "function:src/main/domain/resource-utils.ts:currentMonth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 380
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:listAllowedChatToolNames",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:listAllowedChatToolNames",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:isChatToolAllowed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:isChatToolAllowed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:executeChatTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:executeChatTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:executeReadTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/registry.ts",
+      "target": "function:src/main/chat/tools/registry.ts:executeReadTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/chat/tools/registry.ts:executeReadTool",
+      "target": "function:src/main/chat/tools/registry.ts:executeChatTool",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 555
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateTransfer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateTransfer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateCcPayment",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateCcPayment",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateAlkansya",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateAlkansya",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateReceivable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeCreateReceivable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeUpdateIncome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeUpdateIncome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeUpdateExpense",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeUpdateExpense",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateIncomes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateIncomes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateExpenses",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateExpenses",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:buildEditArgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:editDraftFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:editDraftFields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toCreateIncomeInput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toCreateIncomeInput",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toCreateExpenseInput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toCreateExpenseInput",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toUpdateIncomePatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toUpdateIncomePatch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toUpdateExpensePatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:toUpdateExpensePatch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:formatDraftForHuman",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/tools/write-tools.ts",
+      "target": "function:src/main/chat/tools/write-tools.ts:formatDraftForHuman",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateIncome",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 131
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateIncome",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 148
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 217
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 220
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateExpense",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 286
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 345
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 347
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 352
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "target": "function:src/main/domain/resource-utils.ts:isCreditLike",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 359
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 406
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateTransfer",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 410
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateCcPayment",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 419
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateAlkansya",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 434
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeCreateReceivable",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeWorkflowIncome",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 449
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeUpdateIncome",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 505
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeUpdateExpense",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 560
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdate",
+      "target": "function:src/main/chat/tools/write-tools.ts:draftResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 613
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateIncomes",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 617
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdateExpenses",
+      "target": "function:src/main/chat/tools/write-tools.ts:proposeMassUpdate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 621
+    },
+    {
+      "source": "function:src/main/chat/tools/write-tools.ts:editDraftFields",
+      "target": "function:src/main/chat/tools/write-tools.ts:buildEditArgs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "lineNumber": 693
+    },
+    {
+      "source": "file:src/main/chat/topic-guard.ts",
+      "target": "function:src/main/chat/topic-guard.ts:checkTopicGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/chat/topic-guard.ts",
+      "target": "function:src/main/chat/topic-guard.ts:checkTopicGuard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:initDatabase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:initDatabase",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getDb",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getDb",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getSqlite",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getDbPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:getDbPath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:listTables",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:listTables",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:closeDatabase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main/db/index.ts",
+      "target": "function:src/main/db/index.ts:closeDatabase",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}
