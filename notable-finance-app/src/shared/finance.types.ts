@@ -20,6 +20,21 @@ export type ResourceName =
 
 export type MutationAction = 'create' | 'update' | 'delete'
 
+/** Records whose Notion page body (block children) can be edited as Page Content. */
+export type PageContentResource = 'incomes' | 'expenses'
+
+/** Page Content (Notion block children rendered as Markdown) for one record. */
+export interface PageContentDto {
+  resource: PageContentResource
+  recordId: string
+  /** The page body as Markdown. */
+  markdown: string
+  /** True when there is an unpushed local edit (authoritative until the next push). */
+  dirty: boolean
+  /** True when `markdown` reflects a fresh fetch from Notion (not just a cache). */
+  synced: boolean
+}
+
 export type AccountType =
   | 'Cash'
   | 'Savings'

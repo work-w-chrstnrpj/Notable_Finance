@@ -34,6 +34,8 @@ import type {
   MonthlyMonitoringDto,
   MonitoringSplitDto,
   NotionMapping,
+  PageContentDto,
+  PageContentResource,
   PullResult,
   PushResult,
   SchedulerRecordDto,
@@ -326,6 +328,20 @@ const api = {
       ipcRenderer.invoke('updater:status'),
     install: (): Promise<ApiResult<true>> =>
       ipcRenderer.invoke('updater:install')
+  },
+
+  /** Page Content — a record's Notion page body (block children), edited local-first as Markdown. */
+  pageContent: {
+    get: (resource: PageContentResource, id: string): Promise<ApiResult<PageContentDto>> =>
+      ipcRenderer.invoke('pageContent:get', resource, id),
+    save: (
+      resource: PageContentResource,
+      id: string,
+      markdown: string
+    ): Promise<ApiResult<PageContentDto>> =>
+      ipcRenderer.invoke('pageContent:save', resource, id, markdown),
+    clear: (resource: PageContentResource, id: string): Promise<ApiResult<PageContentDto>> =>
+      ipcRenderer.invoke('pageContent:clear', resource, id)
   }
 }
 

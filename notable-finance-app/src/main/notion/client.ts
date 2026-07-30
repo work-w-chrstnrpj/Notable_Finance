@@ -184,4 +184,38 @@ export class NotionClient {
   async archivePage(pageId: string): Promise<{ id: string }> {
     return this.request('PATCH', `/v1/pages/${pageId}`, { in_trash: true })
   }
+
+  // ── Block children (Page Content) ─────────────────────────────────────────
+  // A page's body is its block children. We read them to render Markdown and
+  // rewrite them (delete existing + append new) to save an edited page content.
+
+  /** All top-level block children of a page/block, in order. */
+  async getBlockChildren(blockId: string): Promise<Array<Record<string, unknown>>> {
+    const results: Array<Record<string, unknown>> = []
+    let cursor: string | undefined
+    do {
+      const qs = new URLSearchParams({ page_size: '100', ...(cursor ? { start_cursor: cursor } : {}) })
+      const page = await this.request<{
+        results: Array<Record<string, unknown>>
+        has_more: boolean
+        next_cursor: string | null
+      }>('GET', `/v1/blocks/${blockId}/children?${qs.toString()}`)
+      results.push(...page.results)
+      cursor = page.has_more && page.next_cursor ? page.next_cursor : undefined
+    } while (cursor)
+    return results
+  }
+
+  /** Append block children (max 100 per call; caller batches larger payloads). */
+  async appendBlockChildren(
+    blockId: string,
+    children: Array<Record<string, unknown>>
+  ): Promise<void> {
+    await this.request('PATCH', `/v1/blocks/${blockId}/children`, { children })
+  }
+
+  /** Delete (archive) a single block by id. */
+  async deleteBlock(blockId: string): Promise<void> {
+    await this.request('DELETE', `/v1/blocks/${blockId}`)
+  }
 }

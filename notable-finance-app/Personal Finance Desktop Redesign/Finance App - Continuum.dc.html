@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/radii.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/components/forms/forms.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/components/feedback/feedback.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/components/overlays/overlays.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/components/navigation/navigation.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/components/data/data.css">
+<link rel="stylesheet" href="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/styles.css">
+<script src="_ds/continuum-design-system-a821a904-1024-453c-9368-a296bda89a0c/_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes typingBounce{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+:root{--color-accent:var(--accent);--color-accent-2:var(--red);--color-accent-700:var(--accent-pressed);--color-neutral-100:var(--bg-2);--color-neutral-200:var(--fill-2);--color-neutral-700:var(--gray-4);--color-neutral-800:var(--gray-5);--color-neutral-900:var(--bg-1);--color-bg:var(--bg-2);--color-text:var(--label-1);--font-body:var(--font-text);--font-heading:var(--font-display);--radius-card:14px;--gradient-accent:linear-gradient(135deg, var(--accent) 0%, var(--indigo) 100%);--gradient-accent-2:linear-gradient(135deg, var(--red) 0%, var(--pink) 100%)}
+.btn-primary{background:var(--gradient-accent) !important;border:none !important}
+html,body{margin:0;height:100%;font-family:var(--font-body);overflow:hidden}
+.card{border-radius:var(--radius-card)}
+.btn{border-radius:999px}
+#root, x-dc{height:100%;display:block}
+*{box-sizing:border-box}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--color-text) 22%, transparent)}
+::-webkit-scrollbar-track{background:transparent}
+a{color:var(--color-accent);text-decoration:none}
+a:hover{color:var(--color-accent-700)}
+textarea::placeholder{color:color-mix(in srgb, var(--color-text) 45%, transparent)}
+button{font-family:var(--font-body)}
+.btn{white-space:nowrap;flex:none}
+.card-kicker{font:var(--text-caption-1);font-family:var(--font-text);font-weight:var(--weight-semibold);text-transform:uppercase;letter-spacing:.04em;color:var(--label-2);margin-bottom:4px}
+.card-title{font:var(--text-title-3);font-family:var(--font-display);color:var(--label-1)}
+.card-body{font:var(--text-subheadline);font-family:var(--font-text);color:var(--label-2);margin:0}
+.hr{height:1px;background:var(--separator);border:0;margin:0}
+.cui-input{font:var(--text-subheadline);font-family:var(--font-text);color:var(--label-1);background:var(--fill-4);border:1px solid transparent;border-radius:var(--radius-md);padding:7px 10px;outline:none;height:32px}
+.cui-input:focus{border-color:var(--accent);background:var(--bg-1)}
+.table{width:100%;border-collapse:collapse;font:var(--text-subheadline);font-family:var(--font-text)}
+.table th,.table td{padding:9px 12px;text-align:left;font-size:13px;white-space:nowrap}
+.table thead th{font:var(--text-caption-1);font-weight:var(--weight-semibold);color:var(--label-2);text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--separator)}
+.table tbody tr{border-bottom:1px solid var(--separator)}
+.table tbody tr:last-child{border-bottom:none}
+.table tfoot td{border-top:1px solid var(--separator);font-weight:var(--weight-semibold)}
+.text-muted{color:var(--label-2)}
+.acct-badge{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 8px;border-radius:999px;font:var(--text-caption-1);font-weight:var(--weight-semibold);white-space:nowrap}
+.acct-badge--std{background:var(--fill-2);color:var(--accent)}
+.acct-badge--credit{background:color-mix(in srgb, var(--color-accent-2) 16%, transparent);color:var(--color-accent-2)}
+</style>
+</helmet>
+<div style="{{ appShellStyle }}" data-theme="{{ themeAttr }}">
+
+  <div style="{{ tabBarStyle }}">
+    <div style="display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow-x:auto">
+      <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="1">
+        <div style="{{ tab.style }}" onClick="{{ tab.onClick }}">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ tab.label }}</span>
+          <button type="button" aria-label="Close tab" onClick="{{ tab.onClose }}" style="background:transparent;border:0;cursor:pointer;color:inherit;opacity:.55;padding:2px;flex:none;display:flex">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </sc-for>
+    </div>
+    <button type="button" aria-label="New tab" onClick="{{ newTab }}" style="background:transparent;border:0;cursor:pointer;color:var(--color-text);opacity:.6;padding:6px;flex:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+
+  <div style="{{ bodyRowStyle }}">
+    <aside style="{{ sidebarStyle }}">
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid var(--color-divider)">
+        <div style="width:26px;height:26px;flex:none;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;font:800 11px var(--font-heading)">NF</div>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}">
+          <span style="font:800 14px var(--font-heading);letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Notable Finance</span>
+        </sc-if>
+        <button type="button" aria-label="Toggle sidebar" onClick="{{ toggleNav }}" style="margin-left:auto;background:transparent;border:0;cursor:pointer;color:var(--color-text);opacity:.55;padding:4px;flex:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="{{ navToggleIconPath }}"/></svg>
+        </button>
+      </div>
+      <nav style="flex:1;overflow-y:auto;padding:12px 8px;display:flex;flex-direction:column;gap:16px">
+        <div>
+          <p style="{{ groupLabelStyle }}">Core</p>
+          <sc-for list="{{ navGroups.core }}" as="item" hint-placeholder-count="5">
+            <button type="button" style="{{ item.style }}" onClick="{{ item.onClick }}" title="{{ item.label }}">
+              <span dangerouslySetInnerHTML-unused="{{ item.icon }}" style="display:flex;flex:none" data-svg="{{ item.iconId }}">{{ item.iconEl }}</span>
+              <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ item.label }}</span></sc-if>
+              <sc-if value="{{ item.badge }}" hint-placeholder-val="{{ false }}"><span style="{{ item.badgeStyle }}">{{ item.badge }}</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <div>
+          <p style="{{ groupLabelStyle }}">Workflows</p>
+          <sc-for list="{{ navGroups.workflow }}" as="item" hint-placeholder-count="4">
+            <button type="button" style="{{ item.style }}" onClick="{{ item.onClick }}" title="{{ item.label }}">
+              <span style="display:flex;flex:none">{{ item.iconEl }}</span>
+              <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ item.label }}</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <div>
+          <p style="{{ groupLabelStyle }}">System</p>
+          <sc-for list="{{ navGroups.system }}" as="item" hint-placeholder-count="4">
+            <button type="button" style="{{ item.style }}" onClick="{{ item.onClick }}" title="{{ item.label }}">
+              <span style="display:flex;flex:none">{{ item.iconEl }}</span>
+              <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ item.label }}</span></sc-if>
+              <sc-if value="{{ item.badge }}" hint-placeholder-val="{{ false }}"><span style="{{ item.badgeStyle }}">{{ item.badge }}</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </nav>
+      <div style="padding:12px 14px;border-top:1px solid var(--color-divider);display:flex;align-items:center;gap:10px">
+        <div style="width:28px;height:28px;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;font:800 11px var(--font-heading);flex:none">JD</div>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}">
+          <div style="min-width:0">
+            <p style="margin:0;font:700 12px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Juan dela Cruz</p>
+            <span style="font-size:10px;opacity:.55">This device</span>
+          </div>
+        </sc-if>
+      </div>
+    </aside>
+
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;height:100%">
+      <sc-if value="{{ notChat }}" hint-placeholder-val="{{ true }}">
+        <header style="{{ topbarStyle }}">
+          <sc-if value="{{ dateSelector }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:4px">
+              <sc-for list="{{ dateSelector.options }}" as="o" hint-placeholder-count="4">
+                <button type="button" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700">
+              <button type="button" onClick="{{ dateSelector.onPrev }}" style="background:transparent;border:1px solid var(--color-divider);cursor:pointer;color:var(--color-text);width:24px;height:24px;display:flex;align-items:center;justify-content:center">‹</button>
+              <span style="white-space:nowrap;padding:0 4px">{{ dateSelector.label }}</span>
+              <button type="button" onClick="{{ dateSelector.onNext }}" style="background:transparent;border:1px solid var(--color-divider);cursor:pointer;color:var(--color-text);width:24px;height:24px;display:flex;align-items:center;justify-content:center">›</button>
+            </div>
+          </sc-if>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <span style="{{ statusPillStyle }}"><span style="{{ statusDotStyle }}"></span>{{ syncStatus.online }}</span>
+            <span class="text-muted" style="font-size:11px;white-space:nowrap">{{ syncStatus.unsynced }} pending · Last sync {{ syncStatus.lastSync }}</span>
+            <button type="button" class="btn btn--secondary btn--small" onClick="{{ verifySchema }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Schema Check</button>
+            <button type="button" class="btn btn--primary btn--small" onClick="{{ goSync }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg>Sync</button>
+            <button type="button" onClick="{{ goSettings }}" aria-label="Settings" style="width:30px;height:30px;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;font:800 11px var(--font-heading);border:0;cursor:pointer;flex:none">JD</button>
+          </div>
+        </header>
+        <div style="flex:1;overflow-y:auto;padding:24px 32px 60px">
+          <p style="font:700 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;opacity:.5;margin:0 0 4px">{{ sectionKicker }}</p>
+          <h1 style="margin:0 0 20px">{{ sectionTitle }}</h1>
+
+          <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+            <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+              <sc-for list="{{ dashMetricsA }}" as="m" hint-placeholder-count="4">
+                <div class="card" style="display:grid;gap:12px;padding:20px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <p style="margin:0;font:var(--text-caption-1);font-family:var(--font-text);font-weight:var(--weight-semibold);text-transform:uppercase;letter-spacing:.04em;color:var(--label-2)">{{ m.title }}</p>
+                    <span style="{{ m.iconStyle }}">{{ m.iconEl }}</span>
+                  </div>
+                  <strong style="font-family:var(--font-mono);font-size:clamp(18px,1.7vw,24px);font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap">{{ m.value }}</strong>
+                  <span style="font:var(--text-subheadline);font-family:var(--font-text);color:var(--label-2)">{{ m.detail }}</span>
+                </div>
+              </sc-for>
+            </section>
+            <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+              <sc-for list="{{ dashMetricsB }}" as="m" hint-placeholder-count="4">
+                <div class="card" style="display:grid;gap:12px;padding:20px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <p style="margin:0;font:var(--text-caption-1);font-family:var(--font-text);font-weight:var(--weight-semibold);text-transform:uppercase;letter-spacing:.04em;color:var(--label-2)">{{ m.title }}</p>
+                    <span style="{{ m.iconStyle }}">{{ m.iconEl }}</span>
+                  </div>
+                  <strong style="font-family:var(--font-mono);font-size:clamp(18px,1.7vw,24px);font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap">{{ m.value }}</strong>
+                  <span style="font:var(--text-subheadline);font-family:var(--font-text);color:var(--label-2)">{{ m.detail }}</span>
+                </div>
+              </sc-for>
+            </section>
+            <section style="display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,.95fr);gap:16px;margin-bottom:16px;align-items:start">
+              <div class="card" style="padding:24px">
+                <div style="margin-bottom:20px">
+                  <h2 style="margin:0;font:var(--text-headline);font-family:var(--font-display);font-size:16px;line-height:1.3;color:var(--label-1)">Most Expensive Purchase of the Month</h2>
+                  <p style="margin:3px 0 0;font-size:14px;color:var(--label-2)">{{ dash.monthLabel }}</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ topPurchases }}" as="p" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:12px">
+                      <span style="{{ p.rankStyle }}">{{ p.rank }}</span>
+                      <div style="flex:1;min-width:0">
+                        <strong style="{{ p.titleStyle }}display:block;font-size:14px">{{ p.desc }}</strong>
+                        <div style="display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--label-2)"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.meta }}</span><strong style="color:var(--label-1);font-family:var(--font-mono);font-variant-numeric:tabular-nums">{{ p.amountFmt }}</strong></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div class="card" style="padding:24px">
+                <div style="margin-bottom:20px">
+                  <h2 style="margin:0;font:var(--text-headline);font-family:var(--font-display);font-size:16px;line-height:1.3;color:var(--label-1)">Spending Breakdown</h2>
+                  <p style="margin:3px 0 0;font-size:14px;color:var(--label-2)">{{ dash.monthLabel }}</p>
+                </div>
+                <div style="display:flex;justify-content:center;margin-bottom:20px">
+                  <div role="img" aria-label="Spending breakdown donut chart" style="{{ donutStyle }}"></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ spendingBreakdown }}" as="b" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px">
+                      <span style="display:flex;align-items:center;gap:8px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:{{ b.color }};flex:none;display:block"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.name }}</span></span>
+                      <strong style="font-family:var(--font-mono);font-variant-numeric:tabular-nums">{{ b.valueFmt }}</strong>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </section>
+            <section style="display:grid;grid-template-columns:minmax(300px,.75fr) minmax(0,1.25fr);gap:16px;align-items:start">
+              <div class="card" style="padding:24px">
+                <div style="margin-bottom:20px">
+                  <h2 style="margin:0;font:var(--text-headline);font-family:var(--font-display);font-size:16px;line-height:1.3;color:var(--label-1)">Top 5 Spending Category</h2>
+                  <p style="margin:3px 0 0;font-size:14px;color:var(--label-2)">{{ dash.monthLabel }}</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <sc-for list="{{ topCategories }}" as="c" hint-placeholder-count="5">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px"><span>{{ c.name }}</span><strong style="font-family:var(--font-mono);font-variant-numeric:tabular-nums">{{ c.valueFmt }} · {{ c.pct }}%</strong></div>
+                      <div style="height:6px;border-radius:999px;background:var(--fill-3);overflow:hidden"><i style="display:block;height:100%;border-radius:999px;width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div class="card" style="padding:24px">
+                <div style="margin-bottom:20px">
+                  <h2 style="margin:0;font:var(--text-headline);font-family:var(--font-display);font-size:16px;line-height:1.3;color:var(--label-1)">Recent Transactions</h2>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ recentTx }}" as="t" hint-placeholder-count="5">
+                    <button type="button" style="{{ t.rowStyle }}">
+                      <span style="{{ t.iconWrapStyle }}">{{ t.iconEl }}</span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left"><span style="font-size:14px;font-weight:var(--weight-semibold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.title }}</span><span style="font-size:12px;color:var(--label-2)">{{ t.meta }}</span></span>
+                      <strong style="{{ t.amountStyle }}">{{ t.amountFmt }}</strong>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isAccounts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <sc-for list="{{ accountScopeSeg.options }}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+              <select class="cui-input" style="width:auto" onChange="{{ onCardTypeFilterChange }}"><option value="">All card types</option><sc-for list="{{ cardTypeOptions }}" as="t" hint-placeholder-count="3"><option value="{{ t }}">{{ t }}</option></sc-for></select>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer"><input type="checkbox" checked="{{ hideZeroBalance }}" onChange="{{ toggleHideZero }}">Hide zero balance</label>
+              <div style="display:flex;gap:4px;margin-left:auto">
+                <sc-for list="{{ accountViewSeg.options }}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ accountsCardsView }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+                <sc-for list="{{ visibleAccounts }}" as="a" hint-placeholder-count="5">
+                  <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
+                      <div class="card-title" style="font-size:16px">{{ a.name }}</div>
+                      <span class="{{ a.badgeClass }}">{{ a.type }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span class="text-muted">Current Balance</span><strong style="{{ a.balanceStyle }}">{{ a.balanceFmt }}</strong></div>
+                    <sc-if value="{{ a.isCredit }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0" class="text-muted"><span>Credit Limit</span><span>{{ a.limitFmt }}</span></div>
+                      <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0" class="text-muted"><span>Available Limit</span><span>{{ a.availableFmt }}</span></div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ accountsTableView }}" hint-placeholder-val="{{ false }}">
+              <div class="card" style="padding:0;overflow-x:auto">
+                <table class="table">
+                  <thead><tr><sc-for list="{{ accountsTable.headers }}" as="h" hint-placeholder-count="4"><th>{{ h }}</th></sc-for></tr></thead>
+                  <tbody><sc-for list="{{ accountsTable.rows }}" as="row" hint-placeholder-count="5"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="4"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+                  <tfoot><tr><sc-for list="{{ accountsTable.footer.cells }}" as="c" hint-placeholder-count="4"><td><strong>{{ c }}</strong></td></sc-for></tr></tfoot>
+                </table>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ isIncomeOrExpense }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <button type="button" class="btn btn--primary btn--small" onClick="{{ ieToolbar.onNew }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>{{ ieToolbar.newLabel }}</button>
+              <div style="display:flex;gap:4px;margin-left:auto">
+                <sc-for list="{{ ieViewSeg.options }}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for>
+              </div>
+            </div>
+            <div class="card" style="padding:0;overflow-x:auto">
+              <table class="table">
+                <thead><tr><sc-for list="{{ ieTable.headers }}" as="h" hint-placeholder-count="6"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ ieTable.rows }}" as="row" hint-placeholder-count="4"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="6"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+                <tfoot><tr><sc-for list="{{ ieTable.footer.cells }}" as="c" hint-placeholder-count="6"><td><strong>{{ c }}</strong></td></sc-for></tr></tfoot>
+              </table>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMonitoring }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:20px"><sc-for list="{{ monitoringSeg.options }}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div>
+            <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+              <sc-for list="{{ monitoringMetrics }}" as="m" hint-placeholder-count="4"><div class="card" style="{{ m.cardStyle }}"><div class="card-kicker">{{ m.title }}</div><div class="card-title" style="font-size:22px">{{ m.value }}</div><p class="card-body" style="margin:2px 0 0">{{ m.detail }}</p></div></sc-for>
+            </section>
+            <section style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Budget Allocation</div>
+                <sc-for list="{{ budgetAllocation }}" as="b" hint-placeholder-count="3">
+                  <div style="margin-bottom:12px">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><strong>{{ b.label }} · {{ b.pct }}%</strong><span>{{ b.amountFmt }}</span></div>
+                    <div style="height:8px;background:var(--color-neutral-200)"><div style="height:100%;width:{{ b.pct }}%;background:var(--gradient-accent)"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Insight</div>
+                <p class="card-body">Total Set Budget: <strong style="color:var(--color-text)">{{ monitoringInsight.budgetFmt }}</strong></p>
+                <p class="card-body">{{ monitoringInsight.message }}</p>
+              </div>
+            </section>
+            <div class="card" style="padding:0;overflow-x:auto;margin-bottom:20px">
+              <div style="padding:16px 16px 0" class="card-kicker">Income Portfolio</div>
+              <table class="table">
+                <thead><tr><sc-for list="{{ monitoringIncomeTable.headers }}" as="h" hint-placeholder-count="5"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ monitoringIncomeTable.rows }}" as="row" hint-placeholder-count="3"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="5"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+              </table>
+            </div>
+            <div class="card" style="padding:0;overflow-x:auto">
+              <div style="padding:16px 16px 0" class="card-kicker">Monthly Budget</div>
+              <table class="table">
+                <thead><tr><sc-for list="{{ monitoringBudgetTable.headers }}" as="h" hint-placeholder-count="4"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ monitoringBudgetTable.rows }}" as="row" hint-placeholder-count="4"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="4"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+                <tfoot><tr><sc-for list="{{ monitoringBudgetTable.footer.cells }}" as="c" hint-placeholder-count="4"><td><strong>{{ c }}</strong></td></sc-for></tr></tfoot>
+              </table>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isWorkflow }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;margin-bottom:14px">
+              <button type="button" class="btn btn--primary btn--small" onClick="{{ workflowNewLabel }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New {{ sectionTitle }} Record</button>
+            </div>
+            <div class="card" style="padding:0;overflow-x:auto">
+              <div style="padding:16px 16px 0" class="card-kicker">Records</div>
+              <table class="table">
+                <thead><tr><sc-for list="{{ workflowTable.headers }}" as="h" hint-placeholder-count="5"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ workflowTable.rows }}" as="row" hint-placeholder-count="2"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="5"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+              </table>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+            <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+              <sc-for list="{{ historyMetrics }}" as="m" hint-placeholder-count="4"><div class="card" style="{{ m.cardStyle }}"><div class="card-kicker">{{ m.title }}</div><div class="card-title" style="font-size:22px">{{ m.value }}</div><p class="card-body" style="margin:2px 0 0">{{ m.detail }}</p></div></sc-for>
+            </section>
+            <div class="card" style="padding:0;overflow-x:auto;margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0"><span class="card-kicker">Unsynced Items</span><span class="badge badge--success">{{ syncStatus.unsynced }} pending</span></div>
+              <table class="table">
+                <thead><tr><sc-for list="{{ historyUnsyncedTable.headers }}" as="h" hint-placeholder-count="5"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ historyUnsyncedTable.rows }}" as="row" hint-placeholder-count="3"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="5"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+              </table>
+              <div style="display:flex;gap:8px;padding:14px 16px"><button type="button" class="btn btn--secondary btn--small">Cancel Syncing Unsynced</button><button type="button" class="btn btn--primary btn--small">Push Unsynced</button></div>
+            </div>
+            <div class="card" style="padding:0;overflow-x:auto">
+              <div style="padding:16px 16px 0" class="card-kicker">Recently Synced</div>
+              <table class="table">
+                <thead><tr><sc-for list="{{ historySyncedTable.headers }}" as="h" hint-placeholder-count="5"><th>{{ h }}</th></sc-for></tr></thead>
+                <tbody><sc-for list="{{ historySyncedTable.rows }}" as="row" hint-placeholder-count="3"><tr><sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="5"><td>{{ c }}</td></sc-for></tr></sc-for></tbody>
+              </table>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isSync }}" hint-placeholder-val="{{ false }}">
+            <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+              <sc-for list="{{ syncMetrics }}" as="m" hint-placeholder-count="4"><div class="card" style="{{ m.cardStyle }}"><div class="card-kicker">{{ m.title }}</div><div class="card-title" style="font-size:22px">{{ m.value }}</div><p class="card-body" style="margin:2px 0 0">{{ m.detail }}</p></div></sc-for>
+            </section>
+            <section style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:12px">Sync Actions</div>
+                <div class="field"><label>Pull range</label><select class="cui-input"><option>Incremental (last sync)</option><option>Last 24 hours</option><option>Last week</option><option>All time</option></select></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                  <button type="button" class="btn btn--secondary btn--small" onClick="{{ pullOnly }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>Pull sync only</button>
+                  <button type="button" class="btn btn--secondary btn--small" onClick="{{ pushOnly }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Push sync only</button>
+                  <button type="button" class="btn btn--primary btn--small" onClick="{{ goSync }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg>Full sync</button>
+                  <button type="button" class="btn btn--ghost btn--small" onClick="{{ verifySchema }}">Verify Schema</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Errors</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ errorRows }}" as="e" hint-placeholder-count="4"><div style="display:flex;gap:8px;font-size:12px"><span class="badge badge--outline" style="flex:none">{{ e.code }}</span><span class="text-muted">{{ e.detail }}</span></div></sc-for>
+                </div>
+              </div>
+            </section>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="card-kicker">Local-First Sync (Desktop)</span><span class="badge badge--success">No conflicts</span></div>
+              <p class="card-body" style="margin-bottom:12px">Writes land locally instantly and queue for Notion. Sync reconciles with a three-way merge — disjoint edits auto-merge.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--color-divider)">
+                <div><p style="margin:0;font-weight:700;font-size:13px">Initial pull from Notion</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">Load your Notion databases into the local store.</p></div>
+                <button type="button" class="btn btn--secondary btn--small">Pull now</button>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--color-divider)">
+                <div><p style="margin:0;font-weight:700;font-size:13px">Auto-sync</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">{{ autoSyncHint }}</p></div>
+                <button type="button" class="btn btn--secondary btn--small" onClick="{{ toggleAutoSync }}">{{ autoSyncLabel }}</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px;max-width:820px">
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Profile</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;font:800 13px var(--font-heading)">JD</div><div><p style="margin:0;font-weight:700">Juan dela Cruz</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">Change your display name and photo on this device.</p></div></div>
+                  <button type="button" class="btn btn--secondary btn--small">Edit</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Theme</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><p style="margin:0;font-weight:700">Appearance</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">Currently {{ themeLabel }}.</p></div>
+                  <button type="button" class="btn btn--secondary btn--small" onClick="{{ toggleTheme }}">Switch to {{ themeToggleLabel }}</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">AI / Chat</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><p style="margin:0;font-weight:700">Finance Copilot</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">Gemini 2.5 Flash · Personal key · connected</p></div>
+                  <button type="button" class="btn btn--primary btn--small" onClick="{{ goChat }}">Open Chat</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Developer</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><p style="margin:0;font-weight:700">Dev Mode</p><p class="text-muted" style="margin:2px 0 0;font-size:12px">Shows Dev Logs in the sidebar. Off by default.</p></div>
+                  <span class="badge badge--outline">Idle</span>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="card"><div class="card-kicker" style="margin-bottom:8px">Local Data</div><div style="font-size:13px;display:flex;flex-direction:column;gap:6px" class="text-muted"><span>Storage: Local SQLite</span><span>Works offline: Yes</span><span>Token storage: OS keychain</span></div></div>
+                <div class="card"><div class="card-kicker" style="margin-bottom:8px">Schema</div><div class="field"><label>Data Source</label><input class="cui-input" value="Local SQLite + Notion sync" readonly></div><button type="button" class="btn btn--primary btn--small" onClick="{{ verifySchema }}">Verify Schema</button></div>
+              </div>
+              <div class="card">
+                <div class="card-kicker" style="margin-bottom:10px">Notion Configuration</div>
+                <div style="display:flex;justify-content:space-between;align-items:center"><p class="card-body" style="margin:0">Your integration token is stored encrypted in the OS keychain.</p><button type="button" class="btn btn--primary btn--small">Manage Configuration</button></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;min-height:0">
+          <aside style="width:250px;flex:none;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;padding:16px 12px;gap:12px;overflow-y:auto">
+            <button type="button" class="btn btn--secondary btn--small" style="width:100%" onClick="{{ backToMain }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Go Back to Main</button>
+            <button type="button" class="btn btn--primary btn--small" style="width:100%" onClick="{{ newChat }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <sc-for list="{{ threadGroups }}" as="g" hint-placeholder-count="2">
+                <div>
+                  <p style="font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin:0 0 6px">{{ g.label }}</p>
+                  <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="2">
+                    <div style="{{ t.rowStyle }}">
+                      <button type="button" onClick="{{ t.select }}" style="flex:1;min-width:0;text-align:left;background:transparent;border:0;cursor:pointer;font:700 13px var(--font-body);color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 4px">{{ t.title }}</button>
+                      <button type="button" aria-label="Rename" onClick="{{ t.rename }}" style="background:transparent;border:0;cursor:pointer;color:inherit;opacity:.5;padding:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                      <button type="button" aria-label="Delete" onClick="{{ t.remove }}" style="background:transparent;border:0;cursor:pointer;color:inherit;opacity:.5;padding:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </aside>
+
+          <section style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <header style="display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid var(--color-divider);flex:none">
+              <div style="width:34px;height:34px;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 6.5L20 10l-6.2 1.5L12 18l-1.8-6.5L4 10l6.2-1.5z"/></svg>
+              </div>
+              <div>
+                <p style="margin:0;font:800 14px var(--font-heading)">Finance Copilot</p>
+                <p style="margin:0;font-size:12px;display:flex;align-items:center;gap:6px" class="text-muted"><span style="width:6px;height:6px;background:var(--gradient-accent);display:inline-block"></span>Active · Personal Key</p>
+              </div>
+              <button type="button" class="btn btn--secondary btn--small" style="margin-left:auto" onClick="{{ goSettings }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9"/></svg>
+                Configure
+              </button>
+            </header>
+
+            <div style="flex:1;overflow-y:auto;padding:24px 32px;display:flex;flex-direction:column;gap:18px">
+              <sc-if value="{{ chatIsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="max-width:520px;margin:40px auto;text-align:center">
+                  <div style="width:52px;height:52px;background:var(--gradient-accent);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 6.5L20 10l-6.2 1.5L12 18l-1.8-6.5L4 10l6.2-1.5z"/></svg>
+                  </div>
+                  <h2>Finance Copilot</h2>
+                  <p class="card-body">Ask about your finances, or log income/expenses. Creates and edits appear as approval cards — nothing writes until you Approve.</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px">
+                    <sc-for list="{{ starterPrompts }}" as="p" hint-placeholder-count="4">
+                      <button type="button" class="btn btn--secondary btn--small" onClick="{{ p.onClick }}">{{ p.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-for list="{{ messages }}" as="m" hint-placeholder-count="3">
+                <div style="{{ m.wrapStyle }}">
+                  <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+                    <div style="max-width:65%">
+                      <div style="background:var(--color-surface);border-right:1px solid var(--color-divider);padding:12px 16px;font-size:14px;line-height:1.5">{{ m.content }}</div>
+                      <p style="text-align:right;font:11px var(--font-body);opacity:.45;margin:4px 2px 0">{{ m.time }}</p>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.isText }}" hint-placeholder-val="{{ false }}">
+                    <div style="max-width:65%;border-left:2px solid var(--color-accent);padding:2px 0 2px 16px">
+                      <p style="margin:0 0 4px;font:700 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;opacity:.5">Copilot</p>
+                      <p style="margin:0;font-size:14px;line-height:1.55">{{ m.content }}</p>
+                      <p style="font:11px var(--font-body);opacity:.45;margin:4px 0 0">{{ m.time }}</p>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.isChart }}" hint-placeholder-val="{{ false }}">
+                    <div style="max-width:70%;border-left:2px solid var(--color-accent);padding:2px 0 2px 16px">
+                      <p style="margin:0 0 4px;font:700 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;opacity:.5">Copilot</p>
+                      <p style="margin:0 0 12px;font-size:14px;line-height:1.5">{{ m.content }}</p>
+                      <div style="display:flex;align-items:flex-end;gap:14px;height:120px;padding:16px;border:1px solid var(--color-divider)">
+                        <sc-for list="{{ m.bars }}" as="b" hint-placeholder-count="4">
+                          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+                            <span style="font:700 11px var(--font-body)">{{ b.valueFmt }}</span>
+                            <div style="width:100%;background:var(--gradient-accent);height:{{ b.pct }}%;min-height:4px"></div>
+                            <span style="font-size:11px;opacity:.6">{{ b.label }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.isReceipt }}" hint-placeholder-val="{{ false }}">
+                    <div class="card" style="border-top:4px solid var(--color-accent);max-width:340px;animation:fadeSlideUp .3s ease both">
+                      <div class="card-kicker">{{ m.receiptNote }}</div>
+                      <div class="card-title" style="font-size:17px">{{ m.receiptTitle }}</div>
+                      <div style="font:800 30px var(--font-heading);margin:8px 0">{{ m.receiptAmount }}</div>
+                      <div class="hr" style="margin:8px 0"></div>
+                      <sc-for list="{{ m.receiptRows }}" as="r" hint-placeholder-count="3">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span class="text-muted">{{ r.label }}</span><span>{{ r.value }}</span></div>
+                      </sc-for>
+                      <span class="badge badge--success" style="margin-top:10px;display:inline-block">{{ m.receiptStatus }}</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+                <div style="max-width:65%;border-left:2px solid var(--color-accent);padding:2px 0 2px 16px">
+                  <p style="margin:0 0 6px;font:700 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;opacity:.5">Copilot</p>
+                  <div style="display:flex;gap:5px;padding:4px 0">
+                    <span style="width:6px;height:6px;background:var(--gradient-accent);display:inline-block;animation:typingBounce 1s infinite ease-in-out"></span>
+                    <span style="width:6px;height:6px;background:var(--gradient-accent);display:inline-block;animation:typingBounce 1s .15s infinite ease-in-out"></span>
+                    <span style="width:6px;height:6px;background:var(--gradient-accent);display:inline-block;animation:typingBounce 1s .3s infinite ease-in-out"></span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-for list="{{ pendingDrafts }}" as="d" hint-placeholder-count="1">
+                <div class="card" style="border-left:3px solid var(--color-accent);max-width:380px;align-self:flex-start;animation:fadeSlideUp .3s ease both">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                    <div><div class="card-kicker">{{ d.subtitle }}</div><div class="card-title" style="font-size:17px">{{ d.title }}</div></div>
+                    <span class="badge badge--success">Ready</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:5px;margin:12px 0">
+                    <sc-for list="{{ d.fields }}" as="f" hint-placeholder-count="4">
+                      <div style="display:flex;justify-content:space-between;font-size:13px"><span class="text-muted">{{ f.label }}</span><span>{{ f.value }}</span></div>
+                    </sc-for>
+                  </div>
+                  <div style="font:800 24px var(--font-heading);margin-bottom:12px">{{ d.amount }}</div>
+                  <div style="display:flex;gap:8px">
+                    <button type="button" class="btn btn--primary btn--small" onClick="{{ d.onApprove }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Approve
+                    </button>
+                    <button type="button" class="btn btn--ghost btn--small" onClick="{{ d.onCancel }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Cancel
+                    </button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <footer style="background:var(--material-regular);backdrop-filter:var(--blur-regular);-webkit-backdrop-filter:var(--blur-regular);border-top:var(--glass-border);padding:16px 28px 18px;flex:none">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                <span style="font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.08em;opacity:.5">Mode: {{ activeOverlayMeta.label }}</span>
+                <sc-for list="{{ overlayChips }}" as="o" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ o.onClick }}" style="{{ o.chipStyle }}">{{ o.label }}</button>
+                </sc-for>
+              </div>
+              <div style="position:relative">
+                <sc-if value="{{ slashOpen }}" hint-placeholder-val="{{ false }}">
+                  <div class="card card--elevated" style="position:absolute;bottom:100%;left:0;margin-bottom:8px;width:260px;padding:6px;z-index:5;background:var(--material-thick);backdrop-filter:var(--blur-thick);-webkit-backdrop-filter:var(--blur-thick);border:var(--glass-border);box-shadow:var(--glass-shadow), var(--glass-highlight)">
+                    <sc-for list="{{ slashOptions }}" as="o" hint-placeholder-count="5">
+                      <button type="button" onClick="{{ o.onClick }}" style="display:flex;width:100%;align-items:center;gap:8px;padding:8px;border:0;background:transparent;text-align:left;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:700">
+                        <span>{{ o.label }}</span><span class="text-muted" style="font-size:11px;margin-left:auto;font-weight:400">{{ o.hint }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ mentionOpen }}" hint-placeholder-val="{{ false }}">
+                  <div class="card card--elevated" style="position:absolute;bottom:100%;left:0;margin-bottom:8px;width:220px;padding:6px;z-index:5;background:var(--material-thick);backdrop-filter:var(--blur-thick);-webkit-backdrop-filter:var(--blur-thick);border:var(--glass-border);box-shadow:var(--glass-shadow), var(--glass-highlight)">
+                    <sc-for list="{{ mentionOptions }}" as="o" hint-placeholder-count="5">
+                      <button type="button" onClick="{{ o.onClick }}" style="display:flex;width:100%;align-items:center;gap:8px;padding:8px;border:0;background:transparent;text-align:left;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:700">@{{ o.name }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div style="display:flex;gap:10px;align-items:flex-end;border:var(--glass-border);padding:10px 12px;background:var(--material-thin);backdrop-filter:var(--blur-thin);-webkit-backdrop-filter:var(--blur-thin)">
+                  <button type="button" aria-label="Voice input" onClick="{{ toggleVoice }}" style="{{ micButtonStyle }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg>
+                  </button>
+                  <textarea value="{{ draft }}" onChange="{{ onDraftChange }}" onKeyDown="{{ onComposerKeyDown }}" rows="2" placeholder="{{ composerPlaceholder }}" style="flex:1;border:0;outline:0;resize:none;font:15px/1.5 var(--font-body);background:transparent;color:var(--color-text)"></textarea>
+                  <button type="button" aria-label="Send" onClick="{{ send }}" disabled="{{ sendDisabled }}" style="{{ sendButtonStyle }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+                  </button>
+                </div>
+              </div>
+              <p style="font-size:11px;opacity:.45;margin:8px 2px 0">⏎ send · ⇧⏎ newline · / mode · @ account</p>
+            </footer>
+          </section>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;'light'|'dark'&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;startSection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dashboard&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;chat&quot;,&quot;accounts&quot;,&quot;income&quot;,&quot;expense&quot;,&quot;monthly-monitoring&quot;,&quot;transfer&quot;,&quot;credit-card-payment&quot;,&quot;alkansya&quot;,&quot;receivables&quot;,&quot;history&quot;,&quot;sync&quot;,&quot;settings&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;copilotTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;roast&quot;,&quot;cheer&quot;,&quot;strict&quot;,&quot;quiet&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+const PHP = (n, opts) => {
+  const a = Math.abs(n);
+  if (opts && opts.compact && a >= 1000) {
+    const div = a >= 1e6 ? 1e6 : 1e3;
+    return '\u20b1' + (a / div).toFixed(1).replace(/\.0$/, '') + (a >= 1e6 ? 'M' : 'K');
+  }
+  return '\u20b1' + a.toLocaleString('en-PH', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+};
+const signed = (n) => (n < 0 ? '-' : '') + PHP(n);
+const svg = (path, extra) => React.createElement('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { d: path }), extra);
+const svgAt = (size, path) => React.createElement('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { d: path }));
+const METRIC_ICONS = {
+  walletCards: 'M2 8h20v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z M5 8V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3 M16 14h.01',
+  banknote: 'M2 6h20v12H2z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M6 10h.01M18 14h.01',
+  receipt: 'M4 2h16v20l-3-2-3 2-2-2-2 2-3-2-3 2z M8 7h8M8 11h8M8 15h5',
+  refreshCw: 'M21 12a9 9 0 0 1-15 6.7L3 16 M3 12a9 9 0 0 1 15-6.7L21 8 M21 3v5h-5M3 21v-5h5',
+  piggyBank: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 8v8M8.5 10.5h7M8.5 13.5h7',
+  creditCard: 'M2 5h20v14H2z M2 10h20 M6 15h4',
+  alertTriangle: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z M12 9v4M12 17h.01',
+  arrowUpRight: 'M7 17 17 7 M7 7h10v10',
+  arrowDownLeft: 'M17 7 7 17 M17 17H7V7',
+  arrowUpDown: 'M7 3v18M3 7l4-4 4 4 M17 21V3M13 17l4 4 4-4',
+};
+const TONES = { blue: 'var(--accent)', green: 'var(--green)', rose: 'var(--red)', amber: 'var(--orange)' };
+// Continuum's icon system is Lucide (loaded from the CDN in <helmet>). Render the
+// real glyph geometry; METRIC_ICONS above is only an offline fallback.
+const LUCIDE_NAMES = {
+  walletCards: ['WalletCards', 'wallet-cards'],
+  banknote: ['Banknote', 'banknote'],
+  receipt: ['Receipt', 'receipt'],
+  refreshCw: ['RefreshCw', 'refresh-cw'],
+  piggyBank: ['PiggyBank', 'piggy-bank'],
+  creditCard: ['CreditCard', 'credit-card'],
+  alertTriangle: ['TriangleAlert', 'AlertTriangle', 'triangle-alert', 'alert-triangle'],
+  arrowUpRight: ['ArrowUpRight', 'arrow-up-right'],
+  arrowDownLeft: ['ArrowDownLeft', 'arrow-down-left'],
+  arrowUpDown: ['ArrowUpDown', 'arrow-up-down'],
+};
+function lucideNode(key) {
+  const set = (window.lucide && window.lucide.icons) || {};
+  for (const name of LUCIDE_NAMES[key] || []) {
+    const node = set[name];
+    if (node) return Array.isArray(node[0]) ? node : node[2];
+  }
+  return null;
+}
+const icon = (key, size) => {
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const node = lucideNode(key);
+  if (!node) return svgAt(size, METRIC_ICONS[key] || '');
+  const children = node.map(([tag, attrs], i) => React.createElement(tag, { key: i, ...attrs }));
+  return React.createElement('svg', common, children);
+};
+
+const ACCOUNTS = [
+  { id: 'acct-bdo-checking', name: 'BDO Checking', type: 'Cash', balance: 45230.5, limit: null, available: null },
+  { id: 'acct-bpi-savings', name: 'BPI Savings', type: 'Savings', balance: 123450, limit: null, available: null },
+  { id: 'acct-metrobank-card', name: 'Metrobank Credit Card', type: 'Credit Account', balance: -45800, limit: 150000, available: 104200 },
+  { id: 'acct-gcash', name: 'GCash Wallet', type: 'e-Wallet', balance: 8750.25, limit: null, available: null },
+  { id: 'acct-bnpl', name: 'ShopNow BNPL', type: 'BNPL', balance: -12800, limit: 40000, available: 27200 },
+];
+const CREDIT_TYPES = new Set(['Credit Account', 'BNPL']);
+const MENTION_ACCOUNTS = ACCOUNTS.map((a) => a.name);
+const ACCOUNT_ID_BY_NAME = new Map(ACCOUNTS.map((a) => [a.name, a.id]));
+
+const CATEGORIES = ['Housing', 'Food', 'Gadgets', 'Transport', 'Pasabuy'];
+const INCOME_RECORDS = [
+  { name: 'July Salary', date: 'Jul 15', category: 'Employment', account: 'BDO Checking', gross: 85000, capex: 0 },
+  { name: 'Project Retainer', date: 'Jul 5', category: 'Freelance', account: 'BPI Savings', gross: 25000, capex: 2000 },
+  { name: 'Dividend Payout', date: 'Jul 20', category: 'Dividends', account: 'BPI Savings', gross: 5000, capex: 0 },
+];
+const EXPENSE_RECORDS = [
+  { desc: 'Monthly Rent', date: 'Jul 1', category: 'Housing', account: 'BDO Checking', amount: 12500, status: 'Paid' },
+  { desc: 'Phone Installment', date: 'Jun 20', category: 'Gadgets', account: 'Metrobank Credit Card', amount: 45000, status: 'Installment' },
+  { desc: 'Pasabuy Purchase', date: 'Jul 5', category: 'Pasabuy', account: 'ShopNow BNPL', amount: 8000, status: 'Installment' },
+  { desc: 'Grocery Run', date: 'Jul 12', category: 'Food', account: 'GCash Wallet', amount: 3200, status: 'Paid' },
+];
+const MONITORING_BUDGET = [
+  { category: 'Food', spent: 6400, budget: 8000 },
+  { category: 'Housing', spent: 12500, budget: 12500 },
+  { category: 'Gadgets', spent: 45000, budget: 40000 },
+  { category: 'Transport', spent: 2100, budget: 5000 },
+];
+const TRANSFERS = [{ date: 'Jul 18', name: 'Transfer', from: 'BDO Checking', to: 'GCash Wallet', amount: 3000 }];
+const CC_PAYMENTS = [{ date: 'Aug 5', name: 'CC Payment — Metrobank', cc: 'Metrobank Credit Card', amount: 4580, payer: 'BDO Checking' }];
+const ALKANSYA = [
+  { name: 'Emergency Fund', account: 'BPI Savings', category: 'Savings', saved: 60000 },
+  { name: 'Travel: Japan', account: 'BPI Savings', category: 'Savings', saved: 18000 },
+];
+const RECEIVABLES = [{ name: 'Maimai — Pasabuy Purchase', date: 'Jul 5', account: '\u2014', category: 'Receivables', amount: 4000 }];
+const UNSYNCED = [
+  { status: 'Created', title: 'Dividend Payout', type: 'Income', state: 'Never sent', changed: '2 min ago' },
+  { status: 'Updated', title: 'Pasabuy Purchase', type: 'Expense', state: 'Pending', changed: '1 hr ago' },
+];
+const RECENTLY_SYNCED = [
+  { status: 'Created', title: 'July Salary', type: 'Income', direction: 'App \u2192 Notion DB', when: '10:02 AM' },
+  { status: 'Updated', title: 'Monthly Rent', type: 'Expense', direction: 'Notion DB \u2192 App', when: 'Yesterday' },
+];
+const ERROR_ROWS = [
+  { code: 'VALIDATION_ERROR', detail: 'Expense Amount is required.' },
+  { code: 'SCHEMA_DRIFT_DETECTED', detail: 'Payment Status option changed.' },
+  { code: 'CONFLICT_ERROR', detail: 'Record changed after the app loaded it.' },
+  { code: 'NOTION_RATE_LIMITED', detail: 'Retry after the backend cooldown.' },
+];
+
+const OVERLAYS = [
+  { id: 'default', slash: '/default', label: 'Default', hint: 'Warm Taglish' },
+  { id: 'roast', slash: '/roast', label: 'Roast', hint: 'Tipid coach' },
+  { id: 'cheer', slash: '/cheer', label: 'Cheer', hint: 'Dasurv energy' },
+  { id: 'strict', slash: '/strict', label: 'Strict', hint: 'Facts only' },
+  { id: 'quiet', slash: '/quiet', label: 'Quiet', hint: 'Minimal acks' },
+];
+const STARTER_PROMPTS = ['Monitoring summary for this month', 'Add income, SVI salary, 20000, today, GCash', 'Log expense, 300 pesos, dating, yesterday', "What's left in Food this month?"];
+const WITTY_REPLIES = ["Noted! Gusto mo bang tignan yung breakdown per category?", "On it — need ko lang more details kung gusto mong mag-log ng transaction.", "Diba ang galing ko? Ask away, boss.", "Copy that. Anything else gustong i-check sa accounts mo?"];
+const CANCEL_QUIPS = ["No worries, cancelled that one.", "Scratch that — let me know kung may gusto ka pang i-try.", "Okay, hindi na i-se-save. Ask ako ulit anytime."];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function nowLabel() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function extractAmount(text) { const m = text.match(/\d[\d,]*/); return m ? parseInt(m[0].replace(/,/g, ''), 10) : null; }
+function mkText(content) { return { id: 'm' + Date.now() + Math.random(), role: 'assistant', isUser: false, isText: true, isChart: false, isReceipt: false, content, time: nowLabel() }; }
+function mkChart(content) {
+  const max = Math.max(...MONITORING_BUDGET.map((m) => m.spent));
+  const bars = MONITORING_BUDGET.map((m) => ({ label: m.category, valueFmt: PHP(m.spent), pct: Math.round((m.spent / max) * 100) }));
+  return { id: 'm' + Date.now() + Math.random(), role: 'assistant', isUser: false, isText: false, isChart: true, isReceipt: false, content, bars, time: nowLabel() };
+}
+function mkReceipt(draft) {
+  return { id: 'm' + Date.now() + Math.random(), role: 'assistant', isUser: false, isText: false, isChart: false, isReceipt: true, receiptTitle: draft.title, receiptNote: draft.subtitle, receiptAmount: draft.amount, receiptRows: draft.fields, receiptStatus: 'Approved', time: nowLabel() };
+}
+function mkDraft(kind, text) {
+  const amt = extractAmount(text) || 2000;
+  if (kind === 'income') return { id: 'd' + Date.now(), kind, title: 'New income entry', subtitle: 'New \u00b7 Income', amount: PHP(amt), fields: [{ label: 'Name', value: 'Quick log' }, { label: 'Account', value: 'GCash Wallet' }, { label: 'Category', value: 'Employment' }, { label: 'Date', value: 'Today' }] };
+  if (kind === 'expense') return { id: 'd' + Date.now(), kind, title: 'New expense entry', subtitle: 'New \u00b7 Expense', amount: PHP(amt), fields: [{ label: 'Description', value: 'Quick log' }, { label: 'Account', value: 'GCash Wallet' }, { label: 'Category', value: 'Food' }, { label: 'Date', value: 'Today' }] };
+  return { id: 'd' + Date.now(), kind, title: 'New transfer', subtitle: 'New \u00b7 Transfer', amount: PHP(amt), fields: [{ label: 'From', value: 'BDO Checking' }, { label: 'To', value: 'GCash Wallet' }, { label: 'Date', value: 'Today' }] };
+}
+const SEED_MESSAGES = {
+  't1': [
+    { id: 's1', role: 'user', isUser: true, isText: false, isChart: false, isReceipt: false, content: 'Paano ba ang gastos ko this week sa GCash?', time: '9:14 AM' },
+    Object.assign(mkChart("Here's the breakdown for GCash Wallet this week \u2014 Food is your biggest bucket, right on pace with last week."), { id: 's2', time: '9:14 AM' }),
+    { id: 's3', role: 'user', isUser: true, isText: false, isChart: false, isReceipt: false, content: 'Ok lang ba yung Food spend?', time: '9:15 AM' },
+    Object.assign(mkText("You're at \u20b16,400 of your \u20b18,000 Food budget \u2014 80% with 11 days left. Chill lang, may buffer ka pa."), { id: 's4', time: '9:15 AM' }),
+  ],
+  't2': [
+    { id: 's5', role: 'user', isUser: true, isText: false, isChart: false, isReceipt: false, content: 'Add income, SVI salary, 20000, today, GCash', time: 'Yesterday' },
+    Object.assign(mkText('Drafted it \u2014 check niyo muna bago mag-apply.'), { id: 's6', time: 'Yesterday' }),
+    Object.assign(mkReceipt({ title: 'SVI Salary', subtitle: 'New \u00b7 Income', amount: PHP(20000), fields: [{ label: 'Account', value: 'GCash Wallet' }, { label: 'Category', value: 'Employment' }, { label: 'Date', value: 'Jul 28' }] }), { id: 's7', time: 'Yesterday' }),
+  ],
+};
+
+function buildTable(headers, rows, footer) {
+  return { headers, rows: rows.map((r) => ({ cells: r })), footer: footer ? { cells: footer } : null };
+}
+
+class Component extends DCLogic {
+  state = {
+    section: this.props.startSection || 'dashboard',
+    theme: this.props.theme || 'light',
+    navCollapsed: false,
+    overlay: this.props.copilotTone || 'default',
+    tabs: [{ id: 't-1', section: this.props.startSection || 'dashboard' }],
+    activeTabId: 't-1',
+    dateUnit: 'Monthly',
+    monthOffset: 0,
+    accountScope: 'standard',
+    accountView: 'cards',
+    hideZeroBalance: false,
+    cardTypeFilter: '',
+    incomeViewMode: 'Monthly',
+    expenseViewMode: 'Monthly',
+    monitoringViewMode: 'Monthly',
+    autoSync: false,
+    draft: '',
+    busy: false,
+    slashOpen: false,
+    slashQuery: '',
+    mentionOpen: false,
+    mentionQuery: '',
+    activeThreadId: 't1',
+    threads: [
+      { id: 't1', title: 'GCash weekly recap', group: 'Today' },
+      { id: 't2', title: 'Logged: July salary', group: 'Yesterday' },
+    ],
+    messagesByThread: SEED_MESSAGES,
+    pendingDrafts: [],
+    voiceOn: false,
+  };
+
+  componentDidMount() {
+    if (window.lucide && window.lucide.icons) return;
+    this._lucideTimer = window.setInterval(() => {
+      if (window.lucide && window.lucide.icons) { window.clearInterval(this._lucideTimer); this.forceUpdate(); }
+    }, 120);
+    window.setTimeout(() => window.clearInterval(this._lucideTimer), 6000);
+  }
+  componentWillUnmount() { window.clearInterval(this._lucideTimer); }
+
+  go = (id) => this.setState((s) => ({ section: id, tabs: s.tabs.map((t) => (t.id === s.activeTabId ? { ...t, section: id } : t)) }));
+  toggleTheme = () => this.setState((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' }));
+  toggleNav = () => this.setState((s) => ({ navCollapsed: !s.navCollapsed }));
+  toggleAutoSync = () => this.setState((s) => ({ autoSync: !s.autoSync }));
+  verifySchema = () => {};
+  pullOnly = () => {};
+  pushOnly = () => {};
+
+  newTab = () => {
+    const id = 't-' + Date.now();
+    this.setState((s) => ({ tabs: [...s.tabs, { id, section: 'dashboard' }], activeTabId: id, section: 'dashboard' }));
+  };
+  selectTab = (id) => {
+    const tab = this.state.tabs.find((t) => t.id === id);
+    if (tab) this.setState({ activeTabId: id, section: tab.section });
+  };
+  closeTab = (id) => {
+    this.setState((s) => {
+      const tabs = s.tabs.filter((t) => t.id !== id);
+      if (tabs.length === 0) return { tabs: [{ id: 't-' + Date.now(), section: 'dashboard' }], activeTabId: s.activeTabId, section: 'dashboard' };
+      const activeTabId = s.activeTabId === id ? tabs[tabs.length - 1].id : s.activeTabId;
+      const activeTab = tabs.find((t) => t.id === activeTabId);
+      return { tabs, activeTabId, section: activeTab ? activeTab.section : s.section };
+    });
+  };
+
+  newChat = () => {
+    const id = 't-' + Date.now();
+    this.setState((s) => ({
+      threads: [{ id, title: 'New chat', group: 'Today' }, ...s.threads],
+      messagesByThread: { ...s.messagesByThread, [id]: [] },
+      pendingDrafts: [],
+      activeThreadId: id,
+      section: 'chat',
+    }));
+  };
+  selectThread = (id) => this.setState({ activeThreadId: id, pendingDrafts: [] });
+  renameThread = (id) => {
+    const t = this.state.threads.find((x) => x.id === id);
+    const next = window.prompt('Rename chat', t ? t.title : '');
+    if (!next || !next.trim()) return;
+    this.setState((s) => ({ threads: s.threads.map((th) => (th.id === id ? { ...th, title: next.trim() } : th)) }));
+  };
+  deleteThread = (id) => {
+    this.setState((s) => {
+      const threads = s.threads.filter((t) => t.id !== id);
+      const activeThreadId = s.activeThreadId === id ? (threads[0] ? threads[0].id : null) : s.activeThreadId;
+      return { threads, activeThreadId };
+    });
+  };
+
+  onDraftChange = (e) => {
+    const value = e.target.value;
+    const atIdx = value.lastIndexOf('@');
+    const showMention = atIdx !== -1 && !/\s/.test(value.slice(atIdx + 1)) && value.length - atIdx <= 24;
+    this.setState({ draft: value, slashOpen: value.startsWith('/'), slashQuery: value.startsWith('/') ? value.slice(1).toLowerCase() : '', mentionOpen: showMention, mentionQuery: showMention ? value.slice(atIdx + 1).toLowerCase() : '' });
+  };
+  onComposerKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } };
+  selectOverlay = (id) => this.setState({ overlay: id, draft: '', slashOpen: false });
+  selectMention = (name) => {
+    this.setState((s) => {
+      const atIdx = s.draft.lastIndexOf('@');
+      return { draft: s.draft.slice(0, atIdx) + '@' + name + ' ', mentionOpen: false };
+    });
+  };
+  toggleVoice = () => {
+    if (this.state.voiceOn) { this.setState({ voiceOn: false }); return; }
+    this.setState({ voiceOn: true });
+    window.setTimeout(() => this.setState({ voiceOn: false, draft: 'Log expense, 150 pesos, coffee, today, GCash' }), 1600);
+  };
+  send = () => {
+    const content = this.state.draft.trim();
+    if (!content || this.state.busy) return;
+    const threadId = this.state.activeThreadId;
+    const userMsg = { id: 'm' + Date.now() + Math.random(), role: 'user', isUser: true, isText: false, isChart: false, isReceipt: false, content, time: nowLabel() };
+    this.setState((s) => ({
+      draft: '', busy: true, slashOpen: false, mentionOpen: false,
+      messagesByThread: { ...s.messagesByThread, [threadId]: [...(s.messagesByThread[threadId] || []), userMsg] },
+      threads: s.threads.map((t) => (t.id === threadId && t.title === 'New chat' ? { ...t, title: content.slice(0, 32) } : t)),
+    }));
+    window.setTimeout(() => this.reply(threadId, content), 900);
+  };
+  reply = (threadId, content) => {
+    const lower = content.toLowerCase();
+    let msg; let draftCard = null;
+    if (/income|salary|sweldo|sahod/.test(lower)) { msg = mkText('Nakuha ko na \u2014 drafting that income entry, check mo muna below.'); draftCard = mkDraft('income', content); }
+    else if (/expense|gastos|bili|binayaran|log/.test(lower)) { msg = mkText('Got it, drafting that expense \u2014 review then Approve.'); draftCard = mkDraft('expense', content); }
+    else if (/transfer|ilipat/.test(lower)) { msg = mkText('Setting that transfer up for your review.'); draftCard = mkDraft('transfer', content); }
+    else if (/left in|summary|monitoring|budget/.test(lower)) { msg = mkChart("Here's where you stand this month:"); }
+    else { msg = mkText(pick(WITTY_REPLIES)); }
+    this.setState((s) => ({ busy: false, messagesByThread: { ...s.messagesByThread, [threadId]: [...(s.messagesByThread[threadId] || []), msg] }, pendingDrafts: draftCard ? [...s.pendingDrafts, draftCard] : s.pendingDrafts }));
+  };
+  approveDraft = (id) => {
+    const d = this.state.pendingDrafts.find((x) => x.id === id);
+    if (!d) return;
+    const receipt = mkReceipt(d);
+    this.setState((s) => ({ pendingDrafts: s.pendingDrafts.filter((x) => x.id !== id), messagesByThread: { ...s.messagesByThread, [s.activeThreadId]: [...(s.messagesByThread[s.activeThreadId] || []), receipt] } }));
+  };
+  cancelDraft = (id) => {
+    this.setState((s) => ({ pendingDrafts: s.pendingDrafts.filter((x) => x.id !== id), messagesByThread: { ...s.messagesByThread, [s.activeThreadId]: [...(s.messagesByThread[s.activeThreadId] || []), mkText(pick(CANCEL_QUIPS))] } }));
+  };
+
+  navItemStyle(active) {
+    return active
+      ? 'display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;margin-bottom:2px;border:0;border-left:2px solid var(--color-accent);background:color-mix(in srgb, var(--color-accent) 10%, transparent);color:var(--color-text);font-weight:800;font-size:13px;cursor:pointer;text-align:left;'
+      : 'display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;margin-bottom:2px;border:0;border-left:2px solid transparent;background:transparent;color:color-mix(in srgb, var(--color-text) 62%, transparent);font-weight:600;font-size:13px;cursor:pointer;text-align:left;';
+  }
+  segStyle(active) {
+    return `padding:6px 14px;border:1px solid ${active ? 'var(--color-accent)' : 'var(--color-divider)'};background:${active ? 'var(--gradient-accent)' : 'transparent'};color:${active ? '#fff' : 'var(--color-text)'};font-size:12px;font-weight:700;cursor:pointer;`;
+  }
+  metricTone(tone) { return TONES[tone] || TONES.blue; }
+  metricCard(m) {
+    const color = this.metricTone(m.tone);
+    return { ...m, iconEl: icon(m.icon, 14), iconStyle: `display:grid;width:32px;height:32px;place-items:center;border-radius:8px;flex:none;background:color-mix(in srgb, ${color} 12%, transparent);color:${color};` };
+  }
+
+  monthLabel(offset) {
+    const d = new Date(2026, 6 + offset, 1);
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const dark = s.theme === 'dark';
+    const bg = dark ? 'var(--color-neutral-900)' : 'var(--color-bg)';
+    const surface = dark ? 'var(--color-neutral-800)' : 'var(--color-neutral-100)';
+    const surfaceRaised = dark ? 'var(--color-neutral-700)' : 'color-mix(in srgb, var(--color-neutral-100) 40%, white)';
+    const text = dark ? 'var(--color-neutral-100)' : 'var(--color-text)';
+    const divider = dark ? 'color-mix(in srgb, var(--color-neutral-100) 22%, transparent)' : 'color-mix(in srgb, var(--color-neutral-900) 30%, transparent)';
+    const appShellStyle = `display:flex;flex-direction:column;height:100%;width:100%;background:${bg};color:${text};--color-bg:${bg};--color-surface:${surfaceRaised};--color-divider:${divider};font-family:var(--font-body);overflow:hidden;`;
+    const glassChrome = `background:var(--material-regular);backdrop-filter:var(--blur-regular);-webkit-backdrop-filter:var(--blur-regular);box-shadow:var(--glass-highlight);`;
+    const tabBarStyle = `display:flex;align-items:center;height:34px;flex:none;${glassChrome}border-bottom:var(--glass-border);padding:0 4px;`;
+    const bodyRowStyle = `display:flex;flex:1;min-height:0;`;
+    const navExpanded = !s.navCollapsed;
+    const sidebarStyle = `width:${navExpanded ? '224px' : '58px'};flex:none;display:flex;flex-direction:column;${glassChrome}border-right:var(--glass-border);transition:width .15s ease;`;
+    const groupLabelStyle = navExpanded ? 'font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin:0 0 6px 10px' : 'display:none';
+    const topbarStyle = `display:flex;align-items:center;gap:16px;padding:12px 28px;${glassChrome}border-bottom:var(--glass-border);flex:none;flex-wrap:wrap;`;
+
+    const tabs = s.tabs.map((tab) => {
+      const active = tab.id === s.activeTabId;
+      return {
+        label: (this.sectionMeta(tab.section) || {}).title || 'Dashboard',
+        style: `display:flex;align-items:center;gap:6px;padding:0 10px;height:30px;font-size:12px;font-weight:700;cursor:pointer;background:${active ? bg : 'transparent'};color:${active ? text : 'color-mix(in srgb, ' + text + ' 60%, transparent)'};border-right:1px solid ${divider};max-width:180px;`,
+        onClick: () => this.selectTab(tab.id),
+        onClose: (e) => { e.stopPropagation(); this.closeTab(tab.id); },
+      };
+    });
+
+    const iconPaths = {
+      dashboard: 'M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z',
+      accounts: 'M2 6h20v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z M2 10h20 M17 15h.01',
+      income: 'M7 17 17 7 M7 7h10v10',
+      expense: 'M17 7 7 17 M17 17H7V7',
+      monitoring: 'M3 4h18v17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M16 2v4M8 2v4M3 10h18',
+      transfer: 'M8 3 4 7l4 4 M4 7h16 m16 10 4-4-4-4 M20 17H4',
+      ccPayment: 'M2 5h20v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z M2 10h20',
+      alkansya: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 8v8M8.5 10.5h7M8.5 13.5h7',
+      receivables: 'M2 6h20v12H2z M12 12h.01M6 12h.01M18 12h.01',
+      history: 'M3 12a9 9 0 1 0 3-6.7 M3 5v5h5 M12 7v5l4 2',
+      sync: 'M21 12a9 9 0 0 1-15 6.7L3 16 M3 12a9 9 0 0 1 15-6.7L21 8 M21 3v5h-5M3 21v-5h5',
+      settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    };
+    const iconEl = (key) => svg(iconPaths[key] || '');
+
+    const navIds = ['dashboard', 'accounts', 'income', 'expense', 'monitoring'];
+    const workflowIds = ['transfer', 'ccPayment', 'alkansya', 'receivables'];
+    const sectionMap = { dashboard: 'dashboard', accounts: 'accounts', income: 'income', expense: 'expense', monitoring: 'monthly-monitoring', transfer: 'transfer', ccPayment: 'credit-card-payment', alkansya: 'alkansya', receivables: 'receivables', history: 'history', sync: 'sync', settings: 'settings' };
+    const badges = { history: 2, sync: 0 };
+    const mkNavItem = (key) => {
+      const sid = sectionMap[key];
+      const labels = { dashboard: 'Dashboard', accounts: 'Accounts', income: 'Income', expense: 'Expense', monitoring: 'Monitoring', transfer: 'Transfer', ccPayment: 'CC Payment', alkansya: 'Alkansya', receivables: 'Receivables', history: 'History', sync: 'Sync Center', settings: 'Settings' };
+      const badge = badges[key];
+      return { label: labels[key], iconEl: iconEl(key), style: this.navItemStyle(s.section === sid), onClick: () => this.go(sid), badge: badge || 0, badgeStyle: `background:var(--gradient-accent);color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;` };
+    };
+    const navGroups = {
+      core: navIds.map(mkNavItem),
+      workflow: workflowIds.map(mkNavItem),
+      system: ['history', 'sync', 'chat', 'settings'].map((key) => (key === 'chat'
+        ? { label: 'Chat', iconEl: svg('M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'), style: this.navItemStyle(s.section === 'chat'), onClick: () => this.go('chat'), badge: 0 }
+        : mkNavItem(key))),
+    };
+
+    const monthLbl = this.monthLabel(s.monthOffset);
+    const dateUnits = ['Daily', 'Weekly', 'Monthly', 'Annually'];
+    const dashSections = new Set(['income', 'expense', 'monthly-monitoring']);
+    const dateSelector = dashSections.has(s.section) ? {
+      options: dateUnits.map((u) => ({ label: u, onClick: () => this.setState({ dateUnit: u }), style: this.segStyle(s.dateUnit === u) })),
+      label: monthLbl,
+      onPrev: () => this.setState((st) => ({ monthOffset: st.monthOffset - 1 })),
+      onNext: () => this.setState((st) => ({ monthOffset: st.monthOffset + 1 })),
+    } : null;
+
+    const netWorth = ACCOUNTS.reduce((sum, a) => sum + a.balance, 0);
+    const monthlyIncomeTotal = INCOME_RECORDS.reduce((sum, r) => sum + r.gross, 0);
+    const monthlyExpenseTotal = EXPENSE_RECORDS.filter((e) => e.category !== 'Pasabuy').reduce((sum, e) => sum + e.amount, 0);
+    const creditAccts = ACCOUNTS.filter((a) => CREDIT_TYPES.has(a.type));
+    const availableCredit = creditAccts.reduce((sum, a) => sum + (a.available || 0), 0);
+    const creditLimitTotal = creditAccts.reduce((sum, a) => sum + (a.limit || 0), 0);
+    const creditBalanceTotal = creditAccts.reduce((sum, a) => sum + a.balance, 0);
+    const dashMetricsA = [
+      { title: 'Total Cash Flow', value: PHP(netWorth), detail: 'Non-credit accounts', icon: 'walletCards', tone: 'blue' },
+      { title: 'Monthly Income', value: PHP(monthlyIncomeTotal), detail: monthLbl, icon: 'banknote', tone: 'green' },
+      { title: 'Monthly Expenses', value: PHP(monthlyExpenseTotal), detail: monthLbl, icon: 'receipt', tone: 'rose' },
+      { title: 'Sync Queue', value: '2', detail: 'Last sync 2 min ago', icon: 'refreshCw', tone: 'amber' },
+    ].map((m) => this.metricCard(m));
+    const dashMetricsB = [
+      { title: 'Alkansya Balance', value: PHP(ALKANSYA.reduce((s2, g) => s2 + g.saved, 0)), detail: monthLbl, icon: 'piggyBank', tone: 'green' },
+      { title: 'Available Credit', value: PHP(availableCredit), detail: `Limit ${PHP(creditLimitTotal, { compact: true })}`, icon: 'creditCard', tone: 'blue' },
+      { title: 'Monthly Total CC Transactions', value: PHP(45000), detail: `${creditAccts.length} credit accounts \u00b7 ${monthLbl}`, icon: 'creditCard', tone: 'amber' },
+      { title: 'CC Balance Total', value: signed(creditBalanceTotal), detail: `${creditAccts.length} credit accounts`, icon: 'alertTriangle', tone: 'rose' },
+    ].map((m) => this.metricCard(m));
+
+    const rankColors = ['var(--red)', 'color-mix(in srgb, var(--red) 60%, var(--orange))', 'var(--orange)', 'color-mix(in srgb, var(--orange) 55%, var(--yellow))', 'var(--yellow)'];
+    const topPurchases = [...EXPENSE_RECORDS].sort((a, b) => b.amount - a.amount).slice(0, 5).map((p, i) => ({
+      rank: i + 1, desc: p.desc, meta: `${p.category} \u00b7 ${p.account}`, amountFmt: PHP(p.amount),
+      rankStyle: `width:24px;height:24px;flex:none;border-radius:7px;background:${rankColors[i] || rankColors[rankColors.length - 1]};color:#fff;font:var(--weight-semibold) 12px var(--font-text);display:flex;align-items:center;justify-content:center;`,
+      titleStyle: `color:${rankColors[i] || rankColors[rankColors.length - 1]};`,
+    }));
+    const catTotals = CATEGORIES.filter((c) => !/pasabuy/i.test(c)).map((cat) => ({ name: cat, value: EXPENSE_RECORDS.filter((e) => e.category === cat).reduce((sum, e) => sum + e.amount, 0) })).filter((c) => c.value > 0).sort((a, b) => b.value - a.value);
+    const CAT_PALETTE = ['var(--accent)', 'var(--teal)', 'var(--orange)', 'var(--pink)', 'var(--purple)', 'var(--gray-3)'];
+    const catTotalSum = catTotals.reduce((sum, c) => sum + c.value, 0) || 1;
+    const spendingBreakdown = catTotals.map((c, i) => ({ name: c.name, valueFmt: PHP(c.value, { compact: true }), pct: (c.value / catTotalSum) * 100, color: CAT_PALETTE[i % CAT_PALETTE.length] }));
+    let donutAcc = 0;
+    const donutStops = spendingBreakdown.map((b) => { const from = donutAcc; donutAcc += b.pct; return `${b.color} ${from.toFixed(2)}% ${donutAcc.toFixed(2)}%`; }).join(', ');
+    const donutStyle = spendingBreakdown.length
+      ? `width:152px;height:152px;border-radius:50%;background:conic-gradient(${donutStops});mask:radial-gradient(circle, transparent 46px, #000 47px);-webkit-mask:radial-gradient(circle, transparent 46px, #000 47px);`
+      : 'width:152px;height:152px;border-radius:50%;background:var(--fill-3);';
+    const topCategories = catTotals.slice(0, 5).map((c) => {
+      const pct = Math.round(monthlyExpenseTotal > 0 ? (c.value / monthlyExpenseTotal) * 100 : 0);
+      return { name: c.name, valueFmt: PHP(c.value, { compact: true }), pct: Math.min(pct, 100), color: pct > 50 ? 'var(--red)' : pct > 25 ? 'var(--orange)' : 'var(--accent)' };
+    });
+    const txIcon = { income: 'arrowUpRight', expense: 'arrowDownLeft', transfer: 'arrowUpDown', 'credit-card-payment': 'creditCard' };
+    const sectionPriority = { income: 0, 'credit-card-payment': 1, expense: 2, transfer: 3 };
+    const recentTx = [
+      ...INCOME_RECORDS.map((r) => ({ date: r.date, title: r.name, meta: 'Income', value: r.gross - r.capex, section: 'income' })),
+      ...CC_PAYMENTS.map((r) => ({ date: r.date, title: r.name, meta: 'CC Payment', value: -r.amount, section: 'credit-card-payment' })),
+      ...EXPENSE_RECORDS.map((r) => ({ date: r.date, title: r.desc, meta: 'Expense', value: -r.amount, section: 'expense' })),
+      ...TRANSFERS.map((r) => ({ date: r.date, title: r.name, meta: 'Transfer', value: r.amount, section: 'transfer' })),
+    ].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : (sectionPriority[a.section] ?? 99) - (sectionPriority[b.section] ?? 99))).slice(0, 5).map((t) => {
+      const tone = t.value >= 0 ? 'var(--green)' : 'var(--red)';
+      return {
+        title: t.title, meta: t.meta, amountFmt: (t.value >= 0 ? '+' : '-') + PHP(Math.abs(t.value), { compact: true }),
+        rowStyle: 'display:flex;align-items:center;gap:12px;padding:10px 0;border:0;border-bottom:1px solid var(--separator);background:transparent;width:100%;cursor:pointer;font-family:var(--font-text);color:inherit;text-align:left;',
+        amountStyle: `color:${tone};font-size:14px;white-space:nowrap;font-family:var(--font-mono);font-variant-numeric:tabular-nums;`,
+        iconWrapStyle: `display:grid;width:32px;height:32px;place-items:center;border-radius:8px;flex:none;background:color-mix(in srgb, ${tone} 12%, transparent);color:${tone};`,
+        iconEl: icon(txIcon[t.section] || 'arrowUpRight', 16),
+      };
+    });
+
+    const cardTypeOptions = Array.from(new Set(ACCOUNTS.map((a) => a.type)));
+    const visibleAccountsRaw = ACCOUNTS.filter((a) => {
+      if (s.hideZeroBalance && a.balance === 0) return false;
+      if (s.cardTypeFilter && a.type !== s.cardTypeFilter) return false;
+      if (s.accountScope === 'credit') return CREDIT_TYPES.has(a.type);
+      if (s.accountScope === 'standard') return !CREDIT_TYPES.has(a.type);
+      return true;
+    });
+    const visibleAccounts = visibleAccountsRaw.map((a) => ({
+      ...a, isCredit: CREDIT_TYPES.has(a.type), balanceFmt: signed(a.balance),
+      limitFmt: a.limit != null ? PHP(a.limit) : '\u2014', availableFmt: a.available != null ? PHP(a.available) : '\u2014',
+      balanceStyle: `color:${a.balance < 0 ? 'var(--color-accent-2)' : 'var(--color-text)'};`,
+      badgeClass: CREDIT_TYPES.has(a.type) ? 'acct-badge acct-badge--credit' : 'acct-badge acct-badge--std',
+    }));
+    const accountsTable = buildTable(
+      s.accountScope === 'credit' ? ['Account', 'Type', 'Balance', 'Credit Limit', 'Available'] : ['Account', 'Type', 'Balance'],
+      visibleAccountsRaw.map((a) => s.accountScope === 'credit'
+        ? [a.name, a.type, signed(a.balance), PHP(a.limit || 0), PHP(a.available || 0)]
+        : [a.name, a.type, signed(a.balance)]),
+      s.accountScope === 'credit'
+        ? ['Total', '', signed(visibleAccountsRaw.reduce((sum, a) => sum + a.balance, 0)), PHP(visibleAccountsRaw.reduce((sum, a) => sum + (a.limit || 0), 0)), PHP(visibleAccountsRaw.reduce((sum, a) => sum + (a.available || 0), 0))]
+        : ['Total', '', signed(visibleAccountsRaw.reduce((sum, a) => sum + a.balance, 0))],
+    );
+    const accountScopeSeg = { options: [['all', 'All Accounts'], ['standard', 'Accounts'], ['credit', 'Credit Accounts']].map(([v, l]) => ({ label: l, onClick: () => this.setState({ accountScope: v }), style: this.segStyle(s.accountScope === v) })) };
+    const accountViewSeg = { options: [['cards', 'Cards'], ['table', 'Table']].map(([v, l]) => ({ label: l, onClick: () => this.setState({ accountView: v }), style: this.segStyle(s.accountView === v) })) };
+
+    const isIncomeOrExpense = s.section === 'income' || s.section === 'expense';
+    const ieViewModeKey = s.section === 'income' ? 'incomeViewMode' : 'expenseViewMode';
+    const ieViewSeg = { options: dateUnits.map((u) => ({ label: u, onClick: () => this.setState({ [ieViewModeKey]: u }), style: this.segStyle(s[ieViewModeKey] === u) })) };
+    const ieToolbar = { newLabel: s.section === 'income' ? 'New Income' : 'New Expense', onNew: () => {} };
+    const incomeTotalGross = INCOME_RECORDS.reduce((sum, r) => sum + r.gross, 0);
+    const incomeTotalCapex = INCOME_RECORDS.reduce((sum, r) => sum + r.capex, 0);
+    const ieTable = s.section === 'income'
+      ? buildTable(['Name', 'Date', 'Account', 'Category', 'Gross', 'Expenditure', 'Net'],
+          INCOME_RECORDS.map((r) => [r.name, r.date, r.account, r.category, PHP(r.gross), PHP(r.capex), signed(r.gross - r.capex)]),
+          ['Total', '', '', '', PHP(incomeTotalGross), PHP(incomeTotalCapex), signed(incomeTotalGross - incomeTotalCapex)])
+      : buildTable(['Description', 'Purchase Date', 'Account', 'Category', 'Status', 'Amount'],
+          EXPENSE_RECORDS.map((r) => [r.desc, r.date, r.account, r.category, r.status, PHP(r.amount)]),
+          ['Total', '', '', '', '', PHP(EXPENSE_RECORDS.reduce((sum, r) => sum + r.amount, 0))]);
+
+    const monitoringSeg = { options: dateUnits.slice(2).concat(['Quarterly']).map((u) => ({ label: u, onClick: () => this.setState({ monitoringViewMode: u }), style: this.segStyle(s.monitoringViewMode === u) })) };
+    const grossMargin = monthlyIncomeTotal - monthlyExpenseTotal;
+    const monitoringMetrics = [
+      { title: 'Monthly Income', value: PHP(monthlyIncomeTotal), detail: monthLbl, tone: 'accent' },
+      { title: 'Monthly Expense', value: PHP(monthlyExpenseTotal), detail: monthLbl, tone: 'accent2' },
+      { title: 'Gross Margin', value: signed(grossMargin), detail: 'Income less expenses', tone: 'accent' },
+      { title: 'For Savings', value: PHP(monthlyIncomeTotal * 0.2), detail: '20% allocation', tone: 'accent2' },
+    ].map((m) => ({ ...m, cardStyle: `border-top:3px solid ${this.metricTone(m.tone === 'accent2' ? 'rose' : 'blue')};` }));
+    const budgetAllocation = [
+      { label: 'Needs', pct: 50, amountFmt: PHP(monthlyIncomeTotal * 0.5) },
+      { label: 'Wants', pct: 30, amountFmt: PHP(monthlyIncomeTotal * 0.3) },
+      { label: 'Savings', pct: 20, amountFmt: PHP(monthlyIncomeTotal * 0.2) },
+    ];
+    const setBudget = monthlyIncomeTotal * 0.8;
+    const onTrack = monthlyExpenseTotal <= setBudget;
+    const monitoringInsight = { budgetFmt: PHP(setBudget), message: onTrack ? `You spent ${PHP(Math.abs(setBudget - monthlyExpenseTotal))} less than your set budget this month \u2014 you're on track!` : `You've exceeded your set budget by ${PHP(Math.abs(monthlyExpenseTotal - setBudget))}.` };
+    const monitoringIncomeTable = buildTable(['Income Type', 'Gross Income', 'Expenditure', 'Net Income'],
+      INCOME_RECORDS.map((r) => [r.category, PHP(r.gross), PHP(r.capex), signed(r.gross - r.capex)]));
+    const monitoringBudgetTable = buildTable(['Expense category', 'Budget', 'Spending', 'Remaining'],
+      MONITORING_BUDGET.map((m) => [m.category, PHP(m.budget), PHP(m.spent), signed(m.budget - m.spent)]),
+      ['Total', PHP(MONITORING_BUDGET.reduce((sum, m) => sum + m.budget, 0)), PHP(MONITORING_BUDGET.reduce((sum, m) => sum + m.spent, 0)), signed(MONITORING_BUDGET.reduce((sum, m) => sum + (m.budget - m.spent), 0))]);
+
+    const workflowConfig = {
+      transfer: { headers: ['Date', 'Name', 'Source Account', 'Amount', 'Transfer Account'], rows: TRANSFERS.map((t) => [t.date, t.name, t.from, PHP(t.amount), t.to]) },
+      'credit-card-payment': { headers: ['Date', 'Name', 'CC Account', 'Amount', 'Payer Account'], rows: CC_PAYMENTS.map((c) => [c.date, c.name, c.cc, PHP(c.amount), c.payer]) },
+      alkansya: { headers: ['Name', 'Account', 'Category', 'Amount'], rows: ALKANSYA.map((a) => [a.name, a.account, a.category, PHP(a.saved)]) },
+      receivables: { headers: ['Name', 'Date', 'Account', 'Category', 'Amount'], rows: RECEIVABLES.map((r) => [r.name, r.date, r.account, r.category, PHP(r.amount)]) },
+    };
+    const workflowTable = workflowConfig[s.section] ? buildTable(workflowConfig[s.section].headers, workflowConfig[s.section].rows) : buildTable([], []);
+
+    const historyMetrics = [
+      { title: 'Unsynced Items', value: `${UNSYNCED.length}`, detail: 'Waiting to reach Notion', tone: 'accent2' },
+      { title: 'Pending Deletions', value: '0', detail: 'Soft/hard deletes waiting to sync', tone: 'accent2' },
+      { title: 'Last Pull', value: '9:40 AM', detail: 'Notion DB \u2192 App \u00b7 Today', tone: 'accent' },
+      { title: 'Last Push', value: '10:02 AM', detail: 'App \u2192 Notion DB \u00b7 Today', tone: 'accent' },
+    ].map((m) => ({ ...m, cardStyle: `border-top:3px solid ${this.metricTone(m.tone === 'accent2' ? 'rose' : 'blue')};` }));
+    const historyUnsyncedTable = buildTable(['Status', 'Record', 'Type', 'State', 'Changed'], UNSYNCED.map((u) => [u.status, u.title, u.type, u.state, u.changed]));
+    const historySyncedTable = buildTable(['Status', 'Record', 'Type', 'Direction', 'When'], RECENTLY_SYNCED.map((r) => [r.status, r.title, r.type, r.direction, r.when]));
+
+    const syncMetrics = [
+      { title: 'Last Successful Sync', value: '10:02', detail: 'Today', tone: 'accent' },
+      { title: 'Pending Operations', value: '2', detail: 'Queued changes', tone: 'accent2' },
+      { title: 'Failed Operations', value: '0', detail: 'Needs review', tone: 'accent2' },
+      { title: 'Schema Health', value: 'Verified', detail: '/system/schema-status', tone: 'accent' },
+    ].map((m) => ({ ...m, cardStyle: `border-top:3px solid ${this.metricTone(m.tone === 'accent2' ? 'rose' : 'blue')};` }));
+
+    const grouped = {};
+    s.threads.forEach((th) => { (grouped[th.group] = grouped[th.group] || []).push(th); });
+    const threadGroups = ['Today', 'Yesterday', 'Previous'].filter((g) => grouped[g]).map((label) => ({
+      label,
+      items: grouped[label].map((th) => ({ ...th, rowStyle: `display:flex;align-items:center;gap:2px;${th.id === s.activeThreadId ? 'background:color-mix(in srgb, var(--color-accent) 10%, transparent);border-left:2px solid var(--color-accent);' : 'border-left:2px solid transparent;'}`, select: () => this.selectThread(th.id), rename: () => this.renameThread(th.id), remove: () => this.deleteThread(th.id) })),
+    }));
+    const messages = (s.messagesByThread[s.activeThreadId] || []).map((m) => ({ ...m, wrapStyle: `display:flex;${m.isUser ? 'justify-content:flex-end' : 'justify-content:flex-start'}` }));
+    const pendingDrafts = s.pendingDrafts.map((d) => ({ ...d, onApprove: () => this.approveDraft(d.id), onCancel: () => this.cancelDraft(d.id) }));
+    const slashOptions = OVERLAYS.filter((o) => o.label.toLowerCase().includes(s.slashQuery) || o.id.includes(s.slashQuery)).map((o) => ({ ...o, onClick: () => this.selectOverlay(o.id) }));
+    const mentionOptions = MENTION_ACCOUNTS.filter((n) => n.toLowerCase().includes(s.mentionQuery)).map((n) => ({ name: n, onClick: () => this.selectMention(n) }));
+    const overlayChips = OVERLAYS.map((o) => ({ ...o, chipStyle: `padding:6px 12px;border:1px solid ${o.id === s.overlay ? 'var(--color-accent)' : 'var(--color-divider)'};background:${o.id === s.overlay ? 'var(--color-accent)' : 'transparent'};color:${o.id === s.overlay ? '#fff' : 'var(--color-text)'};font-size:12px;font-weight:700;cursor:pointer;` }));
+    const activeOverlayMeta = OVERLAYS.find((o) => o.id === s.overlay) || OVERLAYS[0];
+    const starterPrompts = STARTER_PROMPTS.map((p) => ({ label: p, onClick: () => this.setState({ draft: p }) }));
+
+    const titles = { dashboard: ['Overview', 'Good evening, Juan'], accounts: ['Accounts', 'Your balances'], income: ['Income', 'Money coming in'], expense: ['Expense', 'Money going out'], 'monthly-monitoring': ['Monitoring', 'Budget pace this month'], transfer: ['Transfer', 'Move money between accounts'], 'credit-card-payment': ['Credit Card Payment', 'Metrobank statement'], alkansya: ['Alkansya', 'Savings goals'], receivables: ['Receivables', 'Pasabuy tracking'], history: ['History', 'Full ledger'], sync: ['Sync Center', 'Notion sync status'], settings: ['Settings', 'App preferences'] };
+    const t = titles[s.section] || ['', ''];
+
+    return {
+      appShellStyle, tabBarStyle, bodyRowStyle, tabs, newTab: this.newTab,
+      sidebarStyle, navExpanded, groupLabelStyle, navToggleIconPath: navExpanded ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6', toggleNav: this.toggleNav, navGroups,
+      topbarStyle, dateSelector,
+      statusPillStyle: 'display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 10px;border:1px solid var(--color-divider);',
+      statusDotStyle: 'width:6px;height:6px;background:var(--gradient-accent);display:inline-block;',
+      syncStatus: { online: 'Online', unsynced: 2, lastSync: '2 min ago' },
+      verifySchema: this.verifySchema, goSync: () => this.go('sync'), goSettings: () => this.go('settings'), goChat: () => this.go('chat'),
+      notChat: s.section !== 'chat', isChat: s.section === 'chat',
+      isDashboard: s.section === 'dashboard', isAccounts: s.section === 'accounts', isIncomeOrExpense,
+      isMonitoring: s.section === 'monthly-monitoring', isWorkflow: workflowIds.map((k) => sectionMap[k]).includes(s.section),
+      isHistory: s.section === 'history', isSync: s.section === 'sync', isSettings: s.section === 'settings',
+      sectionKicker: t[1], sectionTitle: t[0],
+      dash: { monthLabel: monthLbl }, dashMetricsA, dashMetricsB, topPurchases, spendingBreakdown, donutStyle, topCategories, recentTx,
+      accountScopeSeg, accountViewSeg, accountsCardsView: s.accountView === 'cards', accountsTableView: s.accountView === 'table',
+      cardTypeOptions, onCardTypeFilterChange: (e) => this.setState({ cardTypeFilter: e.target.value }), hideZeroBalance: s.hideZeroBalance, toggleHideZero: () => this.setState((st) => ({ hideZeroBalance: !st.hideZeroBalance })),
+      visibleAccounts, accountsTable,
+      ieViewSeg, ieToolbar, ieTable,
+      monitoringSeg, monitoringMetrics, budgetAllocation, monitoringInsight, monitoringIncomeTable, monitoringBudgetTable,
+      workflowTable, workflowNewLabel: () => {},
+      historyMetrics, historyUnsyncedTable, historySyncedTable,
+      syncMetrics, errorRows: ERROR_ROWS, pullOnly: this.pullOnly, pushOnly: this.pushOnly,
+      autoSync: s.autoSync, autoSyncLabel: s.autoSync ? 'Turn off' : 'Turn on', autoSyncHint: s.autoSync ? 'Syncing automatically on a timer.' : 'Sync only when you press the Sync button.', toggleAutoSync: this.toggleAutoSync,
+      themeLabel: dark ? 'Dark' : 'Light', themeToggleLabel: dark ? 'Light' : 'Dark', toggleTheme: this.toggleTheme, themeAttr: dark ? 'dark' : 'light',
+      threadGroups, newChat: this.newChat, backToMain: () => this.go('dashboard'),
+      chatIsEmpty: messages.length === 0, messages, busy: s.busy, pendingDrafts,
+      overlayChips, activeOverlayMeta, slashOpen: s.slashOpen, slashOptions, mentionOpen: s.mentionOpen, mentionOptions,
+      draft: s.draft, onDraftChange: this.onDraftChange, onComposerKeyDown: this.onComposerKeyDown, send: this.send,
+      sendDisabled: s.busy || !s.draft.trim(),
+      sendButtonStyle: `background:var(--gradient-accent);color:#fff;border:0;width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;cursor:${s.busy || !s.draft.trim() ? 'not-allowed' : 'pointer'};opacity:${s.busy || !s.draft.trim() ? 0.4 : 1};`,
+      micButtonStyle: `background:transparent;border:1px solid var(--color-divider);width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:${s.voiceOn ? '#fff' : 'var(--color-text)'};background:${s.voiceOn ? 'var(--gradient-accent)' : 'transparent'};`,
+      composerPlaceholder: s.voiceOn ? 'Listening\u2026' : 'Message Finance Copilot\u2026  \u23ce to send, \u21e7\u23ce for newline',
+      toggleVoice: this.toggleVoice, starterPrompts,
+    };
+  }
+
+  sectionMeta(sectionId) {
+    const titles = { dashboard: { title: 'Dashboard' }, accounts: { title: 'Accounts' }, income: { title: 'Income' }, expense: { title: 'Expense' }, 'monthly-monitoring': { title: 'Monitoring' }, transfer: { title: 'Transfer' }, 'credit-card-payment': { title: 'CC Payment' }, alkansya: { title: 'Alkansya' }, receivables: { title: 'Receivables' }, history: { title: 'History' }, sync: { title: 'Sync Center' }, chat: { title: 'Chat' }, settings: { title: 'Settings' } };
+    return titles[sectionId];
+  }
+}
+</script>
+</body>
+</html>

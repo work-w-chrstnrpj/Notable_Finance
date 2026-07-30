@@ -9,11 +9,13 @@ import type {
   ExpenseListParams,
   UpdateExpenseInput,
   UpdateIncomeInput,
-  UpdateSchedulerInput
+  UpdateSchedulerInput,
+  PageContentResource
 } from '../../shared/finance.types'
 import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
+import * as pageContent from '../services/page-content'
 import { getHistory, getItemDetail } from '../services/history'
 import { discardUnsynced } from '../services/discard-unsynced'
 import * as notion from '../notion/service'
@@ -356,6 +358,17 @@ export function registerIpc(): void {
   ipcMain.handle('sync:now', (_e, since?: string) => result(() => syncNow(since))) // reconcile (pull) then push
   ipcMain.handle('sync:pull', (_e, since?: string) => result(() => pullAll(false, since))) // Notion → App only
   ipcMain.handle('sync:push', () => result(() => pushAll())) // App → Notion only
+
+  // Page Content — Notion page body (block children) edited local-first as Markdown.
+  ipcMain.handle('pageContent:get', (_e, resource: PageContentResource, id: string) =>
+    result(() => pageContent.getPageContent(resource, id))
+  )
+  ipcMain.handle('pageContent:save', (_e, resource: PageContentResource, id: string, markdown: string) =>
+    result(() => pageContent.savePageContent(resource, id, markdown))
+  )
+  ipcMain.handle('pageContent:clear', (_e, resource: PageContentResource, id: string) =>
+    result(() => pageContent.clearPageContent(resource, id))
+  )
   ipcMain.handle('sync:initialPull', () => result(() => pullAll(true))) // full pull (onboarding)
   ipcMain.handle('sync:reset', () => result(() => resetDatabase())) // wipe local + re-pull
   ipcMain.handle('sync:getSettings', () => result(() => getSyncSettings()))

@@ -65,9 +65,16 @@ function FormModal({
             <h2 id="form-modal-title">{modal.title}</h2>
             <p>{editing ? subtitle : "Read-only — click Edit to change and save to Notion."}</p>
           </div>
-          <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
-            <X size={17} />
-          </button>
+          <div className="modal-header-actions">
+            {onInfo && (
+              <button type="button" className="icon-button" aria-label="Page content" onClick={onInfo}>
+                <Info size={17} />
+              </button>
+            )}
+            <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
+              <X size={17} />
+            </button>
+          </div>
         </div>
         <div className="modal-panel__body">
           <fieldset className="modal-fieldset" disabled={!editing || saving}>

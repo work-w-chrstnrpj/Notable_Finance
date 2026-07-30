@@ -11,6 +11,7 @@ import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
+import { FlippableModal } from "@/components/ui/flippable-modal";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { useIncomes, useFinanceInvalidation } from "@/lib/use-data";
@@ -797,7 +798,7 @@ function IncomePage({
         <Toast key={saveNotice} tone="info" duration={4000} message={saveNotice} onDismiss={() => setSaveNotice(null)} />
       )}
 
-      <FormModal
+      <FlippableModal
         deleteLabel={deleteLabel}
         deleteDanger={hardDeleteEnabled}
         modal={modal}
@@ -810,6 +811,8 @@ function IncomePage({
         onDelete={handleDeleteIncome}
         onDuplicate={handleDuplicateIncome}
         onClose={() => setModal(null)}
+        pageContentResource="incomes"
+        recordId={editingId}
       >
         <div className="form-grid form-grid--single">
           <Field label="Name" required error={shakeFields.has("name")}>
@@ -874,7 +877,7 @@ function IncomePage({
             valueTone={getMoneyValueTone(calculatedNetIncome)}
           />
         </div>
-      </FormModal>
+      </FlippableModal>
       <MassEditModal
         open={massEditOpen}
         title={`Bulk edit ${selectedIds.size} income${selectedIds.size === 1 ? "" : "s"}`}

@@ -71,6 +71,20 @@
       "when": 1786000000000,
       "tag": "0009_activity_payload",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1786100000000,
+      "tag": "0010_page_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1785404357737,
+      "tag": "0011_regenerate_snapshots",
+      "breakpoints": true
     }
   ]
 }

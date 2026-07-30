@@ -66,7 +66,10 @@ export const incomes = sqliteTable('incomes', {
   notes: text('notes'),
   isTransaction: integer('is_transaction').notNull().default(0),
   transactedAccountId: text('transacted_account_id'),
-  ccPaymentCoveredId: text('cc_payment_covered_id')
+  ccPaymentCoveredId: text('cc_payment_covered_id'),
+  // Page Content (Notion block children) as Markdown; dirty flag drives the content push.
+  pageContent: text('page_content'),
+  pageContentDirty: integer('page_content_dirty').notNull().default(0)
 })
 
 export const expenses = sqliteTable('expenses', {
@@ -88,7 +91,10 @@ export const expenses = sqliteTable('expenses', {
   pasabuyDateOfPayment: text('pasabuy_date_of_payment'),
   pasabuyPaidPeriod: integer('pasabuy_paid_period'),
   pasabuyAccountReceiverId: text('pasabuy_account_receiver_id'),
-  ccLinkPaymentReceiptId: text('cc_link_payment_receipt_id')
+  ccLinkPaymentReceiptId: text('cc_link_payment_receipt_id'),
+  // Page Content (Notion block children) as Markdown; dirty flag drives the content push.
+  pageContent: text('page_content'),
+  pageContentDirty: integer('page_content_dirty').notNull().default(0)
 })
 
 export const expenseScheduler = sqliteTable('expense_scheduler', {

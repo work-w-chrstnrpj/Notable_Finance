@@ -1,0 +1,34 @@
+:root{
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-3: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
+  --shadow-modal: 0 24px 64px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.12);
+  --material-ultrathin: rgba(255,255,255,0.4); /* @kind color */
+  --material-thin: rgba(255,255,255,0.55); /* @kind color */
+  --material-regular: rgba(255,255,255,0.68); /* @kind color */
+  --material-thick: rgba(255,255,255,0.78); /* @kind color */
+  --material-chrome: rgba(246,246,248,0.82); /* @kind color */
+  --blur-ultrathin: blur(14px) saturate(180%); /* @kind other */
+  --blur-thin: blur(22px) saturate(190%); /* @kind other */
+  --blur-regular: blur(32px) saturate(180%); /* @kind other */
+  --blur-thick: blur(46px) saturate(170%); /* @kind other */
+  --glass-border: 1px solid rgba(255,255,255,0.55); /* @kind other */
+  --glass-highlight: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 0 1px rgba(255,255,255,0.25); /* @kind shadow */
+  --glass-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06); /* @kind shadow */
+  --glass-specular: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0) 60%); /* @kind other */
+}
+[data-theme="dark"]{
+  --material-ultrathin: rgba(40,40,44,0.4);
+  --material-thin: rgba(36,36,40,0.55);
+  --material-regular: rgba(32,32,36,0.68);
+  --material-thick: rgba(30,30,34,0.78);
+  --material-chrome: rgba(24,24,28,0.8);
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.45);
+  --shadow-3: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-modal: 0 24px 64px rgba(0,0,0,0.6);
+  --glass-border: 1px solid rgba(255,255,255,0.14); /* @kind other */
+  --glass-highlight: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 0 0 1px rgba(255,255,255,0.06); /* @kind shadow */
+  --glass-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3); /* @kind shadow */
+  --glass-specular: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0) 60%); /* @kind other */
+}

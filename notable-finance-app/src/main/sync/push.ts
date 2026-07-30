@@ -19,6 +19,7 @@ import { metaSet, META_KEYS } from './meta'
 import { emitStatus, isRunning, setRunning, syncStatus } from './status'
 import { expenseWritableFromRow, incomeWritableFromRow } from './writable'
 import { recordActivity } from '../services/history'
+import { replaceNotionPageContent } from '../services/page-content'
 import { withSyncRun } from './run'
 import { acceptNotionGone, isNotionGoneError } from './notion-gone'
 import type { PushResult } from '../../shared/finance.types'
@@ -374,6 +375,53 @@ async function pushAllInner(): Promise<PushResult> {
           result.errors.push(`${t.table}/${row.id}: ${message}`)
         }
 
+        emitStatus()
+        await sleep(THROTTLE_MS)
+      }
+    }
+
+    // ── Page Content pass ─────────────────────────────────────────────────
+    // Runs after properties so a just-created record already has its notion_page_id.
+    // Each dirty page body is rewritten (delete existing blocks + append new) and logged
+    // to History as a page-content edit.
+    for (const table of ['incomes', 'expenses'] as const) {
+      const rows = db
+        .prepare(
+          `SELECT id, notion_page_id, page_content, title FROM ${table}
+           WHERE page_content_dirty = 1 AND notion_page_id IS NOT NULL`
+        )
+        .all() as Array<{
+        id: string
+        notion_page_id: string
+        page_content: string | null
+        title: string | null
+      }>
+      for (const row of rows) {
+        try {
+          await replaceNotionPageContent(c, row.notion_page_id, row.page_content ?? '')
+          db.prepare(`UPDATE ${table} SET page_content_dirty = 0 WHERE id = ?`).run(row.id)
+          recordActivity({
+            resource: table,
+            recordId: row.id,
+            notionPageId: row.notion_page_id,
+            title: row.title,
+            action: 'update',
+            direction: 'push',
+            payload: { pageContent: true }
+          })
+          result.pushed++
+          result.updated++
+        } catch (error) {
+          if (isNotionGoneError(error)) {
+            // Page trashed remotely — drop the pending content edit rather than loop.
+            db.prepare(`UPDATE ${table} SET page_content_dirty = 0 WHERE id = ?`).run(row.id)
+            result.skipped++
+            continue
+          }
+          result.failed++
+          const message = error instanceof Error ? error.message : String(error)
+          result.errors.push(`${table}/pageContent/${row.id}: ${message}`)
+        }
         emitStatus()
         await sleep(THROTTLE_MS)
       }

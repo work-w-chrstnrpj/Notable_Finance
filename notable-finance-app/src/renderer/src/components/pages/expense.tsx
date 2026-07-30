@@ -19,6 +19,7 @@ import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
+import { FlippableModal } from "@/components/ui/flippable-modal";
 import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import { Toast } from "@/components/ui/toast";
 import { ReceiptModal } from "@/components/fab";
@@ -1424,7 +1425,7 @@ function ExpensePage({
         <Toast key={saveNotice} tone="info" duration={4000} message={saveNotice} onDismiss={() => setSaveNotice(null)} />
       )}
 
-      <FormModal
+      <FlippableModal
         deleteLabel={deleteLabel}
         deleteDanger={hardDeleteEnabled}
         modal={modal}
@@ -1437,6 +1438,8 @@ function ExpensePage({
         onDelete={handleDeleteExpense}
         onDuplicate={handleDuplicateExpense}
         onClose={() => setModal(null)}
+        pageContentResource="expenses"
+        recordId={editingId}
       >
         <div className="form-grid form-grid--single">
           <Field label="Purchase description" required error={shakeFields.has("description")}>
@@ -1617,7 +1620,7 @@ function ExpensePage({
             </>
           )}
         </div>
-      </FormModal>
+      </FlippableModal>
       <MassEditModal
         open={massEditOpen}
         title={`Bulk edit ${selectedIds.size} expense${selectedIds.size === 1 ? "" : "s"}`}

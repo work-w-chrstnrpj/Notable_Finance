@@ -1,0 +1,10 @@
+/* Continuum uses Inter as the nearest open substitute for SF Pro (Apple's
+   system font is proprietary and cannot be redistributed here), and
+   JetBrains Mono as the substitute for SF Mono. Flagged in readme.md —
+   if real SF Pro / SF Mono files are available, swap them in here. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{
+  --font-display: 'Inter', -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-text: 'Inter', -apple-system, 'SF Pro Text', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+}
