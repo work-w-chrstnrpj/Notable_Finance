@@ -128,7 +128,7 @@ export interface ExpenseRecordDto {
   interest: number
   accountId: string
   categoryId: string
-  paymentStatus: PaymentStatus
+  paymentStatus: PaymentStatus | null
   paymentFrequency: PaymentFrequency | null
   periodCount: number | null
   paidPeriod: number | null
@@ -279,7 +279,7 @@ export interface CreateExpenseInput {
   interest?: number
   accountId: string
   categoryId: string
-  paymentStatus?: PaymentStatus
+  paymentStatus?: PaymentStatus | null
   paymentFrequency?: PaymentFrequency | null
   periodCount?: number | null
   paidPeriod?: number | null
@@ -392,10 +392,19 @@ export interface SyncSettings {
 export type PullRange = '1h' | '24h' | '2d' | '1w' | '1m' | '1y' | 'all'
 
 /** App UI preferences persisted in `app_settings` (not Notion). */
+export type ThemePresetId =
+  | 'default'
+  | 'hig'
+  | 'material'
+  | 'atlas'
+  | 'carbon'
+  | 'fluent'
+
 export interface UiThemeSettings {
   mode: 'light' | 'dark' | 'system'
   primaryColor: string
   secondaryColor: string
+  preset: ThemePresetId
 }
 
 export interface UiFontSettings {
@@ -806,6 +815,36 @@ export interface ManualDownloadEvent {
 }
 
 // ── Auto-updater (Phase 5.1) ─────────────────────────────────────────
+// ── Local database backup (Phase 7.2) ───────────────────────────────────────
+
+export interface BackupMeta {
+  appVersion: string
+  exportedAt: string
+  counts: Record<string, number>
+}
+
+export interface BackupExportResult {
+  path: string
+  bytes: number
+  exportedAt: string
+  meta: BackupMeta
+}
+
+export interface BackupInspectResult {
+  path: string
+  bytes: number
+  valid: boolean
+  reason?: string
+  meta: BackupMeta | null
+}
+
+export interface BackupImportResult {
+  path: string
+  valid: boolean
+  reason?: string
+  meta: BackupMeta | null
+}
+
 export interface UpdaterCheckResult {
   updateAvailable: boolean
   version?: string

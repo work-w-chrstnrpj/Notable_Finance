@@ -179,7 +179,7 @@ export function mapExpense(row: ExpenseRow): ExpenseRecordDto {
     interest: row.interest,
     accountId: row.account_id ?? '',
     categoryId: row.category_id ?? '',
-    paymentStatus: (row.payment_status ?? 'Unpaid') as PaymentStatus,
+    paymentStatus: row.payment_status as PaymentStatus | null,
     paymentFrequency: (row.payment_frequency as PaymentFrequency | null) ?? null,
     periodCount: row.period_count,
     paidPeriod: row.paid_period,

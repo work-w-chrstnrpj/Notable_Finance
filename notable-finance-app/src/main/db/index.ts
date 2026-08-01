@@ -15,11 +15,12 @@ let sqlite: Database.Database | null = null
 let dbPath = ''
 
 function migrationsFolder(): string {
-  // Packaged: bundled as an extraResource (Phase 5). Dev: read from source, resolved
-  // from the built main file (out/main/index.js → ../../src/main/db/migrations).
+  // Packaged: bundled as an extraResource (Phase 5). Dev: read from source,
+  // resolved from the app root (robust to bundler/test runners that relocate
+  // __dirname of the bundled main file).
   return app.isPackaged
     ? join(process.resourcesPath, 'migrations')
-    : join(__dirname, '../../src/main/db/migrations')
+    : join(app.getAppPath(), 'src/main/db/migrations')
 }
 
 export function initDatabase(): { db: AppDatabase; dbPath: string } {

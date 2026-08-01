@@ -186,7 +186,7 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
       (s.categoryId as string | null) ?? null,
       (s.purchaseDate as string | null) ?? null,
       (s.datePaid as string | null) ?? null,
-      (s.paymentStatus as string | null) ?? 'Unpaid',
+      (s.paymentStatus as string | null) ?? null,
       (s.paymentFrequency as string | null) ?? null,
       s.periodCount == null ? null : Number(s.periodCount),
       s.paidPeriod == null ? null : Number(s.paidPeriod),

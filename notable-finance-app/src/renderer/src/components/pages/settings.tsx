@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, Bug, Keyboard, MessageSquare, Palette, SlidersHorizontal, UserRound } from "lucide-react";
+import { Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
@@ -7,7 +7,9 @@ import { useUiSettings } from "@/lib/ui-settings-context";
 import { userInitials } from "@/lib/avatar";
 import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
+import { ConfirmModal } from "@/components/ui/form-modals";
 import { StatusPill } from "@/components/ui/date-range";
+import type { BackupMeta } from "@shared/finance.types";
 import {
   SettingsModalKind,
   ThemeCustomizeModal,
@@ -233,6 +235,8 @@ function SettingsPage({
         </Panel>
       </section>
 
+      <BackupPanel />
+
       <Panel title="Notion Configuration">
         <div className="settings-row">
           <p>Your Notion integration token is stored encrypted in the OS keychain; database IDs are stored locally.</p>
@@ -260,6 +264,157 @@ function SettingsPage({
   );
 }
 
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function countsLabel(counts: Record<string, number>): string {
+  const entries = Object.entries(counts).filter(([, c]) => c > 0);
+  if (entries.length === 0) return "empty database";
+  return entries.map(([table, c]) => `${table.replace(/_/g, " ")}: ${c}`).join(", ");
+}
+
+/**
+ * Local backup & restore (Phase 7.2). Export writes a consistent SQLite snapshot;
+ * import swaps the live file, so the window reloads afterward to re-fetch every
+ * page from the restored data.
+ */
+function BackupPanel() {
+  const [statusText, setStatusText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{
+    path: string;
+    meta: BackupMeta | null;
+  } | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
+
+  const handleExport = async () => {
+    setBusy(true);
+    setStatusText("");
+    try {
+      const res = await window.api.backup.export();
+      if (!res.ok) {
+        setStatusText(`Export failed: ${res.error?.message ?? "unknown"}`);
+        return;
+      }
+      const { path, bytes, meta } = res.data;
+      setStatusText(
+        `Backup saved to ${path} (${formatBytes(bytes)}) — ${countsLabel(meta.counts)}.`
+      );
+    } catch (err) {
+      setStatusText(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePickImport = async () => {
+    setStatusText("");
+    try {
+      const res = await window.api.backup.inspect();
+      if (!res.ok) {
+        setStatusText(`Import failed: ${res.error?.message ?? "unknown"}`);
+        return;
+      }
+      const info = res.data;
+      if (!info.valid) {
+        setStatusText(`Not a valid backup: ${info.reason}`);
+        return;
+      }
+      setPendingImport({ path: info.path, meta: info.meta });
+    } catch (err) {
+      setStatusText(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!pendingImport) return;
+    setImportBusy(true);
+    try {
+      const res = await window.api.backup.import(pendingImport.path);
+      if (!res.ok) {
+        setStatusText(`Import failed: ${res.error?.message ?? "unknown"}`);
+        setPendingImport(null);
+        return;
+      }
+      if (!res.data.valid) {
+        setStatusText(`Import failed: ${res.data.reason}`);
+        setPendingImport(null);
+        return;
+      }
+      // Success — the live SQLite file was swapped. Reload so every page and
+      // cached collection re-fetches from the restored data.
+      window.location.reload();
+    } catch (err) {
+      setStatusText(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+      setPendingImport(null);
+    } finally {
+      setImportBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="Backup & Restore">
+      <div className="settings-row">
+        <div style={{ flex: 1 }}>
+          <p className="settings-toggle__title">Local database backup</p>
+          <p className="settings-toggle__hint">
+            Export a copy of all local data (incomes, expenses, accounts, budgets, chat
+            history) as a single SQLite file — works even when Notion sync is unavailable.
+            Import restores that file and replaces the current local data; the window
+            reloads afterward. Chat API keys stay in the OS keychain and are never exported.
+          </p>
+          {statusText && (
+            <p className="settings-toggle__hint" style={{ marginTop: "0.5rem" }}>
+              {statusText}
+            </p>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
+          <button
+            type="button"
+            className="button"
+            onClick={() => void handleExport()}
+            disabled={busy || importBusy}
+          >
+            <Download size={16} />
+            {busy ? "Exporting…" : "Export Backup"}
+          </button>
+          <button
+            type="button"
+            className="button"
+            onClick={() => void handlePickImport()}
+            disabled={busy || importBusy}
+          >
+            <Upload size={16} />
+            Import Backup…
+          </button>
+        </div>
+      </div>
+
+      {pendingImport && (
+        <ConfirmModal
+          title="Import backup?"
+          message={`This replaces ALL local finance data with the contents of: ${pendingImport.path}. ${
+            pendingImport.meta
+              ? `Created by v${pendingImport.meta.appVersion} on ${new Date(
+                  pendingImport.meta.exportedAt
+                ).toLocaleString()} (${countsLabel(pendingImport.meta.counts)}). `
+              : ""
+          }Unsynced changes not present in the backup will be lost. Sync to Notion first if you have changes you need to keep.`}
+          confirmLabel="Import & Reload"
+          danger
+          busy={importBusy}
+          onConfirm={() => void handleConfirmImport()}
+          onCancel={() => setPendingImport(null)}
+        />
+      )}
+    </Panel>
+  );
+}
 
 function UpdatesPanel() {
   const [checking, setChecking] = useState(false)

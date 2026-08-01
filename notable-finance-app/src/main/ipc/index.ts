@@ -16,6 +16,7 @@ import { getDbPath, listTables } from '../db'
 import * as repo from '../db/repositories'
 import * as reports from '../services/reports'
 import * as pageContent from '../services/page-content'
+import { exportBackup, importBackup, inspectBackup } from '../services/backup'
 import { getHistory, getItemDetail } from '../services/history'
 import { discardUnsynced } from '../services/discard-unsynced'
 import * as notion from '../notion/service'
@@ -358,6 +359,32 @@ export function registerIpc(): void {
   ipcMain.handle('sync:now', (_e, since?: string) => result(() => syncNow(since))) // reconcile (pull) then push
   ipcMain.handle('sync:pull', (_e, since?: string) => result(() => pullAll(false, since))) // Notion → App only
   ipcMain.handle('sync:push', () => result(() => pushAll())) // App → Notion only
+
+  // Local database backup / restore (Phase 7.2) — import swaps the live file,
+  // so the renderer reloads its window after a successful import.
+  ipcMain.handle('backup:export', (_e, opts?: { path?: string }) =>
+    result(() => exportBackup(opts?.path))
+  )
+  ipcMain.handle('backup:inspect', (_e, opts?: { path?: string }) =>
+    result(() => inspectBackup(opts?.path))
+  )
+  ipcMain.handle('backup:import', (_e, path: string) =>
+    result(async () => {
+      const out = await importBackup(path)
+      if (out.valid) {
+        // Fresh data everywhere: records, derived values, sync status.
+        broadcast('records:changed', { resource: 'incomes', ids: [] })
+        broadcast('records:changed', { resource: 'expenses', ids: [] })
+        broadcast('derived:updated', {})
+        broadcast('sync:status', syncStatus())
+        logDevOperation('backup:import', 'Imported local database backup', {
+          path,
+          appVersion: out.meta?.appVersion ?? null
+        })
+      }
+      return out
+    })
+  )
 
   // Page Content — Notion page body (block children) edited local-first as Markdown.
   ipcMain.handle('pageContent:get', (_e, resource: PageContentResource, id: string) =>

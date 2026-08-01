@@ -28,9 +28,10 @@ const MODE_TABS: { key: PickerMode; label: string }[] = [
 interface ColorPickerProps {
   value: HexColor;
   onChange: (hex: HexColor) => void;
+  disabled?: boolean;
 }
 
-export function ColorPicker({ value, onChange }: ColorPickerProps) {
+export function ColorPicker({ value, onChange, disabled }: ColorPickerProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<PickerMode>("swatches");
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -52,9 +53,10 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
       {/* Collapsed trigger — always visible */}
       <button
         type="button"
-        className={`color-picker__trigger ${open ? "color-picker__trigger--open" : ""}`}
-        onClick={() => setOpen((prev) => !prev)}
+        className={`color-picker__trigger ${open ? "color-picker__trigger--open" : ""} ${disabled ? "color-picker__trigger--disabled" : ""}`}
+        onClick={() => { if (!disabled) setOpen((prev) => !prev); }}
         aria-label="Choose color"
+        disabled={disabled}
       >
         <span className="color-picker__trigger-swatch" style={{ background: value }} />
         <span className="color-picker__trigger-hex">{value}</span>

@@ -65,6 +65,14 @@ const MAX_TOOL_ROUNDS = 4
 
 const PHASE_65_SYSTEM = `You are Notable Finance's Finance Copilot (Phase 6.5+ — overlays + confirm-gated writes + Apple/on-device read-only option).
 
+The app: Notable Finance is a local-first desktop finance app. SQLite is the local source of truth and Notion is a bidirectional mirror. Users track Income, Expenses (including CC installments and Pasabuy), Transfers, CC Payments, Alkansya (savings), and Receivables, plus Monthly Monitoring and category budgets.
+
+Money math used by this app (derive these only from tool results, never invent):
+- Total expense = sum of amount + interest over the scoped records.
+- Net income = grossIncome − capitalExpenditure.
+- Available budget for a category = budget − spending.
+- Gross margin = total income − total expense.
+
 You answer from local SQLite via read tools and may **propose** creates/updates via propose* tools. Records are written ONLY when the user Approves a draft card in the UI (chat:confirm). Cancel does nothing.
 
 Formatting:
@@ -74,13 +82,16 @@ Formatting:
 
 Rules:
 - Prefer tools over guessing. Never invent balances, accounts, or categories.
+- Dates: "today" is provided in the skill context. Users often say month names ("July 2026") or bare years ("2026"). For a bare year, call queryExpenses/queryIncomes with year="2026" (or rangeStart/rangeEnd). For a named month, pass month="2026-07". Re-run tools for each new scope a follow-up asks about — do not reuse a previous answer's numbers for a different period.
+- Follow-ups ("and how about June?", "what about 2025?") mean a NEW query for that period, even when prior tool results are echoed in context.
 - To log or edit ANY record you MUST call the matching propose* tool — that is the only way a confirm card appears for the user. NEVER claim you drafted, logged, saved, or created something ("na-draft ko", "na-log na", "done") unless you actually called a propose* tool in this turn. If you only have a text reply, you have NOT drafted anything.
 - After propose* tools, briefly explain the draft and any missing fields. Do NOT say "saved" / "created" until Approve.
 - Finance delete / trash / archive / burahin: refuse. Soft/hard delete stay in the normal app UI (Income, Expense, History, etc.).
 - Rebudget remains plan-only (planRebudget) — no budget writes.
 - Expense view questions: pass expenseViewMode (Monthly, Unpaid Pasabuy, Unpaid CC, To pay, …).
 - Follow the active slash overlay voice instructions. Overlays never change amounts or enable delete.
-- Apple/on-device path is read-only — never use propose* tools there.`
+- Apple/on-device path is read-only — never use propose* tools there.
+- You can also give practical personal-finance tips and advice (budgeting, saving, spending habits) — this app is a finance assistant, not just a database query tool.`
 
 const REFUSE_DELETE =
   'I can’t delete finance records from Chat. Soft delete and hard delete stay in the normal app UI (Income, Expense, History, etc.). You can delete chat conversations from the history list or Configure AI — that only removes chat threads, not your money data.'
@@ -136,7 +147,7 @@ export async function listRemoteModels(credentialId: string): Promise<ChatModelO
   return decorateRemoteModels(ids, providerId)
 }
 
-const MEMO_REPLAY_TURNS = 2
+const MEMO_REPLAY_TURNS = 3
 
 /**
  * Creative overlays get a higher temperature for more varied, less redundant
@@ -390,16 +401,56 @@ async function runToolLoop(input: {
 }
 
 /**
- * Compact per-turn memo (#10): a short, model-facing note of what happened this
- * turn — the tools run and any draft proposed — so a follow-up like "make it
- * 500" or "yes, save it" has grounding without replaying raw tool transcripts.
+ * Compact numeric facts from read-tool results, so a follow-up like "what about
+ * June?" has grounding even though the previous raw transcript was not replayed
+ * to the provider. Bounded to the few headline numbers a follow-up can build on.
  */
-function buildContextMemo(drafts: ChatDraftDto[], toolNames: string[]): string | null {
+function buildDataDigest(toolResults: unknown[]): string | null {
+  const facts: string[] = []
+  for (const payload of toolResults) {
+    if (!payload || typeof payload !== 'object') continue
+    const p = payload as Record<string, unknown>
+    if (typeof p.totalAmount === 'number' && typeof p.count === 'number') {
+      facts.push(
+        `expense query: count ${p.count}, total (amount+interest) ${p.totalAmount}${typeof p.viewMode === 'string' ? `, view ${p.viewMode}` : ''}`
+      )
+    } else if (typeof p.totalGrossIncome === 'number' && typeof p.count === 'number') {
+      facts.push(`income query: count ${p.count}, total gross income ${p.totalGrossIncome}`)
+    }
+    if (typeof p.month === 'string') {
+      if (typeof p.totalIncome === 'number' && typeof p.totalExpense === 'number') {
+        facts.push(
+          `dashboard ${p.month}: income ${p.totalIncome}, expense ${p.totalExpense}, margin ${p.grossMargin}`
+        )
+      } else if (typeof p.monthlyIncome === 'number' && typeof p.monthlyExpense === 'number') {
+        facts.push(
+          `monitoring ${p.month}: income ${p.monthlyIncome}, expense ${p.monthlyExpense}, net ${p.grossMargin}`
+        )
+      }
+    }
+  }
+  if (facts.length === 0) return null
+  return facts.slice(0, 6).join(' | ')
+}
+
+/**
+ * Compact per-turn memo (#10): a short, model-facing note of what happened this
+ * turn — the tools run, key data totals, and any draft proposed — so a
+ * follow-up like "make it 500" or "yes, save it" or "and June?" has grounding
+ * without replaying raw tool transcripts.
+ */
+function buildContextMemo(
+  drafts: ChatDraftDto[],
+  toolNames: string[],
+  toolResults: unknown[]
+): string | null {
   const parts: string[] = []
   for (const d of drafts) {
     const missing = d.missingRequired.length ? ` (missing: ${d.missingRequired.join(', ')})` : ''
     parts.push(`proposed ${d.kind} [draft ${d.id}, ${d.status}]: ${d.summary}${missing}`)
   }
+  const digest = buildDataDigest(toolResults)
+  if (digest) parts.push(`data: ${digest}`)
   const uniqueTools = [...new Set(toolNames)]
   if (uniqueTools.length) parts.push(`tools run: ${uniqueTools.join(', ')}`)
   if (parts.length === 0) return null
@@ -601,7 +652,7 @@ export async function sendChatMessage(input: {
     })
   }
 
-  const contextMemo = buildContextMemo(drafts, toolNames)
+  const contextMemo = buildContextMemo(drafts, toolNames, toolResults)
   const payloadJson = JSON.stringify({
     overlay: activeOverlay,
     keywordCheer,

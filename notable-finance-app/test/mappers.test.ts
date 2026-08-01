@@ -83,9 +83,9 @@ describe('mapIncome', () => {
 })
 
 describe('mapExpense', () => {
-  it('maps pasabuy fields and defaults null payment_status to Unpaid', () => {
+  it('maps pasabuy fields and preserves null payment_status (null means null)', () => {
     const dto = mapExpense(expenseRow)
-    expect(dto.paymentStatus).toBe('Unpaid')
+    expect(dto.paymentStatus).toBeNull()
     expect(dto.pasabuyer).toBe('Ana')
     expect(dto.pasabuyStatus).toBe('Payment not yet receive')
     expect(dto.datePaid).toBeNull()

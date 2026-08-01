@@ -21,8 +21,11 @@ import {
 } from "lucide-react";
 import { navigate } from "@/lib/router";
 import { useUiSettings } from "@/lib/ui-settings-context";
+import { useAuth } from "@/lib/auth-context";
 import { cx } from "@/lib/finance-helpers";
 import { AiChatConfigModal } from "@/components/pages/settings-modals";
+import { useNetworkStatus } from "@/lib/use-network-status";
+import { WifiOff } from "lucide-react";
 import type {
   AccountDto,
   ChatCredentialDto,
@@ -49,6 +52,26 @@ const PASABUY_STATUSES = [
   "Payment partially received (installment)",
   "Payment fully received",
 ] as const;
+
+/**
+ * Display-only greeting for the empty chat state. Never sent as a message —
+ * purely a time-of-day + name + rotating prompt line.
+ */
+const DAILY_ASK_LINES = [
+  "Ask me how much you spent this month, or how a category is tracking against its budget.",
+  "Tipid tip: try 50/30/20 — 50% needs, 30% wants, 20% savings.",
+  "Ask for a Monitoring summary — income vs expense and budget health at a glance.",
+  "Wondering how much is left on an installment? Ask me about Unpaid CC.",
+  "Ask me for a Pasabuy check — who still owes, and how much.",
+  "Compare two months: ask something like “July vs June spending”.",
+];
+
+function greetingForHour(hour: number): string {
+  if (hour >= 22 || hour < 5) return "Good evening, night owl";
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 /** Kinds whose category is fixed by the workflow (locked in the validator). */
 const CATEGORY_LOCKED_KINDS = new Set([
@@ -513,6 +536,7 @@ function DraftCard({
 
 function ChatModePage() {
   const { settings, chatEnabled } = useUiSettings();
+  const { user } = useAuth();
   const [threads, setThreads] = useState<ChatThreadDto[]>([]);
   const [credentials, setCredentials] = useState<ChatCredentialDto[]>([]);
   const [providers, setProviders] = useState<ChatProviderCatalogDto[]>([]);
@@ -533,6 +557,24 @@ function ChatModePage() {
   const [showConfig, setShowConfig] = useState(false);
   const [pendingDrafts, setPendingDrafts] = useState<ChatDraftDto[]>([]);
   const [draftBusyId, setDraftBusyId] = useState<string | null>(null);
+  /** Ask/summarize allowed without BYOK when Prefer Apple is on (Mac on-device path). */
+  const canChatWithoutKey = appleReadOnlyReady;
+  const composerUnlocked = credentials.length > 0 || canChatWithoutKey;
+
+    const online = useNetworkStatus();
+  // Display-only greeting: time-of-day + first name + a daily rotating prompt.
+  // Deterministic per calendar day so it doesn't flicker between renders.
+  const now = new Date();
+  const daySeed = Math.floor(now.getTime() / 86_400_000);
+  const greetingName =
+    user?.name && user.name !== "Local User" ? user.name.trim().split(/\s+/)[0] : "";
+  const greeting = `${greetingForHour(now.getHours())}${greetingName ? `, ${greetingName}` : ""}!`;
+  const dailyAskLine = DAILY_ASK_LINES[daySeed % DAILY_ASK_LINES.length];
+  // When offline, API-key models cannot reach their endpoints. Only Apple
+  // Intelligence (on-device) can respond. We auto-disable credentials and
+  // model selection so the user isn't misled into picking a broken config.
+  const offlineOnlyApple = !online && canChatWithoutKey;
+  const offlineNoChat = !online && !canChatWithoutKey;
   const [accounts, setAccounts] = useState<AccountDto[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<IncomeCategoryOption[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryOption[]>([]);
@@ -545,10 +587,6 @@ function ChatModePage() {
   const modelsFetchGen = useRef(0);
   const modelIdRef = useRef(modelId);
   modelIdRef.current = modelId;
-
-  /** Ask/summarize allowed without BYOK when Prefer Apple is on (Mac on-device path). */
-  const canChatWithoutKey = appleReadOnlyReady;
-  const composerUnlocked = credentials.length > 0 || canChatWithoutKey;
 
   const goBackToMain = useCallback(() => {
     const last = settings.workspace.lastSection;
@@ -1118,9 +1156,11 @@ function ChatModePage() {
                     !composerUnlocked && "chat-mode__status-dot--off",
                   )}
                 />
-                {composerUnlocked
-                  ? `Active · ${activeCredential?.name ?? "on-device"}`
-                  : "Needs an API key"}
+                {!online
+                  ? "Offline · on-device only"
+                  : composerUnlocked
+                    ? `Active · ${activeCredential?.name ?? "on-device"}`
+                    : "Needs an API key"}
               </p>
             </div>
           </div>
@@ -1144,14 +1184,18 @@ function ChatModePage() {
           </div>
         </header>
 
-        {(needsKey || error || (applePreferOn && !appleReadOnlyReady && credentials.length === 0)) && (
-          <div className={cx("chat-mode__banner", error && "chat-mode__banner--error")}>
+        {(needsKey || error || (applePreferOn && !appleReadOnlyReady && credentials.length === 0) || offlineNoChat) && (
+          <div className={cx("chat-mode__banner", (error || offlineNoChat) && "chat-mode__banner--error")}>
             {error ??
-              (canChatWithoutKey
-                ? "Apple Intelligence ready (Prefer Apple). Add a named API key only when you want to log or edit records."
-                : applePreferOn && credentials.length === 0
-                  ? `Prefer Apple is on, but Apple Intelligence isn’t ready yet. ${appleDetail || "Enable it in System Settings → Apple Intelligence, wait for the model, restart the app."} Or add a named API key.`
-                  : "Add an API key before chatting.")}
+              (offlineNoChat
+                ? `Network is offline and Apple Intelligence isn’t ready. ${appleDetail || "Enable Apple Intelligence in System Settings to chat without internet."}`
+                : offlineOnlyApple
+                  ? "Network is offline — using Apple Intelligence on-device. API-key models are unavailable until connectivity is restored."
+                  : canChatWithoutKey
+                    ? "Apple Intelligence ready (Prefer Apple). Add a named API key only when you want to log or edit records."
+                    : applePreferOn && credentials.length === 0
+                      ? `Prefer Apple is on, but Apple Intelligence isn’t ready yet. ${appleDetail || "Enable it in System Settings → Apple Intelligence, wait for the model, restart the app."} Or add a named API key.`
+                      : "Add an API key before chatting.")}
             {(needsKey || (applePreferOn && !appleReadOnlyReady && credentials.length === 0)) && (
               <button type="button" className="button" onClick={() => setShowConfig(true)}>
                 Configure AI
@@ -1166,9 +1210,10 @@ function ChatModePage() {
               <div className="chat-mode__starter-badge">
                 <Sparkles size={26} />
               </div>
-              <h2>Finance Copilot</h2>
+              <h2>{greeting}</h2>
               <p>
-                Ask about local finances, or log income/expenses and workflows. Creates and edits
+                Finance Copilot. {dailyAskLine} Ask about local finances, or log income/expenses and
+                workflows. Creates and edits
                 appear as confirm cards — Approve writes to SQLite; Cancel does nothing. Use slash
                 modes ({"/roast"}, {"/cheer"}, …) for tone only — Chat never deletes finance
                 records.
@@ -1329,9 +1374,13 @@ function ChatModePage() {
               onChange={(e) => setDraft(e.target.value)}
               rows={2}
               placeholder={
-                canChatWithoutKey && credentials.length === 0
-                  ? "Ask a question (on-device)… Logging needs an API key."
-                  : "Message Finance Copilot…  ⏎ to send, ⇧⏎ for newline"
+                offlineNoChat
+                  ? "Chat is unavailable offline — enable Apple Intelligence"
+                  : offlineOnlyApple
+                    ? "Ask a question (on-device)… Logging needs a network connection and an API key."
+                    : canChatWithoutKey && credentials.length === 0
+                      ? "Ask a question (on-device)… Logging needs an API key."
+                      : "Message Finance Copilot…  ⏎ to send, ⇧⏎ for newline"
               }
               disabled={busy || !composerUnlocked}
               onKeyDown={(e) => {
@@ -1358,6 +1407,14 @@ function ChatModePage() {
               ⏎ to send · ⇧⏎ for newline
             </span>
             <div className="chat-mode__model-config">
+              {!online && (
+                <span className="chat-mode__offline-chip">
+                  <WifiOff size={11} aria-hidden="true" />
+                  {canChatWithoutKey ? "Apple Intelligence (on-device)" : "Offline"}
+                </span>
+              )}
+              {online && (
+                <>
               <select
                 className="chat-mode__mini-select"
                 aria-label="API key"
@@ -1404,6 +1461,8 @@ function ChatModePage() {
                   placeholder="model id"
                   spellCheck={false}
                 />
+              )}
+              </>
               )}
             </div>
           </div>

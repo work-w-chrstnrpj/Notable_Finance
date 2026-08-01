@@ -22,7 +22,8 @@ const DEFAULT_PROFILE: UiProfileSettings = {
 const DEFAULT_THEME: UiThemeSettings = {
   mode: 'system',
   primaryColor: '#5b6cf9',
-  secondaryColor: '#0d9488'
+  secondaryColor: '#0d9488',
+  preset: 'default'
 }
 
 const DEFAULT_FONTS: UiFontSettings = {
@@ -118,6 +119,8 @@ function mergeProfile(raw: unknown): UiProfileSettings {
 function mergeTheme(raw: unknown): UiThemeSettings {
   const r = asRecord(raw)
   const mode = r.mode
+  const PRESET_IDS = ['default', 'hig', 'material', 'atlas', 'carbon', 'fluent']
+  const preset = typeof r.preset === 'string' && PRESET_IDS.includes(r.preset) ? r.preset : DEFAULT_THEME.preset
   return {
     mode: mode === 'light' || mode === 'dark' || mode === 'system' ? mode : DEFAULT_THEME.mode,
     primaryColor:
@@ -125,7 +128,8 @@ function mergeTheme(raw: unknown): UiThemeSettings {
     secondaryColor:
       typeof r.secondaryColor === 'string' && r.secondaryColor
         ? r.secondaryColor
-        : DEFAULT_THEME.secondaryColor
+        : DEFAULT_THEME.secondaryColor,
+    preset: preset as UiThemeSettings['preset']
   }
 }
 

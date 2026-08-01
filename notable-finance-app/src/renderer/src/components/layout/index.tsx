@@ -28,6 +28,7 @@ import { cx } from "@/lib/finance-helpers";
 import { userInitials } from "@/lib/avatar";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
+import { ConnectivityIndicator } from "@/components/ui/connectivity-indicator";
 import { ShortcutHint, SECTION_SHORTCUT_ID } from "@/components/shortcuts";
 import type {
   ExpenseViewMode,
@@ -298,6 +299,7 @@ function TopBar({
           />
         )}
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
+        <ConnectivityIndicator />
         <span className="sync-meta">{pendingOperations} pending</span>
         <span className="sync-meta">Last sync {lastSync}</span>
         <button

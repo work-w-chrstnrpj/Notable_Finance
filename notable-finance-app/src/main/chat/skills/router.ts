@@ -53,7 +53,8 @@ export function routeChatSkill(userText: string): ChatSkillId {
     ) ||
     /summary\s+for\s+\d{4}-\d{2}|breakdown\s+for\s+(last|this)\s+month|paano\s+ang\s+monitoring/.test(
       t
-    )
+    ) ||
+    /financial\s+(insight|insights|highlights)|monthly\s+(insight|insights)/.test(t)
   ) {
     return 'monitoring-summary'
   }
@@ -110,7 +111,7 @@ export function routeChatSkill(userText: string): ChatSkillId {
   }
 
   if (
-    /how\s+much|what.?s\s+left|summary|list\s+my|compare|budget|spent|spending|income|expense|unpaid|pasabuy|account|magkano|ilan|gastos|kita/.test(
+    /how\s+much|what.?s\s+left|summary|list\s+my|compare|budget|spent|spending|income|expense|unpaid|pasabuy|account|magkano|ilan|gastos|kita|insight|insights|total\s+(expense|income|spent|earned)/.test(
       t
     )
   ) {

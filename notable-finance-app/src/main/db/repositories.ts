@@ -372,7 +372,7 @@ export function createExpense(input: CreateExpenseInput): ExpenseRecordDto {
       input.categoryId,
       input.purchaseDate,
       input.datePaid ?? null,
-      input.paymentStatus ?? 'Unpaid',
+      input.paymentStatus ?? null,
       input.paymentFrequency ?? null,
       input.periodCount ?? null,
       input.paidPeriod ?? null,

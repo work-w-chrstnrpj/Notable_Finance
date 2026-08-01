@@ -23,7 +23,12 @@ const FINANCE_TERMS = new Set([
   'profit', 'loss', 'cash', 'wallet', 'checking', 'invest',
   'price', 'rate', 'fee', 'charge', 'currency', 'dollar', 'peso',
   'owe', 'owed', 'refund', 'reimburse', 'reimbursement',
-  'salary', 'allowance', 'pension'
+  'salary', 'allowance', 'pension', 'food', 'groceries', 'grocery', 'restaurant',
+  'tipid', 'tips', 'tip', 'advice', 'ipon', 'sulit', 'discount', 'sale',
+  // Taglish finance vocabulary — common in code-switched chat
+  'pera', 'gastos', 'gastusin', 'kita', 'kinita', 'utang', 'sahod',
+  'sweldo', 'suweldo', 'bayad', 'bayarin', 'bili', 'binili', 'presyo',
+  'ipon', 'impok', 'gastusin'
 ])
 
 // Direct app feature & navigation keywords.
@@ -37,7 +42,8 @@ const APP_TERMS = new Set([
   'copilot', 'finance copilot', 'app',
   'filter', 'filters', 'search', 'sort', 'view',
   'dark mode', 'theme', 'settings', 'profile',
-  'configure', 'config', 'setup', 'onboarding'
+  'configure', 'config', 'setup', 'onboarding',
+  'insight', 'insights'
 ])
 
 // Stop words and generic words that shouldn't alone trigger the finance check.

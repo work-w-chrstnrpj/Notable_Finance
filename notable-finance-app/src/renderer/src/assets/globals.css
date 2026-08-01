@@ -27,6 +27,24 @@
   --font-mono: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
   --font-brand: "Instrument Serif", serif;
   --font-receipt: "Instrument Serif", serif;
+  /* Spacing scale (4px base) */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  /* Motion tokens */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
 }
 
 /* ── Dark mode ─────────────────────────────────────────────────────── */
@@ -990,6 +1008,33 @@ body.shortcuts-revealed .shortcut-hint {
   overflow: hidden;
 }
 
+
+/* ── Connectivity indicator ─────────────────────────────────────────── */
+.connectivity-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.connectivity-indicator--offline {
+  color: var(--rose);
+  background: color-mix(in srgb, var(--rose) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rose) 20%, transparent);
+}
+
+.connectivity-indicator--online {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 20%, transparent);
+}
+
+
 .topbar {
   position: relative;
   flex-shrink: 0;
@@ -1891,7 +1936,7 @@ body.shortcuts-revealed .shortcut-hint {
   gap: 8px;
   min-height: 36px;
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: var(--btn-radius, 8px);
   background: var(--surface);
   color: var(--ink);
   padding: 8px 12px;
@@ -1928,6 +1973,7 @@ body.shortcuts-revealed .shortcut-hint {
 .icon-button {
   width: 36px;
   padding: 0;
+  border-radius: var(--btn-radius, 8px);
 }
 
 .icon-button--danger {
@@ -2677,6 +2723,204 @@ th:last-child .th-sort {
   opacity: 1;
 }
 
+/* ── Preset: hig — liquid glass Apple design ──────────────────── */
+/* Body background: atmospheric cool gradient for depth behind glass layers */
+[data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #eef1f8 0%,
+    #f0eef8 25%,
+    #eef4f8 50%,
+    #f1eef6 75%,
+    #eef0fa 100%
+  );
+}
+[data-theme="dark"][data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #0d0d18 0%,
+    #0f0d1a 25%,
+    #0d121c 50%,
+    #100d1a 75%,
+    #0d0f1e 100%
+  );
+}
+
+/* Floating overlay elements - heaviest glass (most transparent, deepest blur) */
+[data-preset="hig"] .modal-panel,
+[data-preset="hig"] .conflict-modal {
+  background: color-mix(in srgb, var(--surface) 66%, transparent);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.06);
+}
+
+[data-preset="hig"] .modal-panel__header,
+[data-preset="hig"] .modal-panel__footer,
+[data-preset="hig"] .conflict-modal__header,
+[data-preset="hig"] .conflict-modal__footer {
+  background: color-mix(in srgb, var(--surface) 56%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+/* Dropdowns, pickers - floating glass */
+[data-preset="hig"] .filter-dropdown__menu,
+[data-preset="hig"] .multi-select__dropdown,
+[data-preset="hig"] .date-picker,
+[data-preset="hig"] .color-picker__panel {
+  background: color-mix(in srgb, var(--surface) 63%, transparent);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 38%, transparent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+
+[data-preset="hig"] .toast {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 32%, transparent);
+}
+
+/* App shell background - transparent to reveal body gradient through glass layers */
+[data-preset="hig"] .app-shell {
+  background: transparent;
+}
+
+/* Chrome shell elements - translucent glass with subtle blue accent tint */
+[data-preset="hig"] .sidebar {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blue) 6%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 14%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+}
+
+[data-preset="hig"] .topbar {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 7%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 50%, transparent) 35%,
+    color-mix(in srgb, var(--surface) 50%, transparent) 65%,
+    color-mix(in srgb, var(--green) 5%, transparent) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+}
+
+/* App tabs bar - light glass */
+[data-preset="hig"] .app-tabs {
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+/* Surface cards - medium glass */
+[data-preset="hig"] .record-card,
+[data-preset="hig"] .snapshot-card,
+[data-preset="hig"] .dashboard-card,
+[data-preset="hig"] .metric-card,
+[data-preset="hig"] .account-card,
+[data-preset="hig"] .preset-card {
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 35%, transparent);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+}
+
+/* Content panels - medium-light glass */
+[data-preset="hig"] .panel {
+  background: color-mix(in srgb, var(--surface) 54%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 38%, transparent);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+}
+
+[data-preset="hig"] .sidebar-section {
+  background: color-mix(in srgb, var(--surface) 53%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 28%, transparent);
+}
+
+[data-preset="hig"] .search-bar {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+[data-preset="hig"] .month-stepper {
+  background: color-mix(in srgb, var(--surface-muted) 48%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+[data-preset="hig"] .empty-state {
+  background: color-mix(in srgb, var(--surface-muted) 28%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px dashed color-mix(in srgb, var(--line-strong) 28%, transparent);
+  color: var(--ink-muted);
+}
+
+/* Inputs - subtle glass */
+[data-preset="hig"] input,
+[data-preset="hig"] select,
+[data-preset="hig"] textarea {
+  background: color-mix(in srgb, var(--input-bg) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* Glossy gradient buttons with shiny specular movement */
+[data-preset="hig"] .button--primary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 100%, #fff) 0%,
+    color-mix(in srgb, var(--blue) 84%, #fff) 30%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 50%,
+    color-mix(in srgb, var(--blue) 90%, #fff) 70%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 100%
+  );
+  background-size: 200% 100%;
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--blue) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--blue) 15%, transparent);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-position 0.5s ease;
+}
+
+[data-preset="hig"] .button--primary:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--blue) 35%, transparent), 0 2px 6px color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+[data-preset="hig"] .button--primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 25%, transparent);
+}
+
+[data-preset="hig"] .button--primary:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+
+
 /* Dark theme adjustments */
 [data-theme="dark"] .row-checkbox {
   border-color: var(--line-strong, #3f3f3f);
@@ -2894,6 +3138,204 @@ th:last-child .th-sort {
   gap: 5px;
 }
 
+/* ── Preset: hig — liquid glass Apple design ──────────────────── */
+/* Body background: atmospheric cool gradient for depth behind glass layers */
+[data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #eef1f8 0%,
+    #f0eef8 25%,
+    #eef4f8 50%,
+    #f1eef6 75%,
+    #eef0fa 100%
+  );
+}
+[data-theme="dark"][data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #0d0d18 0%,
+    #0f0d1a 25%,
+    #0d121c 50%,
+    #100d1a 75%,
+    #0d0f1e 100%
+  );
+}
+
+/* Floating overlay elements - heaviest glass (most transparent, deepest blur) */
+[data-preset="hig"] .modal-panel,
+[data-preset="hig"] .conflict-modal {
+  background: color-mix(in srgb, var(--surface) 66%, transparent);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.06);
+}
+
+[data-preset="hig"] .modal-panel__header,
+[data-preset="hig"] .modal-panel__footer,
+[data-preset="hig"] .conflict-modal__header,
+[data-preset="hig"] .conflict-modal__footer {
+  background: color-mix(in srgb, var(--surface) 56%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+/* Dropdowns, pickers - floating glass */
+[data-preset="hig"] .filter-dropdown__menu,
+[data-preset="hig"] .multi-select__dropdown,
+[data-preset="hig"] .date-picker,
+[data-preset="hig"] .color-picker__panel {
+  background: color-mix(in srgb, var(--surface) 63%, transparent);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 38%, transparent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+
+[data-preset="hig"] .toast {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 32%, transparent);
+}
+
+/* App shell background - transparent to reveal body gradient through glass layers */
+[data-preset="hig"] .app-shell {
+  background: transparent;
+}
+
+/* Chrome shell elements - translucent glass with subtle blue accent tint */
+[data-preset="hig"] .sidebar {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blue) 6%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 14%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+}
+
+[data-preset="hig"] .topbar {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 7%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 50%, transparent) 35%,
+    color-mix(in srgb, var(--surface) 50%, transparent) 65%,
+    color-mix(in srgb, var(--green) 5%, transparent) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+}
+
+/* App tabs bar - light glass */
+[data-preset="hig"] .app-tabs {
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+/* Surface cards - medium glass */
+[data-preset="hig"] .record-card,
+[data-preset="hig"] .snapshot-card,
+[data-preset="hig"] .dashboard-card,
+[data-preset="hig"] .metric-card,
+[data-preset="hig"] .account-card,
+[data-preset="hig"] .preset-card {
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 35%, transparent);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+}
+
+/* Content panels - medium-light glass */
+[data-preset="hig"] .panel {
+  background: color-mix(in srgb, var(--surface) 54%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 38%, transparent);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+}
+
+[data-preset="hig"] .sidebar-section {
+  background: color-mix(in srgb, var(--surface) 53%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 28%, transparent);
+}
+
+[data-preset="hig"] .search-bar {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+[data-preset="hig"] .month-stepper {
+  background: color-mix(in srgb, var(--surface-muted) 48%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+}
+
+[data-preset="hig"] .empty-state {
+  background: color-mix(in srgb, var(--surface-muted) 28%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px dashed color-mix(in srgb, var(--line-strong) 28%, transparent);
+  color: var(--ink-muted);
+}
+
+/* Inputs - subtle glass */
+[data-preset="hig"] input,
+[data-preset="hig"] select,
+[data-preset="hig"] textarea {
+  background: color-mix(in srgb, var(--input-bg) 78%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* Glossy gradient buttons with shiny specular movement */
+[data-preset="hig"] .button--primary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 100%, #fff) 0%,
+    color-mix(in srgb, var(--blue) 84%, #fff) 30%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 50%,
+    color-mix(in srgb, var(--blue) 90%, #fff) 70%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 100%
+  );
+  background-size: 200% 100%;
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--blue) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--blue) 15%, transparent);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-position 0.5s ease;
+}
+
+[data-preset="hig"] .button--primary:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--blue) 35%, transparent), 0 2px 6px color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+[data-preset="hig"] .button--primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 25%, transparent);
+}
+
+[data-preset="hig"] .button--primary:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+
+
 /* Dark theme adjustments */
 [data-theme="dark"] .page-content__editor {
   background: var(--input-bg);
@@ -2910,6 +3352,97 @@ th:last-child .th-sort {
   line-height: 1.65;
   color: var(--ink);
   overflow-wrap: break-word;
+}
+
+/* ── Design Preset Cards (ThemeCustomizeModal) ───────────────────────── */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font: inherit;
+  color: inherit;
+}
+
+.preset-card:hover {
+  border-color: var(--blue);
+}
+
+.preset-card--active {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1.5px var(--blue);
+}
+
+.preset-card__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.preset-card__swatch {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.preset-card__radius-sample {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.preset-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.preset-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.preset-card__vibe {
+  font-size: 11px;
+  color: var(--ink-muted);
+  line-height: 1.3;
+}
+
+.preset-card__check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 .notion-preview > :first-child {
@@ -3782,8 +4315,8 @@ tfoot td {
 }
 
 .modal-panel {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   width: min(560px, 100%);
   max-height: calc(100vh - 48px);
   overflow: hidden;
@@ -3800,6 +4333,7 @@ tfoot td {
   justify-content: space-between;
   gap: 14px;
   padding: 18px;
+  flex-shrink: 0;
 }
 
 .modal-panel__header {
@@ -3818,7 +4352,10 @@ tfoot td {
 }
 
 .modal-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
 }
 
@@ -4919,14 +5456,21 @@ tfoot td {
 }
 .color-picker__trigger:hover {
   border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 8%, var(--surface));
 }
 .color-picker__trigger--open {
   border-color: var(--blue);
   box-shadow: 0 0 0 2px var(--blue-soft);
 }
+.color-picker__trigger--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
 .color-picker__trigger-swatch {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
   border: 1px solid var(--line);
   flex-shrink: 0;
@@ -4937,11 +5481,21 @@ tfoot td {
   font-family: ui-monospace, monospace;
   color: var(--ink);
 }
+.color-picker__trigger::after {
+  content: '\u25be';
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-left: 2px;
+  transition: transform 0.15s;
+}
+.color-picker__trigger--open::after {
+  transform: rotate(180deg);
+}
 /* Color picker modal backdrop */
 .color-picker__backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4950,7 +5504,7 @@ tfoot td {
 }
 .color-picker__panel {
   position: relative;
-  z-index: 1001;
+  z-index: 10000;
   width: 320px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 64px);
@@ -5850,6 +6404,23 @@ tfoot td {
 }
 
 /* Model configuration sits with the composer (not the top bar). */
+
+
+/* Offline chip in chat composer — replaces credential/model selectors when offline */
+.chat-mode__offline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 20%, transparent);
+}
 .chat-mode__composer-meta {
   display: flex;
   align-items: center;
@@ -8422,14 +8993,21 @@ select.chat-field__input {
 }
 .color-picker__trigger:hover {
   border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 8%, var(--surface));
 }
 .color-picker__trigger--open {
   border-color: var(--blue);
   box-shadow: 0 0 0 2px var(--blue-soft);
 }
+.color-picker__trigger--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
 .color-picker__trigger-swatch {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
   border: 1px solid var(--line);
   flex-shrink: 0;
@@ -8440,11 +9018,21 @@ select.chat-field__input {
   font-family: ui-monospace, monospace;
   color: var(--ink);
 }
+.color-picker__trigger::after {
+  content: '\u25be';
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-left: 2px;
+  transition: transform 0.15s;
+}
+.color-picker__trigger--open::after {
+  transform: rotate(180deg);
+}
 /* Color picker modal backdrop */
 .color-picker__backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8453,7 +9041,7 @@ select.chat-field__input {
 }
 .color-picker__panel {
   position: relative;
-  z-index: 1001;
+  z-index: 10000;
   width: 320px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 64px);
@@ -10392,6 +10980,11 @@ select.chat-field__input {
   perspective: 1200px;
   width: min(560px, 100%);
   max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  /* Safety net: if the inner flip chain ever fails to bound the body,
+     the container itself scrolls instead of clipping content. */
+  overflow-y: auto;
 }
 
 .modal-panel--flipper {
@@ -10401,6 +10994,7 @@ select.chat-field__input {
   transform-style: preserve-3d;
   overflow: visible;
   transition: transform 0.6s ease;
+  min-height: 0;
 }
 
 .modal-panel--flipper[data-flipped="true"] {
@@ -10414,6 +11008,21 @@ select.chat-field__input {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
+  min-height: 0;
+  /* Swap which face is hit-testable at the midpoint of the 0.6s flip. */
+  transition: visibility 0s linear 0.3s;
+}
+
+/* Both faces share one grid cell. backface-visibility:hidden only stops the
+   away-facing face from being PAINTED — Chromium still routes wheel/trackpad
+   scroll hit-testing to it, and since that face's body is not scrollable the
+   gesture is swallowed and the visible form never scrolls (dragging the
+   scrollbar still worked, which is what made this look like a layout bug).
+   Taking the away-facing face out of hit-testing entirely fixes it. */
+.modal-panel--flipper:not([data-flipped="true"]) .modal-panel__face--back,
+.modal-panel--flipper[data-flipped="true"] .modal-panel__face--front {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .modal-panel__face--back {

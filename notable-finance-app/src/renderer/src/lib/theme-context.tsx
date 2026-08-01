@@ -9,16 +9,19 @@ import {
 } from "react";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { loadGoogleFont } from "@/lib/font-loader";
+import { getPreset, type ThemePresetId } from "@/lib/presets";
 
 export type ThemeMode = "light" | "dark" | "system";
 
 export interface ThemeState {
+  preset: ThemePresetId;
   mode: ThemeMode;
   primaryColor: string;
   secondaryColor: string;
   setMode: (mode: ThemeMode) => void;
   setPrimaryColor: (color: string) => void;
   setSecondaryColor: (color: string) => void;
+  setPreset: (preset: ThemePresetId) => void;
 }
 
 const ThemeContext = createContext<ThemeState | null>(null);
@@ -29,9 +32,11 @@ interface StoredTheme {
   mode: ThemeMode;
   primaryColor: string;
   secondaryColor: string;
+  preset: ThemePresetId;
 }
 
 const DEFAULTS: StoredTheme = {
+  preset: "default",
   mode: "system",
   primaryColor: "#5b6cf9",
   secondaryColor: "#0d9488",
@@ -85,6 +90,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mode: settings.theme.mode,
       primaryColor: settings.theme.primaryColor,
       secondaryColor: settings.theme.secondaryColor,
+      preset: settings.theme.preset,
     };
     setStored(next);
     saveLocalTheme(next);
@@ -94,6 +100,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!mounted) return;
     const effective = resolveEffectiveMode(stored.mode);
     document.documentElement.setAttribute("data-theme", effective);
+    document.documentElement.setAttribute("data-preset", stored.preset);
     document.documentElement.style.setProperty("--blue", stored.primaryColor);
     document.documentElement.style.setProperty("--green", stored.secondaryColor);
     document.documentElement.style.setProperty("--focus", `${stored.primaryColor}47`);
@@ -111,6 +118,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--font-mono", fonts.monoFont ? `${fonts.monoFont}, ${monoFallback}` : monoFallback);
     document.documentElement.style.setProperty("--font-brand", fonts.brandFont ? `${fonts.brandFont}, ${brandFallback}` : brandFallback);
     document.documentElement.style.setProperty("--font-receipt", fonts.receiptFont ? `${fonts.receiptFont}, ${brandFallback}` : brandFallback);
+    /* Apply design preset CSS variables */
+    const presetObj = getPreset(stored.preset);
+    const presetVars = effective === 'dark' ? presetObj.dark ?? presetObj.light : presetObj.light;
+    for (const [key, val] of Object.entries(presetVars)) {
+      document.documentElement.style.setProperty(key, val);
+    }
   }, [stored, mounted, settings.fonts]);
 
   useEffect(() => {
@@ -119,6 +132,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const handler = () => {
       const effective = resolveEffectiveMode("system");
       document.documentElement.setAttribute("data-theme", effective);
+      document.documentElement.setAttribute("data-preset", stored.preset);
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
@@ -133,6 +147,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     [updateSettings],
   );
 
+  const setPreset = useCallback(
+    (presetId: ThemePresetId) => {
+      const p = getPreset(presetId);
+      persist({
+        ...stored,
+        preset: presetId,
+        primaryColor: p.suggestedPrimary,
+        secondaryColor: p.suggestedSecondary,
+      });
+      // For non-customizable presets, lock fonts to the preset suggested values
+      if (!p.customizable) {
+        void updateSettings({
+          fonts: {
+            bodyFont: p.suggestedBodyFont,
+            monoFont: p.suggestedMonoFont,
+            brandFont: p.suggestedBrandFont,
+            receiptFont: p.suggestedBrandFont,
+          },
+        });
+      }
+    },
+    [persist, stored, updateSettings],
+  );
+
   const setMode = useCallback(
     (mode: ThemeMode) => {
       persist({ ...stored, mode });
@@ -142,6 +180,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setPrimaryColor = useCallback(
     (color: string) => {
+      const p = getPreset(stored.preset);
+      if (!p.customizable) return;
       persist({ ...stored, primaryColor: color });
     },
     [persist, stored],
@@ -149,6 +189,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setSecondaryColor = useCallback(
     (color: string) => {
+      const p = getPreset(stored.preset);
+      if (!p.customizable) return;
       persist({ ...stored, secondaryColor: color });
     },
     [persist, stored],
@@ -159,11 +201,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mode: stored.mode,
       primaryColor: stored.primaryColor,
       secondaryColor: stored.secondaryColor,
+      preset: stored.preset,
       setMode,
       setPrimaryColor,
       setSecondaryColor,
+      setPreset,
     }),
-    [stored, setMode, setPrimaryColor, setSecondaryColor],
+    [stored, setMode, setPrimaryColor, setSecondaryColor, setPreset],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

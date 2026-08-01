@@ -31,9 +31,9 @@ function preprocess(md: string): string {
   // Callouts
   result = result.replace(
     /^> (\p{Emoji}\uFE0F?|\p{Emoji})(.*)$/gmu,
-    (_match, emoji, _ws, rest) => {
-      const text = rest ?? "";
-      return `<div class="np-callout"><span class="np-callout-icon">${emoji}</span><span class="np-callout-text">${text.trim()}</span></div>`;
+    (_match, emoji, rest) => {
+      const text = (rest ?? "").trim();
+      return `<div class="np-callout"><span class="np-callout-icon">${emoji}</span><span class="np-callout-text">${text}</span></div>`;
     }
   );
   return result;

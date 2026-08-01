@@ -5,6 +5,61 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-01
+
+### Added
+- Design presets: six selectable UI themes — Default (clean & familiar), HIG
+  (liquid glass), Material (Material You), Atlas (enterprise structured), Carbon
+  (enterprise precise) and Fluent (modern Windows) — each with its own surfaces,
+  radii, blur and motion treatment, picked from preset cards in Theme settings
+- Backup & Restore in Settings: export a consistent SQLite snapshot of all local
+  data (incomes, expenses, accounts, budgets, chat history) to a single file, and
+  import it back. Works offline — no Notion connection required. Chat API keys
+  stay in the OS keychain and are never exported
+- Backup files are stamped with app version, export time, and record counts;
+  imports from a newer app version are refused until the app is updated
+- Online state badge in the TopBar (green Online / red Offline), same treatment
+  as the offline indicator
+- Chat: dynamic display-only greeting in the empty state — time-of-day greeting
+  plus the user's first name and a daily rotating finance prompt line
+- Chat: AI can now answer year-level questions ("total expense for 2026") via a
+  new year parameter on queryIncomes/queryExpenses (expands to the full year range)
+- Chat: "financial insight / insights / monthly highlights" phrases route to the
+  Monitoring summary skill; "insight" added to the ask-data vocabulary
+- Chat: data digest memory — headline totals from read tools are stored with each
+  assistant turn and replayed on the next few turns, so follow-ups like "what
+  about June?" have grounding without replaying raw tool transcripts
+- Chat: richer system prompt — app overview (local-first, Notion mirror), money
+  formulas (total expense = amount + interest, net income, available budget),
+  date/period guidance, and a note that practical personal-finance tips are welcome
+- Topic guard lexicon: "tipid tips" / generic finance tips no longer blocked;
+  added common Taglish finance words (pera, gastos, kita, utang, sahod, ipon, …)
+  and food/groceries/restaurant spending terms
+
+### Fixed
+- Form modals could not be scrolled with a mouse wheel or trackpad; only dragging
+  the scrollbar worked, which disguised this as a layout problem. Both faces of
+  the flippable modal share a single grid cell, and while `backface-visibility:
+  hidden` stops the away-facing face from being painted, Chromium still routed
+  wheel/scroll hit-testing to it — and because that face's body is not
+  scrollable, the gesture was swallowed. The away-facing face is now removed
+  from hit-testing, so every overflowing form modal scrolls normally
+- Accounts table rows were not clickable (table view) — recordIds were missing,
+  so row clicks never opened the account detail modal
+- Expense page crash "Expense failed to render text.trim is not a function" when
+  a Notion page contained a callout — the callout regex replace callback bound
+  the numeric offset to the text variable; now bound to the actual capture group
+- CC Transaction / Pasabuy sections no longer hide while any of their fields still
+  has content after switching to a non-CC account / non-Pasabuy category; they
+  hide again only once every related field is cleared
+- Topic guard now allows "give me a random tipid tips" and similar generic
+  personal-finance advice questions
+
+### Changed
+- Color picker: larger preview swatch, explicit open and disabled states, a
+  dropdown caret, and a raised z-index so the panel renders above modals
+- App version bumped to 1.2.0
+
 ## [1.1.1] - 2026-07-30
 
 ### Added

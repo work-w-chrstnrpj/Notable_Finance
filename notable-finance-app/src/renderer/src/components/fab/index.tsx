@@ -332,7 +332,7 @@ function QuickAddExpenseModal({
       interest: parseNumberInput(interestInput),
       accountId: formAccountId,
       categoryId: formCategoryId,
-      paymentStatus: paymentStatus || "Unpaid",
+      paymentStatus: sections.creditCard ? paymentStatus || "Unpaid" : paymentStatus || null,
       paymentFrequency: paymentFrequency || null,
       periodCount: parseOptionalNumberInput(periodCountInput),
       paidPeriod: parseOptionalNumberInput(paidPeriodInput),

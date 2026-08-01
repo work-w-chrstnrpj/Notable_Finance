@@ -104,6 +104,17 @@ Overlays change tone only — never amounts, never finance delete, never auto-Ap
 | `confirmDraft(draftId)` | `ChatConfirmResult` | Applies create/update when draft is complete **and** at least one BYOK credential exists; optional `quip`; broadcasts `records:changed`. Rejects incomplete / Apple-only / delete. |
 | `cancelDraft(draftId)` | `ChatDraftDto & { quip? }` | Discards draft; no finance write; optional cancel ack. |
 
+### `window.api.backup` (Phase 7.2 — local database backup & restore)
+Single-file SQLite snapshots of all local data (incomes, expenses, accounts, budgets, chat
+history). Export works fully offline — no Notion connection required. Chat API keys live in
+safeStorage vault files and are **never** exported.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `export(opts?: { path? })` | `BackupExportResult` | Save dialog when no path; `VACUUM INTO` snapshot stamped with app version, export time, row counts (`backup.meta` in `app_settings`). |
+| `inspect(opts?: { path? })` | `BackupInspectResult` | Open dialog when no path; validates SQLite header + required tables; reads meta. Never touches the live DB. |
+| `import(path)` | `BackupImportResult` | Closes the live connection, swaps the file, clears stale WAL/SHM, re-inits (additive migrations). Refuses files from a newer app version and the live file itself. Renderer reloads the window after success. |
+
 ### `window.api.devLogs` (Dev Mode)
 In-memory debug ring buffer (max 500). **Never persisted to SQLite.** Cleared on app quit or when `devModeEnabled` turns off. Logging is active only while Settings → Developer → Dev Mode is on.
 

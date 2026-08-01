@@ -1,6 +1,9 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   UpdaterCheckResult,
+  BackupExportResult,
+  BackupImportResult,
+  BackupInspectResult,
   AccountDto,
   ApiResult,
   ChatCredentialDto,
@@ -328,6 +331,16 @@ const api = {
       ipcRenderer.invoke('updater:status'),
     install: (): Promise<ApiResult<true>> =>
       ipcRenderer.invoke('updater:install')
+  },
+
+  /** Local database backup / restore. Import swaps the live file — reload the window after. */
+  backup: {
+    export: (opts?: { path?: string }): Promise<ApiResult<BackupExportResult>> =>
+      ipcRenderer.invoke('backup:export', opts),
+    inspect: (opts?: { path?: string }): Promise<ApiResult<BackupInspectResult>> =>
+      ipcRenderer.invoke('backup:inspect', opts),
+    import: (path: string): Promise<ApiResult<BackupImportResult>> =>
+      ipcRenderer.invoke('backup:import', path)
   },
 
   /** Page Content — a record's Notion page body (block children), edited local-first as Markdown. */

@@ -23,6 +23,10 @@ export function QueryProvider({ children }: { children: ReactNode }) {
             gcTime: 5 * 60_000,
             refetchOnWindowFocus: false,
             retry: 1,
+            // Offline-first: local SQLite via IPC works without a network
+            // connection. Prevents TanStack Query from pausing queries when
+            // navigator.onLine is false.
+            networkMode: 'offlineFirst',
           },
         },
       }),

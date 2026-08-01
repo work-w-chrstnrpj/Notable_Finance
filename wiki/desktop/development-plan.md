@@ -74,6 +74,15 @@ Locked: **Hybrid providers (C)**; confirm-before-write; no finance delete via ch
 | 6.5 | Apple Intelligence read-only adapter (macOS stretch) | Bundled `fm-proxy` / Foundation Models; real compatibility probe | **Done** (2026-07-24; real FM bridge) |
 | 6.6 | Hardening: allowlist tests, confirm/clarify gates, profile field tests, docs (IPC/security/testing) | Tests green; contracts updated | **Done** (2026-07-24) |
 
+### Phase 7 — Maintenance & hardening (v1.2.0)
+| # | Work item | Acceptance | Status |
+| --- | --- | --- | --- |
+| 7.1 | Bugfixes: Accounts table row click (`recordIds`), Notion callout render crash (regex callback arity), CC/Pasabuy sections keep-visible-while-fields-filled | Row click opens detail; expense renders with callouts; sections hide only after fields cleared | Done |
+| 7.2 | Local backup & restore (`backup:export/inspect/import` + Settings panel); offline-capable single-file SQLite snapshot; version guard | Export/import roundtrip test green; newer-version imports refused | Done |
+| 7.3 | Online state badge (green Online / red Offline) | Both states visible in TopBar | Done |
+| 7.4 | Chat improvements: topic-guard lexicon (tipid tips + Taglish terms), year-level queries (`year` param), financial-insight routing, data-digest memory across turns, richer system prompt (formulas/app context/date), dynamic empty-state greeting | Guard/lexicon tests green; follow-up turns carry digested data | Done |
+| 7.5 | Fix fresh-install migration crash — 0011 had two statements in one chunk (better-sqlite3 rejects multi-statement prepare) | Fresh DB migrates through 0011 (verified under Electron-node vitest) | Done |
+
 ## Milestone summary
 
 - **M1 (offline app):** Phases 0–1 — usable offline, real-time balances.

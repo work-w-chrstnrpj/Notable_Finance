@@ -85,13 +85,15 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     type: 'function',
     function: {
       name: 'queryIncomes',
-      description: 'Query income records with optional month/range/account/category/view filters.',
+      description:
+        'Query income records with optional month/range/year/account/category/view filters. For year-level questions use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
       parameters: {
         type: 'object',
         properties: {
           month: monthProp,
           rangeStart: { type: 'string' },
           rangeEnd: { type: 'string' },
+          year: { type: 'string', description: '4-digit year (e.g. "2026") — full-year range.' },
           accountId: { type: 'string' },
           categoryId: { type: 'string' },
           view: {
@@ -108,13 +110,14 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     function: {
       name: 'queryExpenses',
       description:
-        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, Unpaid CC.',
+        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, Unpaid CC. For year-level totals use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
       parameters: {
         type: 'object',
         properties: {
           month: monthProp,
           rangeStart: { type: 'string' },
           rangeEnd: { type: 'string' },
+          year: { type: 'string', description: '4-digit year (e.g. "2026") — full-year range.' },
           accountId: { type: 'string' },
           categoryId: { type: 'string' },
           paymentStatus: { type: 'string' },

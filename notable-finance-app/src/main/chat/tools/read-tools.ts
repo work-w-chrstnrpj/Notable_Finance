@@ -11,6 +11,17 @@ function optionalMonthFilter(raw: unknown): string | undefined {
   if (raw == null || raw === '') return undefined
   return resolveMonth(raw) ?? undefined
 }
+
+/**
+ * Year-only filter ("2026"): expands to the full Jan 1 – Dec 31 range so
+ * year-level questions like "total expense for 2026" are answerable without
+ * the model computing date boundaries.
+ */
+function yearRange(raw: unknown): { rangeStart?: string; rangeEnd?: string } {
+  const y = str(raw)
+  if (!y || !/^\d{4}$/.test(y)) return {}
+  return { rangeStart: `${y}-01-01`, rangeEnd: `${y}-12-31` }
+}
 import { resolveExpenseProfile } from '../expense-profile'
 
 const MAX_ROWS = 40
@@ -113,10 +124,11 @@ export function listExpenseCategoriesTool(_args: unknown) {
 export function queryIncomes(args: unknown) {
   const a = asRecord(args)
   const month = optionalMonthFilter(a.month)
+  const yRange = yearRange(a.year)
   const records = repo.listIncomes({
     month,
-    rangeStart: str(a.rangeStart),
-    rangeEnd: str(a.rangeEnd),
+    rangeStart: str(a.rangeStart) ?? yRange.rangeStart,
+    rangeEnd: str(a.rangeEnd) ?? yRange.rangeEnd,
     accountId: str(a.accountId),
     categoryId: str(a.categoryId),
     view: (str(a.view) as
@@ -139,10 +151,11 @@ export function queryIncomes(args: unknown) {
 export function queryExpenses(args: unknown) {
   const a = asRecord(args)
   const month = optionalMonthFilter(a.month)
+  const yRange = yearRange(a.year)
   const records = repo.listExpenses({
     month,
-    rangeStart: str(a.rangeStart),
-    rangeEnd: str(a.rangeEnd),
+    rangeStart: str(a.rangeStart) ?? yRange.rangeStart,
+    rangeEnd: str(a.rangeEnd) ?? yRange.rangeEnd,
     accountId: str(a.accountId),
     categoryId: str(a.categoryId),
     paymentStatus: str(a.paymentStatus),
