@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, CreditCard, Briefcase, PiggyBank, User, CheckCircle } from "lucide-react";
+import { CreditCard, Briefcase, User, CheckCircle } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 
 export function AddUserComponent() {

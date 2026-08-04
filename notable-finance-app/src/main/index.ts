@@ -15,7 +15,7 @@ if (process.env.NF_USER_DATA_DIR) {
 // Electron main process bootstrap. Main owns all data & side effects: SQLite, domain
 // logic, IPC. See wiki/desktop/desktop-architecture.md.
 
-app.whenReady().then(() => {
+void app.whenReady().then(() => {
   // macOS dock icon in dev (packaged builds get the icon from the app bundle).
   if (process.platform === 'darwin' && !app.isPackaged) {
     const icon = nativeImage.createFromPath(appIconPath())

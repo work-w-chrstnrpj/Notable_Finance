@@ -15,7 +15,9 @@ function FormModal({
   deleteDanger,
   editing,
   saving,
-  error,
+  // Accepted for prop-shape parity with FlippableModal; this variant doesn't render an
+  // inline error either (callers surface save errors via Toast instead).
+  error: _error,
   onEdit,
   onSave,
   onDelete,

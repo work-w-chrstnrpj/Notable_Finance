@@ -22,7 +22,7 @@ import { Send } from "lucide-react";
 import { useHistory, useFinanceInvalidation } from "@/lib/use-data";
 import { historyApi } from "@/lib/api-client";
 import { formatMoney, formatDate } from "@/lib/format";
-import { calculateNetIncome, getMoneyValueTone, transactionWorkflowCategories } from "@/lib/finance-rules";
+import { calculateNetIncome, transactionWorkflowCategories } from "@/lib/finance-rules";
 import type { ActivityEntry, MutationAction, SyncedResource, UnsyncedItem } from "@/types/finance";
 
 // ── History section ────────────────────────────────────────────────────────
@@ -266,7 +266,10 @@ function RecordDetailModal({
 // ── Main History page component ─────────────────────────────────────────────
 
 // ── Read-only form field display ──────────────────────────────────────
-function FieldValue({ label, value, previousValue, computed, tone }: { label: string; value: string; previousValue?: string | null; computed?: boolean; tone?: string }) {
+// `tone` is part of the shared item shape (spread in from ExpenseFormView/IncomeFormView's
+// `items` arrays) but no caller currently sets it — kept in the signature for that contract,
+// unused here today.
+function FieldValue({ label, value, previousValue, computed, tone: _tone }: { label: string; value: string; previousValue?: string | null; computed?: boolean; tone?: string }) {
   const hasDiff = previousValue !== undefined && previousValue !== null && previousValue !== value;
   return (
     <div className="field-value-row">
@@ -339,7 +342,9 @@ function HistoryPage() {
     }
   }
 
-  async function pushSingleItem(item: UnsyncedItem) {
+  // `_item` names the button's intent at the call site (pushSingleItem(selectedUnsynced));
+  // the desktop sync API has no per-item push, so the body below just runs a full push.
+  async function pushSingleItem(_item: UnsyncedItem) {
     setPushItemLoading(true);
     setDiscardError(null);
     try {

@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { UiSettings } from "../../../shared/finance.types";
 
-const DEFAULT_SETTINGS: UiSettings = {
+export const DEFAULT_SETTINGS: UiSettings = {
   hardDeleteEnabled: false,
   chatEnabled: false,
   chatPreferAppleReadOnly: false,

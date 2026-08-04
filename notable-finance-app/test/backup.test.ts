@@ -6,9 +6,13 @@ import { join } from 'node:path'
 // backup layers touch. The temp dir is created BEFORE the mocked module loads
 // (vi.hoisted) and pointed to by app.getPath('userData').
 const state = vi.hoisted(() => {
+  // vi.hoisted callbacks run before ES module imports resolve, so require() is the only
+  // way to reach these Node builtins here — the standard vi.mock/vi.hoisted interop pattern.
+  /* eslint-disable @typescript-eslint/no-require-imports */
   const { mkdtempSync } = require('node:fs') as typeof import('node:fs')
   const { tmpdir } = require('node:os') as typeof import('node:os')
   const { join: j } = require('node:path') as typeof import('node:path')
+  /* eslint-enable @typescript-eslint/no-require-imports */
   const dir = mkdtempSync(j(tmpdir(), 'nf-backup-test-'))
   return { dir }
 })

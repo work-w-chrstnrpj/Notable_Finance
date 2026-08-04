@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Eraser, Eye, Pencil, RefreshCw, Save } from "lucide-react";
 import type { PageContentResource } from "@shared/finance.types";
 import { NotionPreview } from "./notion-preview";

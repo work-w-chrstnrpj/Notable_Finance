@@ -6,9 +6,7 @@ import {
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { MoneyValue } from "@/components/ui";
-import { cx } from "@/lib/finance-helpers";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
-import { formatMoney } from "@/lib/format";
 import type { Account, AccountType } from "@/types/finance";
 
 function AccountTypeIcon({ type, size = 18 }: { type: AccountType; size?: number }) {

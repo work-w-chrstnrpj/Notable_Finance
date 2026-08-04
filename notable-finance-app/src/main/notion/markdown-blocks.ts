@@ -114,12 +114,13 @@ export function blocksToMarkdown(blocks: Block[]): string {
         gap(type); lines.push(`- [toggle] ${text}`); break
       case 'quote':
         gap(type); lines.push(`> ${text}`); break
-      case 'callout':
+      case 'callout': {
         gap(type)
         const calloutData = (block as Record<string, any>).callout ?? {}
         const calloutIcon = calloutData.icon?.emoji ?? ''
         lines.push(`> ${calloutIcon} ${text}`)
         break
+      }
       case 'divider':
         gap(type); lines.push('---'); break
       case 'code':
@@ -128,7 +129,7 @@ export function blocksToMarkdown(blocks: Block[]): string {
         lines.push(text)
         lines.push('```')
         break
-      case 'table':
+      case 'table': {
         gap(type)
         const tableData = (block as Record<string, any>).table ?? {}
         const colCount = tableData.table_width ?? 0
@@ -150,6 +151,7 @@ export function blocksToMarkdown(blocks: Block[]): string {
           lines.push(`_[Table: ${colCount} columns]_`)
         }
         break
+      }
       case 'image': {
         gap(type)
         const imgUrl = getFileUrl(block, 'image')
@@ -212,7 +214,7 @@ export function blocksToMarkdown(blocks: Block[]): string {
         gap(type); lines.push('_Breadcrumb_'); break
       case 'table_of_contents':
         gap(type); lines.push('_Table of Contents_'); break
-      case 'synced_block':
+      case 'synced_block': {
         // Unwrap and render children inline if they were fetched
         const syncedChildren = (block as Record<string, any>)._children as Block[] | undefined
         if (syncedChildren) {
@@ -220,16 +222,18 @@ export function blocksToMarkdown(blocks: Block[]): string {
           lines.push(blocksToMarkdown(syncedChildren))
         }
         break
+      }
       case 'column_list':
         // Column list children are columns; skip and let inner content through
         break
-      case 'column':
+      case 'column': {
         // Columns contain their own children; unwrap if fetched
         const colChildren = (block as Record<string, any>)._children as Block[] | undefined
         if (colChildren) {
           lines.push(blocksToMarkdown(colChildren))
         }
         break
+      }
       case 'template':
         gap(type); lines.push(`_Template: ${text}_`); break
       case 'paragraph':

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronLeft, Copy, Info, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { PageContentPanel } from "./page-content-panel";
+import type { ModalState } from "./form-modals";
 import type { PageContentResource } from "@shared/finance.types";
 
 /**
@@ -18,7 +19,9 @@ function FlippableModal({
   deleteDanger,
   editing,
   saving,
-  error,
+  // Accepted for prop-shape parity with FormModal; this variant doesn't render an inline
+  // error (callers surface save errors via Toast instead).
+  error: _error,
   onEdit,
   onSave,
   onDelete,
@@ -28,7 +31,7 @@ function FlippableModal({
   pageContentResource,
   recordId,
 }: {
-  modal: any;
+  modal: ModalState;
   subtitle: string;
   deleteLabel: string;
   deleteDanger?: boolean;
