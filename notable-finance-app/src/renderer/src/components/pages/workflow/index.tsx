@@ -2,12 +2,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
-import { Panel, Field, ComputedField, MoneyValue, FilterDropdown, LoadingBlock, EmptyState, PageToolbar, MultiSelect, FormSectionDivider } from "@/components/ui";
+import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
-import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
+import { useWorkflowForm } from "./use-workflow-form";
+import { WorkflowFormFields } from "./workflow-form-fields";
 import { useWorkflowRecords, useFinanceInvalidation, useExpensesForCCCoverage } from "@/lib/use-data";
+import { useRecordSelection } from "@/features/records/use-record-selection";
+import { buildReceipt } from "@/features/records/receipt";
+import { useBulkActions } from "@/features/records/use-bulk-actions";
 import { useShortcutAction } from "@/lib/shortcuts/context";
 import {
   applyIncomeTag,
@@ -17,11 +21,11 @@ import {
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
-import { calculateNetIncome, getMoneyValueTone, getWorkflowFixedCategory } from "@/lib/finance-rules";
+import { getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
-import { useFabRegister, type ReceiptContext, type ReceiptRow } from "@/lib/fab-export-context";
+import { useFabRegister, type ReceiptContext } from "@/lib/fab-export-context";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
 
 function WorkflowPage({
@@ -70,29 +74,36 @@ function WorkflowPage({
         ? "Savings Amount"
         : "Gross Income";
   const [modal, setModal] = useState<ModalState>(null);
-  const [workflowNameInput, setWorkflowNameInput] = useState("");
-  const [workflowDateInput, setWorkflowDateInput] = useState("");
-  const [receivingAccountId, setReceivingAccountId] = useState("");
-  const [transactedAccountId, setTransactedAccountId] = useState("");
-  const [workflowCategoryIdInput, setWorkflowCategoryIdInput] = useState("");
-  const [workflowAmountInput, setWorkflowAmountInput] = useState("");
-  const [workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput] = useState("");
+  const form = useWorkflowForm();
+  const {
+    workflowNameInput, setWorkflowNameInput,
+    workflowDateInput,
+    receivingAccountId,
+    transactedAccountId,
+    workflowCategoryIdInput,
+    workflowAmountInput,
+    workflowCapitalExpenditureInput,
+    editingId, setEditingId,
+    ccCoveredIds, setCcCoveredIds,
+    loadRecord,
+  } = form;
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set());
+  const {
+    selectedIds,
+    disabledIds,
+    hasSelection,
+    toggleRowSelect,
+    selectAll,
+    clearSelection,
+    applyDisabled,
+  } = useRecordSelection();
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled } = useUiSettings();
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
-  const [ccCoveredIds, setCcCoveredIds] = useState<string[]>([]);
   const { state: ccCoverageState } = useExpensesForCCCoverage();
-  const workflowNetIncome = calculateNetIncome(
-    parseNumberInput(workflowAmountInput),
-    parseNumberInput(workflowCapitalExpenditureInput),
-  );
 
   const eligibleCcExpenses = (ccCoverageState.status === "success" ? ccCoverageState.data : [])
   const totalCovered = eligibleCcExpenses
@@ -110,8 +121,7 @@ function WorkflowPage({
   useShortcutAction("modal.duplicate", () => handleDuplicateWorkflow(), modalOpen);
   useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modalOpen && editingId != null);
   useShortcutAction("modal.close", () => { setModal(null); setCcCoveredIds([]); }, modalOpen);
-  const hasSelection = selectedIds.size > 0;
-  useShortcutAction("mass.selectAll", () => setSelectedIds(new Set(workflowIncomes.map((r) => r.id).filter(Boolean))), !modalOpen);
+  useShortcutAction("mass.selectAll", () => selectAll(workflowIncomes.map((r) => r.id)), !modalOpen);
   useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
   useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
   useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
@@ -144,27 +154,22 @@ function WorkflowPage({
 
   // ── Publish printable receipt for Receivables ──────────────────────
   const { setReceipt } = useFabRegister();
-  const receiptContext = useMemo<ReceiptContext>(() => {
-    const enabledRecords = workflowIncomes.filter(
-      (r) => !disabledIds.has(r.id),
-    );
-    const rows: ReceiptRow[] = enabledRecords.map((record) => ({
-      date: record.date ? formatDate(record.date) : "—",
-      description: stripNotionTag(record.name),
-      amount: formatMoney(record.grossIncome),
-    }));
-    const total = enabledRecords.reduce(
-      (sum, record) => sum + (record.grossIncome ?? 0),
-      0,
-    );
-    return {
-      viewTitle: "Receivables",
-      periodLabel: "All Time",
-      amountHeader: "Amount",
-      rows,
-      total: formatMoney(total),
-    };
-  }, [workflowIncomes, disabledIds]);
+  const receiptContext = useMemo<ReceiptContext>(
+    () =>
+      buildReceipt({
+        records: workflowIncomes,
+        excludeIds: disabledIds,
+        viewTitle: "Receivables",
+        periodLabel: "All Time",
+        toRow: (record) => ({
+          date: record.date ? formatDate(record.date) : "—",
+          description: stripNotionTag(record.name),
+          amount: formatMoney(record.grossIncome),
+        }),
+        valueOf: (record) => record.grossIncome ?? 0,
+      }),
+    [workflowIncomes, disabledIds],
+  );
 
   useEffect(() => {
     if (isReceivables) {
@@ -222,22 +227,9 @@ function WorkflowPage({
       recordId != null
         ? workflowIncomes.find((r) => r.id === recordId)
         : undefined;
-    setWorkflowNameInput(record?.name ?? (isTransfer ? "Transfer" : isCreditCardPayment ? "CC Payment —" : ""));
-    setWorkflowDateInput(record?.date ?? "");
-    setReceivingAccountId(record?.accountId ?? "");
-    setTransactedAccountId(record?.transactedAccountId ?? "");
-    // New Alkansya records default to the Savings category (editable).
-    setWorkflowCategoryIdInput(
-      record?.categoryId ?? (isAlkansya ? savingsCategoryId : ""),
-    );
-    setWorkflowAmountInput(record?.grossIncome?.toString() ?? "");
-    setWorkflowCapitalExpenditureInput(
-      record?.capitalExpenditure?.toString() ?? "",
-    );
-    setEditingId(record?.id ?? null);
+    loadRecord(record, { isTransfer, isCreditCardPayment, isAlkansya, savingsCategoryId });
     setEditing(mode === "new");
     setSaveError(null);
-    setCcCoveredIds(record?.ccPaymentCoveredIds ?? []);
     setModal({ mode, title });
   }
 
@@ -330,45 +322,22 @@ function WorkflowPage({
     setModal({ mode: "new", title: `New ${label} Record (Copy)` });
   }
 
-  function toggleRowSelect(recordId: string, selected: boolean) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (selected) next.add(recordId);
-      else next.delete(recordId);
-      return next;
-    });
-  }
-
-  async function handleBulkAction(action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") {
-    if (action === "edit") {
-      // Mass edit is available on Income / Expense pages; workflows keep duplicate/delete.
-      return;
-    }
-    if (action === "enable" || action === "disable") {
-      const shouldDisable = action === "disable";
-      setDisabledIds((prev) => {
-        const next = new Set(prev);
-        for (const id of selectedIds) {
-          if (shouldDisable) next.add(id);
-          else next.delete(id);
-        }
-        return next;
-      });
-      setSelectedIds(new Set());
-      return;
-    }
-
-    if (action === "duplicate") {
-      const recordsToDuplicate = workflowIncomes.filter(
-        (r) => selectedIds.has(r.id)
-      );
+  // No onEdit / onPrint / onCover — workflows have never offered those (the table also
+  // renders showBulkEdit={false}). Omitting them keeps that gap explicit.
+  const handleBulkAction = useBulkActions({
+    selectedIds,
+    applyDisabled,
+    clearSelection,
+    onDelete: setDeleteConfirmIds,
+    onDuplicate: async () => {
+      const recordsToDuplicate = workflowIncomes.filter((r) => selectedIds.has(r.id));
 
       if (recordsToDuplicate.length === 0) {
-        setSelectedIds(new Set());
+        clearSelection();
         return;
       }
 
-      setSelectedIds(new Set());
+      clearSelection();
 
       const items = recordsToDuplicate.map((record) => ({
         name: `${record.name} (Copy)`,
@@ -380,6 +349,9 @@ function WorkflowPage({
         ...(record.transactedAccountId ? { transactedAccountId: record.transactedAccountId } : {}),
       }));
 
+      // NOTE: unlike Income/Expense this path is not optimistic — no temp rows, no pending
+      // markers, no failure notices. Left as-is; converting it to `commitMany` would change
+      // observable behaviour and belongs in its own change.
       try {
         const res = await workflowApi.bulkCreate(items);
         if (res.success && res.data.created.length > 0) {
@@ -392,23 +364,12 @@ function WorkflowPage({
       } catch {
         void refetch();
       }
-    }
-
-    if (action === "delete") {
-      const idsToDelete = Array.from(selectedIds).filter((id): id is string => id != null);
-
-      if (idsToDelete.length === 0) {
-        setSelectedIds(new Set());
-        return;
-      }
-
-      setDeleteConfirmIds(idsToDelete);
-    }
-  }
+    },
+  });
 
   async function executeDeleteWorkflow(idsToDelete: string[]) {
     setDeleteConfirmIds(null);
-    setSelectedIds(new Set());
+    clearSelection();
     setModal(null);
     setCcCoveredIds([]);
     setSaveError(null);
@@ -524,116 +485,24 @@ function WorkflowPage({
         onDuplicate={handleDuplicateWorkflow}
         onClose={() => { setModal(null); setCcCoveredIds([]); }}
       >
-        <div className="form-grid form-grid--single">
-          <Field label="Name" required>
-            <input
-              placeholder={`${label} title`}
-              value={workflowNameInput}
-              onChange={(event) => setWorkflowNameInput(event.target.value)}
-            />
-          </Field>
-          <Field label="Date" required={!isReceivables}>
-            <input
-              type="date"
-              value={workflowDateInput}
-              onChange={(event) => setWorkflowDateInput(event.target.value)}
-            />
-          </Field>
-          <Field label={amountLabel}>
-            <input
-              inputMode="decimal"
-              placeholder={isAlkansya ? "-0.00" : "0.00"}
-              value={workflowAmountInput}
-              onChange={(event) => setWorkflowAmountInput(event.target.value)}
-            />
-          </Field>
-          {isReceivables && (
-            <Field label="Capital Expenditure">
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={workflowCapitalExpenditureInput}
-                onChange={(event) => setWorkflowCapitalExpenditureInput(event.target.value)}
-              />
-            </Field>
-          )}
-          <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || isReceivables}>
-            <FilterDropdown
-              placeholder="— None —"
-              value={receivingAccountId}
-              onChange={setReceivingAccountId}
-              items={sourceAccountOptions.map((account) => ({
-                id: account.id,
-                label: account.name,
-                icon: <AccountIcon account={account} />,
-              }))}
-            />
-          </Field>
-          {secondaryAccountLabel && (
-            <Field label={secondaryAccountLabel} required={isTransfer}>
-              <FilterDropdown
-                placeholder="— None —"
-                value={transactedAccountId}
-                onChange={setTransactedAccountId}
-                items={nonCreditActiveAccounts
-                  .filter((account) => !isTransfer || account.id !== receivingAccountId)
-                  .map((account) => ({
-                  id: account.id,
-                  label: account.name,
-                  icon: <AccountIcon account={account} />,
-                }))}
-              />
-            </Field>
-          )}
-          {isCreditCardPayment && (
-            <>
-              <FormSectionDivider title="CC Covered Expenses" />
-              <div className="form-grid form-grid--single">
-                <Field label="Covered Expenses">
-                  <MultiSelect
-                    placeholder="Search expenses to link..."
-                    selectedIds={ccCoveredIds}
-                    onChange={setCcCoveredIds}
-                    items={eligibleCcExpenses.map((e) => ({
-                      id: e.id,
-                      label: e.description,
-                      sublabel: `₱${(e.periodCount && e.periodCount > 0 ? e.amount / e.periodCount : e.amount).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
-                    }))}
-                  />
-                </Field>
-                {ccCoveredIds.length > 0 && (
-                  <ComputedField
-                    label="Total Covered"
-                    value={`₱${totalCovered.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
-                  />
-                )}
-              </div>
-            </>
-          )}
-          {!categoryEditable && fixedCategory ? (
-            <ComputedField label="Categories" value={fixedCategory} />
-          ) : (
-            <Field label="Categories">
-              <FilterDropdown
-                placeholder="— None —"
-                value={workflowCategoryIdInput}
-                onChange={setWorkflowCategoryIdInput}
-                items={normalIncomeCategories.map((category) => ({
-                  id: category.id,
-                  label: category.source,
-                  icon: <CategoryIcon icon={category.icon} />,
-                }))}
-              />
-            </Field>
-          )}
-          {isReceivables && (
-            <ComputedField
-              label="Net Income"
-              value={formatMoney(workflowNetIncome)}
-              valueTone={getMoneyValueTone(workflowNetIncome)}
-            />
-          )}
-        </div>
+        <WorkflowFormFields
+          form={form}
+          label={label}
+          amountLabel={amountLabel}
+          sourceAccountLabel={sourceAccountLabel}
+          sourceAccountOptions={sourceAccountOptions}
+          secondaryAccountLabel={secondaryAccountLabel}
+          nonCreditActiveAccounts={nonCreditActiveAccounts}
+          normalIncomeCategories={normalIncomeCategories}
+          isTransfer={isTransfer}
+          isCreditCardPayment={isCreditCardPayment}
+          isAlkansya={isAlkansya}
+          isReceivables={isReceivables}
+          categoryEditable={categoryEditable}
+          fixedCategory={fixedCategory}
+          eligibleCcExpenses={eligibleCcExpenses}
+          totalCovered={totalCovered}
+        />
       </FormModal>
       {deleteConfirmIds && (
         <ConfirmModal
