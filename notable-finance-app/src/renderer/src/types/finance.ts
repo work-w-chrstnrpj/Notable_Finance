@@ -1,3 +1,26 @@
+// Domain enums shared byte-for-byte with the backend contract — re-exported rather than
+// redefined so the two files can't drift (see wiki/desktop/refactor_development_plan.md F7).
+import type {
+  AccountType,
+  PaymentStatus,
+  PaymentFrequency,
+  PasabuyStatus,
+  PullRange,
+  MutationAction,
+  SyncedResource,
+  ActivityDirection,
+} from "@shared/finance.types";
+export type {
+  AccountType,
+  PaymentStatus,
+  PaymentFrequency,
+  PasabuyStatus,
+  PullRange,
+  MutationAction,
+  SyncedResource,
+  ActivityDirection,
+};
+
 export type FinanceSectionId =
   | "dashboard"
   | "accounts"
@@ -14,16 +37,6 @@ export type FinanceSectionId =
   | "dev-logs"
   | "settings";
 
-export type AccountType =
-  | "Cash"
-  | "Savings"
-  | "e-Wallet"
-  | "Digital Bank"
-  | "Credit Account"
-  | "e-Credit"
-  | "BNPL"
-  | "Auxiliary";
-
 export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually";
 
 export type MonitoringViewMode = "Monthly" | "Quarterly" | "Semi-Annually" | "Annually";
@@ -39,22 +52,9 @@ export type ExpenseViewMode =
   | "Installments"
   | "Unpaid CC";
 
-export type PaymentStatus = "Paid" | "Unpaid" | "Installment" | "Cancelled";
-
-export type PaymentFrequency = "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Annually";
-
-export type PasabuyStatus =
-  | "Payment not yet receive"
-  | "Payment partially received"
-  | "Payment partially received (installment)"
-  | "Payment fully received";
-
 export type SyncState = "idle" | "syncing" | "fresh" | "error";
 
 export type SchemaHealth = "verified" | "warning" | "notChecked";
-
-/** Time-range presets for the pull-only sync action. */
-export type PullRange = "1h" | "24h" | "2d" | "1w" | "1m" | "1y" | "all";
 
 export type FinanceSection = {
   id: FinanceSectionId;
@@ -147,11 +147,6 @@ export type ExpenseRecord = {
 };
 
 // ── History section ───────────────────────────────────────────────────
-export type SyncedResource = "incomes" | "expenses";
-export type MutationAction = "create" | "update" | "delete";
-/** pull = Notion DB → App; push = App → Notion DB. */
-export type ActivityDirection = "pull" | "push";
-
 export type ActivityEntry = {
   id: string;
   resource: SyncedResource;

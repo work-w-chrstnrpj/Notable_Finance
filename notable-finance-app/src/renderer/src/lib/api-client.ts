@@ -12,6 +12,15 @@ import type {
   IncomeRecord,
   SyncStatus,
 } from "@/types/finance";
+import type {
+  CreateExpenseInput,
+  CreateIncomeInput,
+  ExpenseListParams,
+  IncomeListParams,
+  NotionMapping,
+  UpdateExpenseInput,
+  UpdateIncomeInput,
+} from "@shared/finance.types";
 
 export type ApiResult<TData> =
   | { success: true; data: TData; meta?: Record<string, unknown> }
@@ -126,14 +135,19 @@ export const incomesApi = {
   async detail(id: string): Promise<ApiResult<IncomeRecord>> {
     return adapt(nfApi().incomes.get(id)) as Promise<ApiResult<IncomeRecord>>;
   },
+  // The page components build a plain object shaped like CreateIncomeInput/UpdateIncomeInput
+  // (validated at runtime by validateCreateIncome/validateUpdateIncome in main), but keep the
+  // public parameter loose since callers (forms, chat drafts, mass-edit) each assemble a
+  // different subset of fields. The bridge cast below ties that runtime contract to its real
+  // shared type instead of erasing it entirely.
   create(body: Record<string, unknown>) {
-    return adapt(nfApi().incomes.create(body as never)) as Promise<ApiResult<IncomeRecord>>;
+    return adapt(nfApi().incomes.create(body as unknown as CreateIncomeInput)) as Promise<ApiResult<IncomeRecord>>;
   },
   bulkCreate(items: Record<string, unknown>[]) {
     return bulkCreateHelper<IncomeRecord>(items, (it) => this.create(it as Record<string, unknown>));
   },
   update(id: string, body: Record<string, unknown>) {
-    return adapt(nfApi().incomes.update(id, body as never)) as Promise<ApiResult<IncomeRecord>>;
+    return adapt(nfApi().incomes.update(id, body as unknown as UpdateIncomeInput)) as Promise<ApiResult<IncomeRecord>>;
   },
   async bulkUpdate(ids: string[], patch: Record<string, unknown>) {
     const updated: IncomeRecord[] = [];
@@ -171,8 +185,12 @@ export type ExpensesListParams = {
 };
 
 export const expensesApi = {
+  // ExpensesListParams is a narrower, renderer-facing subset of the IPC layer's
+  // ExpenseListParams (adds paymentStatus/expenseViewMode/pasabuyer) — every field it does
+  // carry matches its counterpart exactly, so this bridge cast is a genuine widening, not an
+  // unchecked one.
   list(params?: ExpensesListParams) {
-    return adapt(nfApi().expenses.list(params as never)) as Promise<ApiResult<ExpenseRecord[]>>;
+    return adapt(nfApi().expenses.list(params as ExpenseListParams)) as Promise<ApiResult<ExpenseRecord[]>>;
   },
   async detail(id: string): Promise<ApiResult<ExpenseRecord>> {
     const r = await this.list();
@@ -180,14 +198,16 @@ export const expensesApi = {
     const found = r.data.find((x) => x.id === id);
     return found ? ok(found) : { success: false, error: { code: "E_NOT_FOUND", message: "expense not found" } };
   },
+  // Same runtime contract as incomesApi.create/update above — validated in main by
+  // validateCreateExpense/validateUpdateExpense, bridged here to the shared input types.
   create(body: Record<string, unknown>) {
-    return adapt(nfApi().expenses.create(body as never)) as Promise<ApiResult<ExpenseRecord>>;
+    return adapt(nfApi().expenses.create(body as unknown as CreateExpenseInput)) as Promise<ApiResult<ExpenseRecord>>;
   },
   bulkCreate(items: Record<string, unknown>[]) {
     return bulkCreateHelper<ExpenseRecord>(items, (it) => this.create(it as Record<string, unknown>));
   },
   update(id: string, body: Record<string, unknown>) {
-    return adapt(nfApi().expenses.update(id, body as never)) as Promise<ApiResult<ExpenseRecord>>;
+    return adapt(nfApi().expenses.update(id, body as unknown as UpdateExpenseInput)) as Promise<ApiResult<ExpenseRecord>>;
   },
   async bulkUpdate(ids: string[], patch: Record<string, unknown>) {
     const updated: ExpenseRecord[] = [];
@@ -227,7 +247,7 @@ export type WorkflowListParams = { month?: string; rangeStart?: string; rangeEnd
 function workflowApi(view: "transfers" | "creditCardPayments" | "alkansya" | "receivables" | "incomes") {
   return {
     list(params?: WorkflowListParams) {
-      return adapt(nfApi().incomes.list({ ...params, view } as never)) as Promise<ApiResult<IncomeRecord[]>>;
+      return adapt(nfApi().incomes.list({ ...params, view } as IncomeListParams)) as Promise<ApiResult<IncomeRecord[]>>;
     },
     detail: (id: string) => incomesApi.detail(id),
     // Carry the workflow view so the server can resolve the locked income
@@ -364,7 +384,9 @@ export const userNotionConfigApi = {
   },
   async save(body: { token?: string; dbIds?: Record<string, string> }): Promise<ApiResult<void>> {
     if (body.token) { const r = await nfApi().notion.connect(body.token); if (!r.ok) return err(r.error); }
-    if (body.dbIds) { const r = await nfApi().notion.saveMapping(body.dbIds as never); if (!r.ok) return err(r.error); }
+    // dbIds keys are UI-selected database ids; NotionMapping narrows the key domain to
+    // MappableResource, which main validates before persisting.
+    if (body.dbIds) { const r = await nfApi().notion.saveMapping(body.dbIds as unknown as NotionMapping); if (!r.ok) return err(r.error); }
     return ok(undefined as void);
   },
   async remove(): Promise<ApiResult<void>> {
