@@ -558,22 +558,81 @@ Stop after step 1 if time is short. Step 1 alone delivers most of the navigabili
 > `display: revert`/`justify-content: flex-start` inferred from the original `layout/075`
 > media-query body (truncated during the pass) — visually smoke-test the collapsed-sidebar
 > drawer at ≤1023px before release.
+>
+> **Uncertainty resolved 2026-08-05 (release verification).** The inferred block was diffed
+> against the pre-split file (`git show 71a6d49:…/globals.css`): the five `display: revert`
+> selectors and the `.nav__item { justify-content: flex-start }` rule match the original
+> **exactly**, so the inference was correct. Confirmed in the same pass that
+> `.dashboard-chart-grid`/`.dashboard-bottom-grid` — dropped from `layout/075` by the split —
+> landed intact in `dashboard.module.css` rather than being lost.
+>
+> **⚠️ Step 2 broke the e2e suite, and this phase's verification did not catch it.**
+> Phase 8 was verified with typecheck + lint + vitest + `electron-vite build` — **not**
+> `test:e2e`. Hashing `nav__item`, `nav__title`, `topbar` and `filter-dropdown*` into CSS
+> Modules made every literal `.nav__item`-style Playwright selector match nothing:
+> **20 of 34 specs failed** when the suite was next run (2026-08-05). This was a
+> test-suite break, not a user-visible one — the app styles and behaves correctly, because
+> the hashed class is applied consistently in both the stylesheet and the markup.
+>
+> Fixed in the specs only, zero production-code change: both spec files gained a
+> `mod(local)` helper returning
+> `` [class*="_${local}_"]:not([class*="_${local}__"]) ``. Vite's scoped-name format is
+> `_[local]_[hash]_[line]`, so the local name survives hashing and a substring match finds
+> it again.
+>
+> **The `:not()` is load-bearing, and the first attempt at this fix got it wrong.**
+> Matching on `_<local>_` alone is not exact for BEM parents: the first underscore of a
+> `__child` suffix completes the match, so `[class*="_topbar_"]` also matched
+> `_topbar__actions_` and `_topbar__avatar_` — a Playwright strict-mode violation — and
+> `[class*="_filter-dropdown_"]` matched its own `__trigger`, so `.nth(1)` landed on a
+> trigger button instead of the second dropdown. Excluding `_<local>__` keeps the parent
+> and drops its children. Modifiers need no guard, since `--active` uses double dashes and
+> never completes a `_<local>_` match. Verified by simulating both patterns against the 12
+> real hashed names in the built bundle: every `local` now resolves to exactly one class.
+>
+> Classes the components still emit as literal strings (`.sidebar`, `.modal-panel`,
+> `.workspace__content`, `.button`, `.cheat-sheet`, `.shortcut-hint`) are deliberately left
+> alone. Cross-checked by diffing all 268 module-owned class names against every class
+> selector in `e2e/` — zero remaining overlap.
+>
+> **Lesson for the tracker:** "green" has to mean the full §0.3 command
+> (`typecheck && test && test:e2e`), not a subset. A phase that migrates class names is
+> exactly the case where the DOM-level gate is the only one that can catch the breakage —
+> typecheck, lint and jsdom unit tests all passed throughout.
 
 ---
 
 ## 4. Success metrics
 
-| Metric | Now | Target |
-|---|---|---|
-| Largest file | 1975 LOC | ≤ 400 LOC |
-| Files > 600 LOC | 14 | 0 |
-| Renderer test suites | 1 | ≥ 8 |
-| Duplicated bulk-action implementations | 3 | 1 |
-| Duplicated optimistic-save implementations | 4 | 1 |
-| Duplicated domain type definitions | 8 | 0 |
-| Lint gate | none | enforced in CI |
-| `as never` casts | 8 | 0 |
-| User-visible behaviour changes | — | **0** |
+Measured at the v2.0.0 release cut (2026-08-05).
+
+| Metric | Baseline | Target | Actual | |
+|---|---|---|---|---|
+| Largest file in `pages/` | 1975 LOC | ≤ 400 LOC | **733** | ⚠️ revised |
+| Files > 600 LOC (whole `src/`) | 14 | 0 | **9** | ⚠️ not met |
+| Renderer test suites | 1 | ≥ 8 | **8** | ✅ |
+| Duplicated bulk-action implementations | 3 | 1 | **1** | ✅ |
+| Duplicated optimistic-save implementations | 4 | 1 | **1** | ✅ |
+| Duplicated domain type definitions | 8 | 0 | **0** | ✅ |
+| Lint gate | none | enforced in CI | **enforced** | ✅ |
+| `as never` casts | 8 | 0 | **0** | ✅ |
+| User-visible behaviour changes | — | **0** | **1, deliberate** | ⚠️ |
+
+Where the three ⚠️ rows stand, stated plainly:
+
+- **Largest file / files > 600 LOC.** The ≤400 target was revised during Phases 4–6 (see
+  those phase notes) after it became clear that what remains in each `index.tsx` is
+  orchestration with a 20+ identifier dependency surface — extracting it would produce
+  hooks taking 20-field config objects, which §0.2 explicitly forbids. The 9 remaining
+  files over 600 are `finance.types.ts` (852, a DTO catalogue), `chat/write-tools.ts`
+  (762), `expense/index.tsx` (733), `monitoring.tsx` (712), `history.tsx` (700),
+  `chat/orchestrator.ts` (671), `db/repositories.ts` (645), `chat/index.tsx` (611) and
+  `chat/apple.ts` (611). **`monitoring.tsx` and `history.tsx` were named in F1 but never
+  given a phase** — they are the honest remaining gap, not a revised criterion. The five
+  main-process files were never in scope (§1: "leave it mostly alone").
+- **User-visible behaviour changes: 1.** The `view.search` shortcut fix in Phase 3.3 (a
+  stale query silently re-applying on reopen). Made with explicit approval, pinned by
+  `search-toggle.test.tsx`, and recorded in the changelog rather than buried.
 
 ---
 
@@ -597,7 +656,7 @@ Stop after step 1 if time is short. Step 1 alone delivers most of the navigabili
 | 5 — Split income / workflow | Sonnet | 2–3 | 1.5–2.5M | 2 d | 3, 4 | low | ✅ Done — income 711 → 544, workflow 626 → 522; ≤400 criterion revised (see phase notes) |
 | 6 — Split chat / settings / fab | Sonnet | 3–4 | 2–3M | 2–3 d | 1 | low | ✅ Done — chat `index.tsx` (611) is the one file over the 500 LOC target (see phase notes) |
 | 7 — IPC tidy-up | Sonnet | 2 | 1–1.5M | 2 d | 1 | low | ✅ Done — all exit criteria met |
-| 8 — CSS (optional) | *script, not Claude* | 2–3 | 1.5–3M | 2–3 d | — | low | 🟦 Step 1 done (script); step 2 landed (11 modules, orphans + keyframes fixed, green; screenshot-diff exit criterion unavailable — build-level verification, see phase notes) |
+| 8 — CSS (optional) | *script, not Claude* | 2–3 | 1.5–3M | 2–3 d | — | low | ✅ Done — step 1 (script) + step 2 (11 modules, orphans + keyframes fixed). **Step 2 broke 20/34 e2e specs; found and fixed at the v2.0.0 release cut** (see phase notes). Screenshot-diff exit criterion unavailable — build-level verification substituted |
 
 **Totals — full plan:** ~25–36 sessions, **~18–30M tokens**, ~17–23 working days (~12–15 d if Phase 8 is deferred and Phases 6–7 run in parallel with 4–5).
 
@@ -638,10 +697,39 @@ Routing is worth **3–5× on total budget** on its own. It is the single bigges
 
 ## 7. Definition of done
 
-- [ ] All Phase exit criteria met
-- [ ] `npm run typecheck && npm run lint && npm run test && npm run test:e2e` green
-- [ ] Manual smoke pass matches the Phase 0 screenshots for every section
-- [ ] No file over 400 LOC in `renderer/src/components/pages/`
-- [ ] `CHANGELOG.md` records the refactor with an explicit "no functional changes" note
-- [ ] `wiki/desktop/project-structure.md` and `AGENTS.md` repository map updated to the new layout
-- [ ] Every row in the §5 tracker is `✅ Done` or explicitly `⏭️ Deferred` with a reason, and actual token spend is recorded against each estimate
+Status at the v2.0.0 release cut (2026-08-05):
+
+- [x] All Phase exit criteria met — **as revised**. Phases 0–3 and 7 met their criteria as
+      written. Phases 4–6 met explicitly revised criteria ("no non-composition concern in
+      `index.tsx`" instead of ≤400/≤500 LOC), with the reasoning recorded in each phase note.
+      Phase 8's step-2 exit criterion (screenshot diff) was unavailable and was substituted
+      with build-level verification.
+- [x] `npm run typecheck && npm run lint && npm run test && npm run test:e2e` green —
+      typecheck clean, lint 0 errors / 95 warnings, 251 tests passed + 7 skipped, e2e 34/34.
+      **e2e required a fix at release time**: Phase 8's CSS Modules migration had broken 20
+      of 34 specs and went unnoticed because that phase never ran the e2e gate. Fixed in the
+      specs only — see the Phase 8 note.
+- [ ] ~~Manual smoke pass matches the Phase 0 screenshots for every section~~ — **not
+      possible as written.** No Phase 0 screenshots exist (see `refactor-baseline.md` §4),
+      so there is nothing to diff against. A click-through smoke pass was done at Phase 0
+      close-out; a pixel-diff pass remains impossible until a screenshot baseline is captured.
+- [ ] **No file over 400 LOC in `renderer/src/components/pages/` — not met.** Largest is
+      `expense/index.tsx` at 733. Criterion revised in Phases 4–6; `monitoring.tsx` (712) and
+      `history.tsx` (700) were never given a phase at all. See §4.
+- [x] `CHANGELOG.md` records the refactor with an explicit "no functional changes" note —
+      `notable-finance-app/CHANGELOG.md`, the `[2.0.0]` entry. (The root `CHANGELOG.md` is
+      stale — it has no 1.1.1 or 1.2.0 entry — and was left alone rather than
+      retro-filled here.)
+- [x] `wiki/desktop/project-structure.md` and `AGENTS.md` repository map updated to the new layout
+- [ ] **Token spend not recorded.** Every §5 row is `✅ Done`, but actual spend was never
+      tracked against the estimates, so the recalibration §5 asks for cannot be done.
+
+### Carried forward as open work
+
+1. `monitoring.tsx` (712) and `history.tsx` (700) — named in F1, never scoped into a phase.
+2. Capture a screenshot baseline so a real visual-diff gate becomes possible.
+3. Add `test:e2e` to CI, or at minimum to the phase-completion checklist — its absence is
+   precisely what let the Phase 8 selector break ship unnoticed.
+4. The Unpaid Pasabuy 9-cells-vs-8-headers footer bug, preserved verbatim per §0.1.
+5. The 95 outstanding lint warnings (`exhaustive-deps`, `max-lines`, `complexity`,
+   `react/jsx-key`, and 15 `no-explicit-any` in the Notion block adapter).

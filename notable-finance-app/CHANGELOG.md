@@ -5,6 +5,96 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-05
+
+**No functional changes.** This release is a complete internal restructuring of the
+desktop app. Every user-visible behaviour — what renders, what is written to SQLite, and
+what is pushed to Notion — is unchanged by design. The major version marks the scale of
+the architectural change, not a break in behaviour or data format. Existing local
+databases, backups and Notion connections continue to work untouched.
+
+Full plan and per-phase notes: [`wiki/desktop/refactor_development_plan.md`](../wiki/desktop/refactor_development_plan.md).
+
+### Added
+
+- **Lint gate.** ESLint with `typescript-eslint`, `eslint-plugin-react-hooks` and
+  `eslint-plugin-react`. Errors block CI (`no-unused-vars`, `no-unreachable`,
+  `no-dupe-class-members`, `react-hooks/rules-of-hooks`,
+  `@typescript-eslint/no-floating-promises`); `exhaustive-deps`, `max-lines` and
+  `complexity` run as warnings. Previously the project had no linter at all.
+- **Renderer test coverage.** Component tests for the pages where domain rules meet the
+  user — all 9 Expense view modes, Income view modes, Workflow sections, the optimistic
+  save success/failure paths, bulk actions, mass edit, and the search toggle. The suite
+  went from 217 main-process tests to **251 tests across 30 files**.
+- **CI enforcement.** `.github/workflows/desktop-ci.yml` runs typecheck, lint and the unit
+  suite on every push and pull request touching the app.
+- **Shared record-page engine** (`renderer/src/features/records/`): `use-record-selection`,
+  `use-persisted-filters`, `use-record-search`, `use-optimistic-records`,
+  `use-bulk-actions` and `receipt` — each extracted from two or more existing identical
+  implementations.
+- **`shared/ipc-channels.ts`**: an 86-entry channel map imported by both the main-process
+  registrars and the preload bridge, so a channel typo is now a compile error instead of a
+  runtime "no handler registered".
+
+### Changed
+
+- **Pages decomposed into directories.** `expense.tsx` (1975 LOC) → `expense/` across 8
+  files with a 733-line composition root; `income.tsx` 910 → 544; `workflow.tsx` 653 → 522;
+  `chat.tsx` 1491 → `chat/` across 6 files; `settings-modals.tsx` 1079 → one file per
+  modal; `fab/index.tsx` 741 → 5 files. Expense view-mode selection moved from a 4-deep
+  ternary chain to a table-config lookup.
+- **Triplicated record workflow unified.** Filter persistence, fuzzy search, row selection,
+  optimistic save, bulk actions and receipt construction had three to four independent
+  copies across Income, Expense and Workflow. They now share one implementation each.
+  Deliberate per-page differences are parameterised rather than unified — Income and
+  Workflow simply do not pass `onPrint`/`onCover`, so those actions stay Expense-only.
+- **IPC surface split.** `registerIpc()` (654 LOC, ~80 handlers) became six per-domain
+  registrars behind a 22-line composition root. Channel strings and handler bodies are
+  byte-identical to the originals.
+- **Domain types deduplicated.** The 8 enums defined in both `shared/finance.types.ts` and
+  `renderer/src/types/finance.ts` now re-export from the shared file. All 8 `as never`
+  casts at the IPC boundary were replaced with correctly typed calls.
+- **Stylesheet scoped.** The 11,030-line single `globals.css` became a 108-line `@import`
+  list over `base/`, `layout/`, `components/` and `pages/`, plus 11 component-local CSS
+  Modules. 2,738 lines of byte-identical duplicate CSS left behind by a past redesign were
+  removed.
+
+### Fixed
+
+- **Dead code shipping in `income.tsx`**: `handleIncomeViewModeChange` was declared four
+  times, three of them unreachable copies pasted into unrelated function bodies by a
+  botched find/replace. It compiled, so nothing caught it. The lint gate now would.
+- **Search toggle left a stale query.** The `view.search` keyboard shortcut toggled search
+  without clearing the query while the toolbar button cleared it, so closing search via
+  the keyboard left a query that silently re-applied on reopen. Both paths now clear.
+  (The one intentional behaviour change in this release, made with explicit approval and
+  pinned by a regression test.)
+- **Unstyled sidebar badge.** `layout/index.tsx` referenced a CSS Module class the module
+  never defined, so the nav badge rendered with `class="undefined"`.
+- **Silently dead style rules.** 31 global rules referencing now-hashed CSS Module classes,
+  and five `@keyframes` animations whose names no longer resolved, were restored.
+- **Flaky e2e suite.** Two real bugs, not test noise: the dev seed script never set
+  `notion_page_id`, so every account picker (which filters to Notion-synced rows) hid the
+  seeded data; and a hardcoded date in the shortcut spec aged out of the Expense page's
+  default current-month view.
+- **e2e selectors broken by the CSS Modules migration.** Hashing `nav__item`, `nav__title`,
+  `topbar` and `filter-dropdown*` into modules made every literal `.nav__item`-style
+  Playwright selector match nothing — 20 of 34 specs failed. Caught during release
+  verification, because the CSS phase was signed off on typecheck + lint + unit tests +
+  build without ever running the e2e gate. The app itself was never affected: the hashed
+  class is applied consistently in both the stylesheet and the markup. Fixed in the specs
+  only. Suite is back to **34/34**.
+
+### Known limitations
+
+- `expense/index.tsx` (733), `monitoring.tsx` (712), `history.tsx` (700) and
+  `chat/index.tsx` (611) remain above the plan's 400/500 LOC targets. What is left in each
+  is page orchestration with a 20+ identifier dependency surface; extracting it would
+  produce hooks with 20-field config objects — worse to read than the linear composition
+  that exists now. `monitoring.tsx` and `history.tsx` were never in the phase scope.
+- The Unpaid Pasabuy footer still emits 9 cells against 8 headers. Reproduced verbatim
+  during the refactor and ticketed separately, per the behaviour-preserving rule.
+
 ## [1.2.0] - 2026-08-01
 
 ### Added
