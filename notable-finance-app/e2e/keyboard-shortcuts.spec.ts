@@ -8,6 +8,11 @@ let app: ElectronApplication
 let win: Page
 let userData: string
 
+// CSS-Module-owned classes are hashed in the built bundle; see the note in app.spec.ts.
+// The `:not()` excludes BEM children, whose hashed names share the parent's prefix —
+// without it `_filter-dropdown_` also matches `_filter-dropdown__trigger_`.
+const mod = (local: string) => `[class*="_${local}_"]:not([class*="_${local}__"])`
+
 // See the note in app.spec.ts: launch via the app directory so `app.getAppPath()` is the
 // package root (matching dev + packaged), not `<root>/out/main` — otherwise the drizzle
 // migrations folder can't be found and no window is ever created.
@@ -121,19 +126,19 @@ async function waitForHash(hash: string) {
 }
 
 async function goTo(section: string, hash: string) {
-  await win.locator('.nav__item', { hasText: section }).click()
+  await win.locator(mod('nav__item'), { hasText: section }).click()
   await waitForHash(hash)
 }
 
 async function selectFilterDropdownItem(index: number, itemText: string) {
-  const dd = win.locator('.modal-panel .filter-dropdown').nth(index)
-  await dd.locator('.filter-dropdown__trigger').click()
+  const dd = win.locator(`.modal-panel ${mod('filter-dropdown')}`).nth(index)
+  await dd.locator(mod('filter-dropdown__trigger')).click()
   await new Promise((r) => setTimeout(r, 200))
-  const clicked = await win.evaluate(({ idx, text }) => {
-    const dds = document.querySelectorAll<HTMLElement>('.modal-panel .filter-dropdown')
+  const clicked = await win.evaluate(({ idx, text, ddSel, itemSel }) => {
+    const dds = document.querySelectorAll<HTMLElement>(`.modal-panel ${ddSel}`)
     const dd = dds[idx]
     if (!dd) return { ok: false, reason: `no dropdown at ${idx}` }
-    const items = dd.querySelectorAll<HTMLButtonElement>('.filter-dropdown__item')
+    const items = dd.querySelectorAll<HTMLButtonElement>(itemSel)
     for (const btn of items) {
       const t = btn.textContent?.trim() ?? ''
       if (t === text || t.includes(text)) {
@@ -142,7 +147,7 @@ async function selectFilterDropdownItem(index: number, itemText: string) {
       }
     }
     return { ok: false, reason: `"${text}" not in items (${Array.from(items).map(b => b.textContent?.trim()).join(', ')})` }
-  }, { idx: index, text: itemText })
+  }, { idx: index, text: itemText, ddSel: mod('filter-dropdown'), itemSel: mod('filter-dropdown__item') })
   if (!clicked.ok) throw new Error(clicked.reason)
 }
 
@@ -190,7 +195,7 @@ test.describe('Navigation shortcuts', () => {
       await waitForHash('#/dashboard')
       await press(combo)
       await waitForHash(hash)
-      const activeItem = win.locator('.nav__item--active')
+      const activeItem = win.locator(mod('nav__item--active'))
       await expect(activeItem).toContainText(section, { timeout: 5_000 })
     })
   }
@@ -202,7 +207,7 @@ test.describe('Navigation shortcuts', () => {
     await devSwitch.click()
     await press('Meta+Shift+L')
     await waitForHash('#/dev-logs')
-    const activeItem = win.locator('.nav__item--active')
+    const activeItem = win.locator(mod('nav__item--active'))
     await expect(activeItem).toContainText('Dev Logs', { timeout: 5_000 })
   })
 })
