@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { Panel, PageToolbar, FilterSelect, FilterDropdown, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
+import { useState } from "react";
+import { Panel, PageToolbar, FilterDropdown, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
@@ -10,7 +10,7 @@ import { formatMoney } from "@/lib/format";
 import { cx } from "@/lib/finance-helpers";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useShortcutAction } from "@/lib/shortcuts/context";
-import { useDebouncedPersist } from "@/lib/use-debounced-persist";
+import { usePersistedFilters } from "@/features/records/use-persisted-filters";
 import type { Account } from "@/types/finance";
 import type { AccountScope } from "@/components/constants";
 
@@ -33,29 +33,25 @@ function AccountsPage() {
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [cardTypeFilter, setCardTypeFilter] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const { allAccounts: allRawAccounts, referenceLoading } = useFinanceData();
   const sourceAccounts = allRawAccounts.filter((a) => a.notionSynced);
 
-  useEffect(() => {
-    if (!settingsReady || filtersHydrated) return;
-    const f = settings.accountsFilters;
-    setViewMode(f.viewMode);
-    setAccountScope(f.accountScope);
-    setHideZeroBalance(f.hideZeroBalance);
-    setCardTypeFilter(f.cardTypeFilter);
-    setFiltersHydrated(true);
-  }, [settingsReady, filtersHydrated, settings.accountsFilters]);
-
-  useDebouncedPersist(
-    filtersHydrated,
-    [viewMode, accountScope, hideZeroBalance, cardTypeFilter],
-    () => {
+  usePersistedFilters({
+    ready: settingsReady,
+    source: settings.accountsFilters,
+    hydrate: (f) => {
+      setViewMode(f.viewMode);
+      setAccountScope(f.accountScope);
+      setHideZeroBalance(f.hideZeroBalance);
+      setCardTypeFilter(f.cardTypeFilter);
+    },
+    values: [viewMode, accountScope, hideZeroBalance, cardTypeFilter],
+    persist: () => {
       void updateSettings({
         accountsFilters: { viewMode, accountScope, hideZeroBalance, cardTypeFilter },
       });
     },
-  );
+  });
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
   useShortcutAction("view.toggleHideZero", () => setHideZeroBalance((h) => !h));
