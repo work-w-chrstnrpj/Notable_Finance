@@ -1,0 +1,14 @@
+/* Numeric value styling — monospace tabular figures, optional sign color. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.num--pos {
+  color: var(--green);
+}
+.num--neg {
+  color: var(--rose);
+}
+.num--zero {
+  color: var(--ink);
+}

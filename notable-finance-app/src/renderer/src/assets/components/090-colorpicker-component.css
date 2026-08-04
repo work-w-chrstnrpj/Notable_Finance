@@ -1,0 +1,52 @@
+/* ── ColorPicker component ─────────────────────────────────────────── */
+.color-picker {
+  position: relative;
+}
+.color-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.color-picker__trigger:hover {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 8%, var(--surface));
+}
+.color-picker__trigger--open {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px var(--blue-soft);
+}
+.color-picker__trigger--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
+.color-picker__trigger-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.color-picker__trigger-hex {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: var(--ink);
+}
+.color-picker__trigger::after {
+  content: '\u25be';
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-left: 2px;
+  transition: transform 0.15s;
+}
+.color-picker__trigger--open::after {
+  transform: rotate(180deg);
+}

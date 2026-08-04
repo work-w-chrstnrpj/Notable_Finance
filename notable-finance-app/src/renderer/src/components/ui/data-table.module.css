@@ -1,0 +1,547 @@
+[data-theme="dark"] .table-row--clickable:hover td {
+  background: var(--surface-muted);
+}
+
+[data-theme="dark"] table.data-table--wide tbody td:nth-child(1),
+[data-theme="dark"] table.data-table--wide tbody td:nth-child(2) {
+  background: var(--surface);
+}
+
+[data-theme="dark"] table.data-table--wide .table-row--clickable:hover td:nth-child(1),
+[data-theme="dark"] table.data-table--wide .table-row--clickable:hover td:nth-child(2) {
+  background: var(--surface-muted);
+}
+
+[data-theme="dark"] table.data-table--wide thead th:nth-child(1),
+[data-theme="dark"] table.data-table--wide thead th:nth-child(2) {
+  background: var(--surface);
+}
+
+[data-theme="dark"] table.data-table--wide tfoot td:nth-child(1),
+[data-theme="dark"] table.data-table--wide tfoot td:nth-child(2) {
+  background: var(--surface-muted);
+}
+
+
+
+.table-container {
+  position: relative;
+}
+
+
+
+.table-wrap {
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+
+.table-wrap::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* On the right-aligned last column, put the sort caret before the label. */
+th:last-child .th-sort {
+  flex-direction: row-reverse;
+}
+
+
+
+.table-row--clickable {
+  cursor: pointer;
+}
+
+
+
+.table-row--clickable:hover td {
+  background: #f8f7f5;
+}
+
+/* ── Row selection checkbox (Notion-style) ── */
+.td-checkbox {
+  position: relative;
+  padding-left: 36px !important;
+}
+
+
+
+.th-checkbox {
+  position: relative;
+  padding-left: 36px !important;
+  width: 32px;
+  min-width: 32px;
+}
+
+/* Header checkbox is always visible, not hidden like row checkboxes */
+.row-checkbox--header {
+  opacity: 1;
+}
+
+
+
+.row-checkbox {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1.5px solid var(--line-strong, #d3d1cb);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+
+
+.row-checkbox__box {
+  display: none;
+}
+
+
+
+.row-checkbox--checked {
+  opacity: 1;
+  border-color: var(--accent, #2383e2);
+  background: var(--accent, #2383e2);
+}
+
+
+
+.row-checkbox--checked .row-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+
+
+.row-checkbox--indeterminate {
+  opacity: 1;
+  border-color: var(--accent, #2383e2);
+  background: var(--accent, #2383e2);
+}
+
+
+
+.row-checkbox--indeterminate .row-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Show checkbox on row hover */
+.table-row--clickable:hover .row-checkbox,
+.table-row--selected .row-checkbox {
+  opacity: 1;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .row-checkbox {
+  border-color: var(--line-strong, #3f3f3f);
+}
+
+
+
+[data-theme="dark"] .row-checkbox--checked {
+  border-color: var(--accent, #4a9eed);
+  background: var(--accent, #4a9eed);
+}
+
+
+
+[data-theme="dark"] .row-checkbox--indeterminate {
+  border-color: var(--accent, #4a9eed);
+  background: var(--accent, #4a9eed);
+}
+
+/* ── Bulk action floating toolbar ── */
+.bulk-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line-strong, #e3e2e0);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  z-index: 10;
+  font-size: 13px;
+  white-space: nowrap;
+  animation: bulk-toolbar-enter 0.15s ease-out;
+}
+
+
+
+.bulk-toolbar__count {
+  padding: 0 8px;
+  color: var(--ink-muted, #6b6b6b);
+  font-weight: 500;
+  font-size: 12px;
+  user-select: none;
+}
+
+
+
+.bulk-toolbar__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line-strong, #e3e2e0);
+  margin: 0 4px;
+}
+
+
+
+.bulk-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink, #37352f);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  white-space: nowrap;
+}
+
+
+
+.bulk-toolbar__btn:hover {
+  background: var(--surface-muted, #f1f1ef);
+}
+
+
+
+.bulk-toolbar__btn:active {
+  background: var(--line, #e3e2e0);
+}
+
+
+
+.bulk-toolbar__btn--danger {
+  color: #e03e3e;
+}
+
+
+
+.bulk-toolbar__btn--danger:hover {
+  background: #fbe4e4;
+}
+
+
+
+.bulk-toolbar__btn--danger:active {
+  background: #f5d0d0;
+}
+
+/* Dark theme */
+[data-theme="dark"] .bulk-toolbar {
+  background: var(--surface, #191919);
+  border-color: var(--line-strong, #3f3f3f);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__count {
+  color: var(--ink-muted, #9b9a97);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__divider {
+  background: var(--line-strong, #3f3f3f);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn {
+  color: var(--ink, #e3e2e0);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn:hover {
+  background: var(--surface-muted, #2f2f2f);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn:active {
+  background: var(--line, #3f3f3f);
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn--danger {
+  color: #ff6b6b;
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn--danger:hover {
+  background: #3d2020;
+}
+
+
+
+[data-theme="dark"] .bulk-toolbar__btn--danger:active {
+  background: #4d2a2a;
+}
+
+/* Disabled (dimmed) rows — temporary, not persistent */
+.record-disabled td {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Keep the checkbox clickable even when row is disabled */
+.record-disabled .row-checkbox {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Dark theme */
+[data-theme="dark"] .record-disabled td {
+  opacity: 0.3;
+}
+
+/* ── P5: Table pagination ────────────────────────────────────────────── */
+
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+
+
+.table-pagination__info {
+  flex: 1;
+  min-width: 0;
+}
+
+
+
+.table-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+
+.table-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+
+
+.table-pagination__btn:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--ink-muted);
+}
+
+
+
+.table-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+
+
+.table-pagination__btn--active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+
+
+.table-pagination__btn--active:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+
+
+.table-pagination select {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+
+table.data-table--wide thead {
+  background: var(--surface);
+}
+
+
+
+table.data-table--wide th,
+table.data-table--wide td {
+  white-space: nowrap;
+}
+
+/* Freeze the first two columns (Date & Description) like Excel panes so they
+   stay visible while the rest of the row scrolls horizontally. */
+table.data-table--wide th:nth-child(1),
+table.data-table--wide td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  width: 116px;
+  min-width: 116px;
+  z-index: 1;
+}
+
+
+
+table.data-table--wide th:nth-child(2),
+table.data-table--wide td:nth-child(2) {
+  position: sticky;
+  left: 116px;
+  z-index: 1;
+}
+
+/* Opaque backgrounds so scrolling cells don't bleed through the frozen ones,
+   matched to each row state (body, hover, footer). Header sits on top. */
+table.data-table--wide thead th:nth-child(1),
+table.data-table--wide thead th:nth-child(2) {
+  background: var(--surface);
+  z-index: 3;
+}
+
+
+
+table.data-table--wide tbody td:nth-child(1),
+table.data-table--wide tbody td:nth-child(2) {
+  background: var(--surface);
+}
+
+
+
+table.data-table--wide .table-row--clickable:hover td:nth-child(1),
+table.data-table--wide .table-row--clickable:hover td:nth-child(2) {
+  background: #f8f7f5;
+}
+
+
+
+table.data-table--wide tfoot td:nth-child(1),
+table.data-table--wide tfoot td:nth-child(2) {
+  background: #fbfaf9;
+}
+
+
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+
+
+.th-sort:hover {
+  color: var(--ink);
+}
+
+
+
+.th-sort__icon {
+  display: inline-flex;
+  opacity: 0.35;
+}
+
+
+
+.th-sort:hover .th-sort__icon {
+  opacity: 0.7;
+}
+
+
+
+.th-sort--active {
+  color: var(--ink);
+}
+
+
+
+.th-sort--active .th-sort__icon {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* Wide tables (e.g. CC Transactions, Installments) keep every column on one
+   line and size to their content so the wrapper scrolls horizontally. */
+table.data-table--wide {
+  width: max-content;
+  min-width: 100%;
+}
+
+@keyframes bulk-toolbar-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-40%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}

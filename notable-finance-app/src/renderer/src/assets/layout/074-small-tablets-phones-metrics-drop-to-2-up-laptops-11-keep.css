@@ -1,0 +1,7 @@
+/* ── Small tablets & phones: metrics drop to 2-up. Laptops (11"+) keep
+   the full 4-up row. ───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

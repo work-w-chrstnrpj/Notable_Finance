@@ -1,0 +1,51 @@
+/* ── Settings: interface toggle switch ─────────────────────────────── */
+.settings-toggle__title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.settings-toggle__hint {
+  margin: 4px 0 0;
+  max-width: 46ch;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch__track {
+  display: inline-flex;
+  align-items: center;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line-strong);
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.switch__thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.28);
+  transform: translateX(0);
+  transition: transform 0.16s ease;
+}
+.switch--on .switch__track {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.switch--on .switch__thumb {
+  transform: translateX(20px);
+}

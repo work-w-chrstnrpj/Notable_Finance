@@ -1,0 +1,168 @@
+/* ── Dark mode: hardcoded color overrides ──────────────────────────── */
+[data-theme="dark"] body {
+  background: var(--bg);
+  color: var(--ink);
+}[data-theme="dark"] .button,
+[data-theme="dark"] .icon-button {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .button--primary {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}[data-theme="dark"] .button--danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: rgba(225, 29, 72, 0.45);
+}[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: var(--input-bg);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .modal-panel {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}[data-theme="dark"] .modal-panel__header,
+[data-theme="dark"] .modal-panel__footer {
+  border-color: var(--line);
+}[data-theme="dark"] .panel {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}[data-theme="dark"] table.data-table th {
+  background: var(--surface-muted);
+  color: var(--ink);
+  border-color: var(--line);
+}[data-theme="dark"] table.data-table td {
+  border-color: var(--line);
+  color: var(--ink);
+}[data-theme="dark"] table.data-table tr:hover td {
+  background: var(--surface-muted);
+}[data-theme="dark"] .card,
+[data-theme="dark"] .account-card {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}[data-theme="dark"] .badge {
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+  border-color: var(--line);
+}[data-theme="dark"] .settings-row {
+  border-color: var(--line);
+}[data-theme="dark"] .filter-toggle {
+  background: transparent;
+  color: var(--ink-muted);
+  border-color: transparent;
+}[data-theme="dark"] .filter-toggle:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}[data-theme="dark"] .filter-toggle--active {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-color: var(--blue);
+}[data-theme="dark"] .dashboard-card {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}[data-theme="dark"] .sidebar {
+  background: var(--surface);
+  border-color: var(--line);
+}[data-theme="dark"] .auth-page {
+  background: var(--bg);
+  color: var(--ink);
+}[data-theme="dark"] .auth-form {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .settings-select {
+  background: var(--input-bg);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .color-picker__trigger {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}[data-theme="dark"] .color-picker__panel {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .color-picker__text-input,
+[data-theme="dark"] .color-picker__number-input {
+  background: var(--input-bg);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .fab__toggle {
+  background: var(--blue);
+  color: #fff;
+}[data-theme="dark"] .fab__action-label {
+  background: var(--surface);
+  color: #fff;
+}[data-theme="dark"] .fab__action-icon {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .switch__track {
+  background: var(--surface-muted);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .switch--on .switch__track {
+  background: var(--blue);
+  border-color: var(--blue);
+}[data-theme="dark"] .insight-shot__body {
+  background: #292524;
+}[data-theme="dark"] .insight-shot__image {
+  border-color: #57534e;
+}[data-theme="dark"] .export-preview {
+  background: var(--bg);
+}[data-theme="dark"] .category-chart__legend div {
+  color: var(--ink-soft);
+}[data-theme="dark"] .spending-list__row,
+[data-theme="dark"] .activity-row {
+  border-color: var(--line);
+  color: var(--ink);
+}[data-theme="dark"] .empty-state {
+  color: var(--ink-muted);
+}[data-theme="dark"] .notion-connect__fieldset {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}[data-theme="dark"] .not-found__panel {
+  background: var(--surface);
+}[data-theme="dark"] tfoot td {
+  background: var(--surface-muted);
+}[data-theme="dark"] .sidebar {
+  background: var(--surface);
+}[data-theme="dark"] .fab__backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}* {
+  box-sizing: border-box;
+}html {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}#root {
+  height: 100%;
+  overflow: hidden;
+}button,
+input,
+select {
+  font: inherit;
+}button {
+  cursor: pointer;
+}button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}a {
+  color: inherit;
+  text-decoration: none;
+}

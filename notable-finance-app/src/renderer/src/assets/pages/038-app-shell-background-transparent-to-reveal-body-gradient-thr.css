@@ -1,0 +1,4 @@
+/* App shell background - transparent to reveal body gradient through glass layers */
+[data-preset="hig"] .app-shell {
+  background: transparent;
+}

@@ -1,0 +1,26 @@
+/* ── Message stream ─────────────────────────────────────────────────── */
+.chat-mode__messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 26px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scroll-behavior: smooth;
+}
+.chat-mode__messages > * {
+  width: 100%;
+  max-width: 768px;
+  margin-inline: auto;
+  /* Column flex items shrink by default, and `overflow: hidden` (on the draft
+     card) sets their automatic minimum size to 0 — which collapsed confirm
+     cards to a bare 1px border. Never let the scroll column squash content. */
+  flex-shrink: 0;
+}
+.chat-msg {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: chat-fade-up 0.3s ease both;
+}

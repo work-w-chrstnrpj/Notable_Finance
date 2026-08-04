@@ -1,0 +1,15 @@
+/* Both faces share one grid cell. backface-visibility:hidden only stops the
+   away-facing face from being PAINTED — Chromium still routes wheel/trackpad
+   scroll hit-testing to it, and since that face's body is not scrollable the
+   gesture is swallowed and the visible form never scrolls (dragging the
+   scrollbar still worked, which is what made this look like a layout bug).
+   Taking the away-facing face out of hit-testing entirely fixes it. */
+.modal-panel--flipper:not([data-flipped="true"]) .modal-panel__face--back,
+.modal-panel--flipper[data-flipped="true"] .modal-panel__face--front {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-panel__face--back {
+  transform: rotateY(180deg);
+}

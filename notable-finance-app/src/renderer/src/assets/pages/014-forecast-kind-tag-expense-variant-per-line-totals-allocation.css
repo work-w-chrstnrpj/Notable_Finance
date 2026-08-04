@@ -1,0 +1,27 @@
+.workspace__content {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: 24px;
+}.page-stack {
+  display: grid;
+  gap: 20px;
+}.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}.two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr);
+  gap: 18px;
+}.two-column--wide-left {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+}.panel,
+.dashboard-card,
+.account-card,
+.record-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}

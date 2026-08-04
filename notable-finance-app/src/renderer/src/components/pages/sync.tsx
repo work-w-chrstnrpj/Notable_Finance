@@ -18,6 +18,7 @@ import { StatusPill } from "@/components/ui/date-range";
 import { useSyncStatus } from "@/lib/use-data";
 import { cx } from "@/lib/finance-helpers";
 import type { PullRange, SchemaHealth, SyncState } from "@/types/finance";
+import styles from "./sync.module.css";
 
 // ── Desktop-only: local-first sync controls (initial pull, auto mode, conflicts) ──
 
@@ -90,19 +91,19 @@ function ConflictModal({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="conflict-modal" onClick={(e) => e.stopPropagation()}>
+      <div className={styles["conflict-modal"]} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="conflict-modal__header">
+        <div className={styles["conflict-modal__header"]}>
           <GitMerge size={18} />
-          <span className="conflict-modal__title">{conflict.title}</span>
+          <span className={styles["conflict-modal__title"]}>{conflict.title}</span>
           <Badge tone="neutral">{conflict.recordTable}</Badge>
-          <button type="button" className="conflict-modal__close" onClick={onClose}>
+          <button type="button" className={styles["conflict-modal__close"]} onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         {/* Quick actions */}
-        <div className="conflict-modal__quick">
+        <div className={styles["conflict-modal__quick"]}>
           <button type="button" className="button" onClick={() => acceptAll("local")}>
             Accept all Local
           </button>
@@ -112,19 +113,19 @@ function ConflictModal({
         </div>
 
         {/* Three-column merge grid — header and data rows share the same grid */}
-        <div className="conflict-merge">
+        <div className={styles["conflict-merge"]}>
           {/* Column headers — rendered as the first row of the grid */}
-          <div className="conflict-merge__row conflict-merge__row--header">
-            <div className="conflict-merge__cell conflict-merge__cell--header">
-              <span className="conflict-merge__col-label">Local</span>
+          <div className={cx(styles["conflict-merge__row"], styles["conflict-merge__row--header"])}>
+            <div className={cx(styles["conflict-merge__cell"], styles["conflict-merge__cell--header"])}>
+              <span className={styles["conflict-merge__col-label"]}>Local</span>
             </div>
-            <div className="conflict-merge__arrow conflict-merge__arrow--spacer" aria-hidden />
-            <div className="conflict-merge__cell conflict-merge__cell--header conflict-merge__cell--result">
-              <span className="conflict-merge__col-label">Result</span>
+            <div className={cx(styles["conflict-merge__arrow"], styles["conflict-merge__arrow--spacer"])} aria-hidden />
+            <div className={cx(styles["conflict-merge__cell"], styles["conflict-merge__cell--header"], styles["conflict-merge__cell--result"])}>
+              <span className={styles["conflict-merge__col-label"]}>Result</span>
             </div>
-            <div className="conflict-merge__arrow conflict-merge__arrow--spacer" aria-hidden />
-            <div className="conflict-merge__cell conflict-merge__cell--header">
-              <span className="conflict-merge__col-label">Notion</span>
+            <div className={cx(styles["conflict-merge__arrow"], styles["conflict-merge__arrow--spacer"])} aria-hidden />
+            <div className={cx(styles["conflict-merge__cell"], styles["conflict-merge__cell--header"])}>
+              <span className={styles["conflict-merge__col-label"]}>Notion</span>
             </div>
           </div>
 
@@ -132,23 +133,23 @@ function ConflictModal({
           {conflict.fields.map((f) => {
             const chosen = choices[f.field];
             return (
-              <div key={f.field} className="conflict-merge__row">
+              <div key={f.field} className={styles["conflict-merge__row"]}>
                 {/* Local column */}
                 <div
                   className={cx(
-                    "conflict-merge__cell conflict-merge__cell--local",
-                    chosen === "local" && "conflict-merge__cell--active"
+                    styles["conflict-merge__cell"], styles["conflict-merge__cell--local"],
+                    chosen === "local" && styles["conflict-merge__cell--active"]
                   )}
                   onClick={() => setChoice(f.field, "local")}
                 >
-                  <span className="conflict-merge__field-name">{f.field}</span>
-                  <span className="conflict-merge__field-value">{fmt(f.local)}</span>
+                  <span className={styles["conflict-merge__field-name"]}>{f.field}</span>
+                  <span className={styles["conflict-merge__field-value"]}>{fmt(f.local)}</span>
                 </div>
 
                 {/* Arrow: accept local */}
                 <button
                   type="button"
-                  className={cx("conflict-merge__arrow", chosen === "local" && "conflict-merge__arrow--active")}
+                  className={cx(styles["conflict-merge__arrow"], chosen === "local" && styles["conflict-merge__arrow--active"])}
                   onClick={() => setChoice(f.field, "local")}
                   title="Use local value"
                 >
@@ -156,8 +157,8 @@ function ConflictModal({
                 </button>
 
                 {/* Result column */}
-                <div className="conflict-merge__cell conflict-merge__cell--result">
-                  <span className="conflict-merge__field-value conflict-merge__field-value--result">
+                <div className={cx(styles["conflict-merge__cell"], styles["conflict-merge__cell--result"])}>
+                  <span className={cx(styles["conflict-merge__field-value"], styles["conflict-merge__field-value--result"])}>
                     {fmt(chosen === "local" ? f.local : f.remote)}
                   </span>
                 </div>
@@ -165,7 +166,7 @@ function ConflictModal({
                 {/* Arrow: accept notion */}
                 <button
                   type="button"
-                  className={cx("conflict-merge__arrow", chosen === "remote" && "conflict-merge__arrow--active")}
+                  className={cx(styles["conflict-merge__arrow"], chosen === "remote" && styles["conflict-merge__arrow--active"])}
                   onClick={() => setChoice(f.field, "remote")}
                   title="Use Notion value"
                 >
@@ -175,13 +176,13 @@ function ConflictModal({
                 {/* Notion column */}
                 <div
                   className={cx(
-                    "conflict-merge__cell conflict-merge__cell--notion",
-                    chosen === "remote" && "conflict-merge__cell--active"
+                    styles["conflict-merge__cell"], styles["conflict-merge__cell--notion"],
+                    chosen === "remote" && styles["conflict-merge__cell--active"]
                   )}
                   onClick={() => setChoice(f.field, "remote")}
                 >
-                  <span className="conflict-merge__field-name">{f.field}</span>
-                  <span className="conflict-merge__field-value">{fmt(f.remote)}</span>
+                  <span className={styles["conflict-merge__field-name"]}>{f.field}</span>
+                  <span className={styles["conflict-merge__field-value"]}>{fmt(f.remote)}</span>
                 </div>
               </div>
             );
@@ -189,7 +190,7 @@ function ConflictModal({
         </div>
 
         {/* Footer */}
-        <div className="conflict-modal__footer">
+        <div className={styles["conflict-modal__footer"]}>
           <button type="button" className="button" onClick={onClose} disabled={busy}>
             Cancel
           </button>
@@ -281,8 +282,8 @@ function DesktopSyncPanel() {
           : <Badge tone="green">No conflicts</Badge>
       }
     >
-      <div className="desktop-sync">
-        <p className="desktop-sync__lead">
+      <div className={styles["desktop-sync"]}>
+        <p className={styles["desktop-sync__lead"]}>
           Writes land in the local database instantly and queue for Notion. Sync reconciles with a
           three-way merge — disjoint edits auto-merge; same-field edits appear below for your decision.
         </p>
@@ -323,9 +324,9 @@ function DesktopSyncPanel() {
                   : "Sync only when you press the Sync button."}
               </p>
             </div>
-            <div className="desktop-sync__auto">
+            <div className={styles["desktop-sync__auto"]}>
               <label
-                className="desktop-sync__interval"
+                className={styles["desktop-sync__interval"]}
                 data-disabled={settings.mode !== "auto"}
               >
                 every
@@ -356,10 +357,10 @@ function DesktopSyncPanel() {
         )}
 
         {conflicts.length > 0 && (
-          <div className="conflict-group">
-            <div className="conflict-bulk">
-              <p className="conflict-bulk__label">{conflicts.length} record{conflicts.length > 1 ? "s" : ""} with conflicts</p>
-              <div className="conflict-bulk__actions">
+          <div className={styles["conflict-group"]}>
+            <div className={styles["conflict-bulk"]}>
+              <p className={styles["conflict-bulk__label"]}>{conflicts.length} record{conflicts.length > 1 ? "s" : ""} with conflicts</p>
+              <div className={styles["conflict-bulk__actions"]}>
                 <button type="button" className="button button--primary" onClick={() => void resolveAll("remote")} disabled={busy}>
                   Accept All from Notion
                 </button>
@@ -372,20 +373,20 @@ function DesktopSyncPanel() {
               <button
                 key={`${c.recordTable}:${c.recordId}`}
                 type="button"
-                className="conflict-card conflict-card--clickable"
+                className={cx(styles["conflict-card"], styles["conflict-card--clickable"])}
                 onClick={() => setModalConflict(c)}
               >
-                <div className="conflict-card__head">
+                <div className={styles["conflict-card__head"]}>
                   <GitMerge size={15} />
                   <strong>{c.title}</strong>
                   <Badge tone="neutral">{c.recordTable}</Badge>
                 </div>
-                <div className="conflict-card__fields-preview">
+                <div className={styles["conflict-card__fields-preview"]}>
                   {c.fields.map((f) => (
                     <Badge key={f.field} tone="amber">{f.field}</Badge>
                   ))}
                 </div>
-                <span className="conflict-card__chevron">→</span>
+                <span className={styles["conflict-card__chevron"]}>→</span>
               </button>
             ))}
           </div>
@@ -463,7 +464,7 @@ function SyncPage({
       </section>
       <section className="two-column">
         <Panel title="Sync Actions" action={<StatusPill syncState={syncState} schemaHealth={schemaHealth} />}>
-          <div className="sync-actions">
+          <div className={styles["sync-actions"]}>
             <div className="filter-select">
               <label htmlFor="pull-range">Pull range</label>
               <select
@@ -482,7 +483,7 @@ function SyncPage({
                 <option value="all">All time</option>
               </select>
             </div>
-            <div className="action-list action-list--sync">
+            <div className={cx(styles["action-list"], styles["action-list--sync"])}>
               <button
                 type="button"
                 className="button"
@@ -491,7 +492,7 @@ function SyncPage({
               >
                 <CloudDownload
                   size={16}
-                  className={activeSyncKind === "pull" ? "icon-busy" : undefined}
+                  className={activeSyncKind === "pull" ? styles["icon-busy"] : undefined}
                 />
                 {activeSyncKind === "pull" ? "Pulling…" : "Pull sync only"}
               </button>
@@ -503,7 +504,7 @@ function SyncPage({
               >
                 <CloudUpload
                   size={16}
-                  className={activeSyncKind === "push" ? "icon-busy" : undefined}
+                  className={activeSyncKind === "push" ? styles["icon-busy"] : undefined}
                 />
                 {activeSyncKind === "push" ? "Pushing…" : "Push sync only"}
               </button>
@@ -524,8 +525,8 @@ function SyncPage({
                 Verify Schema
               </button>
             </div>
-            <div className="snapshot-card">
-              <p className="snapshot-card__title">Refresh Source</p>
+            <div className={styles["snapshot-card"]}>
+              <p className={styles["snapshot-card__title"]}>Refresh Source</p>
               <p>
                 Pull brings Notion → App. Push sends dirty local changes → Notion. Full sync runs
                 pull then push (same as the header Sync button).
@@ -534,7 +535,7 @@ function SyncPage({
           </div>
         </Panel>
         <Panel title="Errors" action={<Badge tone="amber">User safe</Badge>}>
-          <div className="error-list">
+          <div className={styles["error-list"]}>
             <ErrorRow code="VALIDATION_ERROR" detail="Expense Amount is required." />
             <ErrorRow code="SCHEMA_DRIFT_DETECTED" detail="Payment Status option changed." />
             <ErrorRow code="CONFLICT_ERROR" detail="Record changed after the app loaded it." />

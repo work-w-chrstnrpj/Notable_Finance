@@ -1,0 +1,238 @@
+[data-theme="dark"] .top-expense-row,
+[data-theme="dark"] .recent-list-card__header,
+[data-theme="dark"] .budget-usage-row > div:first-child {
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .recent-list__row:hover {
+  background: rgba(250, 250, 249, 0.03);
+}
+
+/* ── Tablet / iPad & below: sidebar becomes an off-canvas drawer ───── */
+@media (max-width: 1023px) {
+.dashboard-chart-grid,
+.dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 0.95fr);
+  gap: 16px;
+}
+
+.dashboard-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.75fr) minmax(0, 1.25fr);
+  gap: 16px;
+}
+
+.top-expense-list {
+  display: grid;
+  gap: 12px;
+}
+
+.top-expense-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.top-expense-row__rank {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.top-expense-row__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.top-expense-row__title {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  /* Allow the title to wrap to 2-3 lines instead of being squeezed to one. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.top-expense-row__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+}
+
+.top-expense-row__meta strong {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.budget-usage-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.budget-usage-row {
+  display: grid;
+  gap: 7px;
+}
+
+.budget-usage-row > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.budget-usage-row strong {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.budget-usage-track {
+  overflow: hidden;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.budget-usage-track i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.recent-list-card {
+  padding: 24px;
+}
+
+.recent-list-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.recent-list-card__header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.recent-list-card__header a {
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.recent-list {
+  display: grid;
+  gap: 13px;
+}
+
+.recent-list__row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.recent-list__row:hover {
+  background: rgba(28, 25, 23, 0.025);
+}
+
+.recent-list__icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.recent-list__icon--green {
+  background: var(--green-soft);
+  color: #00a854;
+}
+
+.recent-list__icon--rose {
+  background: var(--rose-soft);
+  color: #ff2f5f;
+}
+
+.recent-list__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recent-list__copy strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-list__copy span {
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+.recent-list__amount {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.recent-list__amount--income {
+  color: #00a854;
+}
+
+.recent-list__amount--expense {
+  color: #e11d48;
+}
+
+.recent-list__amount--credit-card-payment {
+  color: #d97706;
+}
+
+.recent-list__amount--transfer {
+  color: #ca8a04;
+}

@@ -1,0 +1,9 @@
+/* Dark theme adjustments */
+[data-theme="dark"] .page-content__editor {
+  background: var(--input-bg);
+  border-color: var(--line-strong);
+}
+
+[data-theme="dark"] .page-content__editor:focus {
+  outline-color: var(--focus);
+}

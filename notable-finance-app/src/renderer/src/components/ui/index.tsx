@@ -6,6 +6,7 @@ import { cx } from "@/lib/finance-helpers";
 import { getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import { ShortcutHint } from "@/components/shortcuts";
+import styles from "./index.module.css";
 
 export type ComputedValueTone = "green" | "rose" | "amber" | "ink";
 
@@ -17,11 +18,11 @@ export function PageToolbar({
   actions?: ReactNode;
 }) {
   return (
-    <div className="page-toolbar">
+    <div className={styles["page-toolbar"]}>
       <div>
         <h2>{title}</h2>
       </div>
-      {actions && <div className="page-toolbar__actions">{actions}</div>}
+      {actions && <div className={styles["page-toolbar__actions"]}>{actions}</div>}
     </div>
   );
 }
@@ -37,7 +38,7 @@ export function Panel({
 }) {
   return (
     <section className="panel">
-      <div className="panel__header">
+      <div className={styles.panel__header}>
         <h2>{title}</h2>
         {action}
       </div>
@@ -60,10 +61,10 @@ export function MetricCard({
   tone: "green" | "rose" | "blue" | "amber";
 }) {
   return (
-    <article className={cx("metric-card", `metric-card--${tone}`)}>
-      <div className="metric-card__top">
+    <article className={cx(styles["metric-card"], styles[`metric-card--${tone}`])}>
+      <div className={styles["metric-card__top"]}>
         <p>{title}</p>
-        <span className="metric-card__icon">
+        <span className={styles["metric-card__icon"]}>
           <Icon size={14} />
         </span>
       </div>
@@ -95,7 +96,7 @@ export function MoneyLine({
         : "num--zero"
     : "";
   return (
-    <div className="money-line">
+    <div className={styles["money-line"]}>
       <span>{label}</span>
       <strong className={signClass}>{formatMoney(value)}</strong>
     </div>
@@ -116,10 +117,10 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className={cx("field", error && "field--error", className)} aria-required={required || undefined}>
+    <label className={cx("field", error && styles["field--error"], className)} aria-required={required || undefined}>
       <span>
         {label}
-        {required && <span className="field__required" aria-hidden="true"> *</span>}
+        {required && <span className={styles.field__required} aria-hidden="true"> *</span>}
       </span>
       {children}
     </label>
@@ -136,7 +137,7 @@ export function ComputedField({
   valueTone?: ComputedValueTone;
 }) {
   return (
-    <div className="computed-field">
+    <div className={styles["computed-field"]}>
       <span>{label}</span>
       <strong className={cx("computed-field__value", `computed-field__value--${valueTone}`)}>{value}</strong>
     </div>
@@ -145,7 +146,7 @@ export function ComputedField({
 
 export function FormSectionDivider({ title }: { title: string }) {
   return (
-    <div className="form-section-divider">
+    <div className={styles["form-section-divider"]}>
       <span>{title}</span>
     </div>
   );
@@ -172,7 +173,7 @@ export function EmptyState({ title, detail }: { title: string; detail: string })
 
 export function LoadingBlock({ label }: { label: string }) {
   return (
-    <div className="loading-block" role="status" aria-live="polite">
+    <div className={styles["loading-block"]} role="status" aria-live="polite">
       <RefreshCw size={16} className="spin" />
       <span>{label}</span>
     </div>
@@ -193,12 +194,12 @@ export function SegmentedControl({
   shortcutId?: string;
 }) {
   return (
-    <div className="segmented" aria-label={label}>
+    <div className={styles.segmented} aria-label={label}>
       {options.map((option) => (
         <button
           type="button"
           key={option.value}
-          className={cx(option.value === value && "segmented__item--active")}
+          className={cx(option.value === value && styles["segmented__item--active"])}
           onClick={() => onChange(option.value)}
         >
           {option.label}
@@ -273,26 +274,26 @@ export function FilterDropdown({
   const [open, setOpen] = useState(false);
   const selected = items.find((i) => i.id === value);
   return (
-    <div className={cx("filter-dropdown", open && "filter-dropdown--open")}>
+    <div className={cx(styles["filter-dropdown"], open && styles["filter-dropdown--open"])}>
       <button
         type="button"
-        className="filter-dropdown__trigger"
+        className={styles["filter-dropdown__trigger"]}
         onClick={() => setOpen((o) => !o)}
       >
         {selected ? (
-          <span className="filter-dropdown__selected">
+          <span className={styles["filter-dropdown__selected"]}>
             {selected.icon}
             {selected.label}
           </span>
         ) : (
-          <span className="filter-dropdown__placeholder">{placeholder}</span>
+          <span className={styles["filter-dropdown__placeholder"]}>{placeholder}</span>
         )}
       </button>
       {open && (
-        <div className="filter-dropdown__menu">
+        <div className={styles["filter-dropdown__menu"]}>
           <button
             type="button"
-            className={cx("filter-dropdown__item", !value && "filter-dropdown__item--active")}
+            className={cx(styles["filter-dropdown__item"], !value && styles["filter-dropdown__item--active"])}
             onClick={() => { onChange(""); setOpen(false); }}
           >
             {placeholder}
@@ -301,7 +302,7 @@ export function FilterDropdown({
             <button
               type="button"
               key={item.id}
-              className={cx("filter-dropdown__item", value === item.id && "filter-dropdown__item--active")}
+              className={cx(styles["filter-dropdown__item"], value === item.id && styles["filter-dropdown__item--active"])}
               onClick={() => { onChange(item.id); setOpen(false); }}
             >
               {item.icon}
@@ -363,16 +364,16 @@ export function MultiSelect({
   }
 
   return (
-    <div className="multi-select" ref={containerRef}>
-      <div className="multi-select__picker">
+    <div className={styles["multi-select"]} ref={containerRef}>
+      <div className={styles["multi-select__picker"]}>
         <div
-          className={cx("multi-select__control", open && "multi-select__control--open")}
+          className={cx(styles["multi-select__control"], open && styles["multi-select__control--open"])}
           onClick={() => { inputRef.current?.focus(); setOpen(true); }}
         >
           <input
             ref={inputRef}
             type="text"
-            className="multi-select__input"
+            className={styles["multi-select__input"]}
             placeholder={placeholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -381,26 +382,26 @@ export function MultiSelect({
           />
         </div>
         {open && filtered.length > 0 && (
-          <div className="multi-select__dropdown">
+          <div className={styles["multi-select__dropdown"]}>
             {filtered.map((item) => {
               const isSelected = selectedIds.includes(item.id);
               return (
                 <button
                   key={item.id}
                   type="button"
-                  className={cx("multi-select__option", isSelected && "multi-select__option--selected")}
+                  className={cx(styles["multi-select__option"], isSelected && styles["multi-select__option--selected"])}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     toggle(item.id);
                   }}
                 >
-                  <span className="multi-select__option-content">
-                    <span className="multi-select__option-label">{item.label}</span>
+                  <span className={styles["multi-select__option-content"]}>
+                    <span className={styles["multi-select__option-label"]}>{item.label}</span>
                     {item.sublabel && (
-                      <span className="multi-select__option-sublabel">{item.sublabel}</span>
+                      <span className={styles["multi-select__option-sublabel"]}>{item.sublabel}</span>
                     )}
                   </span>
-                  <span className={cx("multi-select__option-action", isSelected && "multi-select__option-action--remove")}>
+                  <span className={cx(styles["multi-select__option-action"], isSelected && styles["multi-select__option-action--remove"])}>
                     {isSelected ? "\u2212" : "+"}
                   </span>
                 </button>
@@ -410,18 +411,18 @@ export function MultiSelect({
         )}
       </div>
       {selected.length > 0 && (
-        <div className="multi-select__linked">
+        <div className={styles["multi-select__linked"]}>
           {selected.map((item) => (
-            <div key={item.id} className="multi-select__linked-item">
-              <span className="multi-select__linked-info">
-                <span className="multi-select__linked-label">{item.label}</span>
+            <div key={item.id} className={styles["multi-select__linked-item"]}>
+              <span className={styles["multi-select__linked-info"]}>
+                <span className={styles["multi-select__linked-label"]}>{item.label}</span>
                 {item.sublabel && (
-                  <span className="multi-select__linked-sublabel">{item.sublabel}</span>
+                  <span className={styles["multi-select__linked-sublabel"]}>{item.sublabel}</span>
                 )}
               </span>
               <button
                 type="button"
-                className="multi-select__linked-remove"
+                className={styles["multi-select__linked-remove"]}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   toggle(item.id);
@@ -439,10 +440,10 @@ export function MultiSelect({
 
 export function BudgetRow({ label, percent, amount }: { label: string; percent: number; amount: number }) {
   return (
-    <div className="budget-row">
-      <strong className="budget-row__label">{label}</strong>
-      <span className="budget-row__percent">{percent}%</span>
-      <span className="budget-row__amount">{formatMoney(amount)}</span>
+    <div className={styles["budget-row"]}>
+      <strong className={styles["budget-row__label"]}>{label}</strong>
+      <span className={styles["budget-row__percent"]}>{percent}%</span>
+      <span className={styles["budget-row__amount"]}>{formatMoney(amount)}</span>
     </div>
   );
 }
@@ -464,13 +465,13 @@ export function CategoryCard({
 }) {
   const content = (
     <>
-      {icon && <span className="category-card__icon">{icon}</span>}
+      {icon && <span className={styles["category-card__icon"]}>{icon}</span>}
       <p>{title}</p>
       <span>{detail}</span>
       <strong>{value}</strong>
     </>
   );
-  const className = cx("category-card", muted && "category-card--muted", onClick && "category-card--button");
+  const className = cx(styles["category-card"], muted && styles["category-card--muted"], onClick && styles["category-card--button"]);
 
   if (onClick) {
     return (
@@ -481,7 +482,7 @@ export function CategoryCard({
   }
 
   return (
-    <article className={cx("category-card", muted && "category-card--muted")}>
+    <article className={cx(styles["category-card"], muted && styles["category-card--muted"])}>
       {content}
     </article>
   );
@@ -489,7 +490,7 @@ export function CategoryCard({
 
 export function ErrorRow({ code, detail }: { code: string; detail: string }) {
   return (
-    <div className="error-row">
+    <div className={styles["error-row"]}>
       <FileWarning size={16} />
       <div>
         <strong>{code}</strong>
@@ -503,13 +504,13 @@ export function ErrorRow({ code, detail }: { code: string; detail: string }) {
 
 /** Single animated bar used as the base primitive for skeleton layouts. */
 export function SkeletonBar({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return <div className={`skeleton-bar ${className ?? ""}`} style={style} aria-hidden="true" />;
+  return <div className={`${styles["skeleton-bar"]} ${className ?? ""}`} style={style} aria-hidden="true" />;
 }
 
 /** Metric-card-shaped skeleton (used on Dashboard, Monitoring). */
 export function MetricCardSkeleton() {
   return (
-    <article className="skeleton-metric-card" aria-busy="true" aria-label="Loading metric">
+    <article className={styles["skeleton-metric-card"]} aria-busy="true" aria-label="Loading metric">
       <SkeletonBar className="skeleton-bar--title" style={{ width: "45%", height: 12 }} />
       <SkeletonBar className="skeleton-bar--value" style={{ width: "70%", height: 22 }} />
       <SkeletonBar className="skeleton-bar--detail" style={{ width: "55%", height: 11 }} />
@@ -521,12 +522,12 @@ export function MetricCardSkeleton() {
 export function PanelSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <section className="panel" aria-busy="true" aria-label="Loading">
-      <div className="panel__header">
+      <div className={styles.panel__header}>
         <SkeletonBar style={{ width: 120, height: 16 }} />
       </div>
-      <div className="skeleton-table">
+      <div className={styles["skeleton-table"]}>
         {Array.from({ length: rows }, (_, i) => (
-          <div className="skeleton-table__row" key={i}>
+          <div className={styles["skeleton-table__row"]} key={i}>
             <SkeletonBar style={{ flex: 2, height: 13 }} />
             <SkeletonBar style={{ flex: 1, height: 13 }} />
             <SkeletonBar style={{ flex: 1, height: 13 }} />

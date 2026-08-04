@@ -1,0 +1,11 @@
+/* Surface cards - medium glass */
+[data-preset="hig"] .record-card,
+[data-preset="hig"] .dashboard-card,
+[data-preset="hig"] .account-card,
+[data-preset="hig"] .preset-card {
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 35%, transparent);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+}

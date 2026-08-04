@@ -1,0 +1,76 @@
+/* Modal header actions container */
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}.modal-fieldset:disabled input,
+.modal-fieldset:disabled select,
+.modal-fieldset:disabled textarea {
+  background: var(--surface-muted);
+  color: var(--ink);
+  opacity: 1;
+  cursor: default;
+}
+
+.account-detail-grid {
+  display: grid;
+}
+
+.account-detail-section {
+  border-bottom: 1px solid var(--line);
+  padding: 18px;
+}
+
+.account-detail-section:last-child {
+  border-bottom: 0;
+}
+
+.account-detail-section__title {
+  margin: 0 0 12px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-detail-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.account-detail-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-detail-field span {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.account-detail-field strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.account-detail-field--span {
+  display: grid;
+  gap: 4px;
+}
+
+.account-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+.account-qr img {
+  max-width: min(480px, 100%);
+  max-height: 480px;
+  border-radius: 8px;
+  object-fit: contain;
+}

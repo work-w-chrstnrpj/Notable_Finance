@@ -1,0 +1,11 @@
+/* ── Theme modal color pickers layout ──────────────────────────────── */
+.theme-color-pickers {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.theme-color-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

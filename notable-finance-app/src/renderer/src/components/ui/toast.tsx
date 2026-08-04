@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, Sparkles, X } from "lucide-react";
+import styles from "./toast.module.css";
 
 export type ToastTone = "error" | "info";
 
@@ -36,14 +37,14 @@ export function Toast({
 
   return (
     <div
-      className={`toast toast--${tone} ${visible ? "toast--visible" : ""}`}
+      className={`${styles.toast} ${styles[`toast--${tone}`]} ${visible ? styles["toast--visible"] : ""}`}
       role={tone === "info" ? "status" : "alert"}
     >
-      <Icon size={16} className="toast__icon" />
-      <span className="toast__message">{message}</span>
+      <Icon size={16} className={styles.toast__icon} />
+      <span className={styles.toast__message}>{message}</span>
       <button
         type="button"
-        className="toast__close"
+        className={styles.toast__close}
         onClick={() => {
           setVisible(false);
           setTimeout(onDismiss, 300);

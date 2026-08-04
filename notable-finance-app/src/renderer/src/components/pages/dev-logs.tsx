@@ -3,6 +3,7 @@ import { Eraser, Bug } from "lucide-react";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { navigate } from "@/lib/router";
 import { cx } from "@/lib/finance-helpers";
+import styles from "./dev-logs.module.css";
 import type { DevLogEntry, DevLogKind } from "@shared/finance.types";
 
 const KINDS: Array<DevLogKind | "all"> = ["all", "api", "operation", "system"];
@@ -67,19 +68,19 @@ function DevLogsPage() {
 
   return (
     <div className="dev-logs" data-dev-log-ignore="">
-      <header className="dev-logs__header">
+      <header className={styles["dev-logs__header"]}>
         <div>
-          <h2 className="dev-logs__title">
+          <h2 className={styles["dev-logs__title"]}>
             <Bug size={18} />
             Dev Logs
           </h2>
-          <p className="dev-logs__hint">
+          <p className={styles["dev-logs__hint"]}>
             In-memory only — cleared when the app quits or Dev Mode is turned off. Secrets are
             redacted.
           </p>
         </div>
-        <div className="dev-logs__actions">
-          <label className="dev-logs__pause">
+        <div className={styles["dev-logs__actions"]}>
+          <label className={styles["dev-logs__pause"]}>
             <input
               type="checkbox"
               checked={paused}
@@ -97,47 +98,47 @@ function DevLogsPage() {
         </div>
       </header>
 
-      <div className="dev-logs__filters" role="tablist" aria-label="Log kind">
+      <div className={styles["dev-logs__filters"]} role="tablist" aria-label="Log kind">
         {KINDS.map((k) => (
           <button
             key={k}
             type="button"
             role="tab"
             aria-selected={kind === k}
-            className={cx("dev-logs__chip", kind === k && "dev-logs__chip--active")}
+            className={cx(styles["dev-logs__chip"], kind === k && styles["dev-logs__chip--active"])}
             onClick={() => setKind(k)}
           >
             {k}
           </button>
         ))}
-        <span className="dev-logs__count">{filtered.length} shown</span>
+        <span className={styles["dev-logs__count"]}>{filtered.length} shown</span>
       </div>
 
-      <div className="dev-logs__stream" role="log" aria-live="polite">
+      <div className={styles["dev-logs__stream"]} role="log" aria-live="polite">
         {filtered.length === 0 && (
-          <p className="dev-logs__empty">No entries yet. Failed API calls, sync errors, and chat failures will appear here.</p>
+          <p className={styles["dev-logs__empty"]}>No entries yet. Failed API calls, sync errors, and chat failures will appear here.</p>
         )}
         {filtered.map((e) => (
           <article
             key={e.id}
             className={cx(
-              "dev-logs__row",
-              e.ok === false && "dev-logs__row--error",
-              `dev-logs__row--${e.kind}`,
+              styles["dev-logs__row"],
+              e.ok === false && styles["dev-logs__row--error"],
+              styles[`dev-logs__row--${e.kind}`],
             )}
           >
-            <div className="dev-logs__meta">
+            <div className={styles["dev-logs__meta"]}>
               <time dateTime={new Date(e.at).toISOString()}>{formatTime(e.at)}</time>
-              <span className="dev-logs__kind">{e.kind}</span>
+              <span className={styles["dev-logs__kind"]}>{e.kind}</span>
               <span className="dev-logs__source">{e.source}</span>
               {e.durationMs != null && (
                 <span className="dev-logs__dur">{e.durationMs}ms</span>
               )}
             </div>
-            <p className="dev-logs__action">{e.action}</p>
-            <p className="dev-logs__message">{e.message}</p>
+            <p className={styles["dev-logs__action"]}>{e.action}</p>
+            <p className={styles["dev-logs__message"]}>{e.message}</p>
             {e.detail && Object.keys(e.detail).length > 0 && (
-              <pre className="dev-logs__detail">{JSON.stringify(e.detail, null, 2)}</pre>
+              <pre className={styles["dev-logs__detail"]}>{JSON.stringify(e.detail, null, 2)}</pre>
             )}
           </article>
         ))}

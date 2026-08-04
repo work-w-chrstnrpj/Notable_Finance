@@ -1,0 +1,14 @@
+/* Floating overlay elements - heaviest glass (most transparent, deepest blur) */
+[data-preset="hig"] .modal-panel {
+  background: color-mix(in srgb, var(--surface) 66%, transparent);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.06);
+}[data-preset="hig"] .modal-panel__header,
+[data-preset="hig"] .modal-panel__footer {
+  background: color-mix(in srgb, var(--surface) 56%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: color-mix(in srgb, var(--line) 38%, transparent);
+}

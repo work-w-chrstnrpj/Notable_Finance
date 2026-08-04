@@ -1,0 +1,43 @@
+/* ── Monthly insight shot ──────────────────────────────────────────── */
+.insight-shot {
+  width: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(28, 25, 23, 0.12);
+}
+.insight-shot__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  text-align: center;
+  padding: 18px 22px;
+  background: #000000;
+  color: #fff;
+}
+.insight-shot__brand {
+  font-family: var(--font-brand);
+  font-size: 20px;
+  letter-spacing: 0.05em;
+}
+.insight-shot__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+}
+.insight-shot__month {
+  font-size: 14px;
+  font-weight: 600;
+}
+.insight-shot__body {
+  padding: 18px 22px 22px;
+  background: #ffffff;
+}
+.insight-shot__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}

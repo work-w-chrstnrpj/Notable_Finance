@@ -1,0 +1,70 @@
+/* ── Design Preset Cards (ThemeCustomizeModal) ───────────────────────── */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}.preset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font: inherit;
+  color: inherit;
+}.preset-card:hover {
+  border-color: var(--blue);
+}.preset-card--active {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1.5px var(--blue);
+}.preset-card__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}.preset-card__swatch {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}.preset-card__radius-sample {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-left: auto;
+}.preset-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}.preset-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}.preset-card__vibe {
+  font-size: 11px;
+  color: var(--ink-muted);
+  line-height: 1.3;
+}.preset-card__check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}

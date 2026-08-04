@@ -1,0 +1,21 @@
+/* ── Chat mode (Phase 6.1) ─────────────────────────────────────────── */
+.chat-mode-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chat-mode-host > .chat-mode,
+.chat-mode-host > .error-boundary {
+  flex: 1;
+  min-height: 0;
+}
+.chat-mode {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) 1fr;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  background: var(--bg);
+  color: var(--ink);
+}

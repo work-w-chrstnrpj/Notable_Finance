@@ -1,0 +1,8 @@
+/* ── Dev Logs (Dev Mode) ─────────────────────────────────────────────── */
+.dev-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+}

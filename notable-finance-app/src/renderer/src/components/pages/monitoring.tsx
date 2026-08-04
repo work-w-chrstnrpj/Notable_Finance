@@ -5,7 +5,7 @@ import { useLiveCollections, getIncomeCategorySummaries, getExpenseCategorySumma
 import { CategoryDonutChart } from "@/components/charts";
 import { categoryPalette, type ForecastIncome, type ForecastKind } from "@/components/constants";
 import type { MonitoringSplitDto } from "@shared/finance.types";
-import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue, FormSectionDivider } from "@/components/ui";
+import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
 import { CategoryIcon } from "@/components/ui/accounts";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
@@ -18,7 +18,8 @@ import { anchorMonth } from "@/lib/date-range";
 import { calculateCategoryTotalOverview } from "@/lib/finance-rules";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { useUiSettings } from "@/lib/ui-settings-context";
-import { useDebouncedPersist } from "@/lib/use-debounced-persist";
+import { usePersistedFilters } from "@/features/records/use-persisted-filters";
+import styles from "./monitoring.module.css";
 import type { ExpenseRecord, IncomeRecord, MonitoringViewMode } from "@/types/finance";
 
 const monitoringViewModes: MonitoringViewMode[] = ["Monthly", "Quarterly", "Semi-Annually", "Annually"];
@@ -92,7 +93,6 @@ function MonthlyMonitoringPage({
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
   const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
   const [zeroFilter, setZeroFilter] = useState<ZeroFilter>("all");
-  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
 
   const selectedMonth = anchorMonth(selectedDate);
@@ -109,20 +109,17 @@ function MonthlyMonitoringPage({
   const { state: incomesState } = useIncomes({ rangeStart: range.start, rangeEnd: range.end });
   const { state: expensesState } = useExpenses({ rangeStart: range.start, rangeEnd: range.end });
 
-  useEffect(() => {
-    if (!settingsReady || filtersHydrated) return;
-    const f = settings.monitoringFilters;
-    setIncomeCategoryView(f.incomeCategoryView);
-    setExpenseCategoryView(f.expenseCategoryView);
-    setHideZeroIncomeCategories(f.hideZeroIncomeCategories);
-    setZeroFilter(f.zeroFilter);
-    setFiltersHydrated(true);
-  }, [settingsReady, filtersHydrated, settings.monitoringFilters]);
-
-  useDebouncedPersist(
-    filtersHydrated,
-    [incomeCategoryView, expenseCategoryView, hideZeroIncomeCategories, zeroFilter],
-    () => {
+  usePersistedFilters({
+    ready: settingsReady,
+    source: settings.monitoringFilters,
+    hydrate: (f) => {
+      setIncomeCategoryView(f.incomeCategoryView);
+      setExpenseCategoryView(f.expenseCategoryView);
+      setHideZeroIncomeCategories(f.hideZeroIncomeCategories);
+      setZeroFilter(f.zeroFilter);
+    },
+    values: [incomeCategoryView, expenseCategoryView, hideZeroIncomeCategories, zeroFilter],
+    persist: () => {
       void updateSettings({
         monitoringFilters: {
           incomeCategoryView,
@@ -132,7 +129,7 @@ function MonthlyMonitoringPage({
         },
       });
     },
-  );
+  });
 
   // ── Forecast income (Monitoring-only, local, NOT written to Notion) ──────
   // Since real income lands mid/end of month, monthly income can read negative
@@ -173,7 +170,6 @@ function MonthlyMonitoringPage({
     } catch {
       items = [];
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForecasts(items);
   }, [forecastKey]);
 
@@ -283,10 +279,6 @@ function MonthlyMonitoringPage({
     (sum, category) => sum + category.spending,
     0,
   );
-  const remainingTotal = expenseCategorySummaries.reduce(
-    (sum, category) => sum + category.remaining,
-    0,
-  );
 
   // Scaled budget values: budgets represent monthly allocations, so multiply
   // by the period multiplier. Spending values are actuals — do NOT scale.
@@ -345,29 +337,29 @@ function MonthlyMonitoringPage({
         }
       />
       {forecasts.length > 0 && (
-        <div className="forecast-banner">
-          <span className="forecast-banner__icon">
+        <div className={styles["forecast-banner"]}>
+          <span className={styles["forecast-banner__icon"]}>
             <TrendingUp size={16} />
           </span>
-          <div className="forecast-banner__body">
-            <div className="forecast-banner__title">
+          <div className={styles["forecast-banner__body"]}>
+            <div className={styles["forecast-banner__title"]}>
               <strong>Forecast</strong>
-              <span className="forecast-banner__tag">Monitoring only</span>
+              <span className={styles["forecast-banner__tag"]}>Monitoring only</span>
             </div>
-            <div className="forecast-banner__items">
+            <div className={styles["forecast-banner__items"]}>
               {forecasts.map((f) => (
                 <span
                   key={f.id}
                   className={cx(
-                    "forecast-chip",
-                    f.kind === "expense" && "forecast-chip--expense",
+                    styles["forecast-chip"],
+                    f.kind === "expense" && styles["forecast-chip--expense"],
                   )}
                 >
-                  <span className="forecast-chip__kind">
+                  <span className={styles["forecast-chip__kind"]}>
                     {f.kind === "expense" ? "Expense" : "Income"}
                   </span>
-                  <span className="forecast-chip__label">{f.label}</span>
-                  <span className="forecast-chip__amount">
+                  <span className={styles["forecast-chip__label"]}>{f.label}</span>
+                  <span className={styles["forecast-chip__amount"]}>
                     {f.kind === "expense" ? "−" : "+"}
                     {formatMoney(f.amount)}
                   </span>
@@ -382,14 +374,14 @@ function MonthlyMonitoringPage({
               ))}
             </div>
           </div>
-          <div className="forecast-banner__total">
+          <div className={styles["forecast-banner__total"]}>
             {forecastIncomeTotal > 0 && (
-              <span className="forecast-banner__total-line">
+              <span className={styles["forecast-banner__total-line"]}>
                 Income <strong>+{formatMoney(forecastIncomeTotal)}</strong>
               </span>
             )}
             {forecastExpenseTotal > 0 && (
-              <span className="forecast-banner__total-line">
+              <span className={styles["forecast-banner__total-line"]}>
                 Expense <strong>−{formatMoney(forecastExpenseTotal)}</strong>
               </span>
             )}
@@ -426,7 +418,7 @@ function MonthlyMonitoringPage({
         <Panel
           title="Budget Allocation"
           action={
-            <span className="allocation-source" title="Where these percentages come from">
+            <span className={styles["allocation-source"]} title="Where these percentages come from">
               {split.source === "notion"
                 ? "Notion"
                 : "Default 50 / 30 / 20"}
@@ -444,15 +436,15 @@ function MonthlyMonitoringPage({
             const onTrack = monitoring.monthlyExpense <= setBudget;
             const difference = Math.abs(setBudget - monitoring.monthlyExpense);
             return (
-              <div className={cx("insight", onTrack ? "insight--good" : "insight--bad")}>
-                <span className="insight__icon">
+              <div className={cx(styles.insight, onTrack ? styles["insight--good"] : styles["insight--bad"])}>
+                <span className={styles.insight__icon}>
                   {onTrack ? <Smile size={40} /> : <Frown size={40} />}
                 </span>
-                <div className="insight__body">
-                  <p className="insight__budget">
+                <div className={styles.insight__body}>
+                  <p className={styles.insight__budget}>
                     Total Set Budget: <strong>{formatMoney(setBudget)}</strong>
                   </p>
-                  <p className="insight__message">
+                  <p className={styles.insight__message}>
                     {onTrack
                       ? `You spent ${formatMoney(difference)} less than your set budget ${viewMode === "Monthly" ? "this month" : "this period"} — you're on track!`
                       : `You've exceeded your set budget by ${formatMoney(difference)}.`}
@@ -467,7 +459,7 @@ function MonthlyMonitoringPage({
       <Panel
         title="Income Portfolio"
         action={
-          <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
+          <div className={cx(styles["panel-header-actions"], SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Income category view"
               options={[
@@ -490,7 +482,7 @@ function MonthlyMonitoringPage({
           <DataTable
             headers={["Income Type", "Gross Income", "Expenditure", "Net Income", "Earning Percentage"]}
             rows={visibleIncomeCategorySummaries.map((category) => [
-              <span key={`${category.id}-name`} className="category-cell">
+              <span key={`${category.id}-name`} className={styles["category-cell"]}>
                 <CategoryIcon icon={category.icon} />
                 {category.source}
               </span>,
@@ -520,7 +512,7 @@ function MonthlyMonitoringPage({
           />
         )}
         {incomeCategoryView === "cards" && (
-          <div className="category-grid">
+          <div className={styles["category-grid"]}>
             {visibleIncomeCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -537,7 +529,7 @@ function MonthlyMonitoringPage({
       <Panel
         title={`${period} Budget`}
         action={
-          <div className={cx("panel-header-actions", SHOT_HIDE_CLASS)}>
+          <div className={cx(styles["panel-header-actions"], SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Expense category view"
               options={[
@@ -566,7 +558,7 @@ function MonthlyMonitoringPage({
           <DataTable
             headers={["Expense category", `${period} Budget`, "Spending", "Remaining"]}
             rows={visibleExpenseCategorySummaries.map((category) => [
-              <span key={`${category.id}-name`} className="category-cell">
+              <span key={`${category.id}-name`} className={styles["category-cell"]}>
                 <CategoryIcon icon={category.icon} />
                 {category.name}
               </span>,
@@ -590,7 +582,7 @@ function MonthlyMonitoringPage({
               "Total Overview",
             ]}
             rows={visibleExpenseCategorySummaries.map((category) => [
-              <span key={`${category.id}-name`} className="category-cell">
+              <span key={`${category.id}-name`} className={styles["category-cell"]}>
                 <CategoryIcon icon={category.icon} />
                 {category.name}
               </span>,
@@ -622,7 +614,7 @@ function MonthlyMonitoringPage({
           />
         )}
         {expenseCategoryView === "cards" && (
-          <div className="category-grid">
+          <div className={styles["category-grid"]}>
             {visibleExpenseCategorySummaries.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -647,7 +639,7 @@ function MonthlyMonitoringPage({
           <section
             aria-labelledby="forecast-modal-title"
             aria-modal="true"
-            className="modal-panel modal-panel--narrow"
+            className={cx("modal-panel", styles["modal-panel--narrow"])}
             role="dialog"
           >
             <div className="modal-panel__header">

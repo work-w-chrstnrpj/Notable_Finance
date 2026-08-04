@@ -7,10 +7,11 @@ import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { MetricCard } from "@/components/ui";
 import { categoryPalette, prototypeAccent } from "@/components/constants";
 import { useExpenses, useIncomes, useWorkflowRecords } from "@/lib/use-data";
-import { cx, getExpenseTotal, getMonthLabel } from "@/lib/finance-helpers";
+import { cx, getMonthLabel } from "@/lib/finance-helpers";
 import { formatMoney } from "@/lib/format";
 import type { ExpenseRecord, IncomeRecord } from "@/types/finance";
 import { SpendingBreakdownCard } from "@/components/charts";
+import styles from "./dashboard.module.css";
 
 function DashboardPage({
   lastSync,
@@ -314,12 +315,12 @@ function DashboardPage({
         />
       </section>
 
-      <section className="dashboard-chart-grid">
+      <section className={styles["dashboard-chart-grid"]}>
         <TopExpensePurchasesCard purchases={display.topExpensePurchases} monthLabel={monthLabel} />
         <SpendingBreakdownCard data={spendingData} monthLabel={monthLabel} />
       </section>
 
-      <section className="dashboard-bottom-grid">
+      <section className={styles["dashboard-bottom-grid"]}>
         <TopSpendingCategoriesCard categories={display.topSpendingCategories} monthLabel={monthLabel} />
         <RecentTransactionsList records={recentData} />
       </section>
@@ -352,22 +353,22 @@ function TopExpensePurchasesCard({
       {purchases.length === 0 ? (
         <EmptyState title="No expenses" detail="No expenses are scoped to this month." />
       ) : (
-        <div className="top-expense-list">
+        <div className={styles["top-expense-list"]}>
           {purchases.map((p, index) => {
             const color = rankColors[index] ?? rankColors[rankColors.length - 1];
             return (
-              <div key={p.id} className="top-expense-row">
+              <div key={p.id} className={styles["top-expense-row"]}>
                 <span
-                  className="top-expense-row__rank"
+                  className={styles["top-expense-row__rank"]}
                   style={{ backgroundColor: color }}
                 >
                   {index + 1}
                 </span>
-                <div className="top-expense-row__content">
-                  <strong className="top-expense-row__title" style={{ color }}>
+                <div className={styles["top-expense-row__content"]}>
+                  <strong className={styles["top-expense-row__title"]} style={{ color }}>
                     {p.description || "Untitled"}
                   </strong>
-                  <div className="top-expense-row__meta">
+                  <div className={styles["top-expense-row__meta"]}>
                     <span>{p.category} · {p.account}</span>
                     <strong>{formatMoney(p.amount)}</strong>
                   </div>
@@ -397,17 +398,17 @@ function TopSpendingCategoriesCard({
       {categories.length === 0 ? (
         <EmptyState title="No spending" detail="No expenses are scoped to this month." />
       ) : (
-        <div className="budget-usage-list">
+        <div className={styles["budget-usage-list"]}>
           {categories.map((cat) => {
             const percent = Math.round(cat.percent);
             const color = percent > 50 ? "#E11D48" : percent > 25 ? "#D97706" : prototypeAccent;
             return (
-              <div key={cat.name} className="budget-usage-row">
+              <div key={cat.name} className={styles["budget-usage-row"]}>
                 <div>
                   <span>{cat.name}</span>
                   <strong>{formatMoney(cat.value, { compact: true })} · {percent}%</strong>
                 </div>
-                <div className="budget-usage-track">
+                <div className={styles["budget-usage-track"]}>
                   <i style={{ width: `${Math.min(percent, 100)}%`, backgroundColor: color }} />
                 </div>
               </div>
@@ -439,25 +440,25 @@ function RecentTransactionsList({
   };
 
   return (
-    <section className="dashboard-card recent-list-card">
-      <div className="recent-list-card__header">
+    <section className={cx("dashboard-card", styles["recent-list-card"])}>
+      <div className={styles["recent-list-card__header"]}>
         <h2>Recent Transactions</h2>
       </div>
-      <div className="recent-list">
+      <div className={styles["recent-list"]}>
         {records.map((record) => {
           const Icon = iconMap[record.section] ?? ArrowUpRight;
           const prefix = record.value > 0 ? "+" : "-";
 
           return (
-            <button type="button" className="recent-list__row" key={record.id}>
-              <span className={cx("recent-list__icon", `recent-list__icon--${record.tone}`)}>
+            <button type="button" className={styles["recent-list__row"]} key={record.id}>
+              <span className={cx(styles["recent-list__icon"], styles[`recent-list__icon--${record.tone}`])}>
                 <Icon size={16} />
               </span>
-              <span className="recent-list__copy">
+              <span className={styles["recent-list__copy"]}>
                 <span>{record.title}</span>
                 <span>{record.meta}</span>
               </span>
-              <span className={cx("recent-list__amount", `recent-list__amount--${record.section}`)}>
+              <span className={cx(styles["recent-list__amount"], styles[`recent-list__amount--${record.section}`])}>
                 {prefix}
                 {formatMoney(Math.abs(record.value), { compact: true })}
               </span>

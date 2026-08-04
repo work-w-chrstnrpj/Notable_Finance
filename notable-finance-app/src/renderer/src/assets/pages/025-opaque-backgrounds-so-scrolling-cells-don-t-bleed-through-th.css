@@ -1,0 +1,14 @@
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 11px 10px;
+  text-align: left;
+  vertical-align: middle;
+}th {
+  color: var(--ink-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}td:last-child,
+th:last-child {
+  text-align: right;
+}

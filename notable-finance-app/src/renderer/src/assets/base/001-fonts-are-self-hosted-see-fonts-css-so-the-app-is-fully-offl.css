@@ -1,0 +1,48 @@
+/* Fonts are self-hosted (see fonts.css) so the app is fully offline — no network at runtime. */
+@import "../fonts.css";
+
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --surface-muted: #f2f1ee;
+  --input-bg: #f7f6f4;
+  --ink: #1c1917;
+  --ink-soft: #44403c;
+  --ink-muted: #79716b;
+  --line: rgba(28, 25, 23, 0.09);
+  --line-strong: rgba(28, 25, 23, 0.14);
+  --blue: #5b6cf9;
+  --blue-soft: rgba(91, 108, 249, 0.1);
+  --green: #0d9488;
+  --green-soft: #ecfdf5;
+  --amber: #d97706;
+  --amber-soft: #fff7ed;
+  --rose: #e11d48;
+  --rose-soft: #fff1f2;
+  --violet: #7c3aed;
+  --focus: rgba(91, 108, 249, 0.28);
+  --shadow: 0 18px 40px rgba(28, 25, 23, 0.08);
+  --radius: 12px;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  --font-brand: "Instrument Serif", serif;
+  --font-receipt: "Instrument Serif", serif;
+  /* Spacing scale (4px base) */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  /* Motion tokens */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+}

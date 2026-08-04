@@ -1,0 +1,9 @@
+/* Dropdowns, pickers - floating glass */
+[data-preset="hig"] .date-picker,
+[data-preset="hig"] .color-picker__panel {
+  background: color-mix(in srgb, var(--surface) 63%, transparent);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 38%, transparent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}

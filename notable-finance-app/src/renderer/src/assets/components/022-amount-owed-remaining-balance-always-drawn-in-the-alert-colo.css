@@ -1,0 +1,9 @@
+/* Amount owed / remaining balance — always drawn in the alert color. */
+.num--due {
+  color: var(--rose);
+}table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+  font-size: 14px;
+}

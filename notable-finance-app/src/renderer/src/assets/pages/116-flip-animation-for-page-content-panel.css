@@ -1,0 +1,37 @@
+/* Flip animation for page content panel */
+.modal-panel--flip-container {
+  perspective: 1200px;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  /* Safety net: if the inner flip chain ever fails to bound the body,
+     the container itself scrolls instead of clipping content. */
+  overflow-y: auto;
+}
+
+.modal-panel--flipper {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  transform-style: preserve-3d;
+  overflow: visible;
+  transition: transform 0.6s ease;
+  min-height: 0;
+}
+
+.modal-panel--flipper[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+.modal-panel__face {
+  grid-row: 1;
+  grid-column: 1;
+  backface-visibility: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  min-height: 0;
+  /* Swap which face is hit-testable at the midpoint of the 0.6s flip. */
+  transition: visibility 0s linear 0.3s;
+}

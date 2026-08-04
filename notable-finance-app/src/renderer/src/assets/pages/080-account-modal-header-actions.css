@@ -1,0 +1,6 @@
+/* ── Account modal header actions ──────────────────────────────────── */
+.account-modal__header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}

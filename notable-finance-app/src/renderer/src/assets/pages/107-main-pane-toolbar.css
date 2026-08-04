@@ -1,0 +1,92 @@
+/* ── Main pane / toolbar ────────────────────────────────────────────── */
+.chat-mode__pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+.chat-mode__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(10px);
+}
+.chat-mode__identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.chat-mode__identity-badge {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), var(--violet));
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--blue) 32%, transparent);
+}
+.chat-mode__identity-text {
+  min-width: 0;
+}
+.chat-mode__identity-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.chat-mode__identity-status {
+  margin: 1px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+.chat-mode__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
+}
+.chat-mode__status-dot--off {
+  background: var(--amber);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 18%, transparent);
+}
+.chat-mode__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chat-mode__pending-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.chat-mode__pending-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+.chat-mode__toolbar-right > .button {
+  height: 36px;
+  border-radius: 10px;
+}

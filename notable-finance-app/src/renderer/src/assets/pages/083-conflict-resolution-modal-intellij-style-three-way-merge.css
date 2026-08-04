@@ -1,0 +1,19 @@
+/* ── Conflict resolution modal (IntelliJ-style three-way merge) ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 15, 20, 0.55);
+  backdrop-filter: blur(4px);
+  animation: conflict-fade-in 0.15s ease-out;
+  padding: 24px;
+}
+
+@keyframes conflict-fade-in {from { opacity: 0; }to { opacity: 1; }
+}
+
+@keyframes conflict-slide-up {from { opacity: 0; transform: translateY(12px) scale(0.98); }to { opacity: 1; transform: translateY(0) scale(1); }
+}

@@ -1,0 +1,80 @@
+/* Revealed while Cmd/Ctrl is held (body class toggled by the shortcut engine). */
+body.shortcuts-revealed .shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+}
+@keyframes shortcut-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cheat-sheet {
+  width: min(680px, 92vw);
+  max-height: 82vh;
+}
+.cheat-sheet__body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cheat-sheet__group-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+.cheat-sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cheat-sheet__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+.cheat-sheet__row:hover {
+  background: var(--surface-muted);
+}
+.cheat-sheet__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cheat-sheet__label > span:first-child {
+  font-size: 14px;
+  color: var(--ink);
+}
+.cheat-sheet__note {
+  font-size: 12px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+.cheat-sheet__keys {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}

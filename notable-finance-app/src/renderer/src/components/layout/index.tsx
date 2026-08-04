@@ -25,6 +25,7 @@ import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { financeSections } from "@/lib/finance-data";
 import { cx } from "@/lib/finance-helpers";
+import styles from "./index.module.css";
 import { userInitials } from "@/lib/avatar";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
@@ -147,7 +148,7 @@ function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand__mark" aria-hidden="true">
+        <div className={styles.brand__mark} aria-hidden="true">
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
             <rect x="16" y="24" width="992" height="976" rx="250" fill="#17181c" />
             <rect x="74" y="78" width="876" height="864" rx="196" fill="#f7f5f0" />
@@ -159,11 +160,11 @@ function Sidebar({
           </svg>
         </div>
         <div>
-          <p className="brand__name">Notable Finance</p>
+          <p className={styles.brand__name}>Notable Finance</p>
         </div>
         <button
           type="button"
-          className="sidebar-toggle"
+          className={styles["sidebar-toggle"]}
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           onClick={onToggle}
@@ -176,8 +177,8 @@ function Sidebar({
         <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
         <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
       </nav>
-      <div className="sidebar-profile">
-        <div className="sidebar-profile__avatar" aria-hidden="true">
+      <div className={styles["sidebar-profile"]}>
+        <div className={styles["sidebar-profile__avatar"]} aria-hidden="true">
           {user?.avatarDataUrl ? (
             <img src={user.avatarDataUrl} alt="" />
           ) : (
@@ -207,8 +208,8 @@ function NavGroup({
   sectionBadges?: Partial<Record<FinanceSectionId, number>>;
 }) {
   return (
-    <div className="nav__group">
-      <p className="nav__title">{title}</p>
+    <div className={styles.nav__group}>
+      <p className={styles.nav__title}>{title}</p>
       {sections.map((section) => {
         const Icon = sectionIcons[section.id];
         const badge = sectionBadges?.[section.id] ?? 0;
@@ -222,7 +223,7 @@ function NavGroup({
           <Link
             key={section.id}
             href={`/${section.id}`}
-            className={cx("nav__item", activeSection === section.id && "nav__item--active")}
+            className={cx(styles.nav__item, activeSection === section.id && styles["nav__item--active"])}
             onClick={onNavigate}
             title={badge > 0 ? badgeHint : undefined}
           >
@@ -233,7 +234,7 @@ function NavGroup({
             )}
             {badge > 0 && (
               <span
-                className={cx("nav__badge", isHistory && "nav__badge--warn")}
+                className={cx(styles.nav__badge, isHistory && styles["nav__badge--warn"])}
                 aria-label={badgeHint}
               >
                 {badge}
@@ -280,16 +281,16 @@ function TopBar({
   const initials = userInitials(user?.name, user?.email);
 
   return (
-    <header className="topbar">
+    <header className={styles.topbar}>
       <button
         type="button"
-        className="mobile-nav-toggle"
+        className={styles["mobile-nav-toggle"]}
         aria-label="Open navigation"
         onClick={onMobileNavToggle}
       >
         <Menu size={18} />
       </button>
-      <div className="topbar__actions" aria-label="Workspace controls">
+      <div className={styles.topbar__actions} aria-label="Workspace controls">
         {selectorUnit && (
           <DateRangeSelector
             unit={selectorUnit}
@@ -300,8 +301,8 @@ function TopBar({
         )}
         <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
         <ConnectivityIndicator />
-        <span className="sync-meta">{pendingOperations} pending</span>
-        <span className="sync-meta">Last sync {lastSync}</span>
+        <span className={styles["sync-meta"]}>{pendingOperations} pending</span>
+        <span className={styles["sync-meta"]}>Last sync {lastSync}</span>
         <button
           type="button"
           className="button"
@@ -311,13 +312,13 @@ function TopBar({
           <Database size={12} />
           Schema Check
         </button>
-        <div className="sync-btn-wrapper">
+        <div className={styles["sync-btn-wrapper"]}>
           <button type="button" className="button button--primary" onClick={onSync} disabled={syncState === "syncing"}>
             <RefreshCw size={12} className={activeSyncKind === "full" ? "spin" : undefined} />
             Sync
           </button>
         </div>
-        <Link href="/settings" className="topbar__avatar" title={user?.name ?? "Settings"}>
+        <Link href="/settings" className={styles.topbar__avatar} title={user?.name ?? "Settings"}>
           {user?.avatarDataUrl ? <img src={user.avatarDataUrl} alt="" /> : initials}
         </Link>
       </div>

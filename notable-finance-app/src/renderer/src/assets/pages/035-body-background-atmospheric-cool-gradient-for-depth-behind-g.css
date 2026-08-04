@@ -1,0 +1,21 @@
+/* Body background: atmospheric cool gradient for depth behind glass layers */
+[data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #eef1f8 0%,
+    #f0eef8 25%,
+    #eef4f8 50%,
+    #f1eef6 75%,
+    #eef0fa 100%
+  );
+}
+[data-theme="dark"][data-preset="hig"] body {
+  background: linear-gradient(
+    160deg,
+    #0d0d18 0%,
+    #0f0d1a 25%,
+    #0d121c 50%,
+    #100d1a 75%,
+    #0d0f1e 100%
+  );
+}

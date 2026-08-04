@@ -1,0 +1,98 @@
+/* ── Settings: theme row & color pickers ──────────────────────────── */
+.settings-theme-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+.settings-theme-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-theme-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-select {
+  min-height: 36px;
+  padding: 6px 24px 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  appearance: auto;
+}
+.settings-select:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.settings-color-pair {
+  display: flex;
+  gap: 20px;
+}
+.settings-color-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-color-hex {
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--ink-muted);
+  font-family: ui-monospace, monospace;
+  min-width: 6ch;
+}
+.settings-color-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-color-input {
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.settings-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.settings-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+.settings-color-label {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ink-muted);
+  font-family: ui-monospace, monospace;
+}
+.settings-inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--blue);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.settings-inline-link:hover {
+  opacity: 0.8;
+}
+.theme-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.theme-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

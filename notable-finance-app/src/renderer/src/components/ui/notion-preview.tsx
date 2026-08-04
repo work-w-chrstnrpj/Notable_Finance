@@ -3,8 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import type { Components } from "react-markdown";
-
-const EMOJI_RE = /^(\p{Emoji}\uFE0F?|\p{Emoji})(\s*)(.*)$/su;
+import styles from "./notion-preview.module.css";
 
 function preprocess(md: string): string {
   let result = md;
@@ -44,44 +43,46 @@ function NotionPreview({ markdown }: { markdown: string }) {
 
   const components: Partial<Components> = {
     h1: ({ children, ...rest }) => (
-      <h1 className="np-h1" {...rest}>{children}</h1>
+      <h1 className={styles["np-h1"]} {...rest}>{children}</h1>
     ),
     h2: ({ children, ...rest }) => (
-      <h2 className="np-h2" {...rest}>{children}</h2>
+      <h2 className={styles["np-h2"]} {...rest}>{children}</h2>
     ),
     h3: ({ children, ...rest }) => (
-      <h3 className="np-h3" {...rest}>{children}</h3>
+      <h3 className={styles["np-h3"]} {...rest}>{children}</h3>
     ),
     p: ({ children, ...rest }) => (
-      <p className="np-p" {...rest}>{children}</p>
+      <p className={styles["np-p"]} {...rest}>{children}</p>
     ),
     ul: ({ children, ...rest }) => (
-      <ul className="np-ul" {...rest}>{children}</ul>
+      <ul className={styles["np-ul"]} {...rest}>{children}</ul>
     ),
     ol: ({ children, ...rest }) => (
-      <ol className="np-ol" {...rest}>{children}</ol>
+      <ol className={styles["np-ol"]} {...rest}>{children}</ol>
     ),
     li: ({ children, ...rest }) => (
-      <li className="np-li" {...rest}>{children}</li>
+      <li className={styles["np-li"]} {...rest}>{children}</li>
     ),
     blockquote: ({ children, ...rest }) => (
-      <blockquote className="np-blockquote" {...rest}>{children}</blockquote>
+      <blockquote className={styles["np-blockquote"]} {...rest}>{children}</blockquote>
     ),
     code: ({ className, children, ...rest }) => {
       if (!className) {
-        return <code className="np-inline-code" {...rest}>{children}</code>;
+        return <code className={styles["np-inline-code"]} {...rest}>{children}</code>;
       }
       return (
-        <div className="np-code-block">
-          <div className="np-code-lang">{className.replace("language-", "")}</div>
+        <div className={styles["np-code-block"]}>
+          <div className={styles["np-code-lang"]}>{className.replace("language-", "")}</div>
           <pre><code className={className} {...rest}>{children}</code></pre>
         </div>
       );
     },
-    pre: ({ children, ...rest }) => <>{children}</>,
+    // react-markdown injects standard HTML attrs (node, key, …) into every renderer;
+    // destructuring them out here just discards the ones this override doesn't forward.
+    pre: ({ children, ..._rest }) => <>{children}</>,
     table: ({ children, ...rest }) => (
-      <div className="np-table-wrap">
-        <table className="np-table" {...rest}>{children}</table>
+      <div className={styles["np-table-wrap"]}>
+        <table className={styles["np-table"]} {...rest}>{children}</table>
       </div>
     ),
     thead: ({ children, ...rest }) => (
@@ -91,28 +92,28 @@ function NotionPreview({ markdown }: { markdown: string }) {
       <tbody className="np-tbody" {...rest}>{children}</tbody>
     ),
     tr: ({ children, ...rest }) => (
-      <tr className="np-tr" {...rest}>{children}</tr>
+      <tr className={styles["np-tr"]} {...rest}>{children}</tr>
     ),
     th: ({ children, ...rest }) => (
-      <th className="np-th" {...rest}>{children}</th>
+      <th className={styles["np-th"]} {...rest}>{children}</th>
     ),
     td: ({ children, ...rest }) => (
-      <td className="np-td" {...rest}>{children}</td>
+      <td className={styles["np-td"]} {...rest}>{children}</td>
     ),
-    hr: ({ ...rest }) => <hr className="np-hr" {...rest} />,
+    hr: ({ ...rest }) => <hr className={styles["np-hr"]} {...rest} />,
     img: ({ alt, src, ...rest }) => (
-      <img className="np-img" alt={alt ?? ""} src={src} loading="lazy" {...rest} />
+      <img className={styles["np-img"]} alt={alt ?? ""} src={src} loading="lazy" {...rest} />
     ),
     a: ({ href, children, ...rest }) => (
-      <a className="np-link" href={href} target="_blank" rel="noopener noreferrer" {...rest}>{children}</a>
+      <a className={styles["np-link"]} href={href} target="_blank" rel="noopener noreferrer" {...rest}>{children}</a>
     ),
     input: ({ ...rest }) => (
-      <input className="np-checkbox" type="checkbox" {...rest} />
+      <input className={styles["np-checkbox"]} type="checkbox" {...rest} />
     ),
   };
 
   return (
-    <div className="notion-preview">
+    <div className={styles["notion-preview"]}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}

@@ -1,0 +1,33 @@
+/* Glossy gradient buttons with shiny specular movement */
+[data-preset="hig"] .button--primary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 100%, #fff) 0%,
+    color-mix(in srgb, var(--blue) 84%, #fff) 30%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 50%,
+    color-mix(in srgb, var(--blue) 90%, #fff) 70%,
+    color-mix(in srgb, var(--blue) 100%, #fff) 100%
+  );
+  background-size: 200% 100%;
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--blue) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--blue) 15%, transparent);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-position 0.5s ease;
+}
+
+[data-preset="hig"] .button--primary:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--blue) 35%, transparent), 0 2px 6px color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+[data-preset="hig"] .button--primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 25%, transparent);
+}
+
+[data-preset="hig"] .button--primary:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+

@@ -1,0 +1,15 @@
+/* ── Search toggle & input ────────────────────────────────────────── */
+.search-toggle {
+  color: var(--ink-muted);
+  border-color: transparent;
+  background: transparent;
+}
+.search-toggle:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+.search-toggle--active {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}

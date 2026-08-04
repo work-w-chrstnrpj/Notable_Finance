@@ -1,0 +1,11 @@
+/* ── Export modal (receipt / insight) ──────────────────────────────── */
+.modal-panel--export {
+  width: min(680px, 100%);
+}
+.export-preview {
+  background: var(--surface-muted);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}

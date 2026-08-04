@@ -1,0 +1,12 @@
+/* Chrome shell elements - translucent glass with subtle blue accent tint */
+[data-preset="hig"] .sidebar {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blue) 6%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 14%,
+    color-mix(in srgb, var(--surface) 48%, transparent) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+}

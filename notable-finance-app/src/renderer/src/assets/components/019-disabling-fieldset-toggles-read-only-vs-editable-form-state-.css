@@ -1,0 +1,7 @@
+/* Disabling fieldset toggles read-only vs. editable form state (no chrome). */
+.modal-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}

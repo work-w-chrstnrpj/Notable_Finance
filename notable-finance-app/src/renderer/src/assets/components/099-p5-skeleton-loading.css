@@ -1,0 +1,6 @@
+/* ── P5: Skeleton loading ────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}

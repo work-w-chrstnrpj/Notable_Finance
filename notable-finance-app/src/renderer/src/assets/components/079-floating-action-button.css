@@ -1,0 +1,107 @@
+/* ── Floating action button ────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.fab__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease, background 0.25s ease;
+}
+.fab__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(91, 108, 249, 0.4);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.fab__toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(91, 108, 249, 0.46);
+}
+.fab__toggle svg {
+  transition: transform 0.2s ease;
+}
+.fab__toggle--open svg {
+  transform: rotate(45deg);
+}
+.fab__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  animation: fab-menu-in 0.16s ease;
+}
+@keyframes fab-menu-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fab__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.fab__action-label {
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
+.fab__action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.14);
+  transition: transform 0.14s ease;
+}
+.fab__action:hover .fab__action-icon {
+  transform: scale(1.06);
+}
+.fab__action-icon--income {
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: transparent;
+}
+.fab__action-icon--expense {
+  background: var(--rose-soft);
+  color: var(--rose);
+  border-color: transparent;
+}
+
+@media (max-width: 640px) {
+  .fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}

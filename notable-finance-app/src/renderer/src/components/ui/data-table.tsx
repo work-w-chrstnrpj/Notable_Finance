@@ -3,6 +3,7 @@ import { useMemo, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer, CreditCard } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
+import styles from "./data-table.module.css";
 
 /** Pull a comparable value out of a table cell (string, number, or element). */
 function cellText(node: ReactNode): string {
@@ -162,16 +163,16 @@ function DataTable({
     Array.from(selectedIds!).some((id) => disabledIds?.has(id));
 
   return (
-    <div className="table-container">
+    <div className={styles["table-container"]}>
       {hasSelection && (
-        <div className="bulk-toolbar">
-          <span className="bulk-toolbar__count">
+        <div className={styles["bulk-toolbar"]}>
+          <span className={styles["bulk-toolbar__count"]}>
             {selectedIds!.size} selected
           </span>
-          <div className="bulk-toolbar__divider" />
+          <div className={styles["bulk-toolbar__divider"]} />
           <button
             type="button"
-            className="bulk-toolbar__btn"
+            className={styles["bulk-toolbar__btn"]}
             onClick={() => onBulkAction?.(selectedHasDisabled ? "enable" : "disable")}
           >
             <Ban size={14} />
@@ -180,7 +181,7 @@ function DataTable({
           {showBulkEdit && (
             <button
               type="button"
-              className="bulk-toolbar__btn"
+              className={styles["bulk-toolbar__btn"]}
               onClick={() => onBulkAction?.("edit")}
             >
               <Pencil size={14} />
@@ -190,7 +191,7 @@ function DataTable({
           {showBulkPrint && (
             <button
               type="button"
-              className="bulk-toolbar__btn"
+              className={styles["bulk-toolbar__btn"]}
               onClick={() => onBulkAction?.("print")}
             >
               <Printer size={14} />
@@ -200,7 +201,7 @@ function DataTable({
           {showBulkCover && (
             <button
               type="button"
-              className="bulk-toolbar__btn"
+              className={styles["bulk-toolbar__btn"]}
               onClick={() => onBulkAction?.("cover")}
             >
               <CreditCard size={14} />
@@ -209,7 +210,7 @@ function DataTable({
           )}
           <button
             type="button"
-            className="bulk-toolbar__btn"
+            className={styles["bulk-toolbar__btn"]}
             onClick={() => onBulkAction?.("duplicate")}
           >
             <Copy size={14} />
@@ -218,8 +219,8 @@ function DataTable({
           <button
             type="button"
             className={cx(
-              "bulk-toolbar__btn",
-              bulkDeleteDanger ? "bulk-toolbar__btn--danger" : undefined,
+              styles["bulk-toolbar__btn"],
+              bulkDeleteDanger ? styles["bulk-toolbar__btn--danger"] : undefined,
             )}
             onClick={() => onBulkAction?.("delete")}
           >
@@ -228,8 +229,8 @@ function DataTable({
           </button>
         </div>
       )}
-      <div className="table-wrap">
-        <table className={cx(wide && "data-table--wide")}>
+      <div className={styles["table-wrap"]}>
+        <table className={cx(wide && styles["data-table--wide"])}>
         <thead>
           <tr>
             {headers.map((header, columnIndex) => {
@@ -239,7 +240,7 @@ function DataTable({
               return (
                 <th
                   key={header}
-                  className={cx(isFirstColumn && "th-checkbox")}
+                  className={cx(isFirstColumn && styles["th-checkbox"])}
                   aria-sort={
                     active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"
                   }
@@ -248,9 +249,9 @@ function DataTable({
                     <button
                       type="button"
                       className={cx(
-                        "row-checkbox row-checkbox--header",
-                        allVisibleSelected && "row-checkbox--checked",
-                        someVisibleSelected && "row-checkbox--indeterminate",
+                        styles["row-checkbox"], styles["row-checkbox--header"],
+                        allVisibleSelected && styles["row-checkbox--checked"],
+                        someVisibleSelected && styles["row-checkbox--indeterminate"],
                       )}
                       aria-label="Select all rows"
                       onClick={() => {
@@ -267,7 +268,7 @@ function DataTable({
                         }
                       }}
                     >
-                      <span className="row-checkbox__box">
+                      <span className={styles["row-checkbox__box"]}>
                         {someVisibleSelected ? (
                           <Minus size={12} strokeWidth={3} />
                         ) : (
@@ -279,11 +280,11 @@ function DataTable({
                   {sortable ? (
                     <button
                       type="button"
-                      className={cx("th-sort", active && "th-sort--active")}
+                      className={cx(styles["th-sort"], active && styles["th-sort--active"])}
                       onClick={() => toggleSort(columnIndex)}
                     >
                       {header}
-                      <span className="th-sort__icon">
+                      <span className={styles["th-sort__icon"]}>
                         {active ? (
                           sort?.dir === "asc" ? (
                             <ChevronUp size={13} />
@@ -310,9 +311,9 @@ function DataTable({
               <tr
                 key={`row-${index}`}
                 className={cx(
-                  onRowClick && "table-row--clickable",
-                  selectable && recordIds && selectedIds?.has(recordIds[index]) && "table-row--selected",
-                  selectable && recordIds && disabledIds?.has(recordIds[index]) && "record-disabled",
+                  onRowClick && styles["table-row--clickable"],
+                  selectable && recordIds && selectedIds?.has(recordIds[index]) && styles["table-row--selected"],
+                  selectable && recordIds && disabledIds?.has(recordIds[index]) && styles["record-disabled"],
                   rowClassName?.(recordIds?.[index] ?? "", row),
                 )}
                 tabIndex={onRowClick ? 0 : undefined}
@@ -335,12 +336,12 @@ function DataTable({
                 {row.map((cell, cellIndex) => (
                   <td
                     key={`cell-${index}-${cellIndex}`}
-                    className={cx(selectable && cellIndex === 0 && "td-checkbox")}
+                    className={cx(selectable && cellIndex === 0 && styles["td-checkbox"])}
                   >
                     {selectable && cellIndex === 0 && (
                       <button
                         type="button"
-                        className={cx("row-checkbox", isSelected && "row-checkbox--checked")}
+                        className={cx(styles["row-checkbox"], isSelected && styles["row-checkbox--checked"])}
                         aria-label="Select row"
                         onClick={(event) => {
                           event.stopPropagation();
@@ -348,7 +349,7 @@ function DataTable({
                           if (id) onToggleSelect?.(id, !isSelected);
                         }}
                       >
-                        <span className="row-checkbox__box">
+                        <span className={styles["row-checkbox__box"]}>
                           <Check size={12} strokeWidth={3} />
                         </span>
                       </button>
@@ -374,11 +375,11 @@ function DataTable({
       </table>
 
       {paginationActive && (
-        <div className="table-pagination">
-          <div className="table-pagination__info">
+        <div className={styles["table-pagination"]}>
+          <div className={styles["table-pagination__info"]}>
             {pageSummary ?? `${ordered.length} records`}
           </div>
-          <div className="table-pagination__controls">
+          <div className={styles["table-pagination__controls"]}>
             <select
               value={activePageSize}
               onChange={(e) => {
@@ -394,7 +395,7 @@ function DataTable({
             </select>
             <button
               type="button"
-              className="table-pagination__btn"
+              className={styles["table-pagination__btn"]}
               disabled={safePage === 0}
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
             >
@@ -404,7 +405,7 @@ function DataTable({
             {buildPageButtons(totalPages, safePage, setCurrentPage)}
             <button
               type="button"
-              className="table-pagination__btn"
+              className={styles["table-pagination__btn"]}
               disabled={safePage >= totalPages - 1}
               onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
             >
@@ -429,7 +430,7 @@ function buildPageButtons(
       <button
         key={i}
         type="button"
-        className={cx("table-pagination__btn", i === current && "table-pagination__btn--active")}
+        className={cx(styles["table-pagination__btn"], i === current && styles["table-pagination__btn--active"])}
         onClick={() => setCurrent(() => i)}
       >
         {i + 1}
@@ -443,7 +444,7 @@ function buildPageButtons(
       <button
         key={v}
         type="button"
-        className={cx("table-pagination__btn", v === current && "table-pagination__btn--active")}
+        className={cx(styles["table-pagination__btn"], v === current && styles["table-pagination__btn--active"])}
         onClick={() => setCurrent(() => v)}
       >
         {v + 1}
@@ -451,7 +452,7 @@ function buildPageButtons(
     );
   const addEllipsis = (key: string) =>
     pages.push(
-      <span key={key} className="table-pagination__btn" style={{ border: "none", background: "none", cursor: "default" }}>
+      <span key={key} className={styles["table-pagination__btn"]} style={{ border: "none", background: "none", cursor: "default" }}>
         …
       </span>,
     );
