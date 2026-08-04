@@ -12,8 +12,15 @@ let app: ElectronApplication
 let win: Page
 let userData: string
 
+// Launch via the app directory ('.'), NOT the built entry file. Electron derives
+// `app.getAppPath()` from this arg: pointing at `out/main/index.js` makes appPath
+// `<root>/out/main`, so db/index.ts's `join(app.getAppPath(), 'src/main/db/migrations')`
+// resolves to a non-existent path and drizzle's migrate() throws "Can't find
+// meta/_journal.json" — aborting app.whenReady() before createWindow() ever runs.
+// Passing '.' makes Electron read package.json's `main`, giving appPath = package root,
+// which is what both `electron-vite dev` and the packaged build already produce.
 const launch = (): Promise<ElectronApplication> =>
-  electron.launch({ args: ['out/main/index.js'], env: { ...process.env, NF_USER_DATA_DIR: userData } })
+  electron.launch({ args: ['.'], env: { ...process.env, NF_USER_DATA_DIR: userData } })
 
 test.beforeAll(async () => {
   userData = mkdtempSync(join(tmpdir(), 'nf-e2e-'))

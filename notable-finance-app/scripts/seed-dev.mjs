@@ -1,7 +1,13 @@
-// Dev-only seeder for the LOCAL reference cache (accounts).
+// Dev-only seeder for the LOCAL reference cache (accounts + expense categories).
 // These are read-only in the app (maintained in Notion; pulled in Phase 3) — this script
 // stands in for that pull during offline development. Idempotent: skips rows that exist.
 // Usage: pnpm --filter notable-finance-app seed   (run the app once first so the DB exists)
+//
+// Every seeded row gets a placeholder notion_page_id: pickers across the app (accounts.tsx,
+// finance-data-context.tsx, chat/draft-card.tsx) filter accounts to `notionSynced` — true
+// only when notion_page_id is non-empty — specifically to hide ad-hoc local test accounts
+// created without ever syncing. Since this script stands in for a real Notion pull, its rows
+// need to look synced too, or they're silently invisible everywhere despite existing in the DB.
 import { DatabaseSync } from 'node:sqlite'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -31,16 +37,30 @@ const ACCOUNTS = [
   { name: 'Visa Platinum', type: 'Credit Account', starting: 0, limit: 50000 }
 ]
 
+const EXPENSE_CATEGORIES = ['Food', 'Transportation', 'Utilities', 'Entertainment']
+
 let added = 0
 
 const accSelect = db.prepare('SELECT id FROM accounts WHERE account_name = ?')
 const accInsert = db.prepare(
-  `INSERT INTO accounts (id, account_name, account_type, starting_balance, credit_limit, inactive, created_at)
-   VALUES (?, ?, ?, ?, ?, 0, ?)`
+  `INSERT INTO accounts (id, notion_page_id, account_name, account_type, starting_balance, credit_limit, inactive, created_at)
+   VALUES (?, ?, ?, ?, ?, ?, 0, ?)`
 )
 for (const a of ACCOUNTS) {
   if (!accSelect.get(a.name)) {
-    accInsert.run(randomUUID(), a.name, a.type, a.starting, a.limit, now)
+    accInsert.run(randomUUID(), `seed-${randomUUID()}`, a.name, a.type, a.starting, a.limit, now)
+    added++
+  }
+}
+
+const catSelect = db.prepare('SELECT id FROM expense_categories WHERE name = ?')
+const catInsert = db.prepare(
+  `INSERT INTO expense_categories (id, notion_page_id, name, monthly_budget, auxiliary, created_at)
+   VALUES (?, ?, ?, 0, 0, ?)`
+)
+for (const name of EXPENSE_CATEGORIES) {
+  if (!catSelect.get(name)) {
+    catInsert.run(randomUUID(), `seed-${randomUUID()}`, name, now)
     added++
   }
 }

@@ -8,9 +8,12 @@ let app: ElectronApplication
 let win: Page
 let userData: string
 
+// See the note in app.spec.ts: launch via the app directory so `app.getAppPath()` is the
+// package root (matching dev + packaged), not `<root>/out/main` — otherwise the drizzle
+// migrations folder can't be found and no window is ever created.
 const launch = (): Promise<ElectronApplication> =>
   electron.launch({
-    args: ['out/main/index.js'],
+    args: ['.'],
     env: { ...process.env, NF_USER_DATA_DIR: userData },
   })
 
@@ -149,8 +152,11 @@ async function createTestExpense() {
   await expect(win.locator('.modal-panel')).toBeVisible({ timeout: 5_000 })
   const descInput = win.locator('.modal-panel input').first()
   await descInput.fill('E2E Test Expense')
+  // Today's date, not a hardcoded one — the Expense page's default Monthly view only
+  // shows the currently-selected month, so a fixed past date silently ages out of view.
+  const todayIso = new Date().toISOString().slice(0, 10)
   const purchaseDateInput = win.locator('.modal-panel input[type="date"]').first()
-  await purchaseDateInput.fill('2026-07-15')
+  await purchaseDateInput.fill(todayIso)
   await selectFilterDropdownItem(0, 'BPI Savings')
   await selectFilterDropdownItem(1, 'Food')
   const amountInput = win.locator('.modal-panel input[inputMode="decimal"]')
