@@ -1,0 +1,294 @@
+/* ── Financial action card (confirm card) ───────────────────────────── */
+.chat-action-card {
+  align-self: stretch;
+  /* Must not shrink: `overflow: hidden` below zeroes this item's automatic
+     minimum size, so without this the card collapses to a 1px line. */
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 768px;
+  margin: 2px auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 4%, var(--surface)),
+    var(--surface)
+  );
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: chat-fade-up 0.3s ease both;
+}
+
+
+.chat-action-card[data-status="needs_input"] {
+  border-color: color-mix(in srgb, var(--amber) 45%, var(--line-strong));
+}
+
+
+
+.chat-action-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+
+.chat-action-card__icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+
+.chat-action-card__heading {
+  min-width: 0;
+  flex: 1;
+}
+
+
+.chat-action-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.chat-action-card__ref {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+}
+
+
+.chat-action-card__badge {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+
+.chat-action-card__badge--ready {
+  background: var(--green-soft);
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 25%, transparent);
+}
+
+
+.chat-action-card__badge--blocked {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent);
+}
+
+
+
+.chat-action-card__body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+.chat-action-card__label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+
+.chat-action-card__amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+
+.chat-action-card__amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+
+.chat-action-card__currency {
+  font-size: 14px;
+  color: var(--ink-muted);
+  margin-right: 6px;
+}
+
+
+.chat-action-card__missing {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--rose-soft);
+  color: var(--rose);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+.chat-action-card__warn {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 13px;
+}
+
+
+
+.chat-action-card__form {
+  padding: 14px 18px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+
+.chat-field-row {
+  display: flex;
+  gap: 10px;
+}
+
+
+.chat-field-row > .chat-field {
+  flex: 1;
+  min-width: 0;
+}
+
+
+.chat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+
+.chat-field__label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+
+.chat-field__input {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+
+.chat-field__input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent, var(--green)) 55%, var(--line));
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--accent, var(--green)) 18%, transparent);
+}
+
+
+.chat-field__input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+select.chat-field__input {
+  appearance: none;
+  cursor: pointer;
+}
+
+
+
+.chat-action-card__foot {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--line);
+}
+
+
+.chat-action-card__approve,
+.chat-action-card__deny {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+}
+
+
+.chat-action-card__approve {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--green) 78%, #000),
+    var(--green)
+  );
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--green) 30%, transparent);
+}
+
+
+.chat-action-card__deny {
+  background: var(--rose-soft);
+  color: var(--rose);
+  border: 1px solid color-mix(in srgb, var(--rose) 25%, transparent);
+}
+
+
+.chat-action-card__approve:hover:not(:disabled),
+.chat-action-card__deny:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+
+.chat-action-card__approve:active:not(:disabled),
+.chat-action-card__deny:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+
+.chat-action-card__approve:disabled,
+.chat-action-card__deny:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}

@@ -1,0 +1,233 @@
+[data-theme="dark"] .receipt {
+  background: #292524;
+  color: #fafaf9;
+}
+
+[data-theme="dark"] .receipt__brand,
+[data-theme="dark"] .receipt__tagline,
+[data-theme="dark"] .receipt__meta {
+  color: #d6d3d1;
+}
+
+[data-theme="dark"] .receipt__rule {
+  border-top-color: #57534e;
+}
+
+[data-theme="dark"] .receipt__table th {
+  border-bottom-color: #fafaf9;
+  color: #fafaf9;
+}
+
+[data-theme="dark"] .receipt__table td {
+  border-bottom-color: #57534e;
+  color: #d6d3d1;
+}
+
+[data-theme="dark"] .receipt__table tfoot td {
+  border-top-color: #fafaf9;
+}
+
+/* ── Receipt ───────────────────────────────────────────────────────── */
+.receipt {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  color: #1c1917;
+  padding: 26px 24px;
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(28, 25, 23, 0.12);
+  font-family: var(--font-mono);
+}
+
+
+.receipt__head {
+  text-align: center;
+}
+
+
+.receipt__brand {
+  margin: 0;
+  font-family: var(--font-brand);
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+
+
+.receipt__tagline {
+  margin: 2px 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #79716b;
+}
+
+
+.receipt__meta {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #44403c;
+}
+
+
+.receipt__rule {
+  height: 0;
+  border-top: 1px dashed #d6d3d1;
+  margin: 14px 0;
+}
+
+
+.receipt__table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+
+.receipt__col-date { width: 104px; }
+
+
+.receipt__col-amount { width: 92px; }
+
+
+.receipt__col-desc { }
+
+
+.receipt__table th {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #1c1917;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.receipt__table td {
+  padding: 5px 6px;
+  border-bottom: 1px dotted #e7e5e4;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+
+.receipt__date {
+  white-space: nowrap;
+}
+
+
+.receipt__amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+
+.receipt__table tfoot td {
+  border-top: 1px solid #1c1917;
+  border-bottom: none;
+  font-weight: 600;
+  padding-top: 8px;
+}
+
+
+.receipt__empty {
+  text-align: center;
+  color: #79716b;
+  padding: 14px 0;
+}
+
+
+.receipt__disclaimer {
+  margin: 0;
+  text-align: center;
+  font-size: 10.5px;
+  color: #79716b;
+  line-height: 1.5;
+}
+
+/* ── Receipt installment breakdown layout ─────────────────────────── */
+.receipt--installment {
+  max-width: 640px;
+}
+
+
+.receipt__breakdowns {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+
+.receipt__breakdown {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+
+.receipt__breakdown-label {
+  white-space: nowrap;
+}
+
+
+.receipt__breakdown-label--indent {
+  padding-left: 20px;
+}
+
+
+.receipt__breakdown-dots {
+  border-bottom: 1px dotted #d6d3d1;
+  height: 1px;
+  margin: 0 4px;
+  min-width: 12px;
+  align-self: end;
+  margin-bottom: 3px;
+}
+
+
+.receipt__breakdown-value {
+  white-space: nowrap;
+  text-align: right;
+}
+
+
+.receipt__breakdown-value--green {
+  color: #16a34a;
+}
+
+
+.receipt__breakdown-value--red {
+  color: #dc2626;
+}
+
+
+.receipt__breakdown-divider {
+  grid-column: 1 / -1;
+  height: 0;
+  border-top: 1px dashed #d6d3d1;
+  margin: 10px 0;
+}
+
+
+.receipt__breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+/* Scoped printing: the .print-root wrapper and .is-printing body class are
+   global literals (see lib/export-node.ts), so they stay unscoped here. */
+@media print {
+  :global(body.is-printing) :global(.print-root) .receipt,
+  :global(body.is-printing) :global(.print-root) :global(.insight-shot) {
+    max-width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0 auto;
+  }
+}
