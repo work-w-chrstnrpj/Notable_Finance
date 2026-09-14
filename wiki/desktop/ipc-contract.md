@@ -32,7 +32,7 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `hardDelete(id)` | `true` (local row removed; Notion page queued for trash/archive on push) |
 
 ### `window.api.expenses`
-`list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields).
+`list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields). List params include `paymentStatus` (`Paid` | `Unpaid` | `Installment` | `Cancelled`) alongside account/category/pasabuyer/view-mode filters.
 
 ### `window.api.expenseScheduler`
 `list()`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)`, `generate(id)` (materialize a scheduled expense).

@@ -15,6 +15,8 @@ import {
   getExpenseStatusFromDatePaid,
   getMoneyValueTone,
   getNormalIncomeCategories,
+  getSavingsIncomeRecords,
+  getSavingsKeptAsideTotal,
   getWorkflowFixedCategory,
   incomeTransactionOnlyFields,
   isExpenseRecordInViewScope,
@@ -113,6 +115,42 @@ describe("finance frontend rules", () => {
     expect(getWorkflowFixedCategory("transfer")).toBe("Transfer");
     expect(getWorkflowFixedCategory("credit-card-payment")).toBe("Credit Card Payment");
     expect(getWorkflowFixedCategory("alkansya")).toBe("Savings");
+  });
+
+  it("totals Savings-category income as a kept-aside absolute for the scoped period", () => {
+    const records: IncomeRecord[] = [
+      {
+        id: "sav-july",
+        name: "July Alkansya",
+        date: "2026-07-10",
+        grossIncome: -2000,
+        capitalExpenditure: 0,
+        accountId: "acct-bdo-checking",
+        categoryId: "inc-savings",
+      },
+      {
+        id: "sav-june",
+        name: "June Alkansya",
+        date: "2026-06-10",
+        grossIncome: -500,
+        capitalExpenditure: 0,
+        accountId: "acct-bdo-checking",
+        categoryId: "inc-savings",
+      },
+      {
+        id: "job",
+        name: "July Salary",
+        date: "2026-07-15",
+        grossIncome: 85000,
+        capitalExpenditure: 0,
+        accountId: "acct-bdo-checking",
+        categoryId: "inc-employment",
+      },
+    ];
+    const july = records.filter((record) => record.date.startsWith("2026-07"));
+    const savings = getSavingsIncomeRecords(july, testIncomeCategories);
+    expect(savings.map((record) => record.id)).toEqual(["sav-july"]);
+    expect(getSavingsKeptAsideTotal(savings)).toBe(2000);
   });
 
   it("treats monthly monitoring as read-only in normal app flows", () => {

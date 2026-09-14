@@ -10,12 +10,12 @@ import { PageToolbar } from "@/components/ui";
 import { CategoryIcon } from "@/components/ui/accounts";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
-import { useIncomes, useExpenses } from "@/lib/use-data";
+import { useAlkansya, useExpenses, useIncomes } from "@/lib/use-data";
 import { useFabRegister } from "@/lib/fab-export-context";
 import { SHOT_HIDE_CLASS } from "@/lib/export-node";
 import { cx, getExpenseTotal, getIncomeCapitalExpenditureTotal, getIncomeGrossTotal, getIncomeNetTotal, getMonthLabel, parseNumberInput } from "@/lib/finance-helpers";
 import { anchorMonth } from "@/lib/date-range";
-import { calculateCategoryTotalOverview } from "@/lib/finance-rules";
+import { calculateCategoryTotalOverview, getSavingsKeptAsideTotal } from "@/lib/finance-rules";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { usePersistedFilters } from "@/features/records/use-persisted-filters";
@@ -108,6 +108,9 @@ function MonthlyMonitoringPage({
 
   const { state: incomesState } = useIncomes({ rangeStart: range.start, rangeEnd: range.end });
   const { state: expensesState } = useExpenses({ rangeStart: range.start, rangeEnd: range.end });
+  // Alkansya is the Savings-category income view. Scoped to the same period as
+  // the other monitoring metrics so Monthly/Quarterly/Annual stay aligned.
+  const { state: alkansyaState } = useAlkansya({ rangeStart: range.start, rangeEnd: range.end });
 
   usePersistedFilters({
     ready: settingsReady,
@@ -216,6 +219,10 @@ function MonthlyMonitoringPage({
   const scopedIncomeRecords: IncomeRecord[] = (
     incomesState.status === "success" ? incomesState.data : []
   ).filter((record) => !record.name?.includes("[Deleted:"));
+  const periodSavingsRecords: IncomeRecord[] = (
+    alkansyaState.status === "success" ? alkansyaState.data : []
+  ).filter((record) => !record.name?.includes("[Deleted:"));
+  const periodSavingsTotal = getSavingsKeptAsideTotal(periodSavingsRecords);
 
   const scopedExpenseRecords: ExpenseRecord[] = (
     expensesState.status === "success" ? expensesState.data : []
@@ -412,7 +419,7 @@ function MonthlyMonitoringPage({
           tone="rose"
         />
         <MetricCard title="Gross Margin" value={formatMoney(monitoring.grossMargin)} detail="Income less expenses" icon={CircleDollarSign} tone="blue" />
-        <MetricCard title="For Savings" value={formatMoney(monitoring.forSavings)} detail={`${pct(split.savingsPct)}% allocation`} icon={PiggyBank} tone="amber" />
+        <MetricCard title="Savings" value={formatMoney(periodSavingsTotal)} detail={rangeLbl} icon={PiggyBank} tone="amber" />
       </section>
       <section className="two-column">
         <Panel
@@ -425,9 +432,9 @@ function MonthlyMonitoringPage({
             </span>
           }
         >
-          <BudgetRow label="Needs" percent={pct(split.needsPct)} amount={monitoring.forNeeds} />
-          <BudgetRow label="Wants" percent={pct(split.wantsPct)} amount={monitoring.forWants} />
-          <BudgetRow label="Savings" percent={pct(split.savingsPct)} amount={monitoring.forSavings} />
+          <BudgetRow label="For Needs" percent={pct(split.needsPct)} amount={monitoring.forNeeds} />
+          <BudgetRow label="For Wants" percent={pct(split.wantsPct)} amount={monitoring.forWants} />
+          <BudgetRow label="For Savings" percent={pct(split.savingsPct)} amount={monitoring.forSavings} />
         </Panel>
         <Panel title={`${period} Insight`}>
           {(() => {

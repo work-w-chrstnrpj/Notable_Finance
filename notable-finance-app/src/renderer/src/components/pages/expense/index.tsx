@@ -70,6 +70,7 @@ function ExpensePage({
   const [accountFilterId, setAccountFilterId] = useState("");
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState("");
   const [pasabuyerFilter, setPasabuyerFilter] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
   const isAnnual = viewMode === "Annually";
@@ -150,17 +151,19 @@ function ExpensePage({
       setAccountFilterId(f.accountFilterId);
       setExpenseCategoryFilter(f.expenseCategoryFilter);
       setPasabuyerFilter(f.pasabuyerFilter);
+      setPaymentStatusFilter(f.paymentStatusFilter ?? "");
       setFilterActive(f.filterActive);
       setAnnualView(f.annualView);
       setGroupBy(f.groupBy);
     },
-    values: [accountFilterId, expenseCategoryFilter, pasabuyerFilter, filterActive, annualView, groupBy],
+    values: [accountFilterId, expenseCategoryFilter, pasabuyerFilter, paymentStatusFilter, filterActive, annualView, groupBy],
     persist: () => {
       void updateSettings({
         expenseFilters: {
           accountFilterId,
           expenseCategoryFilter,
           pasabuyerFilter,
+          paymentStatusFilter,
           filterActive,
           annualView,
           groupBy,
@@ -172,15 +175,15 @@ function ExpensePage({
     () => ({
       rangeStart: expenseRange?.start,
       rangeEnd: expenseRange?.end,
-      // Account/category/pasabuyer filters only apply while the filter panel is
-      // active. Otherwise a value left selected before toggling the panel off
-      // would silently hide records with the control hidden from view.
+      // Account/category/pasabuyer/payment-status filters only apply while the
+      // filter panel is active. Otherwise a value left selected before toggling
+      // the panel off would silently hide records with the control hidden.
       accountId: filterActive ? accountFilterId || undefined : undefined,
       categoryId:
         filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
           ? expenseCategoryFilter
           : undefined,
-      paymentStatus: undefined,
+      paymentStatus: filterActive ? paymentStatusFilter || undefined : undefined,
       pasabuyer: filterActive ? pasabuyerFilter || undefined : undefined,
       expenseViewMode: viewMode,
     }),
@@ -191,6 +194,7 @@ function ExpensePage({
       accountFilterId,
       expenseCategoryFilter,
       pasabuyerFilter,
+      paymentStatusFilter,
       viewMode,
     ],
   );
@@ -531,6 +535,7 @@ function ExpensePage({
       setAccountFilterId("");
       setExpenseCategoryFilter("");
       setPasabuyerFilter("");
+      setPaymentStatusFilter("");
     }
     setFilterActive((f) => !f);
   }, !modalOpen);
@@ -581,6 +586,8 @@ function ExpensePage({
         setExpenseCategoryFilter={setExpenseCategoryFilter}
         pasabuyerFilter={pasabuyerFilter}
         setPasabuyerFilter={setPasabuyerFilter}
+        paymentStatusFilter={paymentStatusFilter}
+        setPaymentStatusFilter={setPaymentStatusFilter}
         annualView={annualView}
         setAnnualView={setAnnualView}
         groupBy={groupBy}

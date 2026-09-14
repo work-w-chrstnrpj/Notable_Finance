@@ -280,7 +280,6 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           {activeSection === "dashboard" && (
             <ErrorBoundary sectionLabel="Dashboard">
               <DashboardPage
-                lastSync={lastSync}
                 selectedMonth={selectedMonth}
               />
             </ErrorBoundary>

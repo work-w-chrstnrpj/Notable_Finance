@@ -459,6 +459,7 @@ export interface UiExpenseFilters {
   accountFilterId: string
   expenseCategoryFilter: string
   pasabuyerFilter: string
+  paymentStatusFilter: string
   filterActive: boolean
   annualView: 'table' | 'chart'
   groupBy: 'month' | 'account' | 'category'

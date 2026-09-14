@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
-import { screen, waitForElementToBeRemoved, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, waitForElementToBeRemoved, within } from "@testing-library/react";
 import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { ExpensePage } from "./expense";
@@ -97,5 +97,37 @@ describe("ExpensePage", () => {
     await waitForElementToBeRemoved(() => screen.queryByText("Querying Notion…"));
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.queryByText("Grocery Run")).not.toBeInTheDocument();
+  });
+
+  it("shows a Payment Status filter when the filter panel is open", async () => {
+    const list = vi.fn(async () => ok([expenseRecord]));
+    renderPage(
+      <ExpensePage viewMode="Monthly" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      {
+        apiOverrides: {
+          accounts: { list: vi.fn(async () => ok([account])) },
+          categories: {
+            income: vi.fn(async () => ok([])),
+            expense: vi.fn(async () => ok([category])),
+          },
+          expenses: { list },
+        },
+      },
+    );
+
+    expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    const paymentStatus = screen.getByRole("combobox");
+    expect(within(paymentStatus).getByText("All payment statuses")).toBeInTheDocument();
+    expect(within(paymentStatus).getByText("Paid")).toBeInTheDocument();
+    expect(within(paymentStatus).getByText("Unpaid")).toBeInTheDocument();
+    expect(within(paymentStatus).getByText("Installment")).toBeInTheDocument();
+    expect(within(paymentStatus).getByText("Cancelled")).toBeInTheDocument();
+
+    fireEvent.change(paymentStatus, { target: { value: "Unpaid" } });
+    await waitFor(() => {
+      expect(list).toHaveBeenCalledWith(expect.objectContaining({ paymentStatus: "Unpaid" }));
+    });
   });
 });

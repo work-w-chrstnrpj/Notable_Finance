@@ -59,7 +59,9 @@
 }[data-theme="dark"] .filter-toggle:hover {
   background: var(--surface-muted);
   color: var(--ink);
-}[data-theme="dark"] .filter-toggle--active {
+}[data-theme="dark"] .filter-toggle--active,
+[data-theme="dark"] .icon-button.search-toggle--active,
+[data-theme="dark"] .search-toggle--active {
   background: var(--blue-soft);
   color: var(--blue);
   border-color: var(--blue);

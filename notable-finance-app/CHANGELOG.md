@@ -5,6 +5,22 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-14
+
+### Changed
+
+- **Monitoring:** The fourth metric card is now **Savings** — the kept-aside total of Alkansya income records (Savings category) in the selected period — instead of the Needs/Wants/Savings allocation amount previously labelled "For Savings".
+- **Monitoring Budget Allocation:** Row labels are **For Needs**, **For Wants**, and **For Savings**.
+- **Dashboard:** The former **Sync Queue** card is now **Savings** for the selected month (Alkansya/Savings income in that month). All-time Alkansya Balance is unchanged. The real pending-sync count remains in the top bar.
+
+### Fixed
+
+- **Expense search toggle:** The search button now uses the same active color as the show/hide filter button (including dark theme).
+
+### Added
+
+- **Expense filters:** A Payment Status filter (Paid, Unpaid, Installment, Cancelled) in the expense filter row, persisted with the other expense filters.
+
 ## [2.0.0] - 2026-08-05
 
 **No functional changes.** This release is a complete internal restructuring of the

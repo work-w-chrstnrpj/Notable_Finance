@@ -73,4 +73,13 @@ describe('normalizeUiSettings', () => {
         .pushFabAutoHideMs
     ).toBe(180_000)
   })
+
+  it('keeps a persisted expense payment-status filter', () => {
+    const next = normalizeUiSettings({
+      expenseFilters: { paymentStatusFilter: 'Unpaid', filterActive: true }
+    })
+    expect(next.expenseFilters.paymentStatusFilter).toBe('Unpaid')
+    expect(next.expenseFilters.filterActive).toBe(true)
+    expect(normalizeUiSettings({}).expenseFilters.paymentStatusFilter).toBe('')
+  })
 })

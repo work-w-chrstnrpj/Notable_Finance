@@ -40,6 +40,8 @@ describe("Income search toggle", () => {
     await renderIncome();
     openSearch();
 
+    expect(screen.getByRole("button", { name: "Close search" })).toHaveClass("search-toggle--active");
+
     fireEvent.change(screen.getByPlaceholderText("Search income..."), {
       target: { value: "Consulting" },
     });

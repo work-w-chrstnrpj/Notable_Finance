@@ -110,6 +110,35 @@ export function getWorkflowFixedCategory(section: FinanceSectionId) {
   return transactionWorkflowCategories[section as WorkflowSectionId];
 }
 
+export function isSavingsIncomeCategorySource(source: string) {
+  return source.toLowerCase() === (transactionWorkflowCategories.alkansya ?? "Savings").toLowerCase();
+}
+
+export function getSavingsIncomeRecords(
+  records: IncomeRecord[],
+  categories: Array<{ id: string; source: string }>,
+) {
+  const ids = new Set(
+    categories.filter((category) => isSavingsIncomeCategorySource(category.source)).map((category) => category.id),
+  );
+  return records.filter((record) => ids.has(record.categoryId));
+}
+
+/**
+ * Alkansya amounts are stored negative (moved aside for safekeeping).
+ * Display the kept-aside total as a positive figure.
+ */
+export function getSavingsKeptAsideTotal(records: IncomeRecord[]) {
+  return roundMoney(
+    Math.abs(
+      records.reduce(
+        (sum, record) => sum + calculateNetIncome(record.grossIncome, record.capitalExpenditure),
+        0,
+      ),
+    ),
+  );
+}
+
 export function isMonthlyMonitoringEditable(section: FinanceSectionId) {
   return section !== "monthly-monitoring";
 }

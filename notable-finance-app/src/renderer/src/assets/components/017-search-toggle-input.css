@@ -8,8 +8,15 @@
   background: var(--surface-muted);
   color: var(--ink);
 }
-.search-toggle--active {
+.search-toggle--active,
+.icon-button.search-toggle--active {
+  /* Match FilterToggle's active fill so Search is visibly "on" in light and dark. */
   color: var(--blue);
   background: var(--blue-soft);
   border-color: var(--blue);
+}
+.search-toggle--active:hover,
+.icon-button.search-toggle--active:hover {
+  color: var(--blue);
+  filter: brightness(1.06);
 }

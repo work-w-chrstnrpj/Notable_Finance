@@ -9,7 +9,7 @@ import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
-import { pasabuyerLabels } from "@/lib/finance-rules";
+import { pasabuyerLabels, paymentStatusLabels } from "@/lib/finance-rules";
 import { expenseCategoryFilterWithoutPasabuy, type AnnualGroupBy } from "@/components/constants";
 import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance";
 
@@ -36,6 +36,8 @@ export function ExpenseToolbar({
   setExpenseCategoryFilter,
   pasabuyerFilter,
   setPasabuyerFilter,
+  paymentStatusFilter,
+  setPaymentStatusFilter,
   annualView,
   setAnnualView,
   groupBy,
@@ -60,6 +62,8 @@ export function ExpenseToolbar({
   setExpenseCategoryFilter: (value: string) => void;
   pasabuyerFilter: string;
   setPasabuyerFilter: (value: string) => void;
+  paymentStatusFilter: string;
+  setPaymentStatusFilter: (value: string) => void;
   annualView: "table" | "chart";
   setAnnualView: (value: "table" | "chart") => void;
   groupBy: AnnualGroupBy;
@@ -80,6 +84,7 @@ export function ExpenseToolbar({
                   setAccountFilterId("");
                   setExpenseCategoryFilter("");
                   setPasabuyerFilter("");
+                  setPaymentStatusFilter("");
                 }
                 setFilterActive((prev) => !prev);
               }}
@@ -144,6 +149,16 @@ export function ExpenseToolbar({
                   ))}
                 </FilterSelect>
               )}
+              <FilterSelect
+                placeholder="All payment statuses"
+                placeholderDisabled={false}
+                value={paymentStatusFilter}
+                onChange={setPaymentStatusFilter}
+              >
+                {paymentStatusLabels.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </FilterSelect>
             </>
           )}
           {searchActive && (

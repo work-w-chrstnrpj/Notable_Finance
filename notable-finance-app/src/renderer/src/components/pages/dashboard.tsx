@@ -1,5 +1,5 @@
 
-import { AlertTriangle, ArrowDownLeft, ArrowUpRight, ArrowUpDown, Banknote, CreditCard, PiggyBank, Receipt, RefreshCw, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowDownLeft, ArrowUpRight, ArrowUpDown, Banknote, CreditCard, PiggyBank, Receipt, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { EmptyState } from "@/components/ui";
@@ -9,15 +9,14 @@ import { categoryPalette, prototypeAccent } from "@/components/constants";
 import { useExpenses, useIncomes, useWorkflowRecords } from "@/lib/use-data";
 import { cx, getMonthLabel } from "@/lib/finance-helpers";
 import { formatMoney } from "@/lib/format";
+import { getSavingsKeptAsideTotal } from "@/lib/finance-rules";
 import type { ExpenseRecord, IncomeRecord } from "@/types/finance";
 import { SpendingBreakdownCard } from "@/components/charts";
 import styles from "./dashboard.module.css";
 
 function DashboardPage({
-  lastSync,
   selectedMonth,
 }: {
-  lastSync: string;
   selectedMonth: string;
 }) {
   const {
@@ -88,6 +87,9 @@ function DashboardPage({
   // show the absolute kept-aside total.
   const alkansyaBalance = Math.abs(
     allAlkansya.reduce((sum, r) => sum + (r.grossIncome - r.capitalExpenditure), 0),
+  );
+  const monthSavingsTotal = getSavingsKeptAsideTotal(
+    allAlkansya.filter((r) => r.date.startsWith(selectedMonth)),
   );
 
   const totalCashFlow = nonCreditActiveAccounts.reduce(
@@ -218,8 +220,7 @@ function DashboardPage({
     monthlyGrossIncome,
     monthlyExpenses,
     alkansyaBalance,
-    pendingOperations: monthExpenses.filter((r) => r.datePaid === null).length,
-    lastSync,
+    monthSavingsTotal,
     availableCredit,
     creditLimit,
     creditBalanceTotal,
@@ -276,10 +277,10 @@ function DashboardPage({
           tone="rose"
         />
         <MetricCard
-          title="Sync Queue"
-          value={`${display.pendingOperations}`}
-          detail={`Last sync ${display.lastSync}`}
-          icon={RefreshCw}
+          title="Savings"
+          value={formatMoney(display.monthSavingsTotal)}
+          detail={monthLabel}
+          icon={PiggyBank}
           tone="amber"
         />
       </section>

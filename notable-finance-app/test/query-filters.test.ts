@@ -113,6 +113,20 @@ describe('filterExpensesByQuery view modes', () => {
     expect(out.map((r) => r.id)).toEqual(['food'])
   })
 
+  it('paymentStatus filters after view-mode scoping', () => {
+    const records = [
+      expense({ id: 'unpaid', datePaid: null, paymentStatus: 'Unpaid', purchaseDate: '2026-07-01' }),
+      expense({ id: 'paid', datePaid: '2026-07-01', paymentStatus: 'Paid', purchaseDate: '2026-07-02' }),
+      expense({ id: 'cancel', paymentStatus: 'Cancelled', purchaseDate: '2026-07-03' })
+    ]
+    const out = filterExpensesByQuery(
+      records,
+      { month: '2026-07', paymentStatus: 'Paid' },
+      ctx
+    )
+    expect(out.map((r) => r.id)).toEqual(['paid'])
+  })
+
   it('calendar mode uses range over month', () => {
     const records = [
       expense({ id: 'in', purchaseDate: '2026-07-10' }),
