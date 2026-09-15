@@ -54,4 +54,22 @@ describe("WorkflowPage", () => {
       }
     });
   }
+
+  it.each(["credit-card-payment", "alkansya", "receivables"] as const)(
+    "shows a Total Amount footer on %s",
+    async (section) => {
+      const { unmount } = renderWorkflow(section);
+      const table = await screen.findByRole("table");
+      const footer = table.querySelector("tfoot");
+      expect(footer).not.toBeNull();
+      expect(within(footer as HTMLElement).getByText("Total")).toBeInTheDocument();
+      unmount();
+    },
+  );
+
+  it("does not show a Total Amount footer on transfer", async () => {
+    renderWorkflow("transfer");
+    const table = await screen.findByRole("table");
+    expect(table.querySelector("tfoot")).toBeNull();
+  });
 });

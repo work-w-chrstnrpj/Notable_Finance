@@ -218,4 +218,35 @@ export class NotionClient {
   async deleteBlock(blockId: string): Promise<void> {
     await this.request('DELETE', `/v1/blocks/${blockId}`)
   }
+
+  /**
+   * All related page ids for a relation property. Database query responses only
+   * embed the first 25; this paginates Retrieve a page property until complete.
+   */
+  async getPageRelationIds(pageId: string, propertyId: string): Promise<string[]> {
+    const ids: string[] = []
+    let cursor: string | undefined
+    do {
+      const qs = new URLSearchParams({
+        page_size: '100',
+        ...(cursor ? { start_cursor: cursor } : {})
+      })
+      const page = await this.request<{
+        results?: Array<{ relation?: { id?: string } }>
+        relation?: { id?: string }
+        has_more?: boolean
+        next_cursor?: string | null
+      }>('GET', `/v1/pages/${pageId}/properties/${encodeURIComponent(propertyId)}?${qs.toString()}`)
+      if (Array.isArray(page.results)) {
+        for (const item of page.results) {
+          const id = item.relation?.id
+          if (id) ids.push(id)
+        }
+      } else if (page.relation?.id) {
+        ids.push(page.relation.id)
+      }
+      cursor = page.has_more && page.next_cursor ? page.next_cursor : undefined
+    } while (cursor)
+    return ids
+  }
 }

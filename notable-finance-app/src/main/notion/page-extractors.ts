@@ -4,7 +4,7 @@
 // are returned as NOTION page ids — the pull engine translates them to local ids.
 import { NOTION_PROPERTY_NAMES } from './property-mapper'
 
-type Props = Record<string, unknown>
+export type Props = Record<string, unknown>
 
 function prop(props: Props, name: string): Record<string, unknown> | undefined {
   return props[name] as Record<string, unknown> | undefined
@@ -48,6 +48,20 @@ export function extractRelationFirst(props: Props, name: string): string | null 
 export function extractRelationAll(props: Props, name: string): string[] {
   const rel = prop(props, name)?.relation as Array<{ id?: string }> | undefined
   return rel?.map((r) => r.id ?? '').filter(Boolean) ?? []
+}
+
+/**
+ * Notion truncates relation arrays at 25 items and sets `has_more` when the rest
+ * must be fetched via Retrieve a page property.
+ */
+export function relationHasMore(props: Props, name: string): boolean {
+  return prop(props, name)?.has_more === true
+}
+
+/** Notion property id (short code), used to paginate truncated relations. */
+export function relationPropertyId(props: Props, name: string): string | null {
+  const id = prop(props, name)?.id
+  return typeof id === 'string' && id.length > 0 ? id : null
 }
 
 /** First file URL from a "files" property (Notion-hosted or external). */

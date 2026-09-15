@@ -32,7 +32,27 @@ export interface MergeResult {
 
 // null and undefined are the same "empty" for finance fields.
 const norm = (v: unknown): unknown => (v === undefined ? null : v)
-const eq = (a: unknown, b: unknown): boolean => Object.is(norm(a), norm(b))
+
+function asIdList(value: unknown): string[] | null {
+  if (value == null) return []
+  if (!Array.isArray(value)) return null
+  return value.map((item) => String(item))
+}
+
+/** Value equality: scalars via Object.is; relation id arrays by set (order-insensitive). */
+const eq = (a: unknown, b: unknown): boolean => {
+  const na = norm(a)
+  const nb = norm(b)
+  if (Object.is(na, nb)) return true
+  if (Array.isArray(na) || Array.isArray(nb)) {
+    const aa = asIdList(na)
+    const bb = asIdList(nb)
+    if (!aa || !bb || aa.length !== bb.length) return false
+    const other = new Set(bb)
+    return aa.every((id) => other.has(id))
+  }
+  return false
+}
 
 export function threeWayMerge(base: FieldMap, local: FieldMap, remote: FieldMap): MergeResult {
   const keys = new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)])

@@ -15,6 +15,7 @@ The core of the desktop app. It defines how the local SQLite store reconciles wi
 - `last_edited_time` is **rounded down to the minute** — unusable as a fine-grained ordering clock.
 - Rate limit ≈ **3 requests/second** (HTTP 429 on exceed) → incremental sync + a throttled queue with backoff.
 - The **Search** endpoint can sort/filter by `last_edited_time` → used to pull "what changed since cursor T".
+- **Relation properties embed at most 25 related pages.** When `has_more` is true (typical for a large `CC Payment Covered` list), pull paginates via Retrieve a page property. Pull also loads expenses before incomes so those ids can resolve locally, then unions any `CC Link Payment Receipt` reverse links onto the income.
 
 Because of the minute-rounding and missing field timestamps, **we do not rely on timestamps for correctness.** The base snapshot is primary; timestamps are only a coarse "did anything change" hint.
 

@@ -64,6 +64,25 @@ describe('threeWayMerge scenario matrix', () => {
     expect(r.outcome).toBe('noop')
   })
 
+  it('treats relation id arrays as equal regardless of instance or order', () => {
+    const b = { ccPaymentCoveredIds: ['a', 'b'] }
+    const r = threeWayMerge(b, { ccPaymentCoveredIds: ['b', 'a'] }, { ccPaymentCoveredIds: ['a', 'b'] })
+    expect(r.outcome).toBe('noop')
+  })
+
+  it('treats null and empty relation arrays as equal', () => {
+    const b = { ccPaymentCoveredIds: null as unknown }
+    const r = threeWayMerge(b, { ccPaymentCoveredIds: [] }, { ccPaymentCoveredIds: null })
+    expect(r.outcome).toBe('noop')
+  })
+
+  it('pulls when only the remote relation list grew', () => {
+    const b = { ccPaymentCoveredIds: ['a'] }
+    const r = threeWayMerge(b, { ccPaymentCoveredIds: ['a'] }, { ccPaymentCoveredIds: ['a', 'b'] })
+    expect(r.outcome).toBe('pull')
+    expect(r.merged.ccPaymentCoveredIds).toEqual(['a', 'b'])
+  })
+
   it('soft-delete vs edit conflicts on the overlapping field (per the scenario matrix)', () => {
     const b = { title: 'Groceries', amount: 100 }
     // Soft-delete rewrites the title AND zeroes the amount; remote also edited amount.

@@ -77,6 +77,24 @@ describe('pageToIncomeFields', () => {
     expect(f.is_transaction).toBe(1)
   })
 
+  it('extracts every CC Payment Covered relation id', () => {
+    const f = pageToIncomeFields({
+      id: 'i-cc',
+      properties: {
+        Name: title('[260912] CC Payment — EW'),
+        'Gross Income': num(7552.45),
+        'CC Payment Covered': {
+          id: 'prop-cc',
+          type: 'relation',
+          relation: [{ id: 'exp-1' }, { id: 'exp-2' }, { id: 'exp-3' }],
+          has_more: true
+        }
+      }
+    })
+    expect(f.cc_payment_covered_ids).toEqual(['exp-1', 'exp-2', 'exp-3'])
+    expect(f.is_transaction).toBe(1)
+  })
+
   it('is_transaction is 0 for a plain income', () => {
     const f = pageToIncomeFields({
       id: 'i2',

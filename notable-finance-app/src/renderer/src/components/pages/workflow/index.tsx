@@ -18,6 +18,7 @@ import {
   stripNotionTag,
   parseNumberInput,
   getMonthLabel,
+  getIncomeGrossTotal,
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
@@ -150,6 +151,8 @@ function WorkflowPage({
   const workflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
+  const enabledWorkflowRecords = workflowIncomes.filter((r) => !disabledIds.has(r.id));
+  const workflowAmountTotal = getIncomeGrossTotal(enabledWorkflowRecords);
 
 
   // ── Publish printable receipt for Receivables ──────────────────────
@@ -218,9 +221,34 @@ function WorkflowPage({
       formatDate(record.date),
       accountNameById.get(record.accountId ?? "") ?? "—",
       fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
-      <span className="num">{formatMoney(record.grossIncome)}</span>,
+      <span key={`${record.id}-amount`} className="num">
+        {formatMoney(record.grossIncome)}
+      </span>,
     ];
   });
+  const workflowFooterRows = isTransfer
+    ? []
+    : isCreditCardPayment
+      ? [
+          [
+            "Total",
+            "",
+            "",
+            <MoneyValue key="workflow-total-amount" value={workflowAmountTotal} />,
+            "",
+          ],
+        ]
+      : [
+          [
+            "Total",
+            "",
+            "",
+            "",
+            <span key="workflow-total-amount" className="num">
+              {formatMoney(workflowAmountTotal)}
+            </span>,
+          ],
+        ];
 
   function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -450,6 +478,7 @@ function WorkflowPage({
             bulkDeleteDanger={hardDeleteEnabled}
             headers={workflowHeaders}
             rows={workflowRows}
+            footerRows={workflowFooterRows}
             onRowClick={(recordId) => {
               const record = workflowIncomes.find((r) => r.id === recordId);
               if (record) {

@@ -1,5 +1,9 @@
 // Pull + reconcile engine (Phase 3 pull, upgraded with the Phase 4 three-way merge).
-// Order: reference caches first (so record relations translate to local ids), then records.
+// Order: reference caches first, then expenses, then incomes — so CC Payment Covered
+// (income → many expenses) can translate against a complete expense map. Expense
+// reverse links (CC Link Payment Receipt) that miss on first insert are resolved
+// after incomes exist. Notion relation properties embed at most 25 ids; truncated
+// CC Payment Covered relations are paginated via Retrieve a page property.
 //
 //   not found locally        → INSERT (fresh local id, notion_page_id, base_snapshot, clean)
 //   found → threeWayMerge(base_snapshot, local writable, remote writable):
@@ -34,8 +38,11 @@ import {
   expenseWritableFromRow,
   incomeWritableFromRow,
   writeExpenseWritable,
-  writeIncomeWritable
+  writeIncomeWritable,
+  type SyncState
 } from './writable'
+import { NOTION_PROPERTY_NAMES } from '../notion/property-mapper'
+import { expandRelationIds, uniqueSortedIds } from '../notion/relations'
 import { broadcast } from '../windows'
 import { recordActivity } from '../services/history'
 import { withSyncRun } from './run'
@@ -45,19 +52,107 @@ import type { PullResult } from '../../shared/finance.types'
 const now = (): number => Date.now()
 const pageId = (page: Record<string, unknown>): string => page.id as string
 
+function indexNotionId(map: Map<string, string>, notionPageId: string, localId: string): void {
+  map.set(notionPageId, localId)
+  const compact = notionPageId.replace(/-/g, '').toLowerCase()
+  if (compact) map.set(compact, localId)
+}
+
 function notionToLocal(table: string): Map<string, string> {
+  const map = new Map<string, string>()
   const rows = getSqlite()
     .prepare(`SELECT id, notion_page_id FROM ${table} WHERE notion_page_id IS NOT NULL`)
     .all() as Array<{ id: string; notion_page_id: string }>
-  return new Map(rows.map((r) => [r.notion_page_id, r.id]))
+  for (const row of rows) indexNotionId(map, row.notion_page_id, row.id)
+  return map
+}
+
+function lookupLocalId(map: Map<string, string>, notionId: string): string | undefined {
+  return map.get(notionId) ?? map.get(notionId.replace(/-/g, '').toLowerCase())
 }
 
 const localRelation = (map: Map<string, string>, notionId: string | null): string | null =>
-  notionId ? (map.get(notionId) ?? null) : null
+  notionId ? (lookupLocalId(map, notionId) ?? null) : null
 
 /** Translate an array of Notion relation ids to local ids (skipping unmapped). */
 const localRelationAll = (map: Map<string, string>, notionIds: string[]): string[] =>
-  notionIds.map((id) => map.get(id)).filter((id): id is string => id != null)
+  uniqueSortedIds(notionIds.map((id) => lookupLocalId(map, id)).filter((id): id is string => id != null))
+
+interface DeferredReceipt {
+  expenseLocalId: string
+  notionIncomeId: string
+}
+
+async function expandCcCoveredNotionIds(
+  page: Record<string, unknown>,
+  inlineIds: string[],
+  errors: string[]
+): Promise<string[]> {
+  try {
+    return await expandRelationIds(page, NOTION_PROPERTY_NAMES.incomes.ccPaymentCoveredId, inlineIds, (pageId, propertyId) =>
+      client().getPageRelationIds(pageId, propertyId)
+    )
+  } catch (error) {
+    errors.push(
+      `CC Payment Covered pagination for ${pageId(page)}: ${error instanceof Error ? error.message : String(error)}`
+    )
+    return uniqueSortedIds(inlineIds)
+  }
+}
+
+function resolveDeferredExpenseReceipts(deferred: DeferredReceipt[], incomeMap: Map<string, string>): void {
+  if (deferred.length === 0) return
+  for (const item of deferred) {
+    const incomeLocalId = lookupLocalId(incomeMap, item.notionIncomeId)
+    if (!incomeLocalId) continue
+    const row = getSqlite()
+      .prepare('SELECT * FROM expenses WHERE id = ?')
+      .get(item.expenseLocalId) as Record<string, unknown> | undefined
+    if (!row) continue
+    const local = expenseWritableFromRow(row)
+    if (local.ccLinkPaymentReceiptId === incomeLocalId) continue
+    // Don't overwrite a user-edited receipt on a dirty/conflict row.
+    const state = row.sync_state as SyncState
+    if ((state === 'dirty' || state === 'conflict') && local.ccLinkPaymentReceiptId) continue
+    const next: FieldMap = { ...local, ccLinkPaymentReceiptId: incomeLocalId }
+    const base =
+      state === 'clean'
+        ? next
+        : (JSON.parse((row.base_snapshot as string | null) ?? '{}') as FieldMap)
+    writeExpenseWritable(item.expenseLocalId, next, { base, syncState: state })
+  }
+}
+
+/** Dual-property backstop: expenses that point at an income belong in its covered list. */
+function unionCoveredFromReverseLinks(): void {
+  const db = getSqlite()
+  const reverse = db
+    .prepare(
+      `SELECT id, cc_link_payment_receipt_id FROM expenses
+       WHERE deleted = 0 AND cc_link_payment_receipt_id IS NOT NULL`
+    )
+    .all() as Array<{ id: string; cc_link_payment_receipt_id: string }>
+  const extra = new Map<string, string[]>()
+  for (const row of reverse) {
+    const list = extra.get(row.cc_link_payment_receipt_id) ?? []
+    list.push(row.id)
+    extra.set(row.cc_link_payment_receipt_id, list)
+  }
+  for (const [incomeId, expenseIds] of extra) {
+    const row = db.prepare('SELECT * FROM incomes WHERE id = ? AND sync_state = ?').get(incomeId, 'clean') as
+      | Record<string, unknown>
+      | undefined
+    if (!row) continue
+    const local = incomeWritableFromRow(row)
+    const current = Array.isArray(local.ccPaymentCoveredIds)
+      ? (local.ccPaymentCoveredIds as string[])
+      : []
+    const merged = uniqueSortedIds([...current, ...expenseIds])
+    if (merged.length === current.length && merged.every((id) => current.includes(id))) continue
+    const next: FieldMap = { ...local, ccPaymentCoveredIds: merged }
+    writeIncomeWritable(incomeId, next, { base: next, syncState: 'clean' })
+  }
+}
 
 // ── reference upserts (read-only caches) ────────────────────────────────────
 
@@ -241,7 +336,8 @@ async function pullIncomes(
   since: string | undefined,
   accountMap: Map<string, string>,
   categoryMap: Map<string, string>,
-  expenseMap: Map<string, string>
+  expenseMap: Map<string, string>,
+  errors: string[]
 ): Promise<RecordOutcome> {
   const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
@@ -249,6 +345,8 @@ async function pullIncomes(
 
   for (const page of pages) {
     const f = pageToIncomeFields(page)
+    const coveredNotionIds = await expandCcCoveredNotionIds(page, f.cc_payment_covered_ids, errors)
+    const coveredLocalIds = localRelationAll(expenseMap, coveredNotionIds)
     const remote: FieldMap = {
       name: f.title,
       date: f.date,
@@ -257,7 +355,7 @@ async function pullIncomes(
       accountId: localRelation(accountMap, f.account_id),
       categoryId: localRelation(categoryMap, f.category_id),
       transactedAccountId: localRelation(accountMap, f.transacted_account_id),
-      ccPaymentCoveredIds: localRelationAll(expenseMap, f.cc_payment_covered_ids)
+      ccPaymentCoveredIds: coveredLocalIds
     }
     const lastEdited = pageLastEditedTime(page)
     const npid = pageId(page)
@@ -275,7 +373,7 @@ async function pullIncomes(
       ).run(
         newId, npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
         remote.name, remote.grossIncome, remote.capitalExpenditure, remote.accountId, remote.categoryId,
-        remote.date, f.is_transaction, remote.transactedAccountId,
+        remote.date, f.is_transaction || coveredLocalIds.length > 0 ? 1 : 0, remote.transactedAccountId,
         (Array.isArray(remote.ccPaymentCoveredIds) && remote.ccPaymentCoveredIds.length > 0)
           ? JSON.stringify(remote.ccPaymentCoveredIds)
           : null
@@ -304,7 +402,8 @@ async function pullExpenses(
   since: string | undefined,
   accountMap: Map<string, string>,
   categoryMap: Map<string, string>,
-  incomeMap: Map<string, string>
+  incomeMap: Map<string, string>,
+  deferredReceipts: DeferredReceipt[]
 ): Promise<RecordOutcome> {
   const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
@@ -312,6 +411,7 @@ async function pullExpenses(
 
   for (const page of pages) {
     const f = pageToExpenseFields(page)
+    const receiptLocal = localRelation(incomeMap, f.cc_link_payment_receipt_id)
     const remote: FieldMap = {
       description: f.title,
       purchaseDate: f.purchase_date,
@@ -329,13 +429,19 @@ async function pullExpenses(
       pasabuyDateOfPayment: f.pasabuy_date_of_payment,
       pasabuyPaidPeriod: f.pasabuy_paid_period,
       pasabuyAccountReceiverId: localRelation(accountMap, f.pasabuy_account_receiver_id),
-      ccLinkPaymentReceiptId: localRelation(incomeMap, f.cc_link_payment_receipt_id)
+      ccLinkPaymentReceiptId: receiptLocal
     }
     const lastEdited = pageLastEditedTime(page)
     const npid = pageId(page)
     const existing = db.prepare('SELECT * FROM expenses WHERE notion_page_id = ?').get(npid) as
       | Record<string, unknown>
       | undefined
+
+    const deferReceipt = (localId: string): void => {
+      if (f.cc_link_payment_receipt_id && !receiptLocal) {
+        deferredReceipts.push({ expenseLocalId: localId, notionIncomeId: f.cc_link_payment_receipt_id })
+      }
+    }
 
     if (!existing) {
       const newId = randomUUID()
@@ -364,11 +470,13 @@ async function pullExpenses(
         payload: remote as Record<string, unknown>
       })
       outcome.inserted++
+      deferReceipt(newId)
       continue
     }
     const base = JSON.parse((existing.base_snapshot as string | null) ?? '{}') as FieldMap
     const local = expenseWritableFromRow(existing)
     applyMerge('expenses', existing.id as string, npid, base, local, remote, 'description', lastEdited, outcome)
+    deferReceipt(existing.id as string)
   }
   return outcome
 }
@@ -441,8 +549,7 @@ async function pullAllInner(full: boolean, sinceOverride?: string): Promise<Pull
     const accountMap = notionToLocal('accounts')
     const incomeCatMap = notionToLocal('income_categories')
     const expenseCatMap = notionToLocal('expense_categories')
-    const incomeMap = notionToLocal('incomes')
-    const expenseMap = notionToLocal('expenses')
+    const deferredReceipts: DeferredReceipt[] = []
 
     const merge = (o: RecordOutcome): void => {
       result.inserted += o.inserted
@@ -451,8 +558,15 @@ async function pullAllInner(full: boolean, sinceOverride?: string): Promise<Pull
       result.conflicts += o.conflicts
       result.pushPending += o.pushPending
     }
-    if (mapping.incomes) merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap, expenseMap))
-    if (mapping.expenses) merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap, incomeMap))
+    // Expenses first so income CC Payment Covered can resolve against a complete map.
+    if (mapping.expenses) {
+      merge(await pullExpenses(mapping.expenses, since, accountMap, expenseCatMap, notionToLocal('incomes'), deferredReceipts))
+    }
+    if (mapping.incomes) {
+      merge(await pullIncomes(mapping.incomes, since, accountMap, incomeCatMap, notionToLocal('expenses'), result.errors))
+    }
+    resolveDeferredExpenseReceipts(deferredReceipts, notionToLocal('incomes'))
+    unionCoveredFromReverseLinks()
 
     // Presence pass: Notion trash/archive removes pages from query results, so
     // incremental last_edited filters never surface them — reconcile by full id set.
