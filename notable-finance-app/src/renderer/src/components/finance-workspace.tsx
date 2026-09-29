@@ -27,6 +27,7 @@ import { SettingsPage } from "@/components/pages/settings";
 import { ChatModePage } from "@/components/pages/chat";
 import { DevLogsPage } from "@/components/pages/dev-logs";
 import { logDevEvent } from "@/lib/dev-log";
+import { emitDataChanged } from "@/lib/finance-events";
 
 // FAB
 import { WorkspaceFab } from "@/components/fab";
@@ -173,6 +174,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         setPendingOperations(0);
         setLastSync(new Date().toISOString().replace("T", " ").slice(0, 16));
         refreshReferenceData();
+        emitDataChanged();
         setSyncNotice(`Sync complete: ${kind} succeeded`);
         logDevEvent({
           kind: "operation",

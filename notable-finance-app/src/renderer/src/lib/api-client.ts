@@ -181,12 +181,12 @@ export const incomesApi = {
 // ── Expenses ──────────────────────────────────────────────────────────
 export type ExpensesListParams = {
   month?: string; rangeStart?: string; rangeEnd?: string; categoryId?: string; accountId?: string;
-  paymentStatus?: string; expenseViewMode?: string; pasabuyer?: string;
+  paymentStatus?: string; pasabuyStatus?: string; expenseViewMode?: string; pasabuyer?: string;
 };
 
 export const expensesApi = {
   // ExpensesListParams is a narrower, renderer-facing subset of the IPC layer's
-  // ExpenseListParams (adds paymentStatus/expenseViewMode/pasabuyer) — every field it does
+  // ExpenseListParams (adds status/view/pasabuyer filters) — every field it does
   // carry matches its counterpart exactly, so this bridge cast is a genuine widening, not an
   // unchecked one.
   list(params?: ExpensesListParams) {

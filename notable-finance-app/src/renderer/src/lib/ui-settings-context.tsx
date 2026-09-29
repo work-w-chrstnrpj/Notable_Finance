@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: UiSettings = {
     expenseCategoryFilter: "",
     pasabuyerFilter: "",
     paymentStatusFilter: "",
+    pasabuyStatusFilter: "",
     filterActive: false,
     annualView: "table",
     groupBy: "month",

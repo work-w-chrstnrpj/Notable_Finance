@@ -8,6 +8,7 @@ import type { ExpenseViewMode } from "@/types/finance";
 
 const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const category = { id: "cat1", name: "Groceries", monthlyBudget: 0, auxiliary: false, icon: null };
+const pasabuyCategory = { id: "cat-pasabuy", name: "Pasabuy", monthlyBudget: 0, auxiliary: false, icon: null };
 // One record with every optional field populated so it renders sensibly under every view mode
 // (Installments/Unpaid CC/Unpaid Pasabuy each read a different subset of these).
 const expenseRecord = {
@@ -99,7 +100,7 @@ describe("ExpensePage", () => {
     expect(screen.queryByText("Grocery Run")).not.toBeInTheDocument();
   });
 
-  it("shows a Payment Status filter when the filter panel is open", async () => {
+  it("shows Payment Status in regular and Unpaid Pasabuy views", async () => {
     const list = vi.fn(async () => ok([expenseRecord]));
     renderPage(
       <ExpensePage viewMode="Monthly" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
@@ -129,5 +130,60 @@ describe("ExpensePage", () => {
     await waitFor(() => {
       expect(list).toHaveBeenCalledWith(expect.objectContaining({ paymentStatus: "Unpaid" }));
     });
+  });
+
+  for (const mode of ["To pay", "Installments"] as ExpenseViewMode[]) {
+    it(`hides Payment Status in the ${mode} filters`, async () => {
+      renderExpense(mode);
+      expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+      expect(screen.queryByText("All payment statuses")).not.toBeInTheDocument();
+    });
+  }
+
+  it("shows Pasabuy Status instead of Payment Status in Unpaid CC after selecting Pasabuy", async () => {
+    const list = vi.fn(async () => ok([expenseRecord]));
+    renderPage(
+      <ExpensePage viewMode="Unpaid CC" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      {
+        apiOverrides: {
+          accounts: { list: vi.fn(async () => ok([account])) },
+          categories: {
+            income: vi.fn(async () => ok([])),
+            expense: vi.fn(async () => ok([category, pasabuyCategory])),
+          },
+          expenses: { list },
+        },
+      },
+    );
+
+    expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    expect(screen.queryByText("All payment statuses")).not.toBeInTheDocument();
+    expect(screen.queryByText("All Pasabuy statuses")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "All Categories" }));
+    fireEvent.click(screen.getByRole("button", { name: "Pasabuy" }));
+
+    const pasabuyStatusOption = await screen.findByText("All Pasabuy statuses");
+    const pasabuyStatus = pasabuyStatusOption.closest("select");
+    expect(pasabuyStatus).not.toBeNull();
+    fireEvent.change(pasabuyStatus!, { target: { value: "Payment not yet receive" } });
+    await waitFor(() => {
+      expect(list).toHaveBeenCalledWith(
+        expect.objectContaining({
+          categoryId: pasabuyCategory.id,
+          pasabuyStatus: "Payment not yet receive",
+          paymentStatus: undefined,
+        }),
+      );
+    });
+  });
+
+  it("keeps Payment Status available in Unpaid Pasabuy", async () => {
+    renderExpense("Unpaid Pasabuy");
+    expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    expect(screen.getByText("All payment statuses")).toBeInTheDocument();
   });
 });

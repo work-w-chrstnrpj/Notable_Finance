@@ -42,21 +42,18 @@ type ApiBlock = Record<string, unknown>
  */
 async function enrichBlockChildren(blocks: ApiBlock[]): Promise<ApiBlock[]> {
   const containerTypes = new Set(['table', 'synced_block', 'column_list', 'column'])
-  const result: ApiBlock[] = []
-  for (const block of blocks) {
+  return Promise.all(blocks.map(async (block) => {
     const type = String(block.type ?? '')
     if (type === 'table') {
       const rows = await client().getBlockChildren(String(block.id))
-      result.push({ ...block, _rows: rows })
+      return { ...block, _rows: rows }
     } else if (containerTypes.has(type)) {
       const children = await client().getBlockChildren(String(block.id))
       const enriched = await enrichBlockChildren(children)
-      result.push({ ...block, _children: enriched })
-    } else {
-      result.push(block)
+      return { ...block, _children: enriched }
     }
-  }
-  return result
+    return block
+  }))
 }
 
 /** Read page content — local when dirty, else a fresh (cached) copy from Notion. */

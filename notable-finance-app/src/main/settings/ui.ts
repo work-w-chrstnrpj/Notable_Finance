@@ -63,6 +63,7 @@ const DEFAULT_EXPENSE: UiExpenseFilters = {
   expenseCategoryFilter: '',
   pasabuyerFilter: '',
   paymentStatusFilter: '',
+  pasabuyStatusFilter: '',
   filterActive: false,
   annualView: 'table',
   groupBy: 'month'
@@ -209,6 +210,7 @@ function mergeExpense(raw: unknown): UiExpenseFilters {
       typeof r.expenseCategoryFilter === 'string' ? r.expenseCategoryFilter : '',
     pasabuyerFilter: typeof r.pasabuyerFilter === 'string' ? r.pasabuyerFilter : '',
     paymentStatusFilter: typeof r.paymentStatusFilter === 'string' ? r.paymentStatusFilter : '',
+    pasabuyStatusFilter: typeof r.pasabuyStatusFilter === 'string' ? r.pasabuyStatusFilter : '',
     filterActive: r.filterActive === true,
     annualView: r.annualView === 'chart' ? 'chart' : 'table',
     groupBy

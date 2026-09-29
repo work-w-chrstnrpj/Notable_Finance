@@ -178,6 +178,7 @@ export function useExpenses(params?: {
   categoryId?: string;
   accountId?: string;
   paymentStatus?: string;
+  pasabuyStatus?: string;
   expenseViewMode?: string;
   pasabuyer?: string;
 }) {

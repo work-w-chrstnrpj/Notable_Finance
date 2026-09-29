@@ -247,6 +247,7 @@ export interface IncomeListParams extends ListRecordsParams {
 /** Expense list filters — mirrors the web ExpensesListParams / ListQuery semantics. */
 export interface ExpenseListParams extends ListRecordsParams {
   paymentStatus?: string
+  pasabuyStatus?: string
   /** Daily/Weekly/Monthly/Annually or a workflow view (Unpaid Pasabuy, To pay, …). */
   expenseViewMode?: string
   pasabuyer?: string
@@ -460,6 +461,7 @@ export interface UiExpenseFilters {
   expenseCategoryFilter: string
   pasabuyerFilter: string
   paymentStatusFilter: string
+  pasabuyStatusFilter: string
   filterActive: boolean
   annualView: 'table' | 'chart'
   groupBy: 'month' | 'account' | 'category'

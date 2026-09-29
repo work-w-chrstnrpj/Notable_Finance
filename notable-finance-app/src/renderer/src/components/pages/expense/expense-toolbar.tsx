@@ -9,7 +9,7 @@ import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
-import { pasabuyerLabels, paymentStatusLabels } from "@/lib/finance-rules";
+import { pasabuyerLabels, pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
 import { expenseCategoryFilterWithoutPasabuy, type AnnualGroupBy } from "@/components/constants";
 import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance";
 
@@ -38,6 +38,8 @@ export function ExpenseToolbar({
   setPasabuyerFilter,
   paymentStatusFilter,
   setPaymentStatusFilter,
+  pasabuyStatusFilter,
+  setPasabuyStatusFilter,
   annualView,
   setAnnualView,
   groupBy,
@@ -64,6 +66,8 @@ export function ExpenseToolbar({
   setPasabuyerFilter: (value: string) => void;
   paymentStatusFilter: string;
   setPaymentStatusFilter: (value: string) => void;
+  pasabuyStatusFilter: string;
+  setPasabuyStatusFilter: (value: string) => void;
   annualView: "table" | "chart";
   setAnnualView: (value: "table" | "chart") => void;
   groupBy: AnnualGroupBy;
@@ -85,6 +89,7 @@ export function ExpenseToolbar({
                   setExpenseCategoryFilter("");
                   setPasabuyerFilter("");
                   setPaymentStatusFilter("");
+                  setPasabuyStatusFilter("");
                 }
                 setFilterActive((prev) => !prev);
               }}
@@ -149,16 +154,33 @@ export function ExpenseToolbar({
                   ))}
                 </FilterSelect>
               )}
-              <FilterSelect
-                placeholder="All payment statuses"
-                placeholderDisabled={false}
-                value={paymentStatusFilter}
-                onChange={setPaymentStatusFilter}
-              >
-                {paymentStatusLabels.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </FilterSelect>
+              {!(["To pay", "Installments", "Unpaid CC"] as ExpenseViewMode[]).includes(viewMode) && (
+                <FilterSelect
+                  placeholder="All payment statuses"
+                  placeholderDisabled={false}
+                  value={paymentStatusFilter}
+                  onChange={setPaymentStatusFilter}
+                >
+                  {paymentStatusLabels.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </FilterSelect>
+              )}
+              {viewMode === "Unpaid CC" &&
+                expenseCategories.some(
+                  (category) => category.id === expenseCategoryFilter && /pasabuy/i.test(category.name),
+                ) && (
+                  <FilterSelect
+                    placeholder="All Pasabuy statuses"
+                    placeholderDisabled={false}
+                    value={pasabuyStatusFilter}
+                    onChange={setPasabuyStatusFilter}
+                  >
+                    {pasabuyStatusLabels.map((status) => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </FilterSelect>
+                )}
             </>
           )}
           {searchActive && (

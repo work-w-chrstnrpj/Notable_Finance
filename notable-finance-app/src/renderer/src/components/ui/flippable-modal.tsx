@@ -131,7 +131,7 @@ function FlippableModal({
             <div className="modal-panel__header">
               <div>
                 <h2 id="page-content-title">Page Content</h2>
-                <p>Edit the Notion page body as Markdown</p>
+                <p>Additional details from Notion</p>
               </div>
               <button
                 type="button"
@@ -143,7 +143,7 @@ function FlippableModal({
               </button>
             </div>
             <div className="modal-panel__body">
-              {pageContentResource && recordId && (
+              {flipped && pageContentResource && recordId && (
                 <PageContentPanel resource={pageContentResource} recordId={recordId} />
               )}
             </div>

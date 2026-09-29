@@ -16,6 +16,7 @@ export interface ExpenseQuery extends RangeQuery {
   categoryId?: string
   pasabuyer?: string
   paymentStatus?: string
+  pasabuyStatus?: string
   expenseViewMode?: string
 }
 
@@ -130,5 +131,6 @@ export function filterExpensesByQuery(
   }
   if (query.pasabuyer) filtered = filtered.filter((r) => r.pasabuyer === query.pasabuyer)
   if (query.paymentStatus) filtered = filtered.filter((r) => r.paymentStatus === query.paymentStatus)
+  if (query.pasabuyStatus) filtered = filtered.filter((r) => r.pasabuyStatus === query.pasabuyStatus)
   return filtered
 }
