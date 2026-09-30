@@ -1,37 +1,8 @@
-/* Flip animation for page content panel */
-.modal-panel--flip-container {
-  perspective: 1200px;
-  width: min(560px, 100%);
-  max-height: calc(100vh - 48px);
-  display: flex;
-  flex-direction: column;
-  /* Safety net: if the inner flip chain ever fails to bound the body,
-     the container itself scrolls instead of clipping content. */
-  overflow-y: auto;
-}
-
-.modal-panel--flipper {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-  transform-style: preserve-3d;
-  overflow: visible;
-  transition: transform 0.6s ease;
-  min-height: 0;
-}
-
-.modal-panel--flipper[data-flipped="true"] {
-  transform: rotateY(180deg);
-}
-
-.modal-panel__face {
-  grid-row: 1;
-  grid-column: 1;
-  backface-visibility: hidden;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  overflow: hidden;
-  min-height: 0;
-  /* Swap which face is hit-testable at the midpoint of the 0.6s flip. */
-  transition: visibility 0s linear 0.3s;
-}
+/* Shared record dialog: explicit sections, stable footer, theme-owned typography. */
+.record-dialog { width: min(680px, 100%); max-height: calc(100vh - 48px); display: flex; flex-direction: column; }
+.record-dialog .modal-panel__body { min-height: 0; overflow-y: auto; }
+.record-dialog__sections { display: flex; gap: 8px; padding: 0 24px 16px; }
+.record-dialog__sections [aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.record-dialog__hint { padding: 0 24px 16px; margin: 0; color: var(--ink-muted); font-size: 12px; }
+.record-dialog [hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .modal-backdrop, .modal-panel { animation: none; transition: none; } }

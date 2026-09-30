@@ -7,7 +7,10 @@ import { balanceContext, financeSnapshot, listExpenseCategories, listIncomeCateg
 
 export function dashboard(month: string): DashboardSummary {
   assertMonth(month)
-  return dashboardSummary(month, financeSnapshot(), balanceContext())
+  const pasabuyCategoryIds = new Set(
+    listExpenseCategories().filter((category) => /pasabuy/i.test(category.name)).map((category) => category.id)
+  )
+  return dashboardSummary(month, financeSnapshot(), balanceContext(), pasabuyCategoryIds)
 }
 
 export function monitoring(month: string): MonthlyMonitoringDto {

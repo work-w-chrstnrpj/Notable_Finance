@@ -83,3 +83,13 @@ describe('normalizeUiSettings', () => {
     expect(normalizeUiSettings({}).expenseFilters.paymentStatusFilter).toBe('')
   })
 })
+
+
+it('upgrades the old CC view without changing theme, fonts or other preferences', () => {
+  const input = { ...DEFAULT_UI_SETTINGS, theme: { ...DEFAULT_UI_SETTINGS.theme, mode: 'dark', primaryColor: '#123456' }, fonts: { ...DEFAULT_UI_SETTINGS.fonts, bodyFont: 'Arial', monoFont: 'Courier New' }, workspace: { ...DEFAULT_UI_SETTINGS.workspace, expenseViewMode: 'Unpaid CC', ccPeriod: 'Annually' } }
+  const next = normalizeUiSettings(input)
+  expect(next.workspace.expenseViewMode).toBe('CC Transaction')
+  expect(next.workspace.ccPeriod).toBe('Annually')
+  expect(next.theme).toEqual(input.theme)
+  expect(next.fonts).toEqual(input.fonts)
+})

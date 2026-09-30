@@ -437,8 +437,10 @@ export interface UiWorkspaceSettings {
     | 'To pay'
     | 'To buy'
     | 'Installments'
+    | 'CC Transaction'
     | 'Unpaid CC'
     | 'Unpaid Pasabuy'
+  ccPeriod?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
   sidebarCollapsed: boolean
   showFab: boolean
   /** Auto-hide delay (ms) for the floating Push Sync button after a change.

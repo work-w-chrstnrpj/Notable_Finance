@@ -75,7 +75,14 @@ function slimExpense(r: ReturnType<typeof repo.listExpenses>[number]) {
 export function getDashboardSummary(args: unknown) {
   const a = asRecord(args)
   const month = requireMonth(a.month ?? currentMonth())
-  return reports.dashboard(month)
+  return {
+    ...reports.dashboard(month),
+    definitions: {
+      totalIncome: 'Gross income for the selected month',
+      totalExpense: 'Amount plus interest, excluding Pasabuy pass-through records',
+      grossMargin: 'Dashboard totalIncome minus Dashboard totalExpense'
+    }
+  }
 }
 
 export function getMonthlyMonitoringSnapshot(args: unknown) {
@@ -209,7 +216,7 @@ const APP_TOPICS: Record<string, string> = {
   receivables:
     'Receivables tracks money owed to you (income-backed, often without a receiving account). Use the Receivables workflow. Chat cannot delete records.',
   pasabuy:
-    'Pasabuy expenses track purchases you make for someone else (Pasabuyer, status, receiver). Use Expense with a Pasabuy category or Unpaid Pasabuy view. Chat cannot delete records.',
+    'Pasabuy expenses track purchases you make for someone else (Pasabuyer, status, receiver). Use Expense with a Pasabuy category and Pasabuy payment status filters. Chat cannot delete records.',
   'soft delete':
     'Soft delete clears the amount and rewrites the title with [Deleted: Amount], then syncs that state to Notion. Soft delete is the default.',
   'hard delete':

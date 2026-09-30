@@ -1,6 +1,6 @@
 {
   "name": "notable-finance-app",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "Offline-first Electron desktop app for Notable Finance",
   "private": true,
   "author": "Notable Finance",

@@ -3,8 +3,8 @@ import type { FinanceSection, FinanceSectionId } from "@/types/finance";
 export const financeSections: FinanceSection[] = [
   { id: "dashboard", label: "Dashboard", group: "primary" },
   { id: "accounts", label: "Accounts", group: "primary" },
-  { id: "income", label: "Income", group: "primary" },
-  { id: "expense", label: "Expense", group: "primary" },
+  { id: "income", label: "Income", group: "workflow" },
+  { id: "expense", label: "Expense", group: "workflow" },
   { id: "monthly-monitoring", label: "Monthly Monitoring", shortLabel: "Monitoring", group: "primary" },
   { id: "transfer", label: "Transfer", group: "workflow" },
   { id: "credit-card-payment", label: "Credit Card Payment", shortLabel: "CC Payment", group: "workflow" },

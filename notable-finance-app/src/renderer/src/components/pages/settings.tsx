@@ -73,6 +73,32 @@ function SettingsPage({
           </button>
         </div>
       </Panel>
+      <Panel title="Theme">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Appearance &amp; Colors</p>
+            <p className="settings-toggle__hint">
+              Click here to{" "}
+              <button
+                type="button"
+                className="settings-inline-link"
+                onClick={() => setModal("theme")}
+              >
+                customize
+              </button>{" "}
+              your appearance settings.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="button"
+            onClick={() => setModal("theme")}
+          >
+            <Palette size={16} />
+            Customize
+          </button>
+        </div>
+      </Panel>
       <Panel title="Interface">
         <div className="settings-row">
           <div>
@@ -118,32 +144,6 @@ function SettingsPage({
           <button type="button" className="button" onClick={openCheat}>
             <Keyboard size={16} />
             View shortcuts
-          </button>
-        </div>
-      </Panel>
-      <Panel title="Theme">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Appearance &amp; Colors</p>
-            <p className="settings-toggle__hint">
-              Click here to{" "}
-              <button
-                type="button"
-                className="settings-inline-link"
-                onClick={() => setModal("theme")}
-              >
-                customize
-              </button>{" "}
-              your appearance settings.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="button"
-            onClick={() => setModal("theme")}
-          >
-            <Palette size={16} />
-            Customize
           </button>
         </div>
       </Panel>
@@ -216,8 +216,8 @@ function SettingsPage({
       <section className="two-column">
         <Panel title="Local Data" action={<Badge tone="green">This device</Badge>}>
           <div className="form-grid form-grid--single">
-            <ComputedField label="Storage" value="Local SQLite (app data folder)" />
-            <ComputedField label="Works offline" value="Yes — Notion is a synced mirror" />
+            <ComputedField label="Storage" value="Saved on this device" />
+            <ComputedField label="Works offline" value="Yes — sync with Notion when connected" />
             <ComputedField label="Token Storage" value="OS keychain (encrypted, local only)" />
           </div>
         </Panel>

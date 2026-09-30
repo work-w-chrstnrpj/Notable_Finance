@@ -22,24 +22,25 @@ function DateRangeSelector({
   activeMonths?: number[];
 }) {
   const [open, setOpen] = useState(false);
-  const [year, month, day] = anchorDate.split("-").map(Number);
+  const [year, month] = anchorDate.split("-").map(Number);
   const [draftYear, setDraftYear] = useState(year);
+  const [draftMonth, setDraftMonth] = useState(month - 1);
 
   function toggleOpen() {
     setOpen((v) => {
       const next = !v;
-      if (next) setDraftYear(year); // sync draft to current anchor on open
+      if (next) { setDraftYear(year); setDraftMonth(month - 1); } // sync draft to current anchor on open
       return next;
     });
   }
 
   const label = rangeLabel(unit, anchorDate);
   const showDayPicker = unit === "day" || unit === "week";
-  const showMonthGrid = unit === "day" || unit === "week" || unit === "month";
+  const showMonthGrid = unit === "month";
 
   function pickMonth(m: number) {
     // Keep the day when possible; clamp to the 1st for month/year scopes.
-    const targetDay = showDayPicker ? day : 1;
+    const targetDay = 1;
     onChange(
       `${draftYear.toString().padStart(4, "0")}-${(m + 1)
         .toString()
@@ -49,7 +50,7 @@ function DateRangeSelector({
   }
 
   return (
-    <div className="month-stepper">
+    <div className="month-stepper" onKeyDown={e => { if (e.key === "Escape") setOpen(false); }}>
       <button
         type="button"
         aria-label="Previous"
@@ -81,7 +82,31 @@ function DateRangeSelector({
             onClick={() => setOpen(false)}
           />
           <div className="date-picker" role="dialog" aria-label="Pick a date">
-            {unit === "year" ? (
+            {showDayPicker ? (
+              <>
+                <div className="date-picker__year-row">
+                  <button type="button" aria-label="Previous month" onClick={() => {
+                    const date = new Date(draftYear, draftMonth - 1, 1);
+                    setDraftYear(date.getFullYear()); setDraftMonth(date.getMonth());
+                  }}><ChevronLeft size={14} /></button>
+                  <strong>{PICKER_MONTHS[draftMonth]} {draftYear}</strong>
+                  <button type="button" aria-label="Next month" onClick={() => {
+                    const date = new Date(draftYear, draftMonth + 1, 1);
+                    setDraftYear(date.getFullYear()); setDraftMonth(date.getMonth());
+                  }}><ChevronRight size={14} /></button>
+                </div>
+                <div className="date-picker__day-grid">
+                  {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => <span key={d}>{d}</span>)}
+                  {Array.from({ length: new Date(draftYear, draftMonth, 1).getDay() }, (_, i) => <span key={`blank-${i}`} />)}
+                  {Array.from({ length: new Date(draftYear, draftMonth + 1, 0).getDate() }, (_, i) => {
+                    const iso = `${draftYear}-${String(draftMonth + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
+                    return <button type="button" key={iso} aria-label={iso} aria-pressed={iso === anchorDate}
+                      className={cx("date-picker__cell", iso === anchorDate && "is-active")}
+                      onClick={() => { onChange(iso); setOpen(false); }}>{i + 1}</button>;
+                  })}
+                </div>
+              </>
+            ) : unit === "year" ? (
               <div className="date-picker__year-list">
                 {Array.from({ length: 9 }, (_, i) => year - 4 + i).map((y) => (
                   <button
@@ -125,21 +150,7 @@ function DateRangeSelector({
                     ))}
                   </div>
                 )}
-                {showDayPicker && (
-                  <label className="date-picker__day">
-                    Exact day
-                    <input
-                      type="date"
-                      value={anchorDate}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          onChange(e.target.value);
-                          setOpen(false);
-                        }
-                      }}
-                    />
-                  </label>
-                )}
+
               </>
             )}
           </div>

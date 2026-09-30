@@ -37,6 +37,7 @@ const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
   selectedDate: null,
   incomeViewMode: 'Monthly',
   expenseViewMode: 'Monthly',
+  ccPeriod: 'Monthly',
   sidebarCollapsed: false,
   showFab: true,
   pushFabAutoHideMs: 180_000,
@@ -154,6 +155,7 @@ const EXPENSE_MODES = new Set([
   'To pay',
   'To buy',
   'Installments',
+  'CC Transaction',
   'Unpaid CC',
   'Unpaid Pasabuy'
 ])
@@ -174,7 +176,9 @@ function mergeWorkspace(raw: unknown): UiWorkspaceSettings {
   return {
     selectedDate: typeof r.selectedDate === 'string' && r.selectedDate ? r.selectedDate : null,
     incomeViewMode,
-    expenseViewMode,
+    expenseViewMode: expenseViewMode === 'Unpaid CC' ? 'CC Transaction' : expenseViewMode,
+    ccPeriod: typeof r.ccPeriod === 'string' && INCOME_MODES.has(r.ccPeriod)
+      ? r.ccPeriod as UiWorkspaceSettings['ccPeriod'] : 'Monthly',
     sidebarCollapsed: r.sidebarCollapsed === true,
     showFab: r.showFab !== false,
     pushFabAutoHideMs: coercePushFabAutoHideMs(r.pushFabAutoHideMs),

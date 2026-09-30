@@ -21,7 +21,8 @@ describe('normalizeExpenseViewMode', () => {
     expect(normalizeExpenseViewMode('To pay')).toBe('toPay')
     expect(normalizeExpenseViewMode('To buy')).toBe('toBuy')
     expect(normalizeExpenseViewMode('Installments')).toBe('installments')
-    expect(normalizeExpenseViewMode('Unpaid CC')).toBe('ccTransactions')
+    expect(normalizeExpenseViewMode('Unpaid CC')).toBe('unpaidCc')
+    expect(normalizeExpenseViewMode('CC Transaction')).toBe('ccTransactions')
     expect(normalizeExpenseViewMode(undefined)).toBe('monthly')
   })
 })
@@ -138,5 +139,31 @@ describe('filterExpensesByQuery view modes', () => {
       ctx
     )
     expect(out.map((r) => r.id)).toEqual(['in'])
+  })
+})
+
+
+describe('CC Transaction redesign', () => {
+  const records = [
+    expense({ id: 'paid', accountId: 'cc', purchaseDate: '2026-07-15', paymentStatus: 'Paid', datePaid: '2026-07-15' }),
+    expense({ id: 'installment', accountId: 'cc', purchaseDate: '2026-07-15', paymentStatus: 'Installment' }),
+    expense({ id: 'cash', accountId: 'cash', purchaseDate: '2026-07-15' }),
+    expense({ id: 'old', accountId: 'cc', purchaseDate: '2025-07-15' }),
+    expense({ id: 'pasabuy', accountId: 'cc', purchaseDate: '2026-07-15', categoryId: 'pasabuy', paymentStatus: 'Paid', pasabuyStatus: 'Payment not yet receive' }),
+  ]
+  it.each([
+    ['2026-07-15', '2026-07-15'],
+    ['2026-07-13', '2026-07-19'],
+    ['2026-07-01', '2026-07-31'],
+    ['2026-01-01', '2026-12-31'],
+  ])('includes all credit statuses within %s through %s', (rangeStart, rangeEnd) => {
+    expect(filterExpensesByQuery(records, { expenseViewMode: 'CC Transaction', rangeStart, rangeEnd }, ctx).map(r => r.id)).toEqual(['paid', 'installment', 'pasabuy'])
+  })
+  it('intersects category and both payment statuses', () => {
+    expect(filterExpensesByQuery(records, { expenseViewMode: 'CC Transaction', month: '2026-07', categoryId: 'pasabuy', paymentStatus: 'Paid', pasabuyStatus: 'Payment not yet receive' }, ctx).map(r => r.id)).toEqual(['pasabuy'])
+  })
+  it('preserves non-credit Pasabuy access through calendar filters', () => {
+    const cash = expense({ id: 'cash-pasabuy', accountId: 'cash', categoryId: 'pasabuy', purchaseDate: '2026-07-15', pasabuyStatus: 'Payment not yet receive' })
+    expect(filterExpensesByQuery([cash], { expenseViewMode: 'Monthly', month: '2026-07', categoryId: 'pasabuy', pasabuyStatus: 'Payment not yet receive' }, ctx)).toEqual([cash])
   })
 })

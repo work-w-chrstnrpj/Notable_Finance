@@ -21,7 +21,8 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     type: 'function',
     function: {
       name: 'getDashboardSummary',
-      description: 'Dashboard totals for a month (income, expense, margin, cash flow counts).',
+      description:
+        'Dashboard-card totals for a month. Income is gross income; expense excludes Pasabuy pass-through records; margin uses those same two visible-card definitions.',
       parameters: {
         type: 'object',
         properties: { month: monthProp },
@@ -110,7 +111,7 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     function: {
       name: 'queryExpenses',
       description:
-        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, Unpaid Pasabuy, To pay, To buy, Installments, Unpaid CC. For year-level totals use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
+        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, To pay, To buy, Installments, CC Transaction. For year-level totals use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
       parameters: {
         type: 'object',
         properties: {

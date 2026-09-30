@@ -63,6 +63,7 @@ describe("ExpensePage", () => {
     "To pay": DEFAULT_HEADERS,
     "To buy": DEFAULT_HEADERS,
     Installments: INSTALLMENT_HEADERS,
+    "CC Transaction": CC_HEADERS,
     "Unpaid CC": CC_HEADERS,
     "Unpaid Pasabuy": PASABUY_HEADERS
   };
@@ -119,7 +120,7 @@ describe("ExpensePage", () => {
     expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
 
-    const paymentStatus = screen.getByRole("combobox");
+    const paymentStatus = screen.getByText("All payment statuses").closest("select")!;
     expect(within(paymentStatus).getByText("All payment statuses")).toBeInTheDocument();
     expect(within(paymentStatus).getByText("Paid")).toBeInTheDocument();
     expect(within(paymentStatus).getByText("Unpaid")).toBeInTheDocument();
@@ -141,10 +142,10 @@ describe("ExpensePage", () => {
     });
   }
 
-  it("shows Pasabuy Status instead of Payment Status in Unpaid CC after selecting Pasabuy", async () => {
+  it("combines Payment Status and Pasabuy Payment Status in CC Transaction", async () => {
     const list = vi.fn(async () => ok([expenseRecord]));
     renderPage(
-      <ExpensePage viewMode="Unpaid CC" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      <ExpensePage viewMode="CC Transaction" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
       {
         apiOverrides: {
           accounts: { list: vi.fn(async () => ok([account])) },
@@ -159,13 +160,14 @@ describe("ExpensePage", () => {
 
     expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    expect(screen.queryByText("All payment statuses")).not.toBeInTheDocument();
-    expect(screen.queryByText("All Pasabuy statuses")).not.toBeInTheDocument();
+    expect(screen.getByText("All payment statuses")).toBeInTheDocument();
+    fireEvent.change(screen.getByText("All payment statuses").closest("select")!, { target: { value: "Paid" } });
+    expect(screen.queryByText("All Pasabuy payment statuses")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "All Categories" }));
     fireEvent.click(screen.getByRole("button", { name: "Pasabuy" }));
 
-    const pasabuyStatusOption = await screen.findByText("All Pasabuy statuses");
+    const pasabuyStatusOption = await screen.findByText("All Pasabuy payment statuses");
     const pasabuyStatus = pasabuyStatusOption.closest("select");
     expect(pasabuyStatus).not.toBeNull();
     fireEvent.change(pasabuyStatus!, { target: { value: "Payment not yet receive" } });
@@ -174,7 +176,7 @@ describe("ExpensePage", () => {
         expect.objectContaining({
           categoryId: pasabuyCategory.id,
           pasabuyStatus: "Payment not yet receive",
-          paymentStatus: undefined,
+          paymentStatus: "Paid",
         }),
       );
     });
@@ -186,4 +188,49 @@ describe("ExpensePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
     expect(screen.getByText("All payment statuses")).toBeInTheDocument();
   });
+});
+
+it.each([
+  ["Daily", "2026-07-15", "2026-07-15"],
+  ["Weekly", "2026-07-13", "2026-07-19"],
+  ["Monthly", "2026-07-01", "2026-07-31"],
+  ["Annually", "2026-01-01", "2026-12-31"],
+] as const)("CC Transaction %s passes matching purchase-date bounds", async (ccPeriod, rangeStart, rangeEnd) => {
+  const list = vi.fn(async () => ok([]));
+  renderPage(<ExpensePage viewMode="CC Transaction" ccPeriod={ccPeriod} onViewModeChange={vi.fn()} selectedDate="2026-07-15" />, { apiOverrides: { expenses: { list } } });
+  await waitFor(() => expect(list).toHaveBeenCalledWith(expect.objectContaining({ expenseViewMode: "CC Transaction", rangeStart, rangeEnd })));
+  expect(screen.queryByRole("combobox", { name: "CC Transaction period" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+  expect(screen.getByRole("combobox", { name: "CC Transaction period" })).toHaveValue(ccPeriod);
+  const view = screen.getByLabelText("Expense view");
+  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "CC Transactions", "To Pay", "To Buy", "Installments"]);
+  expect(within(view).queryByText("Unpaid CC")).not.toBeInTheDocument();
+  expect(within(view).queryByText("Unpaid Pasabuy")).not.toBeInTheDocument();
+});
+
+ it.each(["Paid", "Unpaid", "Cancelled"] as const)("CC description highlights only outstanding records: %s", async paymentStatus => {
+  renderPage(<ExpensePage viewMode="CC Transaction" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />, {
+    apiOverrides: { expenses: { list: vi.fn(async () => ok([{ ...expenseRecord, paymentStatus }])) } },
+  });
+  const description = await screen.findByText("Grocery Run");
+  if (paymentStatus === "Unpaid") expect(description).toHaveClass("expense-cell--unpaid");
+  else expect(description).not.toHaveClass("expense-cell--unpaid");
+});
+
+it.each([["All Credit Accounts", "Credit purchase", "Cash purchase"], ["All Debit Accounts", "Cash purchase", "Credit purchase"]])("To Pay filters %s without sending a synthetic account ID", async (label, included, excluded) => {
+  const list = vi.fn(async () => ok([
+    { ...expenseRecord, id: "cash", description: "Cash purchase", paymentStatus: "Unpaid" as const },
+    { ...expenseRecord, id: "credit", accountId: "cc1", description: "Credit purchase", paymentStatus: "Unpaid" as const },
+  ]));
+  renderPage(<ExpensePage viewMode="To pay" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />, { apiOverrides: {
+    accounts: { list: vi.fn(async () => ok([account, { ...account, id: "cc1", type: "Credit Account" as const }])) },
+    expenses: { list },
+  } });
+  await screen.findByText("Cash purchase");
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+  fireEvent.click(screen.getByRole("button", { name: "All accounts" }));
+  fireEvent.click(screen.getByRole("button", { name: label }));
+  await waitFor(() => expect(screen.queryByText(excluded)).not.toBeInTheDocument());
+  expect(screen.getByText(included)).toBeInTheDocument();
+  expect(list).not.toHaveBeenCalledWith(expect.objectContaining({ accountId: expect.stringMatching(/^__/) }));
 });

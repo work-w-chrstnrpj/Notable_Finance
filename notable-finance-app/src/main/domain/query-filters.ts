@@ -39,6 +39,7 @@ export function normalizeExpenseViewMode(mode?: string): string {
     case 'installment':
       return 'installments'
     case 'unpaidcc':
+      return 'unpaidCc'
     case 'cctransactions':
     case 'cctransaction':
       return 'ccTransactions'
@@ -98,6 +99,14 @@ export function filterExpensesByQuery(
       )
       break
     case 'ccTransactions':
+      filtered = filtered.filter((r) => ctx.creditAccountIds.has(r.accountId))
+      if (query.rangeStart || query.rangeEnd) {
+        filtered = filterByRange(filtered, 'purchaseDate', query.rangeStart, query.rangeEnd)
+      } else if (query.month) {
+        filtered = filterByMonth(filtered, 'purchaseDate', query.month)
+      }
+      break
+    case 'unpaidCc':
       filtered = filtered.filter((r) => {
         if (r.paymentStatus === 'Installment') return false
         if (!ctx.creditAccountIds.has(r.accountId)) return false

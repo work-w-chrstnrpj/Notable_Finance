@@ -8,6 +8,12 @@ Legend: `Not Started` · `In Progress` · `Done` · `Blocked`.
 
 Build a fully usable **offline** app first (Phases 0–1), then add sync in increasing capability (Phases 2–4), then package (Phase 5). You get value early and never block on the hardest part (reconcile).
 
+## UI/UX redesign — branch implementation
+
+Status: **In Progress** (implementation and automated checks; visual acceptance pending).
+
+See [UI/UX redesign](ui-ux-redesign.md) for the agreed scope, preserved settings, CC Transaction behavior, compatibility rules and acceptance checklist. This work is separate from Phase 8 Chat investigation; existing Phase 8 plans remain unchanged.
+
 ## Phases
 
 ### Phase 0 — Scaffold & shared logic (foundations)
@@ -83,6 +89,20 @@ Locked: **Hybrid providers (C)**; confirm-before-write; no finance delete via ch
 | 7.4 | Chat improvements: topic-guard lexicon (tipid tips + Taglish terms), year-level queries (`year` param), financial-insight routing, data-digest memory across turns, richer system prompt (formulas/app context/date), dynamic empty-state greeting | Guard/lexicon tests green; follow-up turns carry digested data | Done |
 | 7.5 | Fix fresh-install migration crash — 0011 had two statements in one chunk (better-sqlite3 rejects multi-statement prepare) | Fresh DB migrates through 0011 (verified under Electron-node vitest) | Done |
 
+### Phase 8 — Chat agentic investigator (local + Notion tools)
+
+Design: [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md). Does **not** reopen Phase 6 freeze. Goal: BYOK Chat runs a real tool loop (plan → tools → observe → repeat), not a bigger system prompt. Apple remains gather-and-summarize. **Code must extend the v2.0.0 tree** (see that doc’s Implementation constraints); a working feature in a parallel architecture is not acceptable.
+
+| # | Work item | Acceptance | Status |
+| --- | --- | --- | --- |
+| 8.0 | Lock agent loop + primitives **and** “extend current desktop tree” constraints | Decisions + implementation constraints in chat-diagnostic-copilot.md | **Not Started** |
+| 8.1 | Orchestrator agent mode: 16–24 rounds, progress UI, truncated-tool hints | BYOK can investigate across many rounds; encoding stays at 4 | **Not Started** |
+| 8.2 | Knowledge tools + local aggregates (`explainAccountBalance`, `sum*`, `findRecord`) | Agent can explain a local balance without listing all expenses | **Not Started** |
+| 8.3 | Notion primitives + `diffRelationSets` | Tools can name Home Wallet Food ₱27 exception (CI mock) | **Not Started** |
+| 8.4 | Confirm-gated Notion relation retouch | Approve rewrites the same relation; Cancel no-ops; no finance delete | **Not Started** |
+| 8.5 | Router: mismatch → agent mode; `/agent`; prompt “use tools, don’t guess” | Home Wallet phrasing enters the long loop; Apple tells user to use an API key | **Not Started** |
+| 8.6 | Vitest mocks + formula wiki correction | Suites green; Current Balance docs match live Notion | **Not Started** |
+
 ## Milestone summary
 
 - **M1 (offline app):** Phases 0–1 — usable offline, real-time balances.
@@ -90,9 +110,12 @@ Locked: **Hybrid providers (C)**; confirm-before-write; no finance delete via ch
 - **M3 (full sync):** Phase 4 — bidirectional reconcile + conflict resolver.
 - **M4 (shippable):** Phase 5 — packaged for all three OSes.
 - **M5 (chat copilot):** Phase 6 — confirm-gated NL Q&A and create/edit over local data.
+- **M6 (chat investigator):** Phase 8 — BYOK agent loop with local + Notion primitives (not prompt stuffing).
 
 ## Out of scope (this cycle)
 
 Code-signing/notarization, auto-update infra, shared-package extraction, webhook-driven realtime pull. See [`packaging-and-release.md`](packaging-and-release.md) and [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
 
 Phase 6 also excludes: auto-commit writes, chat-driven **finance** delete, Apple-backed write tool loops, MCP-as-required-runtime, and RAG-over-SQLite as the primary retrieval path (see design doc). Incomplete create/edit prompts must clarify required fields (including CC/Pasabuy/workflow fields) rather than inventing them. **Chat conversation** delete (thread / all history) is allowed and required.
+
+Phase 8 still excludes: a generic Notion path/body tool, sending the Notion token or raw DB to the model provider, dumping thousands of expenses into the prompt, treating Apple Intelligence as a multi-round investigator, and silent relation repair without a confirm card.

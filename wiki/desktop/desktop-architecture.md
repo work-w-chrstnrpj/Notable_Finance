@@ -80,4 +80,9 @@ main/
 ## Related documents
 
 - [`sync-and-conflict-design.md`](sync-and-conflict-design.md) · [`local-data-schema.md`](local-data-schema.md) · [`ipc-contract.md`](ipc-contract.md) · [`offline-and-state-model.md`](offline-and-state-model.md) · [`security.md`](security.md) · [`packaging-and-release.md`](packaging-and-release.md)
-- Planned Chat copilot (Phase 6): [`chat-agent-design.md`](chat-agent-design.md) · [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md) · checklist in [`development-plan.md`](development-plan.md)
+- Chat copilot (Phase 6 done): [`chat-agent-design.md`](chat-agent-design.md) · [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md) · checklist in [`development-plan.md`](development-plan.md)
+- Chat agentic investigator (Phase 8 planned): [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md)
+
+## Desktop presentation refresh
+
+The [UI/UX redesign](ui-ux-redesign.md) preserves main/preload/renderer ownership and existing theme/font preferences. CC Transaction uses the shared expense query with explicit purchase-date bounds; its period is persisted as `workspace.ccPeriod`. Legacy unpaid queries remain compatibility inputs. Record dialogs expose Details and Page content without 3D flipping. No SQLite schema migration or Notion contract change is required.

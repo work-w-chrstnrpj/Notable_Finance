@@ -1,3 +1,4 @@
+import { isCreditLikeAccountType } from "@/lib/finance-rules";
 
 import { useMemo, useEffect, useState } from "react";
 import { useLiveCollections, isSpecificExpenseCategoryFilter } from "@/components/hooks";
@@ -43,21 +44,24 @@ const expenseViewModes: ExpenseViewMode[] = [
   "Weekly",
   "Monthly",
   "Annually",
+  "CC Transaction",
   "To pay",
   "To buy",
   "Installments",
-  "Unpaid CC",
-  "Unpaid Pasabuy",
 ];
 
 function ExpensePage({
   viewMode,
   onViewModeChange,
   selectedDate,
+  ccPeriod = "Monthly",
+  onCcPeriodChange,
 }: {
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
   selectedDate: string;
+  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually";
+  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
 }) {
   const {
     activeAccounts,
@@ -65,7 +69,7 @@ function ExpensePage({
     accountNameById,
     expenseCategoryNameById,
   } = useLiveCollections();
-  const expenseUnit = expenseModeToUnit(viewMode);
+  const expenseUnit = expenseModeToUnit(viewMode === "CC Transaction" ? ccPeriod : viewMode);
   const expenseRange = expenseUnit ? computeRange(expenseUnit, selectedDate) : null;
   const [accountFilterId, setAccountFilterId] = useState("");
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState("");
@@ -92,8 +96,8 @@ function ExpensePage({
   const selectedCategoryIsPasabuy = expenseCategories.some(
     (category) => category.id === expenseCategoryFilter && /pasabuy/i.test(category.name),
   );
-  const showsPaymentStatusFilter = !["To pay", "Installments", "Unpaid CC"].includes(viewMode);
-  const showsPasabuyStatusFilter = viewMode === "Unpaid CC" && selectedCategoryIsPasabuy;
+  const showsPaymentStatusFilter = !["To pay", "Installments"].includes(viewMode);
+  const showsPasabuyStatusFilter = selectedCategoryIsPasabuy;
 
   // Table cell renderers — passed into the per-view-mode table config.
   const expenseCategoryById = useMemo(
@@ -179,6 +183,15 @@ function ExpensePage({
       });
     },
   });
+  useEffect(() => {
+    if (!settingsReady) return;
+    if (viewMode === "Unpaid CC") onViewModeChange("CC Transaction");
+    if (viewMode === "Unpaid Pasabuy" && pasabuyCategory) {
+      setExpenseCategoryFilter(pasabuyCategory.id);
+      setFilterActive(true);
+      onViewModeChange("Monthly");
+    }
+  }, [settingsReady, viewMode, pasabuyCategory, onViewModeChange]);
   const expenseParams = useMemo(
     () => ({
       rangeStart: expenseRange?.start,
@@ -186,7 +199,7 @@ function ExpensePage({
       // Account/category/pasabuyer/payment-status filters only apply while the
       // filter panel is active. Otherwise a value left selected before toggling
       // the panel off would silently hide records with the control hidden.
-      accountId: filterActive ? accountFilterId || undefined : undefined,
+      accountId: filterActive && !["__credit__", "__debit__"].includes(accountFilterId) ? accountFilterId || undefined : undefined,
       categoryId:
         filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
           ? expenseCategoryFilter
@@ -195,7 +208,7 @@ function ExpensePage({
         filterActive && showsPaymentStatusFilter ? paymentStatusFilter || undefined : undefined,
       pasabuyStatus:
         filterActive && showsPasabuyStatusFilter ? pasabuyStatusFilter || undefined : undefined,
-      pasabuyer: filterActive ? pasabuyerFilter || undefined : undefined,
+      pasabuyer: filterActive && selectedCategoryIsPasabuy ? pasabuyerFilter || undefined : undefined,
       expenseViewMode: viewMode,
     }),
     [
@@ -209,6 +222,7 @@ function ExpensePage({
       pasabuyStatusFilter,
       showsPaymentStatusFilter,
       showsPasabuyStatusFilter,
+      selectedCategoryIsPasabuy,
       viewMode,
     ],
   );
@@ -232,7 +246,7 @@ function ExpensePage({
   // Clear selection when view mode changes
   useEffect(() => {
     resetSelection();
-  }, [viewMode, resetSelection]);
+  }, [viewMode, ccPeriod, selectedDate, resetSelection]);
 
   const isLoading = expensesState.status === "loading";
   const allExpenseRecords: ExpenseRecord[] =
@@ -242,8 +256,12 @@ function ExpensePage({
     () =>
       allExpenseRecords.filter((record) => {
         if (record.description?.includes("[Deleted:")) return false;
+        if (filterActive && viewMode === "To pay" && ["__credit__", "__debit__"].includes(accountFilterId)) {
+          const account = activeAccounts.find(a => a.id === record.accountId);
+          if (!account || isCreditLikeAccountType(account.type) !== (accountFilterId === "__credit__")) return false;
+        }
         if (
-          expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
+          filterActive && expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
           pasabuyCategory &&
           record.categoryId === pasabuyCategory.id
         ) {
@@ -251,7 +269,7 @@ function ExpensePage({
         }
         return true;
       }),
-    [allExpenseRecords, expenseCategoryFilter, expenseCategoryFilterWithoutPasabuy, pasabuyCategory],
+    [allExpenseRecords, expenseCategoryFilter, filterActive, pasabuyCategory, accountFilterId, activeAccounts, viewMode],
   );
 
   // Fuzzy search: filter visible records by search query (client-side only)
@@ -310,7 +328,7 @@ function ExpensePage({
       (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
       (isSpecificExpenseCategoryFilter(expenseCategoryFilter) ? expenseCategoryFilter : "");
 
-    form.loadRecord(record, { accountId: accountFilterId, categoryId: nextCategoryId });
+    form.loadRecord(record, { accountId: accountFilterId.startsWith("__") ? "" : accountFilterId, categoryId: nextCategoryId });
     setEditing(mode === "new");
     setSaveError(null);
     setModal({ mode, title });
@@ -440,7 +458,20 @@ function ExpensePage({
       setMassEditPreset(undefined); // plain bulk edit starts with an empty row
       setMassEditOpen(true);
     },
-    onCover: () => setCoverExpensesOpen(true),
+    onCover: () => {
+      const selected = searchFilteredRecords.filter(record => selectedIds.has(record.id));
+      const hasIneligibleRecord = selected.some(record =>
+        record.paymentStatus === "Installment" || (
+          record.datePaid && record.paymentStatus !== "Unpaid" &&
+          record.paidPeriod != null && deriveExpenseComputed(record).remaining <= 0.1
+        ),
+      );
+      if (viewMode === "CC Transaction" && hasIneligibleRecord) {
+        setSaveNotice("Cover expenses requires outstanding, non-installment transactions. Refine your selection.");
+        return;
+      }
+      setCoverExpensesOpen(true);
+    },
     onPrint: () => {
       setReceiptModalCtx(
         buildExpenseReceipt(searchFilteredRecords.filter((r) => selectedIds.has(r.id))),
@@ -519,6 +550,7 @@ function ExpensePage({
     categoryCell,
     derive: deriveExpenseComputed,
     enabledRecords: enabledExpenseRecords,
+    showPasabuyDetails: filterActive && selectedCategoryIsPasabuy,
   });
 
   // Publish a printable receipt of the current view for the floating button.
@@ -527,6 +559,7 @@ function ExpensePage({
   const buildExpenseReceipt = makeExpenseReceiptBuilder({
     viewMode,
     selectedDate,
+    ccPeriod,
     derive: deriveExpenseComputed,
   });
 
@@ -534,7 +567,7 @@ function ExpensePage({
     () => buildExpenseReceipt(searchFilteredRecords, disabledIds),
     // deriveExpenseComputed is a stable closure over the same render inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [viewMode, selectedDate, searchFilteredRecords, disabledIds],
+    [viewMode, ccPeriod, selectedDate, searchFilteredRecords, disabledIds],
   );
 
   useEffect(() => {
@@ -544,6 +577,10 @@ function ExpensePage({
 
   // ── Keyboard shortcuts (Option/Alt) ────────────────────────────────
   const modalOpen = modal !== null;
+  useShortcutAction("view.filterTab", (arg) => {
+    const index = Number(arg) - 1;
+    if (expenseViewModes[index]) handleExpenseViewModeChange(expenseViewModes[index]);
+  }, !modalOpen);
   useShortcutAction("view.newRecord", () => openExpenseModal("new", "New Expense"), !modalOpen);
   useShortcutAction("view.search", toggleSearch, !modalOpen);
   useShortcutAction("view.filters", () => {
@@ -586,6 +623,8 @@ function ExpensePage({
   return (
     <div className="page-stack">
       <ExpenseToolbar
+        ccPeriod={ccPeriod}
+        onCcPeriodChange={onCcPeriodChange}
         viewMode={viewMode}
         expenseViewModes={expenseViewModes}
         isAnnual={isAnnual}

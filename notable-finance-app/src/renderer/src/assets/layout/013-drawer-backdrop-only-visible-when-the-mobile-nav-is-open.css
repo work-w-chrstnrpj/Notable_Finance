@@ -139,3 +139,13 @@
   width: 100%;
   height: 360px;
 }
+
+/* The trigger and its single calendar share one width. */
+.month-stepper { width: 280px; box-sizing: border-box; }
+.month-stepper > .month-stepper__label { flex: 1; min-width: 0; }
+.month-stepper > button:not(.month-stepper__label) { flex-shrink: 0; }
+.date-picker { width: 100%; box-sizing: border-box; }
+.date-picker__day-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.date-picker__day-grid > span { min-width: 0; text-align: center; font-size: 11px; color: var(--ink-muted); }
+.date-picker .date-picker__cell { width: 100%; height: 28px; padding: 0; }
+.date-picker__day-grid > button { font-size: 12px; }

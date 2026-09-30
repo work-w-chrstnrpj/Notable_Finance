@@ -273,6 +273,8 @@ const api = {
       modelId?: string | null
       overlay?: ChatOverlayId | null
     }): Promise<ApiResult<ChatSendResult>> => ipcRenderer.invoke(IPC_CHANNELS.chatSend, input),
+    shareReply: (text: string): Promise<ApiResult<true>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.chatShareReply, text),
     listDrafts: (threadId?: string): Promise<ApiResult<ChatDraftDto[]>> =>
       ipcRenderer.invoke(IPC_CHANNELS.chatListDrafts, threadId),
     confirmDraft: (draftId: string): Promise<ApiResult<ChatConfirmResult>> =>

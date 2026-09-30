@@ -143,14 +143,19 @@ export interface FinanceSnapshot {
 export function dashboardSummary(
   month: string,
   snap: FinanceSnapshot,
-  ctx?: BalanceContext
+  ctx?: BalanceContext,
+  pasabuyCategoryIds: ReadonlySet<string> = new Set()
 ): DashboardSummary {
   const monthIncomes = filterByMonth(snap.incomes.filter(notDeleted), 'date', month)
   const monthExpenses = filterByMonth(snap.expenses.filter(notDeleted), 'purchaseDate', month)
 
-  const totalIncome = roundMoney(monthIncomes.reduce((sum, i) => sum + netIncome(i), 0))
+  // Match the visible Dashboard cards: income is gross, while Pasabuy is a
+  // reimbursable pass-through and is excluded from the user's own expense.
+  const totalIncome = roundMoney(monthIncomes.reduce((sum, i) => sum + i.grossIncome, 0))
   const totalExpense = roundMoney(
-    monthExpenses.reduce((sum, e) => sum + e.amount + e.interest, 0)
+    monthExpenses
+      .filter((e) => !pasabuyCategoryIds.has(e.categoryId))
+      .reduce((sum, e) => sum + e.amount + e.interest, 0)
   )
 
   const balances = computeAccountBalances(snap.accounts, snap.incomes, snap.expenses, ctx)

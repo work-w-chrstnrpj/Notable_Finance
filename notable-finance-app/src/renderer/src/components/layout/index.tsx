@@ -11,7 +11,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  Database,
   History,
   LayoutDashboard,
   Menu,
@@ -28,7 +27,7 @@ import { cx } from "@/lib/finance-helpers";
 import styles from "./index.module.css";
 import { userInitials } from "@/lib/avatar";
 import { useUiSettings } from "@/lib/ui-settings-context";
-import { DateRangeSelector, StatusPill } from "@/components/ui/date-range";
+import { DateRangeSelector } from "@/components/ui/date-range";
 import { ConnectivityIndicator } from "@/components/ui/connectivity-indicator";
 import { ShortcutHint, SECTION_SHORTCUT_ID } from "@/components/shortcuts";
 import type {
@@ -149,15 +148,7 @@ function Sidebar({
     <aside className="sidebar">
       <div className="brand">
         <div className={styles.brand__mark} aria-hidden="true">
-          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-            <rect x="16" y="24" width="992" height="976" rx="250" fill="#17181c" />
-            <rect x="74" y="78" width="876" height="864" rx="196" fill="#f7f5f0" />
-            <g fill="#17181c">
-              <rect x="300" y="182" width="150" height="646" rx="10" />
-              <rect x="300" y="182" width="392" height="156" rx="10" />
-              <rect x="300" y="430" width="330" height="150" rx="10" />
-            </g>
-          </svg>
+          <img src="./favicon.png" alt="" />
         </div>
         <div>
           <p className={styles.brand__name}>Notable Finance</p>
@@ -173,9 +164,9 @@ function Sidebar({
         </button>
       </div>
       <nav className="nav" aria-label="Finance sections">
-        <NavGroup title="Core" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
-        <NavGroup title="Workflows" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
-        <NavGroup title="System" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="Overview" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="Money movement" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="Workspace" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
       </nav>
       <div className={styles["sidebar-profile"]}>
         <div className={styles["sidebar-profile__avatar"]} aria-hidden="true">
@@ -249,15 +240,12 @@ function NavGroup({
 
 function TopBar({
   lastSync,
-  pendingOperations,
-  schemaHealth,
   selectedDate,
   selectorUnit,
   syncState,
   activeSyncKind = null,
   activeMonths,
   onDateChange,
-  onSchemaVerify,
   onSync,
   onMobileNavToggle,
 }: {
@@ -282,6 +270,7 @@ function TopBar({
 
   return (
     <header className={styles.topbar}>
+      <div className={styles.topbar__status}>
       <button
         type="button"
         className={styles["mobile-nav-toggle"]}
@@ -290,7 +279,9 @@ function TopBar({
       >
         <Menu size={18} />
       </button>
-      <div className={styles.topbar__actions} aria-label="Workspace controls">
+        <ConnectivityIndicator />
+      </div>
+      <div className={styles.topbar__date}>
         {selectorUnit && (
           <DateRangeSelector
             unit={selectorUnit}
@@ -299,19 +290,9 @@ function TopBar({
             activeMonths={activeMonths}
           />
         )}
-        <StatusPill syncState={syncState} schemaHealth={schemaHealth} />
-        <ConnectivityIndicator />
-        <span className={styles["sync-meta"]}>{pendingOperations} pending</span>
+      </div>
+      <div className={styles.topbar__actions} aria-label="Workspace controls">
         <span className={styles["sync-meta"]}>Last sync {lastSync}</span>
-        <button
-          type="button"
-          className="button"
-          onClick={onSchemaVerify}
-          title="Check /system/schema-status"
-        >
-          <Database size={12} />
-          Schema Check
-        </button>
         <div className={styles["sync-btn-wrapper"]}>
           <button type="button" className="button button--primary" onClick={onSync} disabled={syncState === "syncing"}>
             <RefreshCw size={12} className={activeSyncKind === "full" ? "spin" : undefined} />

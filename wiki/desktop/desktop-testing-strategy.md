@@ -64,6 +64,8 @@ Hardening invariants (must stay green):
 - Expense profile: CC fields only for credit-like accounts; Pasabuy fields for Pasabuy category / Unpaid Pasabuy view.
 - Apple/on-device path only for read-only skills when prefer + available.
 
+Phase 8 agent (planned): mock Notion adapter for forward vs reverse relation mismatch; `sum*` vs truncated `query*`; tool results never contain the Notion token; orchestrator respects agent round cap. See [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md).
+
 ## CI
 
 - Lint + typecheck + unit + integration on every change.
@@ -73,3 +75,7 @@ Hardening invariants (must stay green):
 ## Related
 
 - [`sync-and-conflict-design.md`](sync-and-conflict-design.md) · [`offline-and-state-model.md`](offline-and-state-model.md) · [`local-data-schema.md`](local-data-schema.md)
+
+## UI/UX redesign regression coverage
+
+See [the redesign acceptance checklist](ui-ux-redesign.md#acceptance-and-verification). Added coverage exercises CC period bounds, all credit payment statuses, combined Pasabuy filters, non-credit Pasabuy access, saved theme/font preservation and record section input retention. Existing bulk/optimistic-save tests remain required. Rendered theme, font, accessibility and export acceptance must be checked separately from unit tests.

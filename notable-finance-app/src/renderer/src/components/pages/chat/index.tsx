@@ -28,7 +28,7 @@ const DAILY_ASK_LINES = [
   "Ask me how much you spent this month, or how a category is tracking against its budget.",
   "Tipid tip: try 50/30/20 — 50% needs, 30% wants, 20% savings.",
   "Ask for a Monitoring summary — income vs expense and budget health at a glance.",
-  "Wondering how much is left on an installment? Ask me about Unpaid CC.",
+  "Wondering how much is left on an installment? Ask me about CC Transaction.",
   "Ask me for a Pasabuy check — who still owes, and how much.",
   "Compare two months: ask something like “July vs June spending”.",
 ];

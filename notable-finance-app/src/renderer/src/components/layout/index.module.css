@@ -38,7 +38,7 @@
   overflow: hidden;
 }
 
-.brand__mark svg {
+.brand__mark img {
   width: 100%;
   height: 100%;
   display: block;
@@ -93,7 +93,7 @@
 .nav__title {
   padding: 8px 12px 2px;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.04em;
 }
@@ -121,7 +121,7 @@
 }
 
 .nav__item:hover {
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--surface-muted);
   color: var(--ink);
 }
 
@@ -130,8 +130,8 @@
 }
 
 .nav__item--active {
-  background: var(--blue);
-  color: white;
+  background: var(--blue-soft);
+  color: var(--blue);
   font-weight: 600;
 }
 
@@ -155,7 +155,7 @@
   border-radius: 999px;
   background: rgba(91, 108, 249, 0.8);
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   overflow: hidden;
 }
@@ -195,7 +195,7 @@
 
 .sidebar-profile span {
   color: var(--ink-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 
@@ -220,9 +220,9 @@
   flex-shrink: 0;
   z-index: 10;
   min-height: 56px;
-  display: flex;
+  display: grid;
   align-items: center;
-  justify-content: flex-end;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 18px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -260,6 +260,8 @@
 }
 
 .topbar__actions {
+  justify-self: end;
+  justify-content: flex-end;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -376,7 +378,7 @@
   height: 16px;
   margin: 0;
   padding: 0 4px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 /* ── Tablet / iPad & below: drawer mode shows full labels and left-aligned items ── */
@@ -392,4 +394,32 @@
   :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item {
     justify-content: flex-start;
   }
+}
+
+.topbar__status :global(.connectivity-indicator),
+.sync-btn-wrapper > button {
+  box-sizing: border-box;
+  width: 104px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.topbar__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+}
+
+.topbar__date {
+  justify-self: center;
+}
+
+@media (max-width: 760px) {
+  .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .topbar__date { grid-row: 2; grid-column: 1 / -1; }
+  .topbar__actions { grid-row: 1; grid-column: 2; }
 }

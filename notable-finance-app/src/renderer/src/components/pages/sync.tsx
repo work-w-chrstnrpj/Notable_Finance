@@ -275,7 +275,7 @@ function DesktopSyncPanel() {
 
   return (
     <Panel
-      title="Local-First Sync (Desktop)"
+      title="Notion sync"
       action={
         conflicts.length > 0
           ? <Badge tone="amber">{conflicts.length} conflict{conflicts.length > 1 ? "s" : ""}</Badge>
@@ -284,8 +284,8 @@ function DesktopSyncPanel() {
     >
       <div className={styles["desktop-sync"]}>
         <p className={styles["desktop-sync__lead"]}>
-          Writes land in the local database instantly and queue for Notion. Sync reconciles with a
-          three-way merge — disjoint edits auto-merge; same-field edits appear below for your decision.
+          Changes save on this device first. Sync sends them to Notion and brings back updates.
+          If the same field changed in both places, choose which value to keep below.
         </p>
 
         <div className="settings-row">
@@ -298,19 +298,6 @@ function DesktopSyncPanel() {
           <button type="button" className="button" onClick={() => void initialPull()} disabled={busy}>
             <CloudDownload size={16} />
             {busy ? "Pulling…" : "Pull now"}
-          </button>
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Reset local database</p>
-            <p className="settings-toggle__hint">
-              Delete all local data and re-download everything from Notion. This cannot be undone.
-            </p>
-          </div>
-          <button type="button" className="button button--danger" onClick={() => setShowResetConfirm(true)} disabled={busy}>
-            <AlertTriangle size={16} />
-            Reset
           </button>
         </div>
 
@@ -391,6 +378,22 @@ function DesktopSyncPanel() {
             ))}
           </div>
         )}
+        <section className={styles["sync-maintenance"]} aria-label="Maintenance">
+          <h3>Maintenance</h3>
+          <div className="settings-row">
+            <div>
+              <p className="settings-toggle__title">Reset local database</p>
+              <p className="settings-toggle__hint">
+                Delete all local data and re-download everything from Notion. This cannot be undone.
+              </p>
+            </div>
+            <button type="button" className="button button--danger" onClick={() => setShowResetConfirm(true)} disabled={busy}>
+              <AlertTriangle size={16} />
+              Reset
+            </button>
+          </div>
+
+        </section>
       </div>
 
       {/* Reset confirmation modal */}

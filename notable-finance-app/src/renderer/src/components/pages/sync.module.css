@@ -609,3 +609,10 @@
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
+
+.sync-maintenance {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-strong);
+}
+.sync-maintenance h3 { font-size: 14px; color: var(--ink-soft); margin: 0 0 12px; }

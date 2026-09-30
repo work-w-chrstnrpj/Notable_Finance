@@ -1,17 +1,12 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
-import { ChevronLeft, Copy, Info, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { useState, useEffect, useId, useRef } from "react";
+import { Copy, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { PageContentPanel } from "./page-content-panel";
 import type { ModalState } from "./form-modals";
 import type { PageContentResource } from "@shared/finance.types";
 
-/**
- * FlippableModal wraps a form modal with a 3D card flip animation.
- * Front face: the form. Back face: the Notion page content editor.
- * Pressing the [i] button on the front flips to the back.
- * Pressing the back arrow on the back flips to the front.
- */
+/** Shared record dialog. The historical export name preserves page integrations. */
 function FlippableModal({
   modal,
   subtitle,
@@ -19,9 +14,7 @@ function FlippableModal({
   deleteDanger,
   editing,
   saving,
-  // Accepted for prop-shape parity with FormModal; this variant doesn't render an inline
-  // error (callers surface save errors via Toast instead).
-  error: _error,
+  error,
   onEdit,
   onSave,
   onDelete,
@@ -47,111 +40,112 @@ function FlippableModal({
   pageContentResource?: PageContentResource;
   recordId?: string | null;
 }) {
-  const [flipped, setFlipped] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   const hasPageContent = Boolean(pageContentResource && recordId);
 
+  const open = modal !== null;
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    setShowContent(false);
+  }, [modal?.mode, recordId, modal?.title]);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    return () => previous?.focus();
+  }, [open]);
   if (!modal) return null;
 
   return (
     <div
       className="modal-backdrop"
       role="presentation"
-      onMouseDown={(event) => {
+      onMouseDown={event => {
         if (event.target === event.currentTarget && !saving) onClose();
       }}
     >
-      <div className="modal-panel--flip-container">
-        <div className="modal-panel modal-panel--flipper" data-flipped={flipped}>
-          {/* ── Front face: form ─────────────────────────────────────── */}
-          <div className="modal-panel__face modal-panel__face--front">
-            <div className="modal-panel__header">
-              <div>
-                <h2 id="form-modal-title">{modal.title}</h2>
-                <p>{editing ? subtitle : "Read-only — click Edit to change and save to Notion."}</p>
-              </div>
-              <div className="modal-header-actions">
-                {hasPageContent && (
-                  <button
-                    type="button"
-                    className="icon-button"
-                    aria-label="Page content"
-                    onClick={() => setFlipped((v) => !v)}
-                  >
-                    <Info size={17} />
-                  </button>
-                )}
-                <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose}>
-                  <X size={17} />
-                </button>
-              </div>
-            </div>
-            <div className="modal-panel__body">
-              <fieldset className="modal-fieldset" disabled={!editing || saving}>
-                {children}
-              </fieldset>
-            </div>
-            <div className="modal-panel__footer">
-              {modal.mode === "edit" && (
-                <button
-                  type="button"
-                  className={cx("button", deleteDanger && "button--danger")}
-                  onClick={onDelete}
-                  disabled={saving}
-                >
-                  <Trash2 size={16} />
-                  {deleteLabel}
-                </button>
-              )}
-              {modal.mode === "edit" && onDuplicate && (
-                <button type="button" className="button" onClick={onDuplicate} disabled={saving}>
-                  <Copy size={16} />
-                  Duplicate
-                </button>
-              )}
-              {!editing && modal.mode === "edit" ? (
-                <button type="button" className="button button--primary" onClick={onEdit}>
-                  <Pencil size={16} />
-                  Edit
-                </button>
-              ) : (
-                <button type="button" className="button button--primary" onClick={onSave} disabled={saving}>
-                  {saving ? (
-                    <RefreshCw size={16} className="spin" />
-                  ) : (
-                    <Save size={16} />
-                  )}
-                  {saving ? "Saving…" : "Save"}
-                </button>
-              )}
-            </div>
-          </div>
+      <div
+        className="modal-panel record-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        ref={panelRef}
+        onKeyDown={event => {
+          if (event.key !== "Tab") return;
+          const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]',
+          )).filter(el => !el.closest('[hidden]') && !el.closest('fieldset:disabled'));
 
-          {/* ── Back face: page content ──────────────────────────────── */}
-          <div className="modal-panel__face modal-panel__face--back">
-            <div className="modal-panel__header">
-              <div>
-                <h2 id="page-content-title">Page Content</h2>
-                <p>Additional details from Notion</p>
-              </div>
-              <button
-                type="button"
-                className="icon-button"
-                aria-label="Back to form"
-                onClick={() => setFlipped(false)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-            </div>
-            <div className="modal-panel__body">
-              {flipped && pageContentResource && recordId && (
-                <PageContentPanel resource={pageContentResource} recordId={recordId} />
-              )}
-            </div>
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          if (!first) {
+            event.preventDefault();
+            return;
+          }
+          if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }}
+      >
+        <div className="modal-panel__header">
+          <div>
+            <h2 id={titleId}>{modal.title}</h2>
+            <p>{editing ? subtitle : "Read-only. Choose Edit to make changes on this device."}</p>
           </div>
+          <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose} disabled={saving}>
+            <X size={17} />
+          </button>
         </div>
+        {hasPageContent && (
+          <div className="record-dialog__sections" role="group" aria-label="Record sections">
+            <button type="button" className="button" aria-pressed={!showContent} onClick={() => setShowContent(false)}>
+              Details
+            </button>
+            <button type="button" className="button" aria-pressed={showContent} onClick={() => setShowContent(true)}>
+              Page content
+            </button>
+          </div>
+        )}
+        <div className="modal-panel__body">
+          <div hidden={showContent && hasPageContent}>
+            <fieldset className="modal-fieldset" disabled={!editing || saving}>{children}</fieldset>
+          </div>
+          {showContent && pageContentResource && recordId && (
+            <PageContentPanel resource={pageContentResource} recordId={recordId} />
+          )}
+          {error && <p role="alert" className="page-content__error">{error}</p>}
+        </div>
+        <div className="modal-panel__footer" hidden={showContent && hasPageContent}>
+          {modal.mode === "edit" && (
+            <button type="button" className={cx("button", deleteDanger && "button--danger")} onClick={onDelete} disabled={saving}>
+              <Trash2 size={16} />{deleteLabel}
+            </button>
+          )}
+          {modal.mode === "edit" && onDuplicate && (
+            <button type="button" className="button" onClick={onDuplicate} disabled={saving}>
+              <Copy size={16} />Duplicate
+            </button>
+          )}
+          {!editing && modal.mode === "edit" ? (
+            <button type="button" className="button button--primary" onClick={onEdit}>
+              <Pencil size={16} />Edit
+            </button>
+          ) : (
+            <button type="button" className="button button--primary" onClick={onSave} disabled={saving}>
+              {saving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
+              {saving ? "Saving…" : "Save"}
+            </button>
+          )}
+        </div>
+        <p className="record-dialog__hint">Records save on this device first. Notion updates on sync.</p>
       </div>
     </div>
   );
 }
-
 export { FlippableModal };
