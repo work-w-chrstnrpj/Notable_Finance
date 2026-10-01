@@ -130,6 +130,7 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
       deleteAllThreads: vi.fn(async () => ok(true as const)),
       listMessages: vi.fn(async () => ok([])),
       send: vi.fn(async () => (err('E_UNMOCKED', 'chat.send not mocked'))),
+      shareReply: vi.fn(async () => ok(true as const)),
       listDrafts: vi.fn(async () => ok([])),
       confirmDraft: vi.fn(async () => (err('E_UNMOCKED', 'chat.confirmDraft not mocked'))),
       cancelDraft: vi.fn(async () => (err('E_UNMOCKED', 'chat.cancelDraft not mocked'))),

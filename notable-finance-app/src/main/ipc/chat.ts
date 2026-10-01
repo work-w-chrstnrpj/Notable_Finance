@@ -1,4 +1,5 @@
 import type { ChatOverlayId } from '../../shared/finance.types'
+import { BrowserWindow, ShareMenu } from 'electron'
 import { IPC_CHANNELS } from '../../shared/ipc-channels'
 import * as chat from '../chat'
 import {
@@ -170,6 +171,16 @@ export function registerChatIpc(): void {
         overlay?: ChatOverlayId | null
       }
     ) => result(() => chat.sendChatMessage(input))
+  )
+  handle(IPC_CHANNELS.chatShareReply, (event, text: string) =>
+    result(() => {
+      const reply = typeof text === 'string' ? text.trim() : ''
+      if (!reply) throw new Error('There is no reply text to share.')
+      if (reply.length > 100_000) throw new Error('This reply is too long to share.')
+      const menu = new ShareMenu({ texts: [reply] })
+      menu.popup({ window: BrowserWindow.fromWebContents(event.sender) ?? undefined })
+      return true as const
+    })
   )
 
   handle(IPC_CHANNELS.chatListDrafts, (_e, threadId?: string) =>

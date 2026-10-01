@@ -1,3 +1,4 @@
+import styles from "@/components/ui/filter-row.module.css";
 import { Plus } from "lucide-react";
 import {
   FilterSelect,
@@ -19,6 +20,8 @@ import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance"
  * Presentational — every piece of state stays owned by the page and is passed in.
  */
 export function ExpenseToolbar({
+  ccPeriod,
+  onCcPeriodChange,
   viewMode,
   expenseViewModes,
   isAnnual,
@@ -47,6 +50,8 @@ export function ExpenseToolbar({
   onNewExpense,
   onViewModeChange,
 }: {
+  ccPeriod: "Daily" | "Weekly" | "Monthly" | "Annually";
+  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
   viewMode: ExpenseViewMode;
   expenseViewModes: ExpenseViewMode[];
   isAnnual: boolean;
@@ -113,19 +118,39 @@ export function ExpenseToolbar({
         }
       />
 
+      <SegmentedControl
+          label="Expense view"
+          options={expenseViewModes.map(mode => ({
+            label: mode === "CC Transaction" ? "CC Transactions" : mode === "To pay" ? "To Pay" : mode === "To buy" ? "To Buy" : mode,
+            value: mode,
+          }))}
+          value={viewMode}
+          onChange={value => onViewModeChange(value as ExpenseViewMode)}
+          shortcutId="view.filterTab"
+        />
       {(searchActive || filterActive) && (
-        <div className="toolbar-row">
+        <div className={`toolbar-row ${styles.filters}`}>
+          {filterActive && viewMode === "CC Transaction" && (
+            <label className="filter-select">
+              <select aria-label="CC Transaction period" value={ccPeriod} onChange={e => onCcPeriodChange?.(e.target.value as typeof ccPeriod)}>
+                {["Daily", "Weekly", "Monthly", "Annually"].map(period => <option key={period}>{period}</option>)}
+              </select>
+            </label>
+          )}
           {filterActive && (
             <>
               <FilterDropdown
                 placeholder="All accounts"
                 value={accountFilterId}
                 onChange={setAccountFilterId}
-                items={activeAccounts.map((account) => ({
+                items={[...(viewMode === "To pay" ? [
+                  { id: "__credit__", label: "All Credit Accounts" },
+                  { id: "__debit__", label: "All Debit Accounts" },
+                ] : []), ...activeAccounts.map((account) => ({
                   id: account.id,
                   label: account.name,
                   icon: <AccountIcon account={account} />,
-                }))}
+                }))]}
               />
               {viewMode !== "Unpaid Pasabuy" && (
                 <FilterDropdown
@@ -142,7 +167,7 @@ export function ExpenseToolbar({
                   ]}
                 />
               )}
-              {viewMode === "Unpaid Pasabuy" && (
+              {expenseCategories.some(c => c.id === expenseCategoryFilter && /pasabuy/i.test(c.name)) && (
                 <FilterSelect
                   placeholder="All pasabuyers"
                   placeholderDisabled={false}
@@ -154,7 +179,7 @@ export function ExpenseToolbar({
                   ))}
                 </FilterSelect>
               )}
-              {!(["To pay", "Installments", "Unpaid CC"] as ExpenseViewMode[]).includes(viewMode) && (
+              {!(["To pay", "Installments"] as ExpenseViewMode[]).includes(viewMode) && (
                 <FilterSelect
                   placeholder="All payment statuses"
                   placeholderDisabled={false}
@@ -166,12 +191,11 @@ export function ExpenseToolbar({
                   ))}
                 </FilterSelect>
               )}
-              {viewMode === "Unpaid CC" &&
-                expenseCategories.some(
+              {expenseCategories.some(
                   (category) => category.id === expenseCategoryFilter && /pasabuy/i.test(category.name),
                 ) && (
                   <FilterSelect
-                    placeholder="All Pasabuy statuses"
+                    placeholder="All Pasabuy payment statuses"
                     placeholderDisabled={false}
                     value={pasabuyStatusFilter}
                     onChange={setPasabuyStatusFilter}
@@ -192,14 +216,6 @@ export function ExpenseToolbar({
           )}
         </div>
       )}
-
-      <SegmentedControl
-        label="Expense view"
-        options={expenseViewModes.map((mode) => ({ label: mode, value: mode }))}
-        value={viewMode}
-        onChange={(value) => onViewModeChange(value as ExpenseViewMode)}
-        shortcutId="view.filterTab"
-      />
 
       {isAnnual && (
         <div className="annual-controls">

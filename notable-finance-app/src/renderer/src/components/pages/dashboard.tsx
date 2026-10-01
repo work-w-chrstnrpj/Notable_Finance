@@ -254,76 +254,33 @@ function DashboardPage({
 
   return (
     <div className="page-stack">
-      <section className="metric-grid metric-grid--prototype">
-        <MetricCard
-          title="Total Cash Flow"
-          value={formatMoney(display.totalCashFlow)}
-          detail="Non-credit accounts"
-          icon={WalletCards}
-          tone="blue"
-        />
-        <MetricCard
-          title="Monthly Income"
-          value={formatMoney(display.monthlyGrossIncome)}
-          detail={monthLabel}
-          icon={Banknote}
-          tone="green"
-        />
-        <MetricCard
-          title="Monthly Expenses"
-          value={formatMoney(display.monthlyExpenses)}
-          detail={monthLabel}
-          icon={Receipt}
-          tone="rose"
-        />
-        <MetricCard
-          title="Savings"
-          value={formatMoney(display.monthSavingsTotal)}
-          detail={monthLabel}
-          icon={PiggyBank}
-          tone="amber"
-        />
+      <section aria-label="This month">
+        <div className={styles["section-heading"]}><h2>This month</h2><span>{monthLabel}</span></div>
+        <div className={styles["monthly-metrics"]}>
+          <MetricCard title="Monthly Income" value={formatMoney(display.monthlyGrossIncome)} detail={monthLabel} icon={Banknote} tone="green" />
+          <MetricCard title="Monthly Expenses" value={formatMoney(display.monthlyExpenses)} detail="Excludes Pasabuy" icon={Receipt} tone="rose" />
+          <MetricCard title="Savings" value={formatMoney(display.monthSavingsTotal)} detail={monthLabel} icon={PiggyBank} tone="amber" />
+          <MetricCard title="Monthly Total Transactions" value={formatMoney(display.monthlyCcTransactions)} detail="Credit account transactions" icon={CreditCard} tone="blue" />
+        </div>
       </section>
-
-      <section className="metric-grid metric-grid--prototype">
-        <MetricCard
-          title="Alkansya Balance"
-          value={formatMoney(display.alkansyaBalance)}
-          detail={monthLabel}
-          icon={PiggyBank}
-          tone="green"
-        />
-        <MetricCard
-          title="Available Credit"
-          value={formatMoney(display.availableCredit)}
-          detail={`Limit ${formatMoney(display.creditLimit, { compact: true })}`}
-          icon={CreditCard}
-          tone="blue"
-        />
-        <MetricCard
-          title="Monthly Total CC Transactions"
-          value={formatMoney(display.monthlyCcTransactions)}
-          detail={`${creditActiveAccounts.length} credit accounts · ${monthLabel}`}
-          icon={CreditCard}
-          tone="amber"
-        />
-        <MetricCard
-          title="CC Balance Total"
-          value={formatMoney(display.creditBalanceTotal)}
-          detail={`${creditActiveAccounts.length} credit accounts`}
-          icon={AlertTriangle}
-          tone="rose"
-        />
+      <section aria-label="Account position">
+        <div className={styles["section-heading"]}><h2>Account position</h2><span>Current balances</span></div>
+        <div className={styles["position-metrics"]}>
+          <MetricCard title="Total Cash Flow" value={formatMoney(display.totalCashFlow)} detail="Non-credit account balances" icon={WalletCards} tone="blue" />
+          <MetricCard title="Alkansya Balance" value={formatMoney(display.alkansyaBalance)} detail="All time" icon={PiggyBank} tone="green" />
+          <MetricCard title="Available Credit" value={formatMoney(display.availableCredit)} detail={`Limit ${formatMoney(display.creditLimit, { compact: true })}`} icon={CreditCard} tone="blue" />
+          <MetricCard title="CC Balance Total" value={formatMoney(display.creditBalanceTotal)} detail={`${creditActiveAccounts.length} credit accounts`} icon={AlertTriangle} tone="rose" />
+        </div>
       </section>
 
       <section className={styles["dashboard-chart-grid"]}>
-        <TopExpensePurchasesCard purchases={display.topExpensePurchases} monthLabel={monthLabel} />
+        <RecentTransactionsList records={recentData} />
         <SpendingBreakdownCard data={spendingData} monthLabel={monthLabel} />
       </section>
 
       <section className={styles["dashboard-bottom-grid"]}>
         <TopSpendingCategoriesCard categories={display.topSpendingCategories} monthLabel={monthLabel} />
-        <RecentTransactionsList records={recentData} />
+        <TopExpensePurchasesCard purchases={display.topExpensePurchases} monthLabel={monthLabel} />
       </section>
     </div>
   );
@@ -343,7 +300,7 @@ function TopExpensePurchasesCard({
   monthLabel: string;
 }) {
   // Rank ramp: #1 red → #5 yellow.
-  const rankColors = ["#DC2626", "#EA580C", "#F97316", "#F59E0B", "#CA8A04"];
+  const rankColors = ["var(--blue)"];
 
   return (
     <section className="dashboard-card">
@@ -366,7 +323,7 @@ function TopExpensePurchasesCard({
                   {index + 1}
                 </span>
                 <div className={styles["top-expense-row__content"]}>
-                  <strong className={styles["top-expense-row__title"]} style={{ color }}>
+                  <strong className={styles["top-expense-row__title"]} >
                     {p.description || "Untitled"}
                   </strong>
                   <div className={styles["top-expense-row__meta"]}>

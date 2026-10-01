@@ -20,3 +20,9 @@
   color: var(--blue);
   filter: brightness(1.06);
 }
+
+.icon-button.search-toggle:not(.search-toggle--active) {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}

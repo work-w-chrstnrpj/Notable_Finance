@@ -22,6 +22,7 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 | [development-plan.md](development-plan.md) | Phased plan and milestones | — |
 | [chat-agent-design.md](chat-agent-design.md) | Chat copilot; **Phase 6 complete (6.6 hardening)** | P1 |
 | [chat-skills-and-overlays.md](chat-skills-and-overlays.md) | Chat runtime skills, overlays, clarify/refuse (**6.0 frozen**) | P1 |
+| [chat-diagnostic-copilot.md](chat-diagnostic-copilot.md) | Phase 8 plan: Chat as a BYOK **agent** (tool loop, Notion/local primitives) | P1 |
 | [diagrams.md](diagrams.md) | Context, process, sync, merge, and state diagrams | — |
 
 ## Decisions locked (source for all docs)
@@ -36,6 +37,6 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 - **Platforms:** macOS, Linux, Windows; personal/unsigned now, signing later.
 - **At rest:** OS disk encryption; token in OS keychain (safeStorage).
 - **UI:** multi-window and in-window tabs; never show stale data without a badge.
-- **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md).
+- **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md). **Phase 8 (planned):** BYOK Chat becomes an **agent** (long tool loop, local + Notion primitives, on-demand app knowledge) — [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md). Apple stays a chatbot.
 - **Reuse:** copy web logic into desktop (web untouched); pnpm workspaces.
 - **Testing:** full offline + conflict simulations + Electron e2e.

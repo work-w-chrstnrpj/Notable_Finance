@@ -1,3 +1,4 @@
+import filterStyles from "./accounts-filters.module.css";
 
 import { useState } from "react";
 import { Panel, PageToolbar, FilterDropdown, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
@@ -167,7 +168,7 @@ function AccountsPage() {
         onChange={(value) => setAccountScope(value as AccountScope)}
         shortcutId="view.filterTab"
       />
-      <div className="account-filter-row">
+      <div className={`account-filter-row ${filterStyles.filters}`}>
         <FilterDropdown
           placeholder="All card types"
           value={cardTypeFilter}

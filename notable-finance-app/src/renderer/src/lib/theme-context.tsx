@@ -77,6 +77,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [stored, setStored] = useState<StoredTheme>(() => loadLocalTheme());
   const [mounted, setMounted] = useState(false);
   const hydratedRef = useRef(false);
+  const presetKeys = useRef<string[]>([]);
+  const [systemDark, setSystemDark] = useState(() => resolveEffectiveMode("system") === "dark");
 
   useEffect(() => {
     setMounted(true);
@@ -94,11 +96,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
     setStored(next);
     saveLocalTheme(next);
-  }, [ready, settings.theme.mode, settings.theme.primaryColor, settings.theme.secondaryColor]);
+  }, [ready, settings.theme.mode, settings.theme.primaryColor, settings.theme.secondaryColor, settings.theme.preset]);
 
   useEffect(() => {
     if (!mounted) return;
-    const effective = resolveEffectiveMode(stored.mode);
+    const effective = stored.mode === "system" ? (systemDark ? "dark" : "light") : stored.mode;
     document.documentElement.setAttribute("data-theme", effective);
     document.documentElement.setAttribute("data-preset", stored.preset);
     document.documentElement.style.setProperty("--blue", stored.primaryColor);
@@ -121,19 +123,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     /* Apply design preset CSS variables */
     const presetObj = getPreset(stored.preset);
     const presetVars = effective === 'dark' ? presetObj.dark ?? presetObj.light : presetObj.light;
+    for (const key of presetKeys.current) document.documentElement.style.removeProperty(key);
+    presetKeys.current = Object.keys(presetVars);
     for (const [key, val] of Object.entries(presetVars)) {
       document.documentElement.style.setProperty(key, val);
     }
-  }, [stored, mounted, settings.fonts]);
+  }, [stored, mounted, settings.fonts, systemDark]);
 
   useEffect(() => {
     if (stored.mode !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const effective = resolveEffectiveMode("system");
-      document.documentElement.setAttribute("data-theme", effective);
-      document.documentElement.setAttribute("data-preset", stored.preset);
-    };
+    const handler = () => setSystemDark(mq.matches);
+    handler();
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, [stored.mode]);

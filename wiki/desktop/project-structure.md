@@ -20,6 +20,8 @@ notable-finance-app/
 │   │   ├── notion/                # Notion adapter: client factory, property mapper, query, mutation
 │   │   ├── sync/                  # reconcile engine, three-way merge, conflict, mutation queue, cursors
 │   │   ├── chat/                  # AI chat orchestrator, tools, skills, overlays
+│   │   │                          # Phase 8 (planned): investigate-tools + knowledge + optional agent-loop
+│   │   │                          # — see chat-diagnostic-copilot.md “Implementation constraints”
 │   │   ├── settings/              # app settings + keychain token access (safeStorage)
 │   │   ├── updater/ dev-logs/ services/
 │   │   └── ipc/                   # one registrar per domain — see below

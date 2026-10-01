@@ -34,6 +34,7 @@ export interface ExpenseTableContext {
   derive: (record: ExpenseRecord) => ExpenseComputed;
   /** Selected-and-not-disabled rows — the set the footer totals sum over. */
   enabledRecords: ExpenseRecord[];
+  showPasabuyDetails?: boolean;
 }
 
 export interface ExpenseTableConfig {
@@ -103,13 +104,14 @@ function unpaidCcConfig(ctx: ExpenseTableContext): ExpenseTableConfig {
     ],
     buildRow: (record) => {
       const c = ctx.derive(record);
+      const isUnpaid = !record.datePaid && record.paymentStatus !== "Paid" && record.paymentStatus !== "Cancelled";
       return [
         formatDate(record.purchaseDate),
-        <span className="expense-cell--unpaid" key={`${record.id}-desc`}>
+        <span className={isUnpaid ? "expense-cell--unpaid" : undefined} key={`${record.id}-desc`}>
           {stripNotionTag(record.description)}
         </span>,
         ctx.accountCell(record.accountId),
-        <span className="expense-cell--unpaid num" key={`${record.id}-amt`}>
+        <span className={isUnpaid ? "expense-cell--unpaid num" : "num"} key={`${record.id}-amt`}>
           {formatMoney(record.amount)}
         </span>,
         ctx.categoryCell(record.categoryId),
@@ -233,13 +235,14 @@ function defaultConfig(ctx: ExpenseTableContext): ExpenseTableConfig {
  * Pick the table shape for a view mode. "Daily"/"Weekly"/"Monthly"/"Annually"/"To pay"/"To buy"
  * all share the default six-column layout, exactly as the original `: (` fallback branch did.
  */
-export function getExpenseTableConfig(
+function baseExpenseTableConfig(
   viewMode: ExpenseViewMode,
   ctx: ExpenseTableContext,
 ): ExpenseTableConfig {
   switch (viewMode) {
     case "Unpaid Pasabuy":
       return unpaidPasabuyConfig(ctx);
+    case "CC Transaction":
     case "Unpaid CC":
       return unpaidCcConfig(ctx);
     case "Installments":
@@ -247,6 +250,18 @@ export function getExpenseTableConfig(
     default:
       return defaultConfig(ctx);
   }
+}
+
+/** Keep the payment workflow columns while making Pasabuy details available on cash too. */
+export function getExpenseTableConfig(viewMode: ExpenseViewMode, ctx: ExpenseTableContext): ExpenseTableConfig {
+  const base = baseExpenseTableConfig(viewMode, ctx);
+  if (!ctx.showPasabuyDetails || viewMode === "Unpaid Pasabuy") return base;
+  return {
+    ...base,
+    headers: [...base.headers, "Pasabuyer Balance", "Pasabuyer", "Pasabuy Payment Status", "Pasabuy Payment Date", "Account Receiver"],
+    buildRow: record => [...base.buildRow(record), money(record.pasabuyBalance ?? 0), record.pasabuyer ?? "—", record.pasabuyStatus ?? "—", record.pasabuyDateOfPayment ? formatDate(record.pasabuyDateOfPayment) : "—", ctx.accountCell(record.pasabuyAccountReceiverId)],
+    buildFooter: () => base.buildFooter().map(row => [...row, money(sum(ctx.enabledRecords, record => record.pasabuyBalance ?? 0)), "", "", "", ""]),
+  };
 }
 
 /**

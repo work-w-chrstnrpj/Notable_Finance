@@ -49,6 +49,15 @@ test.beforeAll(async () => {
     stdio: 'ignore'
   })
 
+  // This fixture belongs only to this isolated test profile, not the dev seed or user data.
+  execFileSync('node', ['-e', `
+    const { DatabaseSync } = require('node:sqlite')
+    const { join } = require('node:path')
+    const db = new DatabaseSync(join(process.env.NF_USER_DATA_DIR, 'notable-finance.sqlite'))
+    db.prepare('INSERT INTO expense_categories (id, notion_page_id, name, monthly_budget, auxiliary, created_at) VALUES (?, ?, ?, 0, 0, ?)').run('test-pasabuy', 'test-pasabuy', 'Pasabuy', Date.now())
+    db.close()
+  `], { env: { ...process.env, NF_USER_DATA_DIR: userData }, stdio: 'ignore' })
+
   app = await launch()
   win = await app.firstWindow()
   await win.waitForSelector('.sidebar')
@@ -60,7 +69,7 @@ test.afterAll(async () => {
 
 test('boots the web workspace shell: sidebar groups + topbar', async () => {
   // Sidebar groups exactly as the web app: Core / Workflows / System
-  for (const group of ['Core', 'Workflows', 'System']) {
+  for (const group of ['Overview', 'Money movement', 'Workspace']) {
     await expect(win.locator(mod('nav__title'), { hasText: group })).toBeVisible()
   }
   for (const label of [
@@ -71,13 +80,15 @@ test('boots the web workspace shell: sidebar groups + topbar', async () => {
   }
   // TopBar with the web app's sync controls
   await expect(win.locator(mod('topbar'))).toBeVisible()
-  await expect(win.locator(`${mod('topbar')} .button`, { hasText: 'Schema Check' })).toBeVisible()
+  await expect(win.locator(`${mod('topbar')} .button`, { hasText: 'Schema Check' })).toHaveCount(0)
   await expect(win.locator(`${mod('topbar')} .button--primary`, { hasText: 'Sync' })).toBeVisible()
 })
 
-test('dashboard renders the web dashboard layout', async () => {
+test('dashboard renders the web dashboard layout', async ({ browserName }, testInfo) => {
+  void browserName // Electron is launched directly; retain Playwright fixture signature.
   await win.locator(mod('nav__item'), { hasText: 'Dashboard' }).click()
   await expect(win.locator('.workspace__content')).toBeVisible()
+  await win.screenshot({ path: testInfo.outputPath('dashboard-redesign.png') })
 })
 
 test('accounts page shows the seeded reference accounts (web card filters intact)', async () => {
@@ -110,4 +121,66 @@ test('multi-window still works (File menu owns New Window)', async () => {
   // windows:new IPC from the renderer side:
   await win.evaluate(() => (window as unknown as { api: { windows: { new: () => Promise<unknown> } } }).api.windows.new())
   await expect.poll(() => app.windows().length, { timeout: 10_000 }).toBeGreaterThan(before)
+})
+
+test('CC Transaction periods and filters survive the desktop shell', async ({ browserName }, testInfo) => {
+  void browserName // Electron is launched directly; retain Playwright fixture signature.
+  await win.locator(mod('nav__item'), { hasText: 'Expense' }).click()
+  await win.getByRole('button', { name: 'CC Transactions', exact: true }).click()
+  await win.getByRole('button', { name: 'Filters', exact: true }).click()
+  const period = win.getByRole('combobox', { name: 'CC Transaction period' })
+  for (const value of ['Daily', 'Weekly', 'Monthly', 'Annually']) {
+    await period.selectOption(value)
+    await expect(period).toHaveValue(value)
+  }
+  await expect(win.locator('select').filter({ has: win.locator('option', { hasText: 'All payment statuses' }) })).toBeVisible()
+  await win.getByRole('button', { name: 'All Categories', exact: true }).click()
+  await win.getByRole('button', { name: 'Pasabuy', exact: true }).click()
+  await expect(win.locator('select').filter({ has: win.locator('option', { hasText: 'All Pasabuy payment statuses' }) })).toBeVisible()
+  await expect(win.getByRole('columnheader', { name: 'Pasabuyer Balance' })).toBeVisible()
+  await win.screenshot({ path: testInfo.outputPath('cc-transaction-redesign.png') })
+})
+
+test('appearance and fonts persist after reload; narrow dark dashboard stays usable', async ({ browserName }, testInfo) => {
+  void browserName // Electron is launched directly; retain Playwright fixture signature.
+  await win.evaluate(async () => {
+    const api = (window as unknown as { api: import('../src/preload').PreloadApi }).api
+    const current = await api.settings.get()
+    if (!current.ok) throw new Error('Test settings unavailable')
+    const result = await api.settings.update({
+      theme: { ...current.data.theme, preset: 'default', mode: 'dark', primaryColor: '#4270bd', secondaryColor: '#22816c' },
+      fonts: { bodyFont: 'Arial', monoFont: 'Courier New', brandFont: 'Georgia', receiptFont: 'Times New Roman' },
+    })
+    if (!result.ok) throw new Error('Test settings update failed')
+    window.location.hash = '#/dashboard'
+  })
+  await win.reload()
+  await expect(win.locator('html')).toHaveAttribute('data-theme', 'dark')
+  const appearance = await win.evaluate(() => {
+    const style = document.documentElement.style
+    return ['--blue', '--font-body', '--font-mono', '--font-brand', '--font-receipt'].map(key => style.getPropertyValue(key))
+  })
+  expect(appearance[0]).toBe('#4270bd')
+  for (const [index, font] of ['Arial', 'Courier New', 'Georgia', 'Times New Roman'].entries()) expect(appearance[index + 1]).toContain(font)
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().forEach(w => w.setSize(900, 760)))
+  await expect(win.getByRole('button', { name: 'Open navigation' })).toBeVisible()
+  await expect(win.getByRole('heading', { name: 'This month' })).toBeVisible()
+  await expect.poll(() => win.locator('.sidebar').evaluate(el => el.getBoundingClientRect().right)).toBeLessThanOrEqual(0)
+  await win.screenshot({ path: testInfo.outputPath('dark-custom-font-dashboard.png'), animations: 'disabled' })
+  expect(await win.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('daily calendar is a single popup matching the date selector width', async ({ browserName }, testInfo) => {
+  void browserName
+  await win.evaluate(() => { window.location.hash = '#/expense' })
+  await win.getByRole('button', { name: 'Daily', exact: true }).click()
+  await win.locator('.month-stepper__label').click()
+  await expect(win.getByRole('dialog', { name: 'Pick a date' })).toBeVisible()
+  await expect(win.locator('.date-picker input[type="date"]')).toHaveCount(0)
+  const trigger = await win.locator('.month-stepper').boundingBox()
+  const calendar = await win.locator('.date-picker').boundingBox()
+  expect(Math.abs(trigger!.width - calendar!.width)).toBeLessThan(1)
+  await win.screenshot({ path: testInfo.outputPath('single-calendar.png'), animations: 'disabled' })
+  await win.keyboard.press('Escape')
+  await expect(win.getByRole('dialog', { name: 'Pick a date' })).toHaveCount(0)
 })

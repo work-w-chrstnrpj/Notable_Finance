@@ -46,3 +46,8 @@
   --duration-normal: 250ms;
   --duration-slow: 400ms;
 }
+
+/* Respect system motion preferences across shared desktop controls. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

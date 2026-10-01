@@ -250,6 +250,7 @@ function DataTable({
                       type="button"
                       className={cx(
                         styles["row-checkbox"], styles["row-checkbox--header"],
+                        hasSelection && styles["row-checkbox--visible"],
                         allVisibleSelected && styles["row-checkbox--checked"],
                         someVisibleSelected && styles["row-checkbox--indeterminate"],
                       )}

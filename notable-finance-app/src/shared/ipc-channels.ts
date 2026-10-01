@@ -34,6 +34,7 @@ export const IPC_CHANNELS = {
   chatProviders: 'chat:providers',
   chatRemoteModels: 'chat:remoteModels',
   chatSend: 'chat:send',
+  chatShareReply: 'chat:shareReply',
   chatSetDefaultCredential: 'chat:setDefaultCredential',
   chatStatus: 'chat:status',
   chatUpdateCredential: 'chat:updateCredential',

@@ -133,14 +133,20 @@ describe('dashboardSummary', () => {
   const expenses = [
     expense({ id: 'e1', accountId: 'cash', purchaseDate: '2026-07-08', amount: 200, interest: 0, datePaid: '2026-07-08' }),
     expense({ id: 'e2', accountId: 'card', purchaseDate: '2026-07-09', amount: 150, interest: 10, datePaid: null }),
+    expense({ id: 'pasabuy', accountId: 'card', categoryId: 'pasabuy', purchaseDate: '2026-07-10', amount: 90, datePaid: null }),
     expense({ id: 'e3', accountId: 'cash', purchaseDate: '2026-05-01', amount: 77 }) // other month
   ]
-  const summary = dashboardSummary('2026-07', { incomes, expenses, accounts })
+  const summary = dashboardSummary(
+    '2026-07',
+    { incomes, expenses, accounts },
+    undefined,
+    new Set(['pasabuy'])
+  )
 
-  it('month-scopes income and expense totals', () => {
-    expect(summary.totalIncome).toBe(700) // only i1 net (800-100)
-    expect(summary.totalExpense).toBe(360) // e1 200 + e2 (150+10); e3 excluded
-    expect(summary.grossMargin).toBe(340)
+  it('matches visible Dashboard totals: gross income and own expense excluding Pasabuy', () => {
+    expect(summary.totalIncome).toBe(800)
+    expect(summary.totalExpense).toBe(360) // e1 200 + e2 (150+10); Pasabuy and e3 excluded
+    expect(summary.grossMargin).toBe(440)
   })
 
   it('cash flow uses all-time balances of active non-credit accounts only', () => {
@@ -151,7 +157,7 @@ describe('dashboardSummary', () => {
 
   it('counts active accounts and pending (unpaid) month expenses', () => {
     expect(summary.activeAccountCount).toBe(2) // cash + card; old inactive
-    expect(summary.pendingExpenseCount).toBe(1) // e2 datePaid null
+    expect(summary.pendingExpenseCount).toBe(2) // e2 + Pasabuy datePaid null
   })
 })
 

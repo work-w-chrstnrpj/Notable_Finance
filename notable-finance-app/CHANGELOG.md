@@ -5,6 +5,31 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-10-01
+
+### Added
+
+- **CC Transactions:** Replaces Unpaid CC with a complete credit-account transaction view, including Daily, Weekly, Monthly, and Annual scopes plus Payment Status filtering.
+- **Pasabuy filtering:** Selecting the Pasabuy category reveals buyer and Pasabuy Payment Status filters without requiring a separate Unpaid Pasabuy view.
+- **Chat reply actions:** Copilot replies provide Copy and the native macOS Share menu.
+- **Branding:** New Notable Finance logo for the sidebar, favicon, Dock, Finder, and packaged application.
+
+### Changed
+
+- **Desktop shell:** Simplified navigation groups and top bar, with Online on the left, the date selector centered, and Last Sync/Sync on the right.
+- **Dashboard:** Monthly Income, Monthly Expenses, Savings, and Monthly Total Transactions now form one four-card summary; account-position metrics remain separate.
+- **Expense and Income:** Full-width view tabs, consistent filters, quieter tables, hover/focus row selection, and unified filter sizing.
+- **Date selection:** Daily and Weekly use one calendar; the popup matches the selector width.
+- **Settings and Sync:** Appearance settings remain intact while Theme/Interface organization and Sync maintenance wording are clearer.
+- **Theme handling:** System appearance changes correctly reapply preset tokens while preserving custom fonts and colors.
+
+### Fixed
+
+- **Chat report totals:** Dashboard reports now match the Dashboard cards by using gross income and excluding Pasabuy pass-through expenses.
+- **CC transaction styling:** Only unpaid entries receive unpaid emphasis; paid, cancelled, and installment records retain their appropriate presentation.
+- **Account filters:** To Pay supports All Credit Accounts and All Debit Accounts, where debit means every non-credit account type.
+- **Responsive behavior:** Narrow layouts avoid horizontal document overflow and keep the date selector and navigation usable.
+
 ## [2.0.2] - 2026-09-15
 
 ### Fixed

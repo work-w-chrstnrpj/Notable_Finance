@@ -1,3 +1,4 @@
+import styles from "@/components/ui/filter-row.module.css";
 import { Plus } from "lucide-react";
 import { FilterDropdown, SegmentedControl, PageToolbar } from "@/components/ui";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
@@ -88,7 +89,7 @@ export function IncomeToolbar({
       />
 
       {(searchActive || filterActive) && (
-        <div className="toolbar-row">
+        <div className={`toolbar-row ${styles.filters}`}>
           {filterActive && (
             <>
               <FilterDropdown

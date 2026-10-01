@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import Markdown from "react-markdown";
-import { Sparkles, User } from "lucide-react";
+import { Check, Copy, Share2, Sparkles, User } from "lucide-react";
+import { useState } from "react";
 import { cx } from "@/lib/finance-helpers";
 import { DraftCard } from "./draft-card";
 import type {
@@ -16,6 +17,43 @@ function formatTime(ts: number): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function ReplyActions({ messageId, content }: { messageId: string; content: string }) {
+  const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
+
+  async function copyReply() {
+    try {
+      await navigator.clipboard.writeText(content);
+      setStatus("copied");
+      window.setTimeout(() => setStatus("idle"), 1600);
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  async function shareReply() {
+    try {
+      const result = await window.api?.chat?.shareReply?.(content);
+      if (result && !result.ok) setStatus("error");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="chat-msg__actions" aria-label="Reply actions">
+      <button type="button" onClick={() => void copyReply()} aria-label={`Copy reply ${messageId}`}>
+        {status === "copied" ? <Check size={13} /> : <Copy size={13} />}
+        {status === "copied" ? "Copied" : "Copy"}
+      </button>
+      <button type="button" onClick={() => void shareReply()} aria-label={`Share reply ${messageId}`}>
+        <Share2 size={13} />
+        Share
+      </button>
+      {status === "error" && <span role="status">Action unavailable</span>}
+    </div>
+  );
 }
 
 /**
@@ -160,7 +198,10 @@ function MessageStream({
                   </Markdown>
                 )}
               </div>
-              <span className="chat-msg__time">{formatTime(m.createdAt)}</span>
+              <div className="chat-msg__footer">
+                {!isUser && <ReplyActions messageId={m.id} content={m.content} />}
+                <span className="chat-msg__time">{formatTime(m.createdAt)}</span>
+              </div>
             </div>
           </div>
         );
