@@ -45,6 +45,7 @@ linux:
   category: Finance
 
 win:
+  icon: build/icon.png
   target:
     - nsis
 
