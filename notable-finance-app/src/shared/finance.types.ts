@@ -281,6 +281,8 @@ export interface CreateIncomeInput {
 export type UpdateIncomeInput = Partial<CreateIncomeInput>
 
 export interface CreateExpenseInput {
+  /** To Pay permits incomplete planning records; other forms retain normal requirements. */
+  viewMode?: 'To pay'
   description: string
   purchaseDate: string
   datePaid?: string | null

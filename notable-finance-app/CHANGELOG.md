@@ -5,6 +5,15 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2026-10-14
+
+### Fixed
+
+- **Expense sync:** Correct the INSERT value count introduced with BNPL adjustment, which could stop a pull before new expenses or later Notion edits were applied; correct the matching hard-delete undo statement.
+- **To Pay:** Allow blank description, account, category, dates, and amount in the Expense To Pay form. Preserve cleared relations and dates when pushing.
+- **Sync safety:** Pause push after a failed pull so stale local snapshots cannot overwrite unreconciled Notion changes.
+- **Sync feedback:** Report record-level pull/push errors instead of displaying success merely because the IPC request returned.
+
 ## [2.1.1] - 2026-10-13
 
 ### Added

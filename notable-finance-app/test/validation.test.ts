@@ -3,6 +3,7 @@ import {
   validateCreateExpense,
   validateCreateIncome,
   validateUpdateIncome,
+  validateUpdateExpense,
   ValidationError
 } from '../src/main/domain/validation'
 
@@ -46,5 +47,19 @@ describe('validateCreateExpense', () => {
     expect(() => validateCreateExpense({ ...valid, accountId: '' })).toThrow(ValidationError)
     expect(() => validateCreateExpense({ ...valid, categoryId: '' })).toThrow(ValidationError)
     expect(() => validateCreateExpense({ ...valid, datePaid: 'soon' })).toThrow(ValidationError)
+  })
+})
+
+
+describe('To Pay validation', () => {
+  const blank = { viewMode: 'To pay' as const, description: '', purchaseDate: '', accountId: '', categoryId: '', amount: 0 }
+  it('accepts blank fields for create and update', () => {
+    expect(() => validateCreateExpense(blank)).not.toThrow()
+    expect(() => validateUpdateExpense(blank)).not.toThrow()
+  })
+  it('still rejects invalid supplied dates and non-finite amounts', () => {
+    expect(() => validateCreateExpense({ ...blank, amount: NaN })).toThrow(ValidationError)
+    expect(() => validateCreateExpense({ ...blank, purchaseDate: 'soon' })).toThrow(ValidationError)
+    expect(() => validateUpdateExpense({ ...blank, datePaid: 'soon' })).toThrow(ValidationError)
   })
 })

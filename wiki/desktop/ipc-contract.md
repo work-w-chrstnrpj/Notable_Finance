@@ -32,6 +32,9 @@ Accounts/categories are read-only reference — no create/update/delete.
 | `hardDelete(id)` | `true` (local row removed; Notion page queued for trash/archive on push) |
 
 ### `window.api.expenses`
+
+For the Expense **To Pay** form, create/update accepts `viewMode: "To pay"`: description, account, category, purchase date, date paid, and amount may be left blank (blank amount becomes zero). Supplied numbers must remain finite and supplied dates must use ISO format. Empty account/category/purchase-date inputs are stored as `NULL` and push as cleared Notion properties. Normal expense forms retain their required fields. Notion imports always accept incomplete records regardless of the current view.
+
 `list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields). List params include `paymentStatus` (`Paid` | `Unpaid` | `Installment` | `Cancelled`) alongside account/category/pasabuyer/view-mode filters.
 
 ### `window.api.expenseScheduler`

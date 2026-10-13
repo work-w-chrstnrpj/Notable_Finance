@@ -368,9 +368,9 @@ export function createExpense(input: CreateExpenseInput): ExpenseRecordDto {
       input.description.trim(),
       input.amount,
       input.interest ?? 0,
-      input.accountId,
-      input.categoryId,
-      input.purchaseDate,
+      input.accountId || null,
+      input.categoryId || null,
+      input.purchaseDate || null,
       input.datePaid ?? null,
       input.paymentStatus ?? null,
       input.paymentFrequency ?? null,
@@ -414,7 +414,11 @@ const EXPENSE_PATCH_COLS: Record<string, string> = {
 export function updateExpense(id: string, patch: UpdateExpenseInput): ExpenseRecordDto {
   validateUpdateExpense(patch as Record<string, unknown>)
   getExpense(id)
-  applyPatch('expenses', id, patch as Record<string, unknown>, EXPENSE_PATCH_COLS)
+  const normalized = { ...patch } as Record<string, unknown>
+  for (const key of ['accountId', 'categoryId', 'purchaseDate']) {
+    if (normalized[key] === '') normalized[key] = null
+  }
+  applyPatch('expenses', id, normalized, EXPENSE_PATCH_COLS)
   journal('expenses', 'update', id, patch)
   return getExpense(id)
 }

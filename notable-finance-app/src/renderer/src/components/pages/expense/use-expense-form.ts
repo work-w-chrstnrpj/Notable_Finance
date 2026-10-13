@@ -182,6 +182,7 @@ export function useExpenseForm({
    * clears them after the animation, exactly as the inline version did.
    */
   function validate(): boolean {
+    if (viewMode === "To pay") return true;
     const invalid = new Set<string>();
     if (!descriptionInput.trim()) invalid.add("description");
     if (!formAccountId) invalid.add("account");
@@ -198,6 +199,7 @@ export function useExpenseForm({
 
   function buildPayload(): Record<string, unknown> {
     return {
+      ...(viewMode === "To pay" ? { viewMode: "To pay" } : {}),
       description: descriptionInput.trim(),
       purchaseDate: purchaseDateInput,
       datePaid: datePaidInput || null,
@@ -220,6 +222,7 @@ export function useExpenseForm({
 
   return {
     // fields
+    fieldsRequired: viewMode !== "To pay",
     descriptionInput, setDescriptionInput,
     formAccountId, setFormAccountId,
     formCategoryId, setFormCategoryId,

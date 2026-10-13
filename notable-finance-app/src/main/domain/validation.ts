@@ -69,18 +69,31 @@ export function validateUpdateIncome(patch: Record<string, unknown>): void {
 }
 
 export function validateCreateExpense(input: CreateExpenseInput): void {
-  assertNonEmptyString(input.description, 'description')
-  assertIsoDate(input.purchaseDate, 'purchaseDate')
+  const toPay = input.viewMode === 'To pay'
+  if (toPay) {
+    if (typeof input.description !== 'string') throw new ValidationError('description must be text')
+    if (input.purchaseDate) assertIsoDate(input.purchaseDate, 'purchaseDate')
+  } else {
+    assertNonEmptyString(input.description, 'description')
+    assertIsoDate(input.purchaseDate, 'purchaseDate')
+  }
   assertOptionalIsoDate(input.datePaid ?? null, 'datePaid')
   assertFiniteNumber(input.amount, 'amount')
   assertOptionalFiniteNumber(input.interest, 'interest')
-  assertNonEmptyString(input.accountId, 'accountId')
-  assertNonEmptyString(input.categoryId, 'categoryId')
+  if (!toPay) {
+    assertNonEmptyString(input.accountId, 'accountId')
+    assertNonEmptyString(input.categoryId, 'categoryId')
+  }
 }
 
 export function validateUpdateExpense(patch: Record<string, unknown>): void {
-  if ('description' in patch) assertNonEmptyString(patch.description, 'description')
-  if ('purchaseDate' in patch) assertIsoDate(patch.purchaseDate, 'purchaseDate')
+  const toPay = patch.viewMode === 'To pay'
+  if ('description' in patch) {
+    if (toPay) {
+      if (typeof patch.description !== 'string') throw new ValidationError('description must be text')
+    } else assertNonEmptyString(patch.description, 'description')
+  }
+  if ('purchaseDate' in patch && (!toPay || patch.purchaseDate)) assertIsoDate(patch.purchaseDate, 'purchaseDate')
   if ('datePaid' in patch) assertOptionalIsoDate(patch.datePaid, 'datePaid')
   if ('amount' in patch) assertFiniteNumber(patch.amount, 'amount')
   if ('interest' in patch) assertOptionalFiniteNumber(patch.interest, 'interest')

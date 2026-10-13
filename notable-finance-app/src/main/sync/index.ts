@@ -21,6 +21,11 @@ export async function syncNow(sinceOverride?: string): Promise<SyncNowResult> {
   // One run id for the whole pass so pull + push events group together in History.
   return withSyncRun(async () => {
     const pull = await pullAll(false, sinceOverride)
+    // A failed pull did not establish the current remote state. Do not push a
+    // stale local snapshot over Notion changes that have not been reconciled.
+    if (pull.errors.length > 0) {
+      return { pull, push: { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: ['Push paused because the pull did not complete. Retry sync after resolving the pull error.'] } }
+    }
     const push = await pushAll()
     return { push, pull }
   })

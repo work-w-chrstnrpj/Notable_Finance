@@ -171,7 +171,7 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
          category_id, purchase_date, date_paid, payment_status, payment_frequency, period_count,
          bnpl_adjustment, paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
          pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)
-       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       recordId,
       payload.notionPageId,

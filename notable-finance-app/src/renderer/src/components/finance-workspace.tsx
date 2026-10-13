@@ -187,7 +187,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
         });
       } else {
         setSyncState("error");
-        setSyncNotice(`Sync failed`);
+        setSyncNotice(`Sync failed: ${result.error.message}`);
         logDevEvent({
           kind: "operation",
           action: `sync:${kind}`,

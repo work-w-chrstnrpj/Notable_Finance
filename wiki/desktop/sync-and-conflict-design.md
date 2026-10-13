@@ -2,6 +2,14 @@
 
 The core of the desktop app. It defines how the local SQLite store reconciles with Notion in both directions, and how conflicts are resolved.
 
+## Incomplete expenses and error reporting
+
+- Notion expenses with empty Account, Category, Purchase Date, Date Paid, or amount still import. To Pay includes unpaid, non-installment records outside the `Buy: ` workflow without requiring those fields.
+- Clearing Account in Notion clears the local relation. A local rename and a remote account removal are disjoint edits: merge both, then push the renamed record with an empty Account relation.
+- Full sync pauses its push phase when pull reports errors; local dirty records remain pending until a successful reconcile.
+- A completed IPC request is not proof that sync completed successfully. The renderer checks `PullResult.errors`, `PushResult.errors`, and both phases of `SyncNowResult` before reporting success; errors appear in the sync notice.
+- Expense insertion and hard-delete undo must keep SQL column/value counts aligned as writable fields evolve. Regression coverage runs the migration SQL against an isolated in-memory SQLite database and exercises pull, merge, repository edits, push, and undo.
+
 ## Principles
 
 1. **Local-first.** SQLite is the working source of truth. Sync never blocks a local read or write.

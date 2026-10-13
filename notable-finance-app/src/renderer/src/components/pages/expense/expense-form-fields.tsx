@@ -52,7 +52,7 @@ export function ExpenseFormFields({
 
   return (
         <div className="form-grid form-grid--single">
-          <Field label="Purchase description" required error={shakeFields.has("description")}>
+          <Field label="Purchase description" required={form.fieldsRequired} error={shakeFields.has("description")}>
             <input
               className={shakeFields.has("description") ? "field__input--shake" : undefined}
               placeholder="Purchase description"
@@ -67,7 +67,7 @@ export function ExpenseFormFields({
               onChange={(event) => setPurchaseDateInput(event.target.value)}
             />
           </Field>
-          <Field label="Accounts" required error={shakeFields.has("account")}>
+          <Field label="Accounts" required={form.fieldsRequired} error={shakeFields.has("account")}>
             <FilterDropdown
               placeholder="— None —"
               value={formAccountId}
@@ -79,7 +79,7 @@ export function ExpenseFormFields({
               }))}
             />
           </Field>
-          <Field label="Categories" required error={shakeFields.has("category")}>
+          <Field label="Categories" required={form.fieldsRequired} error={shakeFields.has("category")}>
             <FilterDropdown
               placeholder="— None —"
               value={formCategoryId}
@@ -91,7 +91,7 @@ export function ExpenseFormFields({
               }))}
             />
           </Field>
-          <Field label="Expense Amount" required error={shakeFields.has("amount")}>
+          <Field label="Expense Amount" required={form.fieldsRequired} error={shakeFields.has("amount")}>
             <input
               inputMode="decimal"
               className={shakeFields.has("amount") ? "field__input--shake" : undefined}

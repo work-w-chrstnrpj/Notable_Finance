@@ -304,6 +304,18 @@ export interface SyncCommitRequest {
   returnFreshSnapshot?: boolean; snapshotMonth?: string;
 }
 
+/** An IPC reply can succeed while individual sync records fail. */
+async function adaptSync<T extends { errors?: string[]; pull?: { errors: string[] }; push?: { errors: string[] } }>(
+  promise: Promise<{ ok: true; data: T } | { ok: false; error: { code: string; message: string } }>,
+): Promise<ApiResult<T>> {
+  const result = await adapt(promise);
+  if (!result.success) return result;
+  const errors = [...(result.data.errors ?? []), ...(result.data.pull?.errors ?? []), ...(result.data.push?.errors ?? [])];
+  return errors.length
+    ? { success: false, error: { code: "E_SYNC", message: errors.join("; ") } }
+    : result;
+}
+
 export const syncApi = {
   async status(): Promise<ApiResult<SyncStatus>> {
     const r = await nfApi().sync.status();
@@ -322,23 +334,23 @@ export const syncApi = {
   },
   /** Full sync: pull then push (header Sync button default). */
   fullSync(since?: string) {
-    return adapt(nfApi().sync.now(since));
+    return adaptSync(nfApi().sync.now(since));
   },
   /** Notion → App only. */
   pullOnly(since?: string) {
-    return adapt(nfApi().sync.pull(since));
+    return adaptSync(nfApi().sync.pull(since));
   },
   /** App → Notion only. */
   pushOnly() {
-    return adapt(nfApi().sync.push());
+    return adaptSync(nfApi().sync.push());
   },
   // Desktop reads/writes are local-first; "pull latest" runs a full reconcile (pull+push).
   pullLatest(_options: PullLatestOptions) {
-    return adapt(nfApi().sync.now());
+    return adaptSync(nfApi().sync.now());
   },
   // Local writes are already applied; a commit just triggers a full sync pass.
   commit(_body: SyncCommitRequest) {
-    return adapt(nfApi().sync.now());
+    return adaptSync(nfApi().sync.now());
   },
 };
 
