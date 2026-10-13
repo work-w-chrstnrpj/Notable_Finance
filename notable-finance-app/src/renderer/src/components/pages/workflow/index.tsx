@@ -1,8 +1,12 @@
 
 import { useEffect, useMemo, useState } from "react";
+import styles from "@/components/ui/filter-row.module.css";
+import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { AccountIcon } from "@/components/ui/accounts";
+import { useRecordSearch } from "@/features/records/use-record-search";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
-import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar } from "@/components/ui";
+import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar, FilterDropdown } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { ShortcutHint } from "@/components/shortcuts";
@@ -37,6 +41,7 @@ function WorkflowPage({
   selectedMonth: string;
 }) {
   const {
+    activeAccounts,
     nonCreditActiveAccounts,
     creditActiveAccounts,
     normalIncomeCategories,
@@ -49,9 +54,8 @@ function WorkflowPage({
   const isCreditCardPayment = section === "credit-card-payment";
   const isAlkansya = section === "alkansya";
   const isReceivables = section === "receivables";
-  // Receivables have no fixed category; Alkansya defaults to Savings but the
-  // user may change it to move the record out of the bucket into normal Income.
-  const categoryEditable = isReceivables || isAlkansya;
+  // Alkansya is locked to Savings, like Transfer and CC Payment categories.
+  const categoryEditable = isReceivables;
   const savingsCategoryId =
     normalIncomeCategories.find((c) => c.source.toLowerCase() === "savings")?.id ?? "";
   const sourceAccountLabel = isTransfer
@@ -74,6 +78,8 @@ function WorkflowPage({
       : isAlkansya
         ? "Savings Amount"
         : "Gross Income";
+  const [accountFilterId, setAccountFilterId] = useState("");
+  const [filterActive, setFilterActive] = useState(false);
   const [modal, setModal] = useState<ModalState>(null);
   const form = useWorkflowForm();
   const {
@@ -145,9 +151,34 @@ function WorkflowPage({
   // Workflows are income-backed views, so they share the income invalidation.
   const { invalidateIncomeFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
-  const workflowIncomes: IncomeRecord[] = (
+  const allWorkflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
+  const accountFiltered = allWorkflowIncomes.filter((record) => {
+    if (!filterActive || !accountFilterId) return true;
+    if (accountFilterId === "__none__") return !record.accountId;
+    return record.accountId === accountFilterId ||
+      ((isTransfer || isCreditCardPayment) && record.transactedAccountId === accountFilterId);
+  });
+  const { searchActive, searchQuery, setSearchQuery, toggleSearch, resetSearch,
+    filteredRecords: workflowIncomes } = useRecordSearch(
+    accountFiltered,
+    (record) => [record.name, record.date, String(record.grossIncome),
+      accountNameById.get(record.accountId ?? "") ?? "",
+      accountNameById.get(record.transactedAccountId ?? "") ?? "",
+      incomeCategoryNameById.get(record.categoryId) ?? ""],
+    [accountNameById, incomeCategoryNameById],
+  );
+  useShortcutAction("view.search", toggleSearch, !modalOpen);
+  useShortcutAction("view.filters", () => setFilterActive((prev) => !prev), !modalOpen);
+  useEffect(() => {
+    setAccountFilterId("");
+    setFilterActive(false);
+    resetSearch();
+  }, [section, resetSearch]);
+  useEffect(() => {
+    clearSelection();
+  }, [section, filterActive, accountFilterId, searchActive, searchQuery, clearSelection]);
   const enabledWorkflowRecords = workflowIncomes.filter((r) => !disabledIds.has(r.id));
   const workflowAmountTotal = getIncomeGrossTotal(enabledWorkflowRecords);
 
@@ -250,7 +281,7 @@ function WorkflowPage({
   function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
       recordId != null
-        ? workflowIncomes.find((r) => r.id === recordId)
+        ? allWorkflowIncomes.find((r) => r.id === recordId)
         : undefined;
     loadRecord(record, { isTransfer, isCreditCardPayment, isAlkansya, savingsCategoryId });
     setEditing(mode === "new");
@@ -297,9 +328,8 @@ function WorkflowPage({
     if (secondaryAccountLabel) {
       payload.transactedAccountId = transactedAccountId || null;
     }
-    // Receivables and Alkansya let the user choose/change the income category
-    // (Alkansya defaults to Savings). Transfer & CC Payment stay locked to
-    // their fixed category server-side (must NOT send categoryId).
+    // Only Receivables chooses a category. Other workflows resolve their fixed
+    // category in main, including Savings for Alkansya.
     if (categoryEditable) {
       payload.categoryId = workflowCategoryIdInput;
     }
@@ -433,21 +463,24 @@ function WorkflowPage({
     const mapped = sectionToResource[section];
     if (mapped) {
       const pending = consumePendingEdit(mapped);
-      if (pending && workflowIncomes.length > 0) {
-        const record = workflowIncomes.find((r) => r.id === pending.recordId);
+      if (pending && allWorkflowIncomes.length > 0) {
+        const record = allWorkflowIncomes.find((r) => r.id === pending.recordId);
         if (record) {
           openWorkflowModal("edit", record.name, record.id);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowIncomes.length]);
+  }, [allWorkflowIncomes.length]);
 
   return (
     <div className="page-stack">
       <PageToolbar
         title={label}
         actions={
+          <>
+          <FilterToggle active={filterActive} onToggle={() => setFilterActive((prev) => !prev)} shortcutId="view.filters" />
+          <SearchToggle active={searchActive} onToggle={toggleSearch} shortcutId="view.search" />
           <button
             type="button"
             className="button button--primary"
@@ -457,8 +490,25 @@ function WorkflowPage({
             New Record
             <ShortcutHint id="view.newRecord" />
           </button>
+          </>
         }
       />
+      {(filterActive || searchActive) && (
+        <div className={`toolbar-row ${styles.filters}`}>
+          {filterActive && (
+            <FilterDropdown
+              placeholder="All Accounts"
+              value={accountFilterId}
+              onChange={setAccountFilterId}
+              items={[
+                { id: "__none__", label: "No Account" },
+                ...activeAccounts.map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> })),
+              ]}
+            />
+          )}
+          {searchActive && <SearchInput query={searchQuery} onQueryChange={setSearchQuery} placeholder={`Search ${label.toLowerCase()}...`} />}
+        </div>
+      )}
 
       <Panel title="Records">
         {isLoading && <LoadingBlock label="Querying Notion…" />}
@@ -477,7 +527,7 @@ function WorkflowPage({
             rows={workflowRows}
             footerRows={workflowFooterRows}
             onRowClick={(recordId) => {
-              const record = workflowIncomes.find((r) => r.id === recordId);
+              const record = allWorkflowIncomes.find((r) => r.id === recordId);
               if (record) {
                 openWorkflowModal("edit", record.name, record.id);
               }
@@ -485,9 +535,11 @@ function WorkflowPage({
           />
         ) : (
           <EmptyState
-            title={monthScoped ? `No ${label.toLowerCase()} records this month` : `No ${label.toLowerCase()} records`}
+            title={allWorkflowIncomes.length ? "No matching records" : monthScoped ? `No ${label.toLowerCase()} records this month` : `No ${label.toLowerCase()} records`}
             detail={
-              isReceivables
+              allWorkflowIncomes.length
+                ? "Try another account or search term."
+                : isReceivables
                 ? "Receivables are income records that do not yet have a receiving account."
                 : isAlkansya
                   ? "Alkansya holds income records in the Savings category."

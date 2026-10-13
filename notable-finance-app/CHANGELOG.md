@@ -5,6 +5,16 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-10-14
+
+### Added
+
+- **Workflow filters:** Account filtering and search in Alkansya, Transfer, CC Payment, and Receivables. Transfer/CC Payment matches either participating account; No Account finds records without a receiving account. Visible totals and Receivables receipts follow the filtered records.
+
+### Fixed
+
+- **Alkansya:** Display Savings as a fixed category when creating/editing records and duplicating records; resolve the category through the existing workflow save path.
+
 ## [2.1.2] - 2026-10-14
 
 ### Fixed

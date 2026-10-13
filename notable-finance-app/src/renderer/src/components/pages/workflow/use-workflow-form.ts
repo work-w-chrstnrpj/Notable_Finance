@@ -37,7 +37,7 @@ export function useWorkflowForm() {
     setWorkflowDateInput(record?.date ?? "");
     setReceivingAccountId(record?.accountId ?? "");
     setTransactedAccountId(record?.transactedAccountId ?? "");
-    // New Alkansya records default to the Savings category (editable).
+    // Savings is fixed by the Alkansya workflow; the form displays it read-only.
     setWorkflowCategoryIdInput(record?.categoryId ?? (opts.isAlkansya ? opts.savingsCategoryId : ""));
     setWorkflowAmountInput(record?.grossIncome?.toString() ?? "");
     setWorkflowCapitalExpenditureInput(record?.capitalExpenditure?.toString() ?? "");

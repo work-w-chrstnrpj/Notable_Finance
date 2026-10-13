@@ -4,8 +4,7 @@ import { fuzzyFilterIndices } from "@/lib/fuzzy-search";
 /**
  * Client-side fuzzy search over a record list — the search-toggle state plus the derived
  * filtered list that Income and Expense each carried an identical copy of
- * (refactor_development_plan.md F2). Workflow has no search UI, so this is a 2-call-site
- * extraction, not 3 as the plan originally estimated.
+ * (refactor_development_plan.md F2), also shared by workflow pages.
  *
  * `extraDeps` mirrors the explicit dependency array the original inline `useMemo`s used
  * (they closed over `accountNameById` / `categoryNameById`, so results must recompute when

@@ -98,3 +98,10 @@ Chat dashboard summaries now use the same definitions as the Dashboard cards: gr
 ### October 1 review corrections
 
 To Pay supports All Credit Accounts and All Debit Accounts (all non-credit account types). Group filtering applies before table totals and selection, without passing synthetic IDs to the data API. Inactive search has no outline; header selection appears on hover, focus or existing selection. Accounts filter controls share a 36px height. Daily and Weekly use a single day calendar, including month navigation and leap-day support; date selector and popup share a 280px width.
+
+
+## Workflow account filters and search
+
+Alkansya, Transfer, Credit Card Payment, and Receivables expose the same Filters and Search controls as Income/Expense, including the matching keyboard shortcuts. Filters and search combine within the current workflow scope. Transfer/CC Payment retain the selected month; Alkansya/Receivables retain their all-time scopes. Account filters match either source/destination for Transfer and either credit/payer account for CC Payment. No Account means an empty receiving account, including Receivables. Closing Filters removes its constraint; closing Search clears its query. Navigating between workflows resets these controls. Table rows, visible totals, select-all, bulk duplication, and Receivables receipts use the filtered rows.
+
+Alkansya's category is read-only Savings in create and edit forms. Creates and duplicates omit a category override so main resolves the canonical Savings category; editing retains the existing Savings category. Receivables keeps its category selector.
