@@ -26,6 +26,7 @@ const expenseRecord = {
   paymentStatus: "Unpaid" as const,
   paymentFrequency: null,
   periodCount: null,
+  bnplAdjustment: null,
   paidPeriod: null,
   pasabuyer: null,
   pasabuyStatus: null,

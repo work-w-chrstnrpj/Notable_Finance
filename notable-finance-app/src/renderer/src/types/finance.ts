@@ -137,6 +137,7 @@ export type ExpenseRecord = {
   paymentStatus: PaymentStatus;
   paymentFrequency: PaymentFrequency | null;
   periodCount: number | null;
+  bnplAdjustment: number | null;
   paidPeriod: number | null;
   pasabuyer: string | null;
   pasabuyStatus: PasabuyStatus | null;

@@ -241,7 +241,7 @@ export function hardDeleteIncome(id: string): void {
 // ── expenses ────────────────────────────────────────────────────────────────
 
 const EXPENSE_COLS = `id, title, purchase_date, date_paid, amount, interest, account_id,
-  category_id, payment_status, payment_frequency, period_count, paid_period, is_pasabuy,
+  category_id, payment_status, payment_frequency, period_count, bnpl_adjustment, paid_period, is_pasabuy,
   pasabuyer, pasabuy_status, pasabuy_date_of_payment, pasabuy_paid_period,
   pasabuy_account_receiver_id, cc_link_payment_receipt_id, deleted, sync_state`
 
@@ -359,9 +359,9 @@ export function createExpense(input: CreateExpenseInput): ExpenseRecordDto {
       `INSERT INTO expenses (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
          notion_last_edited_at, deleted, created_at, title, amount, interest, account_id,
          category_id, purchase_date, date_paid, payment_status, payment_frequency, period_count,
-         paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
+         bnpl_adjustment, paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
          pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)
-       VALUES (?, NULL, NULL, 'dirty', ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, NULL, NULL, 'dirty', ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       id, t, t,
@@ -375,6 +375,7 @@ export function createExpense(input: CreateExpenseInput): ExpenseRecordDto {
       input.paymentStatus ?? null,
       input.paymentFrequency ?? null,
       input.periodCount ?? null,
+      input.bnplAdjustment ?? null,
       input.paidPeriod ?? null,
       input.isPasabuy ? 1 : 0,
       input.pasabuyer ?? null,
@@ -399,6 +400,7 @@ const EXPENSE_PATCH_COLS: Record<string, string> = {
   paymentStatus: 'payment_status',
   paymentFrequency: 'payment_frequency',
   periodCount: 'period_count',
+  bnplAdjustment: 'bnpl_adjustment',
   paidPeriod: 'paid_period',
   isPasabuy: 'is_pasabuy',
   pasabuyer: 'pasabuyer',

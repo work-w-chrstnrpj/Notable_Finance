@@ -1,5 +1,8 @@
-/* Inputs - subtle glass */
-[data-preset="hig"] input,
+/* Inputs - subtle glass.
+   Checkboxes, radios, and color/range/file controls keep their own painting.
+   Glass background, border, and backdrop-filter on a native checkbox shift the
+   macOS glyph and leave a dark bar beside the check (Accounts "Hide zero balance"). */
+[data-preset="hig"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 [data-preset="hig"] select,
 [data-preset="hig"] textarea {
   background: color-mix(in srgb, var(--input-bg) 78%, transparent);

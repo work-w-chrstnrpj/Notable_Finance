@@ -148,7 +148,7 @@ The app should query Expense Category IDs, names, `Auxiliary`, `Monthly Budget`,
 
 ### Expenses
 
-Writable fields: `Purchase description`, `Purchase Date`, `Date Paid`, `Custom end range`, `Expense Amount`, `Interest`, `Accounts`, `Categories`, `Payment Status`, `Payment Frequency`, `Period count`, `Paid period`, `CC Link Payment Receipt`, `Pasabuyer`, `Pasabuy Status`, `Pasabuy paid period`, `Pasabuy Date of Payment`, `Pasabuy Account Receiver`.
+Writable fields: `Purchase description`, `Purchase Date`, `Date Paid`, `Custom end range`, `Expense Amount`, `Interest`, `Accounts`, `Categories`, `Payment Status`, `Payment Frequency`, `Period count`, `BNPL adjustment`, `Paid period`, `CC Link Payment Receipt`, `Pasabuyer`, `Pasabuy Status`, `Pasabuy paid period`, `Pasabuy Date of Payment`, `Pasabuy Account Receiver`.
 
 Computed/read-only examples: `Gross Price`, `Installment Amount`, `Paid Amount`, `Remaining Balance`, `Monthly Total`, `Expected payment date`, `Extracted Billing Day`, `Extracted Due Day`, `Pasabuy Received Amount`, `Pasabuyer Balance`.
 
@@ -158,7 +158,7 @@ Expense queries should load only the records needed for the active view. Monthly
 
 Expense table views should show `Date`, `Description`, `Amount`, `Account`, `Category`, `Date Paid`, and `Expense Status`. `Expense Status` is a local UI indicator, not a Notion field: empty `Date Paid` shows a red circle, and a populated `Date Paid` shows a green circle.
 
-Expense forms should adapt to selected category, account, and view. Base expense fields are `Purchase description`, `Purchase Date`, `Accounts`, `Categories`, `Expense Amount`, and `Date Paid`. Credit-card fields appear only when the selected account is `Credit Account` or `BYPL` and include payment status, interest, payment frequency, period count, paid period, and app-calculated gross price, installment amount, paid amount, remaining balance, and expected payment date. Pasabuy fields appear only when the Unpaid Pasabuy view/category is selected and include `Pasabuyer`, `Pasabuy Status`, `Pasabuy Date of Payment`, `Pasabuy Account Receiver`, `Pasabuy paid period`, and app-calculated `Pasabuy Received Amount` and `Pasabuyer Balance`.
+Expense forms should adapt to selected category, account, and view. Base expense fields are `Purchase description`, `Purchase Date`, `Accounts`, `Categories`, `Expense Amount`, and `Date Paid`. Credit-card fields appear only when the selected account is `Credit Account` or `BYPL` and include payment status, interest, payment frequency, period count, BNPL adjustment, paid period, and app-calculated gross price, installment amount, paid amount, remaining balance, and expected payment date. Expected payment date is blank when payment frequency is empty or date paid is set, and otherwise uses period count plus BNPL adjustment. Pasabuy fields appear only when the Unpaid Pasabuy view/category is selected and include `Pasabuyer`, `Pasabuy Status`, `Pasabuy Date of Payment`, `Pasabuy Account Receiver`, `Pasabuy paid period`, and app-calculated `Pasabuy Received Amount` and `Pasabuyer Balance`.
 
 Navigation chrome should avoid repeating the current section title in the top bar. The sidebar should support an icon-only collapsed state; when collapsed, hover or focus temporarily reveals full labels without changing the persisted collapsed state. Transaction workflow tables should show full `Date` values instead of month-only labels; the month selector only defines query scope.
 

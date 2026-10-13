@@ -1,6 +1,6 @@
 import { Field, ComputedField, FilterDropdown, MultiSelect, FormSectionDivider } from "@/components/ui";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
-import { getMoneyValueTone } from "@/lib/finance-rules";
+import { calculateCcCoveredExpenseAmount, getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import type { Account, ExpenseRecord, IncomeCategory } from "@/types/finance";
 import type { useWorkflowForm } from "./use-workflow-form";
@@ -132,14 +132,14 @@ export function WorkflowFormFields({
                 items={eligibleCcExpenses.map((e) => ({
                   id: e.id,
                   label: e.description,
-                  sublabel: `₱${(e.periodCount && e.periodCount > 0 ? e.amount / e.periodCount : e.amount).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+                  sublabel: formatMoney(calculateCcCoveredExpenseAmount(e)),
                 }))}
               />
             </Field>
             {ccCoveredIds.length > 0 && (
               <ComputedField
                 label="Total Covered"
-                value={`₱${totalCovered.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                value={formatMoney(totalCovered)}
               />
             )}
           </div>

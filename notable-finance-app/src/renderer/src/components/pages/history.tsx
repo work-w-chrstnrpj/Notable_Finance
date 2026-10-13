@@ -189,6 +189,7 @@ function ExpenseFormView({ payload }: { payload: Record<string, unknown> }) {
   ];
   if (payload.paymentFrequency) items.push({ label: "Payment Frequency", value: payload.paymentFrequency as string, previousValue: pv("paymentFrequency") });
   if (payload.periodCount != null && Number(payload.periodCount) > 0) items.push({ label: "Period Count", value: String(payload.periodCount), previousValue: prev?.periodCount != null ? String(prev.periodCount) : null });
+  if (payload.bnplAdjustment != null) items.push({ label: "BNPL adjustment", value: String(payload.bnplAdjustment), previousValue: prev?.bnplAdjustment != null ? String(prev.bnplAdjustment) : null });
   if (payload.paidPeriod != null && Number(payload.paidPeriod) > 0) items.push({ label: "Paid Period", value: String(payload.paidPeriod), previousValue: prev?.paidPeriod != null ? String(prev.paidPeriod) : null });
   if (payload.pasabuyer) {
     items.push({ label: "Pasabuyer", value: payload.pasabuyer as string, previousValue: pv("pasabuyer") });

@@ -47,6 +47,7 @@ describe('expenseDtoToProperties', () => {
       accountId: 'na',
       categoryId: 'nc',
       paymentStatus: 'Unpaid',
+      bnplAdjustment: -1,
       pasabuyer: 'Ana'
     })
     expect(props[NOTION_PROPERTY_NAMES.expenses.description]).toEqual({
@@ -57,6 +58,7 @@ describe('expenseDtoToProperties', () => {
       select: { name: 'Unpaid' }
     })
     expect(props[NOTION_PROPERTY_NAMES.expenses.pasabuyer]).toEqual({ select: { name: 'Ana' } })
+    expect(props[NOTION_PROPERTY_NAMES.expenses.bnplAdjustment]).toEqual({ number: -1 })
     // pasabuyBalance is computed — no builder must ever emit it
     expect(props[NOTION_PROPERTY_NAMES.expenses.pasabuyBalance]).toBeUndefined()
   })

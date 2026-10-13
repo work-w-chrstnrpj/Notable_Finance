@@ -22,7 +22,7 @@ import {
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
-import { getWorkflowFixedCategory } from "@/lib/finance-rules";
+import { calculateCcCoveredExpenseAmount, getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
@@ -109,10 +109,7 @@ function WorkflowPage({
   const eligibleCcExpenses = (ccCoverageState.status === "success" ? ccCoverageState.data : [])
   const totalCovered = eligibleCcExpenses
     .filter((e) => ccCoveredIds.includes(e.id))
-    .reduce((sum, e) => {
-      const installment = e.periodCount && e.periodCount > 0 ? e.amount / e.periodCount : e.amount;
-      return sum + installment;
-    }, 0);
+    .reduce((sum, e) => sum + calculateCcCoveredExpenseAmount(e), 0);
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
   const modalOpen = modal !== null;

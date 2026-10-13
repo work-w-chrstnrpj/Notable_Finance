@@ -36,6 +36,7 @@ const expenseRow: ExpenseRow = {
   payment_status: null,
   payment_frequency: null,
   period_count: null,
+  bnpl_adjustment: null,
   paid_period: null,
   is_pasabuy: 1,
   pasabuyer: 'Ana',

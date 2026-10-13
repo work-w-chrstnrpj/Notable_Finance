@@ -49,6 +49,7 @@ export function useExpenseForm({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "">("");
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
   const [periodCountInput, setPeriodCountInput] = useState("");
+  const [bnplAdjustmentInput, setBnplAdjustmentInput] = useState("");
   const [paidPeriodInput, setPaidPeriodInput] = useState("");
   const [pasabuyer, setPasabuyer] = useState("");
   const [pasabuyStatus, setPasabuyStatus] = useState<PasabuyStatus | "">("");
@@ -70,6 +71,7 @@ export function useExpenseForm({
   const expenseAmount = parseNumberInput(expenseAmountInput);
   const interestAmount = sections.creditCard ? parseNumberInput(interestInput) : 0;
   const periodCount = parseOptionalNumberInput(periodCountInput);
+  const bnplAdjustment = parseOptionalNumberInput(bnplAdjustmentInput);
   const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
   const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
   const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
@@ -90,6 +92,9 @@ export function useExpenseForm({
     billingDay: selectedFormAccount?.billingDay ?? null,
     dueDay: selectedFormAccount?.dueDay ?? null,
     periodCount,
+    paymentFrequency: paymentFrequency || null,
+    datePaid: datePaidInput || null,
+    bnplAdjustment,
   });
   const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
     grossPrice,
@@ -151,6 +156,7 @@ export function useExpenseForm({
     setPaymentStatus(record?.paymentStatus ?? "");
     setPaymentFrequency(record?.paymentFrequency ?? "");
     setPeriodCountInput(record?.periodCount?.toString() ?? "");
+    setBnplAdjustmentInput(record?.bnplAdjustment?.toString() ?? "");
     setPaidPeriodInput(record?.paidPeriod?.toString() ?? "");
     setPasabuyer(record?.pasabuyer ?? "");
     setPasabuyStatus(record?.pasabuyStatus ?? "");
@@ -202,6 +208,7 @@ export function useExpenseForm({
       paymentStatus: sections.creditCard ? paymentStatus || "Unpaid" : paymentStatus || null,
       paymentFrequency: paymentFrequency || null,
       periodCount: parseOptionalNumberInput(periodCountInput),
+      bnplAdjustment: parseOptionalNumberInput(bnplAdjustmentInput),
       paidPeriod: parseOptionalNumberInput(paidPeriodInput),
       pasabuyer: pasabuyer || null,
       pasabuyStatus: pasabuyStatus || null,
@@ -223,6 +230,7 @@ export function useExpenseForm({
     paymentStatus, setPaymentStatus,
     paymentFrequency, setPaymentFrequency,
     periodCountInput, setPeriodCountInput,
+    bnplAdjustmentInput, setBnplAdjustmentInput,
     paidPeriodInput, setPaidPeriodInput,
     pasabuyer, setPasabuyer,
     pasabuyStatus, setPasabuyStatus,

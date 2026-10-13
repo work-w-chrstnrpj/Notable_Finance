@@ -46,7 +46,14 @@ export type AccountType =
   | 'Auxiliary'
 
 export type PaymentStatus = 'Paid' | 'Unpaid' | 'Installment' | 'Cancelled'
-export type PaymentFrequency = 'Daily' | 'Weekly' | 'Monthly' | 'Quarterly' | 'Annually'
+export type PaymentFrequency =
+  | 'Daily'
+  | 'Weekly'
+  | 'Monthly'
+  | 'Bi-monthly'
+  | 'Quarterly'
+  | 'Semi-annually'
+  | 'Annually'
 export type PasabuyStatus =
   | 'Payment not yet receive'
   | 'Payment partially received'
@@ -131,6 +138,7 @@ export interface ExpenseRecordDto {
   paymentStatus: PaymentStatus | null
   paymentFrequency: PaymentFrequency | null
   periodCount: number | null
+  bnplAdjustment: number | null
   paidPeriod: number | null
   ccLinkPaymentReceiptId?: string | null
   pasabuyer: string | null
@@ -283,6 +291,7 @@ export interface CreateExpenseInput {
   paymentStatus?: PaymentStatus | null
   paymentFrequency?: PaymentFrequency | null
   periodCount?: number | null
+  bnplAdjustment?: number | null
   paidPeriod?: number | null
   isPasabuy?: boolean
   pasabuyer?: string | null

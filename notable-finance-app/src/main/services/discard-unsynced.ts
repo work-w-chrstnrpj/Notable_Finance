@@ -169,9 +169,9 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
       `INSERT INTO expenses (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
          notion_last_edited_at, deleted, created_at, title, amount, interest, account_id,
          category_id, purchase_date, date_paid, payment_status, payment_frequency, period_count,
-         paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
+         bnpl_adjustment, paid_period, is_pasabuy, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
          pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id)
-       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       recordId,
       payload.notionPageId,
@@ -189,6 +189,7 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
       (s.paymentStatus as string | null) ?? null,
       (s.paymentFrequency as string | null) ?? null,
       s.periodCount == null ? null : Number(s.periodCount),
+      s.bnplAdjustment == null ? null : Number(s.bnplAdjustment),
       s.paidPeriod == null ? null : Number(s.paidPeriod),
       payload.extras?.isPasabuy ?? 0,
       (s.pasabuyer as string | null) ?? null,

@@ -84,6 +84,7 @@ export const expenses = sqliteTable('expenses', {
   paymentStatus: text('payment_status'),
   paymentFrequency: text('payment_frequency'),
   periodCount: integer('period_count'),
+  bnplAdjustment: integer('bnpl_adjustment'),
   paidPeriod: integer('paid_period'),
   isPasabuy: integer('is_pasabuy').notNull().default(0),
   pasabuyer: text('pasabuyer'),

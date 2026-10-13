@@ -293,6 +293,9 @@ export function makeDeriveExpenseComputed(
       billingDay: account?.billingDay ?? null,
       dueDay: account?.dueDay ?? null,
       periodCount: record.periodCount,
+      paymentFrequency: record.paymentFrequency,
+      datePaid: record.datePaid,
+      bnplAdjustment: record.bnplAdjustment,
     });
     return { gross, installment, paid, remaining, expected };
   };

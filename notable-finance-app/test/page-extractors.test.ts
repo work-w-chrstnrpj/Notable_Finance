@@ -126,6 +126,7 @@ describe('pageToExpenseFields', () => {
     expect(f.payment_status).toBe('Unpaid')
     expect(f.pasabuyer).toBe('Ana')
     expect(f.date_paid).toBeNull()
+    expect(f.bnpl_adjustment).toBeNull()
   })
 })
 

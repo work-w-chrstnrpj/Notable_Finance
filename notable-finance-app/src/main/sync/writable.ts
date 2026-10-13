@@ -31,6 +31,7 @@ export const EXPENSE_WRITABLE_COLS: Record<string, string> = {
   paymentStatus: 'payment_status',
   paymentFrequency: 'payment_frequency',
   periodCount: 'period_count',
+  bnplAdjustment: 'bnpl_adjustment',
   paidPeriod: 'paid_period',
   pasabuyer: 'pasabuyer',
   pasabuyStatus: 'pasabuy_status',

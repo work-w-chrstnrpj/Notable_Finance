@@ -48,6 +48,7 @@ export function buildExpenseMassEditFields(
         options: paymentFrequencyLabels.map((f) => ({ value: f, label: f })),
       },
       { key: "periodCount", label: "Period Count", kind: "optionalNumber" },
+      { key: "bnplAdjustment", label: "BNPL adjustment", kind: "optionalNumber" },
       { key: "paidPeriod", label: "Paid Period", kind: "optionalNumber" },
       {
         key: "pasabuyer",

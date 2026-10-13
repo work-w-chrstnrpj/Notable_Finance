@@ -14,7 +14,9 @@ const PAYMENT_FREQUENCIES = [
   "Daily",
   "Weekly",
   "Monthly",
+  "Bi-monthly",
   "Quarterly",
+  "Semi-annually",
   "Annually",
 ] as const;
 const PASABUY_STATUSES = [
@@ -43,6 +45,7 @@ type DraftForm = {
   paymentStatus: string;
   paymentFrequency: string;
   periodCount: string;
+  bnplAdjustment: string;
   pasabuyer: string;
   pasabuyStatus: string;
 };
@@ -61,6 +64,7 @@ function draftToForm(d: ChatDraftDto): DraftForm {
     paymentStatus: s(p.paymentStatus),
     paymentFrequency: s(p.paymentFrequency),
     periodCount: s(p.periodCount),
+    bnplAdjustment: s(p.bnplAdjustment),
     pasabuyer: s(p.pasabuyer),
     pasabuyStatus: s(p.pasabuyStatus),
   };
@@ -334,6 +338,22 @@ function DraftCard({
                 disabled={busy}
                 onChange={(e) => setField("periodCount", e.target.value)}
                 onBlur={() => commitIfChanged("periodCount", "periodCount")}
+              />
+            </label>
+          )}
+
+          {showCc && (
+            <label className={styles["chat-field"]}>
+              <span className={styles["chat-field__label"]}>BNPL adjustment</span>
+              <input
+                className={styles["chat-field__input"]}
+                type="number"
+                inputMode="numeric"
+                step="1"
+                value={form.bnplAdjustment}
+                disabled={busy}
+                onChange={(e) => setField("bnplAdjustment", e.target.value)}
+                onBlur={() => commitIfChanged("bnplAdjustment", "bnplAdjustment")}
               />
             </label>
           )}

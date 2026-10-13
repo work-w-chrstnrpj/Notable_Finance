@@ -5,6 +5,17 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-10-13
+
+### Added
+
+- **Expenses:** Writable `BNPL adjustment` on credit-card expenses. Expected payment date adds it to the period count, stays blank when payment frequency is empty or the expense is paid, and follows Daily, Weekly, Monthly, Bi-monthly, Quarterly, Semi-annually, and Annually schedules.
+
+### Fixed
+
+- **HIG theme:** Native checkboxes, including Accounts “Hide zero balance,” no longer inherit liquid-glass text-field styles that painted a dark bar beside the check.
+- **CC Payment:** A linked covered expense uses its installment amount with interest included (gross price divided by the period count).
+
 ## [2.1.0] - 2026-10-01
 
 ### Added

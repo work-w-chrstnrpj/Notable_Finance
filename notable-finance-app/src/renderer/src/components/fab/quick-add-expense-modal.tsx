@@ -52,6 +52,7 @@ function QuickAddExpenseModal({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "">("");
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
   const [periodCountInput, setPeriodCountInput] = useState("");
+  const [bnplAdjustmentInput, setBnplAdjustmentInput] = useState("");
   const [paidPeriodInput, setPaidPeriodInput] = useState("");
   const [pasabuyer, setPasabuyer] = useState("");
   const [pasabuyStatus, setPasabuyStatus] = useState<PasabuyStatus | "">("");
@@ -79,6 +80,7 @@ function QuickAddExpenseModal({
   const expenseAmount = parseNumberInput(expenseAmountInput);
   const interestAmount = sections.creditCard ? parseNumberInput(interestInput) : 0;
   const periodCount = parseOptionalNumberInput(periodCountInput);
+  const bnplAdjustment = parseOptionalNumberInput(bnplAdjustmentInput);
   const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
   const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
   const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
@@ -99,6 +101,9 @@ function QuickAddExpenseModal({
     billingDay: selectedFormAccount?.billingDay ?? null,
     dueDay: selectedFormAccount?.dueDay ?? null,
     periodCount,
+    paymentFrequency: paymentFrequency || null,
+    datePaid: datePaidInput || null,
+    bnplAdjustment,
   });
   const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
     grossPrice,
@@ -127,6 +132,7 @@ function QuickAddExpenseModal({
       paymentStatus: sections.creditCard ? paymentStatus || "Unpaid" : paymentStatus || null,
       paymentFrequency: paymentFrequency || null,
       periodCount: parseOptionalNumberInput(periodCountInput),
+      bnplAdjustment: parseOptionalNumberInput(bnplAdjustmentInput),
       paidPeriod: parseOptionalNumberInput(paidPeriodInput),
       pasabuyer: pasabuyer || null,
       pasabuyStatus: pasabuyStatus || null,
@@ -243,6 +249,14 @@ function QuickAddExpenseModal({
                 placeholder="0"
                 value={periodCountInput}
                 onChange={(event) => setPeriodCountInput(event.target.value)}
+              />
+            </Field>
+            <Field label="BNPL adjustment">
+              <input
+                inputMode="numeric"
+                placeholder="0"
+                value={bnplAdjustmentInput}
+                onChange={(event) => setBnplAdjustmentInput(event.target.value)}
               />
             </Field>
             {paymentStatus === "Installment" && installmentAmount !== null && (

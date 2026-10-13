@@ -277,6 +277,7 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           paymentStatus: { type: 'string' },
           paymentFrequency: { type: 'string' },
           periodCount: { type: 'number' },
+          bnplAdjustment: { type: 'number' },
           paidPeriod: { type: 'number' },
           pasabuyer: { type: 'string' },
           pasabuyStatus: { type: 'string' },
@@ -422,6 +423,7 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           accountId: { type: 'string' },
           categoryId: { type: 'string' },
           paymentStatus: { type: 'string' },
+          bnplAdjustment: { type: 'number' },
           pasabuyer: { type: 'string' },
           pasabuyStatus: { type: 'string' }
         },

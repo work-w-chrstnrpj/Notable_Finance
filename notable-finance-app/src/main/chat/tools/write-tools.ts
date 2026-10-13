@@ -201,6 +201,7 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
   const paymentStatus = (str(a.paymentStatus) as PaymentStatus | undefined) ?? undefined
   const paymentFrequency = (str(a.paymentFrequency) as PaymentFrequency | undefined) ?? undefined
   const periodCount = num(a.periodCount) ?? null
+  const bnplAdjustment = num(a.bnplAdjustment) ?? null
   const paidPeriod = num(a.paidPeriod) ?? null
 
   if (creditCard && !paymentStatus) missing.push('Payment Status')
@@ -232,6 +233,7 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
     paymentStatus: creditCard ? paymentStatus ?? 'Unpaid' : paymentStatus ?? null,
     paymentFrequency: creditCard ? paymentFrequency ?? null : null,
     periodCount: creditCard ? periodCount : null,
+    bnplAdjustment: creditCard ? bnplAdjustment : null,
     paidPeriod: creditCard ? paidPeriod : null,
     isPasabuy: pasabuy,
     pasabuyer: pasabuy ? pasabuyer : null,
@@ -531,6 +533,7 @@ export function proposeUpdateExpense(args: unknown, ctx: WriteToolContext) {
   const cat = findExpenseCategory(str(a.categoryId) ?? str(a.categoryName))
   if (cat) patch.categoryId = cat.id
   if (str(a.paymentStatus)) patch.paymentStatus = str(a.paymentStatus)
+  if (a.bnplAdjustment !== undefined) patch.bnplAdjustment = num(a.bnplAdjustment) ?? null
   if (str(a.pasabuyer)) patch.pasabuyer = str(a.pasabuyer)
   if (str(a.pasabuyStatus)) patch.pasabuyStatus = str(a.pasabuyStatus)
 
@@ -725,6 +728,7 @@ export function toCreateExpenseInput(payload: Record<string, unknown>): CreateEx
     paymentStatus: (payload.paymentStatus as PaymentStatus | null | undefined) ?? null,
     paymentFrequency: (payload.paymentFrequency as PaymentFrequency | null | undefined) ?? null,
     periodCount: (payload.periodCount as number | null | undefined) ?? null,
+    bnplAdjustment: (payload.bnplAdjustment as number | null | undefined) ?? null,
     paidPeriod: (payload.paidPeriod as number | null | undefined) ?? null,
     isPasabuy: payload.isPasabuy === true,
     pasabuyer: (payload.pasabuyer as string | null | undefined) ?? null,

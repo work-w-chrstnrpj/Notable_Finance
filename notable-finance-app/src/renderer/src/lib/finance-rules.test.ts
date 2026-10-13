@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   auxiliaryIncomeCategoryLabels,
   calculateCategoryTotalOverview,
+  calculateCcCoveredExpenseAmount,
   calculateExpectedPaymentDate,
   calculateGrossPrice,
   calculateInstallmentAmount,
@@ -55,9 +56,9 @@ const testIncomeRecords: IncomeRecord[] = [
 ];
 
 const testExpenseRecords: ExpenseRecord[] = [
-  { id: "expense-rent", description: "Monthly Rent", purchaseDate: "2026-07-01", datePaid: "2026-07-01", amount: 12500, interest: 0, accountId: "acct-bdo-checking", categoryId: "exp-housing", paymentStatus: "Paid", paymentFrequency: "Monthly", periodCount: null, paidPeriod: null, ccLinkPaymentReceiptId: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
-  { id: "expense-phone", description: "Phone Installment", purchaseDate: "2026-06-20", datePaid: null, amount: 45000, interest: 1200, accountId: "acct-metrobank-card", categoryId: "exp-gadgets", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 12, paidPeriod: 3, ccLinkPaymentReceiptId: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
-  { id: "expense-pasabuy", description: "Pasabuy Purchase", purchaseDate: "2026-07-05", datePaid: null, amount: 8000, interest: 0, accountId: "acct-bnpl", categoryId: "exp-pasabuy", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 2, paidPeriod: 1, ccLinkPaymentReceiptId: null, pasabuyer: "Maimai", pasabuyStatus: "Payment partially received (installment)", pasabuyDateOfPayment: "2026-07-12", pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "acct-bdo-checking", pasabuyBalance: 4000 },
+  { id: "expense-rent", description: "Monthly Rent", purchaseDate: "2026-07-01", datePaid: "2026-07-01", amount: 12500, interest: 0, accountId: "acct-bdo-checking", categoryId: "exp-housing", paymentStatus: "Paid", paymentFrequency: "Monthly", periodCount: null, bnplAdjustment: null, paidPeriod: null, ccLinkPaymentReceiptId: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
+  { id: "expense-phone", description: "Phone Installment", purchaseDate: "2026-06-20", datePaid: null, amount: 45000, interest: 1200, accountId: "acct-metrobank-card", categoryId: "exp-gadgets", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 12, bnplAdjustment: null, paidPeriod: 3, ccLinkPaymentReceiptId: null, pasabuyer: null, pasabuyStatus: null, pasabuyDateOfPayment: null, pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 0 },
+  { id: "expense-pasabuy", description: "Pasabuy Purchase", purchaseDate: "2026-07-05", datePaid: null, amount: 8000, interest: 0, accountId: "acct-bnpl", categoryId: "exp-pasabuy", paymentStatus: "Installment", paymentFrequency: "Monthly", periodCount: 2, bnplAdjustment: null, paidPeriod: 1, ccLinkPaymentReceiptId: null, pasabuyer: "Maimai", pasabuyStatus: "Payment partially received (installment)", pasabuyDateOfPayment: "2026-07-12", pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "acct-bdo-checking", pasabuyBalance: 4000 },
 ];
 
 describe("finance frontend rules", () => {
@@ -249,6 +250,15 @@ describe("finance frontend rules", () => {
 
     expect(grossPrice).toBe(46200);
     expect(installmentAmount).toBe(3850);
+    expect(
+      calculateCcCoveredExpenseAmount({ amount: 45000, interest: 1200, periodCount: 12 }),
+    ).toBe(3850);
+    expect(
+      calculateCcCoveredExpenseAmount({ amount: 45000, interest: 0, periodCount: 12 }),
+    ).toBe(3750);
+    expect(
+      calculateCcCoveredExpenseAmount({ amount: 500, interest: 20, periodCount: null }),
+    ).toBe(520);
     expect(paidAmount).toBe(11550);
     expect(calculateRemainingBalance(grossPrice, paidAmount)).toBe(34650);
     expect(
@@ -256,6 +266,7 @@ describe("finance frontend rules", () => {
         purchaseDate: "2026-06-20",
         billingDay: 15,
         dueDay: 10,
+        paymentFrequency: "Monthly",
       }),
     ).toBe("2026-08-10");
   });
@@ -266,6 +277,7 @@ describe("finance frontend rules", () => {
         purchaseDate: "2026-07-19",
         billingDay: 5,
         dueDay: 5,
+        paymentFrequency: "Monthly",
       }),
     ).toBe("2026-08-05");
   });
@@ -277,8 +289,118 @@ describe("finance frontend rules", () => {
         billingDay: 15,
         dueDay: 10,
         periodCount: 3,
+        paymentFrequency: "Monthly",
       }),
     ).toBe("2026-10-10");
+  });
+
+  it("shifts the monthly due date by the BNPL adjustment", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: 15,
+        dueDay: 10,
+        periodCount: 3,
+        bnplAdjustment: 1,
+        paymentFrequency: "Monthly",
+      }),
+    ).toBe("2026-11-10");
+  });
+
+  it("allows a negative BNPL adjustment to shorten the period", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: 15,
+        dueDay: 10,
+        periodCount: 3,
+        bnplAdjustment: -1,
+        paymentFrequency: "Monthly",
+      }),
+    ).toBe("2026-09-10");
+  });
+
+  it("returns no expected date when frequency is empty or the expense is paid", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: 15,
+        dueDay: 10,
+        periodCount: 3,
+        paymentFrequency: null,
+      }),
+    ).toBeNull();
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: 15,
+        dueDay: 10,
+        periodCount: 3,
+        paymentFrequency: "Monthly",
+        datePaid: "2026-08-01",
+      }),
+    ).toBeNull();
+  });
+
+  it("shifts daily and weekly dates without billing or due days", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: null,
+        dueDay: null,
+        periodCount: 3,
+        paymentFrequency: "Daily",
+      }),
+    ).toBe("2026-07-04");
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-07-01",
+        billingDay: null,
+        dueDay: null,
+        periodCount: 2,
+        paymentFrequency: "Weekly",
+      }),
+    ).toBe("2026-07-15");
+  });
+
+  it("stamps the due day after longer payment frequencies", () => {
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-01-31",
+        billingDay: null,
+        dueDay: 5,
+        periodCount: 1,
+        paymentFrequency: "Bi-monthly",
+      }),
+    ).toBe("2026-03-05");
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-01-15",
+        billingDay: 1,
+        dueDay: 15,
+        periodCount: 1,
+        paymentFrequency: "Quarterly",
+      }),
+    ).toBe("2026-04-15");
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-01-15",
+        billingDay: null,
+        dueDay: 15,
+        periodCount: 1,
+        paymentFrequency: "Semi-annually",
+      }),
+    ).toBe("2026-07-15");
+    expect(
+      calculateExpectedPaymentDate({
+        purchaseDate: "2026-01-15",
+        billingDay: null,
+        dueDay: 15,
+        periodCount: 1,
+        bnplAdjustment: 1,
+        paymentFrequency: "Annually",
+      }),
+    ).toBe("2028-01-15");
   });
 
   it("calculates pasabuy received amount and balance locally", () => {

@@ -204,6 +204,7 @@ Each skill lists: trigger intent, tools used, required vs optional fields, clari
 | Interest | Optional | |
 | Payment Frequency | When installments | |
 | Period count | When installments | |
+| BNPL adjustment | Optional | Added to period count for Expected payment date. Empty is 0. |
 | Paid period | When partial progress | |
 | CC Link Payment Receipt | Optional relation | |
 

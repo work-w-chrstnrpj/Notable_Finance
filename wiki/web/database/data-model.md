@@ -155,8 +155,9 @@ Expense Categories are read-only reference/configuration data in normal app flow
 | `Accounts` | relation | write | Paying account. |
 | `Categories` | relation | write | Expense category. |
 | `Payment Status` | select | write | Paid, Unpaid, Installment, Cancelled. |
-| `Payment Frequency` | select | write | Daily, Weekly, Monthly, Quarterly, Annually. |
-| `Period count` | number | write | Total payment periods. |
+| `Payment Frequency` | select | write | Daily, Weekly, Monthly, Bi-monthly, Quarterly, Semi-annually, Annually. |
+| `Period count` | number | write | Total payment periods. Empty counts as 1 in Expected payment date. |
+| `BNPL adjustment` | number | write | Added to period count for Expected payment date. Empty counts as 0. Negative values shorten the schedule. |
 | `Paid period` | number | write | Paid periods. |
 | `CC Link Payment Receipt` | relation | write | Related income/payment receipt. |
 | `Pasabuyer` | select | write | Shared, Maimai, Claire, 22-H in current Notion schema. |
@@ -169,7 +170,7 @@ Expense Categories are read-only reference/configuration data in normal app flow
 | `Paid Amount` | formula | computed | App calculates normal Expense display from status, installment amount, and paid period. |
 | `Remaining Balance` | formula | computed | App calculates normal Expense display from gross price less paid amount. |
 | `Monthly Total` | formula | computed | Display only. |
-| `Expected payment date` | formula | computed | App calculates normal Expense display from purchase date and account billing/due days. |
+| `Expected payment date` | formula | computed | Blank when Payment Frequency is empty or Date Paid is set. Otherwise the app shifts the purchase date by period count plus BNPL adjustment: days or weeks for Daily and Weekly, the monthly billing cycle for Monthly, and a due-day stamp after the frequency interval for Bi-monthly, Quarterly, Semi-annually, and Annually. |
 | `Extracted Billing Day` | rollup | computed | Display only. |
 | `Extracted Due Day` | rollup | computed | Display only. |
 | `Pasabuy Received Amount` | formula | computed | App calculates normal Expense display from Pasabuy status and paid period context. |

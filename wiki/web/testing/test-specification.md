@@ -82,7 +82,7 @@ Minimum manual scenarios:
 - Confirm the month selector appears in Expense only for Monthly view.
 - Confirm Expense Monthly reporting uses `Purchase Date` as the selected-month anchor.
 - Confirm non-credit Expense forms show only base purchase fields plus the category selector needed to choose Pasabuy.
-- Confirm credit Expense forms show payment status, interest, gross price, payment frequency, period count, paid period, paid amount, remaining balance, expected payment date, and installment amount only when status is `Installment`.
+- Confirm credit Expense forms show payment status, interest, gross price, payment frequency, period count, BNPL adjustment, paid period, paid amount, remaining balance, expected payment date, and installment amount only when status is `Installment`.
 - Confirm Expense category filters include All, W/out Pasabuy, and specific category options in general Expense views.
 - Confirm Expense table columns show Date, Description, Amount, Account, Category, Date Paid, and Expense Status; Expense Status is a red circle when `Date Paid` is empty and a green circle when `Date Paid` has a value.
 - Confirm Unpaid Pasabuy hides the category filter, shows only Pasabuy records with no paid date or Pasabuy status other than `Payment fully received`, and can be filtered by `Pasabuyer`.

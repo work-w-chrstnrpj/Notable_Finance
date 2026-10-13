@@ -70,6 +70,7 @@ export const EXPECTED_SCHEMA: Record<MappableResource, ExpectedProperty[]> = {
     { property: E.paymentStatus, type: 'select', kind: 'writable' },
     { property: E.paymentFrequency, type: 'select', kind: 'writable' },
     { property: E.periodCount, type: 'number', kind: 'writable' },
+    { property: E.bnplAdjustment, type: 'number', kind: 'writable' },
     { property: E.paidPeriod, type: 'number', kind: 'writable' },
     { property: E.pasabuyer, type: 'select', kind: 'writable' },
     { property: E.pasabuyStatus, type: 'select', kind: 'writable' },

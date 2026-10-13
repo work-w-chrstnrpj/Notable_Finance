@@ -329,7 +329,7 @@ Same rules as forms / `getExpenseConditionalSections`:
 | Profile | When | Extra writable fields (indicative) |
 | --- | --- | --- |
 | **Base** | Default non-credit, non-Pasabuy | Purchase description, Purchase Date, Date Paid, Account, Category, Expense Amount |
-| **Credit card (CC)** | Account type is credit-like (`Credit Account`, `BYPL`/`BNPL`, `e-Credit`, …) | Payment Status, Interest, Payment Frequency, Period count, Paid period, CC Link Payment Receipt; computed gross/installment/remaining shown read-only on confirm |
+| **Credit card (CC)** | Account type is credit-like (`Credit Account`, `BYPL`/`BNPL`, `e-Credit`, …) | Payment Status, Interest, Payment Frequency, Period count, BNPL adjustment, Paid period, CC Link Payment Receipt; computed gross/installment/remaining shown read-only on confirm |
 | **Pasabuy** | Pasabuy category or Unpaid Pasabuy flow | Pasabuyer, Pasabuy Status, Pasabuy Date of Payment, Pasabuy Account Receiver, Pasabuy paid period; computed received/balance read-only on confirm |
 
 Profiles can combine when both credit account and Pasabuy category apply — required-field union; clarify all missing.

@@ -59,6 +59,7 @@ export function expense(over: Partial<ExpenseRecordDto> = {}): ExpenseRecordDto 
     paymentStatus: 'Paid',
     paymentFrequency: null,
     periodCount: null,
+    bnplAdjustment: null,
     paidPeriod: null,
     pasabuyer: null,
     pasabuyStatus: null,

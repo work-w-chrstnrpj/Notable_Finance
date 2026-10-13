@@ -37,6 +37,7 @@ export function ExpenseFormFields({
     interestInput, setInterestInput,
     paymentStatus, paymentFrequency, setPaymentFrequency,
     periodCountInput, setPeriodCountInput,
+    bnplAdjustmentInput, setBnplAdjustmentInput,
     paidPeriodInput, setPaidPeriodInput,
     pasabuyer, setPasabuyer,
     pasabuyStatus,
@@ -146,6 +147,14 @@ export function ExpenseFormFields({
                   placeholder="0"
                   value={periodCountInput}
                   onChange={(event) => setPeriodCountInput(event.target.value)}
+                />
+              </Field>
+              <Field label="BNPL adjustment">
+                <input
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={bnplAdjustmentInput}
+                  onChange={(event) => setBnplAdjustmentInput(event.target.value)}
                 />
               </Field>
               {paymentStatus === "Installment" && installmentAmount !== null && (

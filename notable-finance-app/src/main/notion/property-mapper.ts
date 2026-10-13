@@ -62,6 +62,7 @@ export const NOTION_PROPERTY_NAMES = {
     paymentStatus: 'Payment Status',
     paymentFrequency: 'Payment Frequency',
     periodCount: 'Period count',
+    bnplAdjustment: 'BNPL adjustment',
     paidPeriod: 'Paid period',
     ccLinkPaymentReceiptId: 'CC Link Payment Receipt',
     pasabuyer: 'Pasabuyer',
@@ -160,6 +161,10 @@ export function expenseDtoToProperties(dto: Record<string, unknown>): Record<str
   if (dto.periodCount !== undefined)
     properties[names.periodCount] = buildNumber(
       dto.periodCount === null ? null : Number(dto.periodCount)
+    )
+  if (dto.bnplAdjustment !== undefined)
+    properties[names.bnplAdjustment] = buildNumber(
+      dto.bnplAdjustment === null ? null : Number(dto.bnplAdjustment)
     )
   if (dto.paidPeriod !== undefined)
     properties[names.paidPeriod] = buildNumber(

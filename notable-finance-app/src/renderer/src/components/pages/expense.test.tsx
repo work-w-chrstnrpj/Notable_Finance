@@ -23,6 +23,7 @@ const expenseRecord = {
   paymentStatus: "Installment" as const,
   paymentFrequency: "Monthly" as const,
   periodCount: 3,
+  bnplAdjustment: null,
   paidPeriod: 1,
   pasabuyer: null,
   pasabuyStatus: null,

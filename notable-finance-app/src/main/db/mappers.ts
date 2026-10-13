@@ -71,6 +71,7 @@ export interface ExpenseRow {
   payment_status: string | null
   payment_frequency: string | null
   period_count: number | null
+  bnpl_adjustment: number | null
   paid_period: number | null
   is_pasabuy: number
   pasabuyer: string | null
@@ -182,6 +183,7 @@ export function mapExpense(row: ExpenseRow): ExpenseRecordDto {
     paymentStatus: row.payment_status as PaymentStatus | null,
     paymentFrequency: (row.payment_frequency as PaymentFrequency | null) ?? null,
     periodCount: row.period_count,
+    bnplAdjustment: row.bnpl_adjustment,
     paidPeriod: row.paid_period,
     ccLinkPaymentReceiptId: row.cc_link_payment_receipt_id,
     pasabuyer: row.pasabuyer,

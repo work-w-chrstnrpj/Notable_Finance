@@ -46,7 +46,9 @@ export const paymentFrequencyLabels: PaymentFrequency[] = [
   "Daily",
   "Weekly",
   "Monthly",
+  "Bi-monthly",
   "Quarterly",
+  "Semi-annually",
   "Annually",
 ];
 
@@ -171,6 +173,23 @@ export function calculateInstallmentAmount(options: {
   return roundMoney(options.grossPrice / options.periodCount);
 }
 
+/**
+ * Price shown for an expense linked on a CC Payment.
+ * A period count means one installment of gross price (amount + interest).
+ * Otherwise the covered price is the full gross price.
+ */
+export function calculateCcCoveredExpenseAmount(expense: {
+  amount: number;
+  interest: number;
+  periodCount: number | null;
+}) {
+  const gross = calculateGrossPrice(expense.amount, expense.interest ?? 0);
+  if (expense.periodCount && expense.periodCount > 0) {
+    return roundMoney(gross / expense.periodCount);
+  }
+  return gross;
+}
+
 export function calculatePaidAmount(options: {
   grossPrice: number;
   paymentStatus: PaymentStatus | "";
@@ -227,13 +246,24 @@ export function calculatePasabuyerBalance(grossPrice: number, receivedAmount: nu
   return calculateRemainingBalance(grossPrice, receivedAmount);
 }
 
+/**
+ * Local mirror of the Notion "Expected payment date" formula.
+ * Blank when payment frequency is empty or a date paid is set.
+ * Period count defaults to 1 and BNPL adjustment defaults to 0; their sum
+ * is the adjusted period. Daily and weekly shift the purchase date.
+ * Monthly keeps the billing-cycle offset. Longer frequencies shift the
+ * purchase month, then stamp the account due day onto that month.
+ */
 export function calculateExpectedPaymentDate(options: {
   purchaseDate: string;
   billingDay: number | null;
   dueDay: number | null;
   periodCount?: number | null;
+  paymentFrequency?: PaymentFrequency | "" | null;
+  datePaid?: string | null;
+  bnplAdjustment?: number | null;
 }) {
-  if (!options.purchaseDate || !options.billingDay || !options.dueDay) {
+  if (!options.paymentFrequency || options.datePaid) {
     return null;
   }
 
@@ -243,18 +273,58 @@ export function calculateExpectedPaymentDate(options: {
     return null;
   }
 
-  const pCount = options.periodCount ?? 1;
-  const missedCycle = purchaseDate.day > options.billingDay ? 1 : 0;
-  const billOffset = missedCycle + pCount - 1;
-  const billingMonthIndex = purchaseDate.monthIndex + billOffset;
-  const dueMonthOffset = options.billingDay > options.dueDay ? 1 : 0;
-  const dueDate = createClampedDate(
-    purchaseDate.year,
-    billingMonthIndex + dueMonthOffset,
-    options.dueDay,
-  );
+  const pCount = options.periodCount == null ? 1 : options.periodCount;
+  const bnplAdjustment = options.bnplAdjustment == null ? 0 : options.bnplAdjustment;
+  const adjustedPeriod = pCount + bnplAdjustment;
+  const frequency = options.paymentFrequency;
 
-  return formatIsoDate(dueDate);
+  if (frequency === "Daily") {
+    return formatIsoDate(addDays(purchaseDate, adjustedPeriod));
+  }
+
+  if (frequency === "Weekly") {
+    return formatIsoDate(addDays(purchaseDate, adjustedPeriod * 7));
+  }
+
+  if (frequency === "Monthly") {
+    if (!options.billingDay || !options.dueDay) {
+      return null;
+    }
+
+    const missedCycle = purchaseDate.day > options.billingDay ? 1 : 0;
+    const billOffset = missedCycle + adjustedPeriod - 1;
+    const dueMonthOffset = options.billingDay > options.dueDay ? 1 : 0;
+    const shifted = shiftMonths(
+      purchaseDate.year,
+      purchaseDate.monthIndex,
+      billOffset + dueMonthOffset,
+    );
+
+    return formatIsoDate(createClampedDate(shifted.year, shifted.monthIndex, options.dueDay));
+  }
+
+  if (!options.dueDay) {
+    return null;
+  }
+
+  const monthShift =
+    frequency === "Bi-monthly"
+      ? adjustedPeriod * 2
+      : frequency === "Quarterly"
+        ? adjustedPeriod * 3
+        : frequency === "Semi-annually"
+          ? adjustedPeriod * 6
+          : frequency === "Annually"
+            ? adjustedPeriod * 12
+            : null;
+
+  if (monthShift == null) {
+    return null;
+  }
+
+  const shifted = shiftMonths(purchaseDate.year, purchaseDate.monthIndex, monthShift);
+
+  return formatIsoDate(createClampedDate(shifted.year, shifted.monthIndex, options.dueDay));
 }
 
 export function getMoneyValueTone(value: number) {
@@ -364,6 +434,22 @@ function parseIsoDate(value: string) {
     monthIndex: Number(match[2]) - 1,
     day: Number(match[3]),
   };
+}
+
+function addDays(
+  parts: { year: number; monthIndex: number; day: number },
+  days: number,
+) {
+  const date = new Date(parts.year, parts.monthIndex, parts.day);
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
+function shiftMonths(year: number, monthIndex: number, delta: number) {
+  const index = year * 12 + monthIndex + delta;
+  const nextYear = Math.floor(index / 12);
+
+  return { year: nextYear, monthIndex: index - nextYear * 12 };
 }
 
 function createClampedDate(year: number, monthIndex: number, day: number) {

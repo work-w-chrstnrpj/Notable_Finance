@@ -143,6 +143,7 @@ export interface ExpenseFields {
   payment_status: string | null
   payment_frequency: string | null
   period_count: number | null
+  bnpl_adjustment: number | null
   paid_period: number | null
   pasabuyer: string | null
   pasabuy_status: string | null
@@ -221,6 +222,7 @@ export function pageToExpenseFields(page: Record<string, unknown>): ExpenseField
     payment_status: extractSelect(props, n.paymentStatus),
     payment_frequency: extractSelect(props, n.paymentFrequency),
     period_count: extractNumber(props, n.periodCount),
+    bnpl_adjustment: extractNumber(props, n.bnplAdjustment),
     paid_period: extractNumber(props, n.paidPeriod),
     pasabuyer: extractSelect(props, n.pasabuyer),
     pasabuy_status: extractSelect(props, n.pasabuyStatus),
