@@ -45,6 +45,7 @@ linux:
   category: Finance
 
 win:
+  # Windows packaging fails when this PNG is under 256×256.
   icon: build/icon.png
   target:
     - nsis

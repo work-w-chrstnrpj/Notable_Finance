@@ -129,6 +129,10 @@ npm run dist:linux
 
 Then manually upload the artifacts from `dist/` to a GitHub Release.
 
+## App icon
+
+`notable-finance-app/build/icon.png` is the Windows and Linux packaging icon (`electron-builder.yml`). It must be at least **256×256**. A smaller PNG fails the Windows installer build with an icon-too-small error. The in-app sidebar image is `src/renderer/public/favicon.png` and is separate from this file. macOS packaging uses `build/icon.icns`.
+
 ## App configuration handling
 
 - The **Notion token is not bundled** — it is entered per user at onboarding and stored in the OS keychain. See [`security.md`](security.md).
