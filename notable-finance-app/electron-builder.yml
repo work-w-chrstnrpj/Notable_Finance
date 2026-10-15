@@ -45,6 +45,8 @@ linux:
   category: Finance
 
 win:
+  # Keep the published filename identical to latest.yml (spaces are rewritten on upload).
+  artifactName: "${productName}-Setup-${version}.${ext}"
   # Windows packaging fails when this PNG is under 256×256.
   icon: build/icon.png
   target:

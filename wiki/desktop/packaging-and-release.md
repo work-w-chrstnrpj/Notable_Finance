@@ -147,3 +147,11 @@ Then manually upload the artifacts from `dist/` to a GitHub Release.
 ## Related
 
 - [`desktop-architecture.md`](desktop-architecture.md) · [`security.md`](security.md) · [`desktop-testing-strategy.md`](desktop-testing-strategy.md)
+
+## Update manifest filename verification
+
+Windows NSIS uses the explicit artifact name `${productName}-Setup-${version}.${ext}`. Keep names free of spaces: GitHub upload can rewrite spaces to dots, while electron-updater requests the hyphenated name in `latest.yml`. A successful installer build alone does not prove automatic download works.
+
+CI runs `node scripts/verify-update-artifacts.mjs <win|mac|linux>` after packaging and before upload. It checks each generated update-manifest filename exists locally and contains only URL-safe filename characters. After publishing, verify those exact names exist in the release assets. For v2.2.2, retain the original dotted installer link and additionally publish the identical binary as `Notable-Finance-Setup-2.2.2.exe`, matching `latest.yml`; its SHA-512 must remain unchanged.
+
+Windows runtime acceptance is separate: verify the version inside the running app after restart, then check Pull/Sync and representative records. Shared packaged code and a repaired updater do not establish that an affected Windows installation is running the new version or using current local data.

@@ -5,6 +5,12 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Windows update delivery:** Use a deterministic space-free NSIS installer filename and verify update-manifest references before upload, preventing GitHub filename rewriting from breaking updater downloads. The published v2.2.2 installer also has a checksum-identical alias matching its existing update manifest.
+
 ## [2.2.2] - 2026-10-15
 
 ### Fixed
