@@ -67,3 +67,19 @@ The owner was asked for the version inside the running Windows app, exact remain
 ## RCA Needed?
 
 No formal RCA required for this scoped distribution repair unless requested. Continue the runtime investigation when Windows evidence is available.
+
+## Follow-up: owner confirms both running apps are v2.2.2
+
+The owner confirms Windows and macOS both show v2.2.2. Windows Expected payment date is `-`, and Pasabuyer balance/related figures remain wrong despite no Sync error. Therefore the repaired download mismatch does not establish the cause of this runtime issue.
+
+Compared the actual published Windows installer's renderer functions with the installed Mac archive: `expenseAmounts`, installment/paid/remaining/Pasabuy functions, expected-date helpers, `useExpenseForm`, and `makeDeriveExpenseComputed` are identical. Executed the published Windows expected-date function with a populated fixture under Asia/Manila, America/Los_Angeles, Europe/London and UTC: all produced `2027-02-10`. This is function-level verification on macOS, not Windows runtime acceptance.
+
+A source-level candidate remains: form/table account lookup uses `activeAccounts`, excluding inactive, Auxiliary and unsynced accounts. Monthly Expected payment date returns null if the account cannot be resolved or billing/due days are missing. Pasabuy figures additionally depend on category, period count, status, paid periods and receiver. No Windows record inputs have been supplied, so none of these conditions is confirmed on the affected installation.
+
+Prepared `notable-finance-app/scripts/diagnose-expense-formulas.js`, a read-only DevTools diagnostic for one uniquely named record. It calls only local list APIs and emits formula dependencies without description, buyer name, monetary amounts, IDs or tokens. Synthetic complete/inactive/missing-account fixtures passed and verified those private fields are omitted. It does not sync or write. Windows evidence remains pending; no financial formula semantics were changed during this follow-up.
+
+## Owner clarification
+
+The report is from the owner's friend using Windows; the owner is currently on the working Mac and cannot inspect that installation. Friend's account is reported active. Affected entries are monthly installments with both filled and blank BNPL adjustments; all formulas are reported wrong, including Pasabuyer Balance. Treat required fields as reportedly populated, not independently verified. Do not repeat the inactive-account hypothesis as the established cause.
+
+Added a Windows-specific CI job and isolated Electron formula fixtures to obtain actual Windows execution evidence. The saved Notion Pasabuyer Balance contract remains Expense Amount minus (gross installment times Pasabuy paid periods), or zero when fully received. This can differ from an expectation that the remaining balance includes all interest; no formula-rule change is justified without confirming that intent or the friend's schema.

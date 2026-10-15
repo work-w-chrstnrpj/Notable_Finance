@@ -42,3 +42,34 @@ jobs:
       - name: Test
         working-directory: notable-finance-app
         run: pnpm run test
+
+  windows-expense-formulas:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify formula and form regressions
+        working-directory: notable-finance-app
+        run: pnpm exec vitest run test/notion-formulas.test.ts src/renderer/src/lib/finance-rules.test.ts src/renderer/src/components/pages/expense/expense-formulas.test.tsx
+      - name: Rebuild SQLite for Electron
+        working-directory: notable-finance-app
+        run: pnpm exec electron-rebuild -f -w better-sqlite3
+      - name: Build and exercise Expense formulas in Windows Electron
+        working-directory: notable-finance-app
+        run: pnpm exec electron-vite build && pnpm exec playwright test e2e/expense-formulas.spec.ts
+      - name: Upload diagnostic traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-expense-formulas-failure
+          path: notable-finance-app/test-results/
+          retention-days: 7

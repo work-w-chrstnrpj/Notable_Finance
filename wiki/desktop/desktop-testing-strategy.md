@@ -87,3 +87,9 @@ See [the redesign acceptance checklist](ui-ux-redesign.md#acceptance-and-verific
 Before release, open representative records in the packaged app and compare received/balance values with Notion after a successful pull. Expected date remains blank for missing payment frequency or a set Date Paid; monthly dates additionally require account billing/due days. Automated tests do not establish live workspace parity.
 
 `test/pasabuyer-options.test.ts` verifies schema-only (unused) choices, exact labels, rename/removal and empty-list refreshes, durable offline fallback, bad-property handling and database remapping isolation. `expense/pasabuyer-options.test.tsx` exercises the real provider/form and bulk field catalogue across a reference refresh, preserving a retired saved selection. Verify Notion option edits via Sync in the packaged app; options are fetched from schema, never inferred from existing records.
+
+## Windows formula acceptance
+
+Desktop CI includes a Windows-specific job for the shared formula/form regression suites and Electron monthly installment tests. Exercise active synced accounts, monthly frequency, and blank/zero/nonzero BNPL adjustment in the built app. Assert Expense table and record-modal values, including Gross Price, Installment Amount, Paid Amount, Remaining Balance, Expected payment date, Pasabuy Received Amount and Pasabuyer Balance. Use isolated fixture data; never seed a user's profile.
+
+A passing Windows fixture test establishes behavior for those inputs only. It does not establish the values imported by another user's Notion mapping or their expected Pasabuyer formula semantics. Keep affected-installation acceptance open until a representative actual record can be compared.
