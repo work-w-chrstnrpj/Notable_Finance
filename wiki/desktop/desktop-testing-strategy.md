@@ -79,3 +79,11 @@ Phase 8 agent (planned): mock Notion adapter for forward vs reverse relation mis
 ## UI/UX redesign regression coverage
 
 See [the redesign acceptance checklist](ui-ux-redesign.md#acceptance-and-verification). Added coverage exercises CC period bounds, all credit payment statuses, combined Pasabuy filters, non-credit Pasabuy access, saved theme/font preservation and record section input retention. Existing bulk/optimistic-save tests remain required. Rendered theme, font, accessibility and export acceptance must be checked separately from unit tests.
+
+## Expense calculated-field regression
+
+`src/renderer/src/components/pages/expense/expense-formulas.test.tsx` loads saved records into the real form hook and compares table figures. It covers Paid/Unpaid/Installment Pasabuy, non-even installments, receiver gating, interest/principal distinction, fully received status, BNPL expected dates and zero-period defaults. `test/notion-formulas.test.ts` keeps the existing account-balance formulas locked. All consumers use `src/shared/notion-formulas.ts`; the main domain module re-exports it.
+
+Before release, open representative records in the packaged app and compare received/balance values with Notion after a successful pull. Expected date remains blank for missing payment frequency or a set Date Paid; monthly dates additionally require account billing/due days. Automated tests do not establish live workspace parity.
+
+`test/pasabuyer-options.test.ts` verifies schema-only (unused) choices, exact labels, rename/removal and empty-list refreshes, durable offline fallback, bad-property handling and database remapping isolation. `expense/pasabuyer-options.test.tsx` exercises the real provider/form and bulk field catalogue across a reference refresh, preserving a retired saved selection. Verify Notion option edits via Sync in the packaged app; options are fetched from schema, never inferred from existing records.

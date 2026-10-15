@@ -1,3 +1,4 @@
+import { useLiveCollections } from "@/components/hooks";
 import styles from "@/components/ui/filter-row.module.css";
 import { Plus } from "lucide-react";
 import {
@@ -10,7 +11,7 @@ import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
-import { pasabuyerLabels, pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
+import { pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
 import { expenseCategoryFilterWithoutPasabuy, type AnnualGroupBy } from "@/components/constants";
 import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance";
 
@@ -80,6 +81,7 @@ export function ExpenseToolbar({
   onNewExpense: () => void;
   onViewModeChange: (mode: ExpenseViewMode) => void;
 }) {
+  const { pasabuyerOptions } = useLiveCollections();
   return (
     <>
       <PageToolbar
@@ -174,7 +176,10 @@ export function ExpenseToolbar({
                   value={pasabuyerFilter}
                   onChange={setPasabuyerFilter}
                 >
-                  {pasabuyerLabels.map((name) => (
+                  {pasabuyerFilter && !pasabuyerOptions.includes(pasabuyerFilter) && (
+                    <option value={pasabuyerFilter}>{pasabuyerFilter}</option>
+                  )}
+                  {pasabuyerOptions.map((name) => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </FilterSelect>

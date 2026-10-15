@@ -1,12 +1,7 @@
+import { expenseAmounts } from "@shared/notion-formulas";
 import { useState } from "react";
 import {
-  calculateGrossPrice,
-  calculateInstallmentAmount,
-  calculatePaidAmount,
-  calculateRemainingBalance,
   calculateExpectedPaymentDate,
-  calculatePasabuyReceivedAmount,
-  calculatePasabuyerBalance,
   getExpenseConditionalSections,
 } from "@/lib/finance-rules";
 import { parseNumberInput, parseOptionalNumberInput } from "@/lib/finance-helpers";
@@ -74,19 +69,13 @@ export function useExpenseForm({
   const bnplAdjustment = parseOptionalNumberInput(bnplAdjustmentInput);
   const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
   const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
-  const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
-  const installmentAmount = calculateInstallmentAmount({
-    grossPrice,
-    paymentStatus,
-    periodCount,
-  });
-  const paidAmount = calculatePaidAmount({
-    grossPrice,
-    paymentStatus,
-    installmentAmount,
-    paidPeriod,
-  });
-  const remainingBalance = calculateRemainingBalance(grossPrice, paidAmount);
+  const { grossPrice, installmentAmount, paidAmount, remainingBalance,
+    pasabuyReceivedAmount, pasabuyerBalance } = expenseAmounts({
+    amount: expenseAmount, interest: interestAmount, periodCount,
+    paymentStatus: paymentStatus || null, paidPeriod,
+    pasabuyStatus: pasabuyStatus || null, pasabuyPaidPeriod,
+    pasabuyAccountReceiverId: pasabuyAccountReceiverId || null,
+  }, categoryName);
   const expectedPaymentDate = calculateExpectedPaymentDate({
     purchaseDate: purchaseDateInput,
     billingDay: selectedFormAccount?.billingDay ?? null,
@@ -96,14 +85,6 @@ export function useExpenseForm({
     datePaid: datePaidInput || null,
     bnplAdjustment,
   });
-  const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
-    grossPrice,
-    pasabuyStatus,
-    installmentAmount,
-    pasabuyPaidPeriod,
-    periodCount,
-  });
-  const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
 
   // ── Form automations (user-triggered only; record-load uses setters directly) ──
 

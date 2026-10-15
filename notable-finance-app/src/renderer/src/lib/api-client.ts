@@ -414,3 +414,8 @@ export const financeApi = {
   schemaStatus() { return syncApi.schemaStatus(); },
   pullLatest(options: PullLatestOptions) { return syncApi.pullLatest(options); },
 };
+
+/** Workspace-owned Pasabuyer select labels, cached by main for offline access. */
+export const pasabuyersApi = {
+  list: () => adapt(nfApi().categories.pasabuyers()),
+};

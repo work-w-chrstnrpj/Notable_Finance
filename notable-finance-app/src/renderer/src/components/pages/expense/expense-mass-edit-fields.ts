@@ -1,6 +1,5 @@
 import type { MassEditFieldOption } from "@/components/ui/mass-edit-modal";
 import {
-  pasabuyerLabels,
   pasabuyStatusLabels,
   paymentFrequencyLabels,
   paymentStatusLabels,
@@ -15,6 +14,7 @@ import type { Account, ExpenseCategory } from "@/types/finance";
 export function buildExpenseMassEditFields(
   activeAccounts: Account[],
   expenseCategories: ExpenseCategory[],
+  pasabuyerOptions: string[],
 ): MassEditFieldOption[] {
   return [
       { key: "purchaseDate", label: "Purchase Date", kind: "date" },
@@ -56,7 +56,7 @@ export function buildExpenseMassEditFields(
         kind: "select",
         clearable: true,
         emptyLabel: "— None —",
-        options: pasabuyerLabels.map((p) => ({ value: p, label: p })),
+        options: pasabuyerOptions.map((p) => ({ value: p, label: p })),
       },
       {
         key: "pasabuyStatus",

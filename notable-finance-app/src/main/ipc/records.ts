@@ -1,3 +1,4 @@
+import { listPasabuyerOptions } from '../notion/pasabuyer-options'
 import type {
   CreateExpenseInput,
   CreateIncomeInput,
@@ -30,6 +31,7 @@ import { changed, result } from './shared'
  * Phase 7.1 — pure move out of ipc/index.ts, unchanged.
  */
 export function registerRecordsIpc(): void {
+  handle(IPC_CHANNELS.categoriesPasabuyers, () => result(() => listPasabuyerOptions()))
   // Dev Mode logs (in-memory only; gated by settings.devModeEnabled inside store).
   handle(IPC_CHANNELS.devLogsList, (_e, limit?: number) =>
     result(() => listDevLogs(typeof limit === 'number' ? limit : undefined))

@@ -9,6 +9,7 @@ import type { ApiResult } from "./api-client";
 import { useAuth } from "./auth-context";
 import {
   accountsApi,
+  pasabuyersApi,
   alkansyaApi,
   creditCardPaymentsApi,
   dashboardApi,
@@ -314,4 +315,10 @@ export function useFinanceInvalidation() {
   }, [queryClient]);
 
   return { invalidateIncomeFamily, invalidateExpenseFamily };
+}
+
+export function usePasabuyers() {
+  return useApiQuery(["pasabuyers"], () => pasabuyersApi.list(), {
+    staleTime: REFERENCE_STALE_TIME,
+  });
 }

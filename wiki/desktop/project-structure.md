@@ -17,7 +17,7 @@ notable-finance-app/
 │   │   ├── windows/               # BrowserWindow management (multi-window)
 │   │   ├── db/                    # SQLite connection, drizzle schema, migrations/
 │   │   ├── domain/                # COPIED finance logic: validation, mapping, reporting/derivations
-│   │   ├── notion/                # Notion adapter: client factory, property mapper, query, mutation
+│   │   ├── notion/                # Notion adapter: client, properties, query/mutation, cached Pasabuyer schema choices
 │   │   ├── sync/                  # reconcile engine, three-way merge, conflict, mutation queue, cursors
 │   │   ├── chat/                  # AI chat orchestrator, tools, skills, overlays
 │   │   │                          # Phase 8 (planned): investigate-tools + knowledge + optional agent-loop
@@ -49,8 +49,9 @@ notable-finance-app/
 │   │       ├── types/             # re-exports from @shared — no domain redefinitions
 │   │       └── assets/            # globals.css = @import list only; rules live in
 │   │                              #   base/ layout/ components/ pages/ + *.module.css
-│   └── shared/                    # types + IPC channel constants shared across processes
+│   └── shared/                    # types, pure formulas + IPC constants shared across processes
 │       ├── finance.types.ts
+│       ├── notion-formulas.ts     # pure formulas used by main balances and Expense UI
 │       └── ipc-channels.ts        # single source of truth for request/response channels
 ├── e2e/                           # Playwright + Electron end-to-end tests
 └── test/                          # unit/integration tests (sync, domain, db)

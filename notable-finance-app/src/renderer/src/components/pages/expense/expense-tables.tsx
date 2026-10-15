@@ -1,10 +1,7 @@
+import { expenseAmounts } from "@shared/notion-formulas";
 import type { ReactNode } from "react";
 import { formatMoney, formatDate } from "@/lib/format";
 import {
-  calculateGrossPrice,
-  calculateInstallmentAmount,
-  calculatePaidAmount,
-  calculateRemainingBalance,
   calculateExpectedPaymentDate,
 } from "@/lib/finance-rules";
 import { stripNotionTag, getExpenseTotal } from "@/lib/finance-helpers";
@@ -274,19 +271,8 @@ export function makeDeriveExpenseComputed(
   accountById: Map<string, Account>,
 ): (record: ExpenseRecord) => ExpenseComputed {
   return (record) => {
-    const gross = calculateGrossPrice(record.amount, record.interest ?? 0);
-    const installment = calculateInstallmentAmount({
-      grossPrice: gross,
-      paymentStatus: record.paymentStatus,
-      periodCount: record.periodCount,
-    });
-    const paid = calculatePaidAmount({
-      grossPrice: gross,
-      paymentStatus: record.paymentStatus,
-      installmentAmount: installment,
-      paidPeriod: record.paidPeriod,
-    });
-    const remaining = calculateRemainingBalance(gross, paid);
+    const { grossPrice: gross, installmentAmount: installment,
+      paidAmount: paid, remainingBalance: remaining } = expenseAmounts(record, undefined);
     const account = accountById.get(record.accountId ?? "");
     const expected = calculateExpectedPaymentDate({
       purchaseDate: record.purchaseDate,

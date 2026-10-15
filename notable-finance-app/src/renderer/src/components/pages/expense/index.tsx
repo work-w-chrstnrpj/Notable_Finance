@@ -65,6 +65,7 @@ function ExpensePage({
 }) {
   const {
     activeAccounts,
+    pasabuyerOptions,
     expenseCategories,
     accountNameById,
     expenseCategoryNameById,
@@ -406,8 +407,8 @@ function ExpensePage({
 
 
   const massEditFields = useMemo<MassEditFieldOption[]>(
-    () => buildExpenseMassEditFields(activeAccounts, expenseCategories),
-    [activeAccounts, expenseCategories],
+    () => buildExpenseMassEditFields(activeAccounts, expenseCategories, pasabuyerOptions),
+    [activeAccounts, expenseCategories, pasabuyerOptions],
   );
   async function applyMassEdit(patch: Record<string, string | number | null>) {
     const ids = Array.from(selectedIds).filter((id): id is string => id != null);

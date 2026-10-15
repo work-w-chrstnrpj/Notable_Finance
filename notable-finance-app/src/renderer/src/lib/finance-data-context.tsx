@@ -8,6 +8,7 @@ import {
 } from "react";
 import {
   useAccounts,
+  usePasabuyers,
   useExpenseCategories,
   useIncomeCategories,
 } from "./use-data";
@@ -16,11 +17,11 @@ import { isCreditLikeAccountType } from "./finance-rules";
 import type { Account, ExpenseCategory, IncomeCategory } from "@/types/finance";
 
 /**
- * Reference data (accounts + income/expense categories) changes rarely — only
+ * Reference data (accounts, income/expense categories and Pasabuyer choices) changes rarely — only
  * via a Notion-side edit picked up by Sync. Previously every page that called
  * `useLiveCollections()` (Dashboard, Income, Expense, Workflow, Monitoring,
  * Accounts) re-fetched all of it on mount, so navigating between sections
- * issued the same four requests over and over.
+ * repeated the same reference requests.
  *
  * FinanceDataProvider fetches that reference data ONCE and shares it via
  * context. It is mounted in the ROOT layout (`app/layout.tsx`), inside
@@ -39,13 +40,14 @@ export interface FinanceReferenceData {
   allIncomeCategories: IncomeCategory[];
   normalIncomeCategories: IncomeCategory[];
   expenseCategories: ExpenseCategory[];
+  pasabuyerOptions: string[];
   accountNameById: Map<string, string>;
   incomeCategoryNameById: Map<string, string>;
   expenseCategoryNameById: Map<string, string>;
   /** True while any reference collection is still on its initial load. */
   referenceLoading: boolean;
   /**
-   * Silently re-fetch accounts + categories. Call after a Notion sync so newly
+   * Silently re-fetch accounts, categories and Pasabuyer choices. Call after a Notion sync so newly
    * added accounts/categories appear without blanking the open dropdowns.
    */
   refreshReferenceData: () => void;
@@ -69,6 +71,7 @@ const EMPTY_REFERENCE: FinanceReferenceData = {
   allIncomeCategories: [],
   normalIncomeCategories: [],
   expenseCategories: [],
+  pasabuyerOptions: [],
   accountNameById: new Map(),
   incomeCategoryNameById: new Map(),
   expenseCategoryNameById: new Map(),
@@ -93,8 +96,9 @@ export function FinanceDataProvider({ children }: { children: ReactNode }) {
 }
 
 function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
-  // These four hooks fire once because this provider mounts once (in the root
+  // Reference hooks fire once because this provider mounts once (in the root
   // layout, after auth) and survives client-side section navigation.
+  const { state: pasabuyersState, refetch: refetchPasabuyers } = usePasabuyers();
   const { state: accountsState, refetch: refetchAccounts } = useAccounts(true);
   const { state: allIncomeCategoriesState, refetch: refetchAllIncomeCategories } =
     useIncomeCategories(false);
@@ -108,11 +112,13 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
   // refetch() from the read hooks is stable (and stale-while-revalidate under
   // React Query), so this callback is stable and never blanks the dropdowns.
   const refreshReferenceData = useCallback(() => {
+    void refetchPasabuyers();
     void refetchAccounts();
     void refetchAllIncomeCategories();
     void refetchNormalIncomeCategories();
     void refetchExpenseCategories();
   }, [
+    refetchPasabuyers,
     refetchAccounts,
     refetchAllIncomeCategories,
     refetchNormalIncomeCategories,
@@ -171,6 +177,7 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
     );
 
     const referenceLoading =
+      pasabuyersState.status === "loading" ||
       accountsState.status === "loading" ||
       allIncomeCategoriesState.status === "loading" ||
       normalIncomeCategoriesState.status === "loading" ||
@@ -184,6 +191,7 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
       allIncomeCategories,
       normalIncomeCategories,
       expenseCategories,
+      pasabuyerOptions: pasabuyersState.status === "success" ? pasabuyersState.data : [],
       accountNameById,
       incomeCategoryNameById,
       expenseCategoryNameById,
@@ -191,6 +199,7 @@ function AuthedFinanceDataProvider({ children }: { children: ReactNode }) {
       refreshReferenceData,
     };
   }, [
+    pasabuyersState,
     accountsState,
     allIncomeCategoriesState,
     normalIncomeCategoriesState,

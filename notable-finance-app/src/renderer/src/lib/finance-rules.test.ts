@@ -1,3 +1,4 @@
+import { expenseAmounts } from "@shared/notion-formulas";
 import { describe, expect, it } from "vitest";
 import {
   auxiliaryIncomeCategoryLabels,
@@ -5,12 +6,7 @@ import {
   calculateCcCoveredExpenseAmount,
   calculateExpectedPaymentDate,
   calculateGrossPrice,
-  calculateInstallmentAmount,
   calculateNetIncome,
-  calculatePaidAmount,
-  calculatePasabuyerBalance,
-  calculatePasabuyReceivedAmount,
-  calculateRemainingBalance,
   calculateTotalCashFlow,
   getExpenseConditionalSections,
   getExpenseStatusFromDatePaid,
@@ -236,17 +232,9 @@ describe("finance frontend rules", () => {
 
   it("calculates credit expense values locally from writable inputs", () => {
     const grossPrice = calculateGrossPrice(45000, 1200);
-    const installmentAmount = calculateInstallmentAmount({
-      grossPrice,
-      paymentStatus: "Installment",
-      periodCount: 12,
-    });
-    const paidAmount = calculatePaidAmount({
-      grossPrice,
-      paymentStatus: "Installment",
-      installmentAmount,
-      paidPeriod: 3,
-    });
+    const { installmentAmount, paidAmount, remainingBalance } = expenseAmounts({
+      amount: 45000, interest: 1200, paymentStatus: "Installment", periodCount: 12, paidPeriod: 3,
+    }, undefined);
 
     expect(grossPrice).toBe(46200);
     expect(installmentAmount).toBe(3850);
@@ -260,7 +248,7 @@ describe("finance frontend rules", () => {
       calculateCcCoveredExpenseAmount({ amount: 500, interest: 20, periodCount: null }),
     ).toBe(520);
     expect(paidAmount).toBe(11550);
-    expect(calculateRemainingBalance(grossPrice, paidAmount)).toBe(34650);
+    expect(remainingBalance).toBe(34650);
     expect(
       calculateExpectedPaymentDate({
         purchaseDate: "2026-06-20",
@@ -404,16 +392,13 @@ describe("finance frontend rules", () => {
   });
 
   it("calculates pasabuy received amount and balance locally", () => {
-    const received = calculatePasabuyReceivedAmount({
-      grossPrice: 8000,
+    const figures = expenseAmounts({
+      amount: 8000, interest: 0, paymentStatus: "Installment", periodCount: 2, paidPeriod: 1,
       pasabuyStatus: "Payment partially received (installment)",
-      installmentAmount: 4000,
-      pasabuyPaidPeriod: 1,
-      periodCount: 2,
-    });
-
-    expect(received).toBe(4000);
-    expect(calculatePasabuyerBalance(8000, received)).toBe(4000);
+      pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: "receiver",
+    }, "Pasabuy");
+    expect(figures.pasabuyReceivedAmount).toBe(4000);
+    expect(figures.pasabuyerBalance).toBe(4000);
   });
 
   it("treats unpaid pasabuy records as not fully received", () => {

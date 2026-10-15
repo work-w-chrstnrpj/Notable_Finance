@@ -32,6 +32,7 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
       list: vi.fn(async () => ok([]))
     },
     categories: {
+      pasabuyers: vi.fn(async () => ok([])),
       income: vi.fn(async () => ok([])),
       expense: vi.fn(async () => ok([]))
     },

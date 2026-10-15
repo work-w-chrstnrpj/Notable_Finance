@@ -31,7 +31,7 @@ function IpcInvalidationBridge() {
       for (const key of [
         ["incomes"], ["expenses"], ["workflow"], ["dashboard"],
         ["monthlyMonitoring"], ["expenseScheduler"], ["accounts"],
-        ["incomeCategories"], ["expenseCategories"], ["syncStatus"],
+        ["incomeCategories"], ["expenseCategories"], ["pasabuyers"], ["syncStatus"],
       ]) {
         void queryClient.invalidateQueries({ queryKey: key });
       }

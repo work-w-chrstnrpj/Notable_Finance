@@ -45,7 +45,7 @@ Update this map whenever the project structure changes.
   - `src/main/`: owns all data and side effects (`db/`, `domain/`, `notion/`, `sync/`, `chat/`, `settings/`, `updater/`). `src/main/ipc/` is one registrar per domain behind a 22-line composition root, registering via the `handle()` primitive.
   - `src/preload/`: the sole contextBridge, exposing an allow-listed `window.api`.
   - `src/renderer/src/`: React UI. `components/pages/` holds one directory per page with `index.tsx` as composition only; `features/records/` is the shared record-page engine (selection, persisted filters, search, optimistic writes, bulk actions, receipts) used by Income/Expense/Workflow.
-  - `src/shared/`: `finance.types.ts` (domain DTOs; the renderer re-exports, never redefines) and `ipc-channels.ts` (single source of truth for request/response channel strings).
+  - `src/shared/`: `finance.types.ts` (domain DTOs; the renderer re-exports, never redefines) and `ipc-channels.ts` (single source of truth for request/response channel strings), and `notion-formulas.ts` (pure formulas shared by local balances and Expense UI).
   - Styles: `assets/globals.css` is an `@import` list only; rules live in `assets/{base,layout,components,pages}/` and component-local `*.module.css`.
 - `wiki/`: shared-root documentation with three zones — `wiki/shared/` (product spec, finance glossary, Notion field mapping), `wiki/web/` (web-specific: API, database, deployment, tdd, testing, development plan, diagrams), and `wiki/desktop/` (desktop architecture, sync/conflict, local schema, IPC, offline, onboarding, security, packaging, testing, plan).
 - `shared/`: future shared contracts, DTOs, schemas, constants, and formatting helpers.

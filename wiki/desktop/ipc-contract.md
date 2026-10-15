@@ -151,3 +151,7 @@ DTOs (`Account`, `IncomeRecord`, `ExpenseRecord`, `DashboardSummary`, `SyncStatu
 - The Notion **token is never sent to the renderer** — `connect(token)` sends it *into* main once, where it is encrypted; no getter returns it.
 - Channels are explicitly allow-listed in preload; the renderer cannot invoke arbitrary channels.
 - See [`security.md`](security.md).
+
+### `window.api.categories.pasabuyers()`
+
+Returns `ApiResult<string[]>` using channel `categories:pasabuyers`. Main reads the mapped Expense data-source schema's `Pasabuyer` select options, preserving exact labels and order, including unused choices. Successful results replace a database-scoped `app_settings` cache, including an empty list. Failed refreshes/disconnected access retain cached choices; a first fetch failure without cache returns an error. No token crosses the bridge. Reference refresh and main-process record/sync invalidations refresh the renderer query. Record forms preserve an existing removed value without offering it as a new bulk-edit choice.

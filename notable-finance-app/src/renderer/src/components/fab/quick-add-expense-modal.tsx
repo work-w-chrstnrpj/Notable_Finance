@@ -1,3 +1,4 @@
+import { expenseAmounts } from "@shared/notion-formulas";
 import { useEffect, useState } from "react";
 import { useLiveCollections } from "@/components/hooks";
 import { useFinanceInvalidation } from "@/lib/use-data";
@@ -5,15 +6,8 @@ import { Field, ComputedField, FormSectionDivider } from "@/components/ui";
 import { FormModal } from "@/components/ui/form-modals";
 import { applyNotionTag, parseNumberInput, parseOptionalNumberInput } from "@/lib/finance-helpers";
 import {
-  calculateGrossPrice,
-  calculateInstallmentAmount,
-  calculatePaidAmount,
-  calculateRemainingBalance,
   calculateExpectedPaymentDate,
-  calculatePasabuyReceivedAmount,
-  calculatePasabuyerBalance,
   getExpenseConditionalSections,
-  pasabuyerLabels,
   pasabuyStatusLabels,
   paymentFrequencyLabels,
   paymentStatusLabels,
@@ -37,7 +31,7 @@ function QuickAddExpenseModal({
   selectedDate: string;
   onClose: () => void;
 }) {
-  const { activeAccounts, expenseCategories, expenseCategoryNameById } =
+  const { activeAccounts, expenseCategories, expenseCategoryNameById, pasabuyerOptions } =
     useLiveCollections();
   const { invalidateExpenseFamily } = useFinanceInvalidation();
   const [descriptionInput, setDescriptionInput] = useState("");
@@ -83,19 +77,13 @@ function QuickAddExpenseModal({
   const bnplAdjustment = parseOptionalNumberInput(bnplAdjustmentInput);
   const paidPeriod = parseOptionalNumberInput(paidPeriodInput);
   const pasabuyPaidPeriod = parseOptionalNumberInput(pasabuyPaidPeriodInput);
-  const grossPrice = calculateGrossPrice(expenseAmount, interestAmount);
-  const installmentAmount = calculateInstallmentAmount({
-    grossPrice,
-    paymentStatus,
-    periodCount,
-  });
-  const paidAmount = calculatePaidAmount({
-    grossPrice,
-    paymentStatus,
-    installmentAmount,
-    paidPeriod,
-  });
-  const remainingBalance = calculateRemainingBalance(grossPrice, paidAmount);
+  const { grossPrice, installmentAmount, paidAmount, remainingBalance,
+    pasabuyReceivedAmount, pasabuyerBalance } = expenseAmounts({
+    amount: expenseAmount, interest: interestAmount, periodCount,
+    paymentStatus: paymentStatus || null, paidPeriod,
+    pasabuyStatus: pasabuyStatus || null, pasabuyPaidPeriod,
+    pasabuyAccountReceiverId: pasabuyAccountReceiverId || null,
+  }, categoryName);
   const expectedPaymentDate = calculateExpectedPaymentDate({
     purchaseDate: purchaseDateInput,
     billingDay: selectedFormAccount?.billingDay ?? null,
@@ -105,14 +93,6 @@ function QuickAddExpenseModal({
     datePaid: datePaidInput || null,
     bnplAdjustment,
   });
-  const pasabuyReceivedAmount = calculatePasabuyReceivedAmount({
-    grossPrice,
-    pasabuyStatus,
-    installmentAmount,
-    pasabuyPaidPeriod,
-    periodCount,
-  });
-  const pasabuyerBalance = calculatePasabuyerBalance(grossPrice, pasabuyReceivedAmount);
 
   async function handleSave() {
     if (!descriptionInput.trim()) {
@@ -259,7 +239,7 @@ function QuickAddExpenseModal({
                 onChange={(event) => setBnplAdjustmentInput(event.target.value)}
               />
             </Field>
-            {paymentStatus === "Installment" && installmentAmount !== null && (
+            {installmentAmount !== null && (
               <ComputedField label="Installment Amount" value={formatMoney(installmentAmount)} />
             )}
             <Field label="Paid period">
@@ -284,7 +264,7 @@ function QuickAddExpenseModal({
             <Field label="Pasabuyer">
               <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
                 <option value="">— None —</option>
-                {pasabuyerLabels.map((name) => (
+                {pasabuyerOptions.map((name) => (
                   <option key={name} value={name}>{name}</option>
                 ))}
               </select>

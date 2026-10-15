@@ -85,6 +85,7 @@ const api = {
   },
 
   categories: {
+    pasabuyers: (): Promise<ApiResult<string[]>> => ipcRenderer.invoke(IPC_CHANNELS.categoriesPasabuyers),
     income: (): Promise<ApiResult<IncomeCategoryOption[]>> =>
       ipcRenderer.invoke(IPC_CHANNELS.categoriesIncome),
     expense: (): Promise<ApiResult<ExpenseCategoryOption[]>> =>

@@ -1,7 +1,7 @@
+import { useLiveCollections } from "@/components/hooks";
 import { Field, ComputedField, FormSectionDivider, FilterDropdown } from "@/components/ui";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import {
-  pasabuyerLabels,
   pasabuyStatusLabels,
   paymentFrequencyLabels,
   paymentStatusLabels,
@@ -27,6 +27,9 @@ export function ExpenseFormFields({
   activeAccounts: Account[];
   expenseCategories: ExpenseCategory[];
 }) {
+  const { pasabuyerOptions } = useLiveCollections();
+  const buyerOptions = form.pasabuyer && !pasabuyerOptions.includes(form.pasabuyer)
+    ? [form.pasabuyer, ...pasabuyerOptions] : pasabuyerOptions;
   const {
     descriptionInput, setDescriptionInput,
     formAccountId, setFormAccountId,
@@ -157,7 +160,7 @@ export function ExpenseFormFields({
                   onChange={(event) => setBnplAdjustmentInput(event.target.value)}
                 />
               </Field>
-              {paymentStatus === "Installment" && installmentAmount !== null && (
+              {installmentAmount !== null && (
                 <ComputedField label="Installment Amount" value={formatMoney(installmentAmount)} />
               )}
               <Field label="Paid period">
@@ -190,7 +193,7 @@ export function ExpenseFormFields({
               <Field label="Pasabuyer">
                 <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
                   <option value="">— None —</option>
-                  {pasabuyerLabels.map((name) => (
+                  {buyerOptions.map((name) => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </select>

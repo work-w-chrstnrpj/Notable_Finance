@@ -5,6 +5,14 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 2026-10-15
+
+### Fixed
+
+- **Pasabuyer choices:** Load select options from the mapped Notion Expense schema instead of a hardcoded list. Refresh with reference data after sync and retain a database-scoped cache offline. Forms, quick-add, filters and bulk edit share the list; existing removed selections remain visible.
+- **Expense calculated fields:** Record forms, quick-add and credit/installment tables now use the same pure formulas as local account balances. Installment amounts depend on period count, Pasabuy received amounts respect receiver/category and paid periods, and Pasabuyer balance uses principal. Keep full precision through multiplication to avoid centavo drift.
+- **Expected payment date:** Treat zero period count as the default one period, matching Notion's `empty(0)`, while preserving BNPL adjustment and the blank-frequency/Date Paid rules.
+
 ## [2.2.1] - 2026-10-14
 
 ### Fixed

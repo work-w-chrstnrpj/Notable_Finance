@@ -52,8 +52,6 @@ export const paymentFrequencyLabels: PaymentFrequency[] = [
   "Annually",
 ];
 
-export const pasabuyerLabels = ["Shared", "Maimai", "Claire", "22-H"] as const;
-
 export const pasabuyStatusLabels: PasabuyStatus[] = [
   "Payment not yet receive",
   "Payment partially received",
@@ -161,18 +159,6 @@ export function calculateGrossPrice(expenseAmount: number, interest: number) {
   return roundMoney(expenseAmount + interest);
 }
 
-export function calculateInstallmentAmount(options: {
-  grossPrice: number;
-  paymentStatus: PaymentStatus | "";
-  periodCount: number | null;
-}) {
-  if (options.paymentStatus !== "Installment" || !options.periodCount || options.periodCount <= 0) {
-    return null;
-  }
-
-  return roundMoney(options.grossPrice / options.periodCount);
-}
-
 /**
  * Price shown for an expense linked on a CC Payment.
  * A period count means one installment of gross price (amount + interest).
@@ -188,62 +174,6 @@ export function calculateCcCoveredExpenseAmount(expense: {
     return roundMoney(gross / expense.periodCount);
   }
   return gross;
-}
-
-export function calculatePaidAmount(options: {
-  grossPrice: number;
-  paymentStatus: PaymentStatus | "";
-  installmentAmount: number | null;
-  paidPeriod: number | null;
-}) {
-  if (options.paymentStatus === "Paid") {
-    return roundMoney(options.grossPrice);
-  }
-
-  if (options.paymentStatus === "Installment" && options.installmentAmount && options.paidPeriod) {
-    return roundMoney(options.installmentAmount * options.paidPeriod);
-  }
-
-  return 0;
-}
-
-export function calculateRemainingBalance(grossPrice: number, paidAmount: number) {
-  return roundMoney(Math.max(grossPrice - paidAmount, 0));
-}
-
-export function calculatePasabuyReceivedAmount(options: {
-  grossPrice: number;
-  pasabuyStatus: PasabuyStatus | "";
-  installmentAmount: number | null;
-  pasabuyPaidPeriod: number | null;
-  periodCount: number | null;
-}) {
-  if (options.pasabuyStatus === "Payment fully received") {
-    return roundMoney(options.grossPrice);
-  }
-
-  if (
-    options.pasabuyStatus === "Payment partially received (installment)" &&
-    options.installmentAmount &&
-    options.pasabuyPaidPeriod
-  ) {
-    return roundMoney(options.installmentAmount * options.pasabuyPaidPeriod);
-  }
-
-  if (
-    options.pasabuyStatus === "Payment partially received" &&
-    options.periodCount &&
-    options.periodCount > 0 &&
-    options.pasabuyPaidPeriod
-  ) {
-    return roundMoney((options.grossPrice / options.periodCount) * options.pasabuyPaidPeriod);
-  }
-
-  return 0;
-}
-
-export function calculatePasabuyerBalance(grossPrice: number, receivedAmount: number) {
-  return calculateRemainingBalance(grossPrice, receivedAmount);
 }
 
 /**
@@ -273,7 +203,7 @@ export function calculateExpectedPaymentDate(options: {
     return null;
   }
 
-  const pCount = options.periodCount == null ? 1 : options.periodCount;
+  const pCount = options.periodCount || 1;
   const bnplAdjustment = options.bnplAdjustment == null ? 0 : options.bnplAdjustment;
   const adjustedPeriod = pCount + bnplAdjustment;
   const frequency = options.paymentFrequency;

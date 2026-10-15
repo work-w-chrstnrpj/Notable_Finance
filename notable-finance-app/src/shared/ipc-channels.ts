@@ -14,6 +14,7 @@ export const IPC_CHANNELS = {
   backupImport: 'backup:import',
   backupInspect: 'backup:inspect',
   categoriesExpense: 'categories:expense',
+  categoriesPasabuyers: 'categories:pasabuyers',
   categoriesIncome: 'categories:income',
   chatCancelDraft: 'chat:cancelDraft',
   chatConfirmDraft: 'chat:confirmDraft',

@@ -127,3 +127,5 @@ Only **writable inputs** (`starting_balance`, `credit_limit`, amounts, interest,
 ## Bring-your-own-Notion
 
 Property names and database ids per table are **not** hardcoded — they are captured at onboarding and stored in `app_settings` / a mapping table, then validated by schema verification. See [`onboarding-and-notion-connect.md`](onboarding-and-notion-connect.md).
+
+Pasabuyer select metadata is stored in `app_settings` under `notion.pasabuyer-options:<mapped expense database id>` as a JSON string array. It is a replaceable schema cache, distinct from finance records; no table migration is needed. The main-only schema reader refreshes on reference reads and falls back to the last successful list offline.
