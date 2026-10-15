@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Pasabuyer Balance:** Include interest in the amount still owed, as confirmed by the owner. ₱900 + ₱90 interest over three periods with one period received now shows ₱660, rather than ₱570.
 - **Windows update delivery:** Use a deterministic space-free NSIS installer filename and verify update-manifest references before upload, preventing GitHub filename rewriting from breaking updater downloads. The published v2.2.2 installer also has a checksum-identical alias matching its existing update manifest.
 
 ## [2.2.2] - 2026-10-15

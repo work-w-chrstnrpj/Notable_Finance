@@ -83,3 +83,11 @@ Prepared `notable-finance-app/scripts/diagnose-expense-formulas.js`, a read-only
 The report is from the owner's friend using Windows; the owner is currently on the working Mac and cannot inspect that installation. Friend's account is reported active. Affected entries are monthly installments with both filled and blank BNPL adjustments; all formulas are reported wrong, including Pasabuyer Balance. Treat required fields as reportedly populated, not independently verified. Do not repeat the inactive-account hypothesis as the established cause.
 
 Added a Windows-specific CI job and isolated Electron formula fixtures to obtain actual Windows execution evidence. The saved Notion Pasabuyer Balance contract remains Expense Amount minus (gross installment times Pasabuy paid periods), or zero when fully received. This can differ from an expectation that the remaining balance includes all interest; no formula-rule change is justified without confirming that intent or the friend's schema.
+
+## Confirmed balance correction and Windows fixture results
+
+Owner confirms Pasabuyer Balance is wrong on the Mac as well and explicitly selects the interest-inclusive rule: ₱900 expense + ₱90 interest, three periods, one received (₱330) means ₱660 remaining. The historical saved schema's principal-only rule gives ₱570 and is not the intended product behavior. Corrected the shared balance function to subtract full-precision received installments from Gross Price; all consumers inherit the change. Fully received still returns zero. This does not change account cashflow rollups or push calculated fields to Notion.
+
+Before the correction, three new/updated assertions failed (main interest balance, fractional interest balance and form balance). After correction: 345 local unit/component tests passed (seven skipped), TypeScript passed, and all four new Electron formula cases passed on Mac.
+
+Windows run `38747050395` at commit `572c46c` passed 48 formula/form tests and all four real Electron tests, including monthly blank/zero/positive BNPL adjustment. That run tested the prior principal balance rule. The corrected gross-price rule must also pass a new Windows run before claiming Windows verification of this correction. These fixture results do not reproduce the friend's blank expected date, which remains unresolved without affected-installation inputs.

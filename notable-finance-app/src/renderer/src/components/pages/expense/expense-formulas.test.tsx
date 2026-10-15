@@ -43,10 +43,10 @@ describe('Expense record formula regression', () => {
     expect(table.remaining).toBe(form.current.remainingBalance);
   });
 
-  it('uses principal for Pasabuyer balance and receiver for received amount', () => {
+  it('includes interest in Pasabuyer balance independently of the receiver', () => {
     const form = load({ amount: 900, interest: 90, periodCount: 3, pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: null });
     expect(form.current.pasabuyReceivedAmount).toBe(0);
-    expect(form.current.pasabuyerBalance).toBe(570);
+    expect(form.current.pasabuyerBalance).toBe(660);
   });
 
   it('returns zero balance when fully received without inventing a received amount', () => {

@@ -1,6 +1,7 @@
-// Exact ports of the Notion database formulas (decoded from the workspace schema export).
-// These are the single source of truth for the desktop's local computation, so offline
-// numbers match Notion's formula engine field-for-field.
+// Finance formulas based on the workspace schema export. Pasabuyer Balance uses the
+// owner-confirmed gross-price rule (2026-10-15), correcting the historical principal-only formula.
+// These are the single source of truth for desktop local computation. Workspace formula
+// parity requires the Notion Pasabuyer Balance formula to use this corrected gross-price rule.
 //
 //   Income  · Transaction Amount = (transactedAccount set & category∈{Transfer,
 //             Credit Card Payment, Debit Payment}) ? −GrossIncome : —
@@ -10,7 +11,7 @@
 //   Expense · Remaining Balance  = (periodCount & status) ? GrossPrice − PaidAmount : —
 //   Expense · Pasabuy Received   = (pasabuy category & receiver) ? InstallmentAmount × pasabuyPaidPeriod : 0
 //   Expense · Pasabuyer Balance  = (pasabuy category & status) ? (status="fully received" ? 0
-//                                    : Amount − InstallmentAmount × pasabuyPaidPeriod) : —
+//                                    : GrossPrice − InstallmentAmount × pasabuyPaidPeriod) : —
 //
 // ROUNDING MODEL (matches Notion): Notion formulas compute at full floating-point
 // precision and a 2-decimal "number format" is DISPLAY-ONLY — it never rounds the stored
@@ -85,16 +86,16 @@ export function pasabuyReceivedAmount(
   return (installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0)
 }
 
-/** Notion "Pasabuyer Balance": Amount − (InstallmentAmount × pasabuyPaidPeriod); 0 if fully received. */
+/** Pasabuyer Balance: GrossPrice − (InstallmentAmount × pasabuyPaidPeriod); 0 if fully received. */
 export function pasabuyerBalance(
   e: ExpenseCalc,
   categoryName: string | undefined
 ): number | null {
   if (!isPasabuyCategoryName(categoryName) || !e.pasabuyStatus) return null
   if (e.pasabuyStatus === 'Payment fully received') return 0
-  // Received at full precision; round the displayed balance once (not amount − roundedReceived).
+  // Received at full precision; round the displayed balance once (not gross − roundedReceived).
   const received = (installmentAmount(e) ?? 0) * (e.pasabuyPaidPeriod ?? 0)
-  return round2(e.amount - received)
+  return round2(grossPrice(e) - received)
 }
 
 /** Read-only expense figures shared by record forms, quick-add and tables. */

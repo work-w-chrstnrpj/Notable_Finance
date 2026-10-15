@@ -19,7 +19,8 @@ const cases = [
   { label: 'blank', adjustment: null, monthOffset: 6, amount: 25000, interest: 0, periods: 6, paid: 2, installment: 4166.67, received: 8333.33, remaining: 16666.67, balance: 16666.67 },
   { label: 'zero', adjustment: 0, monthOffset: 6, amount: 25000, interest: 0, periods: 6, paid: 2, installment: 4166.67, received: 8333.33, remaining: 16666.67, balance: 16666.67 },
   { label: 'one', adjustment: 1, monthOffset: 7, amount: 25000, interest: 0, periods: 6, paid: 2, installment: 4166.67, received: 8333.33, remaining: 16666.67, balance: 16666.67 },
-  { label: 'interest', adjustment: null, monthOffset: 3, amount: 900, interest: 90, periods: 3, paid: 1, installment: 330, received: 330, remaining: 660, balance: 570 },
+  // Owner-confirmed balance includes interest: gross 990 minus received 330 = 660.
+  { label: 'interest', adjustment: null, monthOffset: 3, amount: 900, interest: 90, periods: 3, paid: 1, installment: 330, received: 330, remaining: 660, balance: 660 },
 ]
 const money = (amount: number) => new Intl.NumberFormat('en-PH', {
   style: 'currency', currency: 'PHP', maximumFractionDigits: 2,

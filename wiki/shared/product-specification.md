@@ -50,3 +50,7 @@ The desktop app delivers the same features with these behavioral differences:
 - Real-time (webhook-driven) Notion push; sync is pull-on-interval/manual.
 - Automatic de-duplication of records created independently on both sides (a Notion-created record and a locally-created record are distinct records).
 - Code-signing/notarization and public auto-update infrastructure (documented as future in packaging).
+
+### Pasabuyer Balance includes interest
+
+Owner-confirmed correction (2026-10-15): Pasabuyer Balance is the total remaining amount owed, including interest. Compute `(Expense Amount + Interest) - ((Expense Amount + Interest) / Period count * Pasabuy paid period)`; fully received status gives zero. Keep installment precision until the final displayed balance. For ₱900 expense plus ₱90 interest across three periods with one received period, received is ₱330 and balance is ₱660. This applies consistently to desktop record forms, tables and local calculations. The saved Notion schema export contains the historical principal-only formula; do not treat that export as the corrected balance requirement or overwrite it as if freshly fetched. Notion formula parity requires the corresponding workspace formula to use Gross Price too; calculated outputs remain read-only and are not pushed as editable fields.

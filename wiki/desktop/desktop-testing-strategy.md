@@ -82,7 +82,7 @@ See [the redesign acceptance checklist](ui-ux-redesign.md#acceptance-and-verific
 
 ## Expense calculated-field regression
 
-`src/renderer/src/components/pages/expense/expense-formulas.test.tsx` loads saved records into the real form hook and compares table figures. It covers Paid/Unpaid/Installment Pasabuy, non-even installments, receiver gating, interest/principal distinction, fully received status, BNPL expected dates and zero-period defaults. `test/notion-formulas.test.ts` keeps the existing account-balance formulas locked. All consumers use `src/shared/notion-formulas.ts`; the main domain module re-exports it.
+`src/renderer/src/components/pages/expense/expense-formulas.test.tsx` loads saved records into the real form hook and compares table figures. It covers Paid/Unpaid/Installment Pasabuy, non-even installments, receiver gating, interest-inclusive balance, fully received status, BNPL expected dates and zero-period defaults. `test/notion-formulas.test.ts` keeps the existing account-balance formulas locked. All consumers use `src/shared/notion-formulas.ts`; the main domain module re-exports it.
 
 Before release, open representative records in the packaged app and compare received/balance values with Notion after a successful pull. Expected date remains blank for missing payment frequency or a set Date Paid; monthly dates additionally require account billing/due days. Automated tests do not establish live workspace parity.
 
@@ -92,4 +92,4 @@ Before release, open representative records in the packaged app and compare rece
 
 Desktop CI includes a Windows-specific job for the shared formula/form regression suites and Electron monthly installment tests. Exercise active synced accounts, monthly frequency, and blank/zero/nonzero BNPL adjustment in the built app. Assert Expense table and record-modal values, including Gross Price, Installment Amount, Paid Amount, Remaining Balance, Expected payment date, Pasabuy Received Amount and Pasabuyer Balance. Use isolated fixture data; never seed a user's profile.
 
-A passing Windows fixture test establishes behavior for those inputs only. It does not establish the values imported by another user's Notion mapping or their expected Pasabuyer formula semantics. Keep affected-installation acceptance open until a representative actual record can be compared.
+A passing Windows fixture test establishes behavior for those inputs only. It does not establish the values imported by another user's Notion mapping or their imported formula inputs. Keep affected-installation acceptance open until a representative actual record can be compared.

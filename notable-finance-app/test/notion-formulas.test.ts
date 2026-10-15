@@ -67,6 +67,14 @@ describe('Pasabuy Received Amount', () => {
 })
 
 describe('Pasabuyer Balance (the Unpaid-Pasabuy view value)', () => {
+  it('includes interest in the remaining amount owed', () => {
+    const e = expense({ amount: 900, interest: 90, periodCount: 3, pasabuyPaidPeriod: 1, pasabuyStatus: 'Payment partially received (installment)' })
+    expect(pasabuyerBalance(e, 'Pasabuy')).toBe(660)
+  })
+  it('does not round a non-even installment before subtracting from gross', () => {
+    const e = expense({ amount: 25000, interest: 100, periodCount: 6, pasabuyPaidPeriod: 2, pasabuyStatus: 'Payment partially received (installment)' })
+    expect(pasabuyerBalance(e, 'Pasabuy')).toBe(16733.33)
+  })
   it('= amount − received; non-zero for partially received', () => {
     const e = expense({
       amount: 900, interest: 0, periodCount: 3, pasabuyPaidPeriod: 1,
