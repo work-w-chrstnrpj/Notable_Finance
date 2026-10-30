@@ -37,7 +37,7 @@ export type FinanceSectionId =
   | "dev-logs"
   | "settings";
 
-export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually";
+export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
 
 export type MonitoringViewMode = "Monthly" | "Quarterly" | "Semi-Annually" | "Annually";
 
@@ -46,6 +46,7 @@ export type ExpenseViewMode =
   | "Weekly"
   | "Monthly"
   | "Annually"
+  | "All Records"
   | "Unpaid Pasabuy"
   | "To pay"
   | "To buy"

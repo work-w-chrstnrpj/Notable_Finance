@@ -439,20 +439,21 @@ export interface UiProfileSettings {
 export interface UiWorkspaceSettings {
   /** ISO date anchor for period selectors; null means “today” on next launch. */
   selectedDate: string | null
-  incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
-  workflowViewMode?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
+  incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
+  workflowViewMode?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
   expenseViewMode:
     | 'Daily'
     | 'Weekly'
     | 'Monthly'
     | 'Annually'
+    | 'All Records'
     | 'To pay'
     | 'To buy'
     | 'Installments'
     | 'CC Transaction'
     | 'Unpaid CC'
     | 'Unpaid Pasabuy'
-  ccPeriod?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
+  ccPeriod?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
   sidebarCollapsed: boolean
   showFab: boolean
   /** Auto-hide delay (ms) for the floating Push Sync button after a change.

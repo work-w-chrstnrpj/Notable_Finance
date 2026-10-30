@@ -75,7 +75,7 @@ The implemented slice covers the shared foundations, shell grouping, Dashboard h
 
 ### Expense header revision
 
-Expense views use the shared header segmented control again, ordered Daily, Weekly, Monthly, Annually, CC Transactions, To Pay, To Buy, Installments. The CC period selector and optional payment/Pasabuy filters remain available. CC Transactions includes every credit-account payment status within the selected purchase-date period; selecting the view clears previous filters. The persisted internal `CC Transaction` key remains unchanged for compatibility.
+Expense views use the shared header segmented control again, ordered Daily, Weekly, Monthly, Annually, All Records, CC Transactions, To Pay, To Buy, Installments. All Records removes the date bounds and lists every available expense. The CC period selector offers Daily, Weekly, Monthly, Annually, and All Records; its All Records option includes every available credit-account transaction. The optional payment/Pasabuy filters remain available. CC Transactions includes every credit-account payment status within the selected purchase-date period; selecting the view clears previous filters. The persisted internal `CC Transaction` key remains unchanged for compatibility.
 
 ### Expense review corrections
 
@@ -102,7 +102,9 @@ To Pay supports All Credit Accounts and All Debit Accounts (all non-credit accou
 
 ## Workflow account filters and search
 
-Alkansya, Transfer, Credit Card Payment, and Receivables expose the same Filters and Search controls as Income/Expense, including the matching keyboard shortcuts. Filters and search combine within the current workflow scope. Transfer/CC Payment retain the selected month. Alkansya and Receivables have Daily, Weekly, Monthly, and Annually view tabs, with the global date selector applying that range. Alkansya and income-backed Receivables use Income Date; Pasabuy expense rows in Receivables use Date Paid. Account filters match either source/destination for Transfer and either credit/payer account for CC Payment. No Account means an empty receiving account, including Receivables. Closing Filters removes its constraint; closing Search clears its query. Navigating between workflows resets these controls. Table rows, visible totals, select-all, bulk duplication, and Receivables receipts use the filtered rows.
+Alkansya, Transfer, Credit Card Payment, and Receivables expose the same Filters and Search controls as Income/Expense, including the matching keyboard shortcuts. Filters and search combine within the current workflow scope. Transfer/CC Payment retain the selected month. Alkansya and Receivables have Daily, Weekly, Monthly, Annually, and All Records view tabs. All Records removes date bounds and shows every available record; the global date selector is hidden in that mode. Alkansya and income-backed Receivables use Income Date; Pasabuy expense rows in Receivables use Date Paid. Account filters match either source/destination for Transfer and either credit/payer account for CC Payment. No Account means an empty receiving account, including Receivables. Closing Filters removes its constraint; closing Search clears its query. Navigating between workflows resets these controls. Table rows, visible totals, select-all, bulk duplication, and Receivables receipts use the filtered rows.
+
+Income and Expense also offer All Records alongside Daily, Weekly, Monthly, and Annually. The option removes date bounds while retaining the page's normal deleted-record exclusion and any enabled filters. CC Transactions has the same All Records date scope. Monthly Monitoring remains period-based because its budgets and forecasts are scaled to the selected period.
 
 Alkansya's category is read-only Savings in create and edit forms. Creates and duplicates omit a category override so main resolves the canonical Savings category; editing retains the existing Savings category. Receivables keeps its category selector.
 

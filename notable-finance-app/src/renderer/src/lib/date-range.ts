@@ -33,8 +33,10 @@ function fmt(date: Date): string {
   );
 }
 
-export function incomeModeToUnit(mode: IncomeViewMode): ViewUnit {
+export function incomeModeToUnit(mode: IncomeViewMode): ViewUnit | null {
   switch (mode) {
+    case "All Records":
+      return null;
     case "Daily":
       return "day";
     case "Weekly":
@@ -52,7 +54,7 @@ export function incomeModeToUnit(mode: IncomeViewMode): ViewUnit {
  * (Unpaid Pasabuy, To pay, To buy, Installments, Unpaid CC) are not
  * date-scoped and return null.
  */
-export function expenseModeToUnit(mode: ExpenseViewMode): ViewUnit | null {
+export function expenseModeToUnit(mode: ExpenseViewMode | IncomeViewMode): ViewUnit | null {
   switch (mode) {
     case "Daily":
       return "day";

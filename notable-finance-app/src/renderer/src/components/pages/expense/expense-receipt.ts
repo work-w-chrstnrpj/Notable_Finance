@@ -21,7 +21,7 @@ export function makeExpenseReceiptBuilder({
 }: {
   viewMode: ExpenseViewMode;
   selectedDate: string;
-  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually";
+  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
   derive: (record: ExpenseRecord) => ExpenseComputed;
 }) {
   return function buildExpenseReceipt(
@@ -39,7 +39,13 @@ export function makeExpenseReceiptBuilder({
       records,
       excludeIds,
       viewTitle: `${viewMode} Expenses`,
-      periodLabel: viewMode === "CC Transaction" ? rangeLabel(expenseModeToUnit(ccPeriod)!, selectedDate) : getMonthLabel(anchorMonth(selectedDate)),
+      periodLabel: viewMode === "CC Transaction"
+        ? expenseModeToUnit(ccPeriod)
+          ? rangeLabel(expenseModeToUnit(ccPeriod)!, selectedDate)
+          : "All Records"
+        : viewMode === "All Records"
+          ? "All Records"
+          : getMonthLabel(anchorMonth(selectedDate)),
       amountHeader: isInstallment ? "Installment Amount" : viewMode === "CC Transaction" ? "Remaining Balance" : "Amount",
       installmentLayout: isInstallment || undefined,
       valueOf: receiptValue,

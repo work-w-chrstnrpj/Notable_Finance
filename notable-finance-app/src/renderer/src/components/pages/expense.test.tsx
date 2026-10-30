@@ -61,6 +61,7 @@ describe("ExpensePage", () => {
     Weekly: DEFAULT_HEADERS,
     Monthly: DEFAULT_HEADERS,
     Annually: DEFAULT_HEADERS,
+    "All Records": DEFAULT_HEADERS,
     "To pay": DEFAULT_HEADERS,
     "To buy": DEFAULT_HEADERS,
     Installments: INSTALLMENT_HEADERS,
@@ -100,6 +101,16 @@ describe("ExpensePage", () => {
     await waitForElementToBeRemoved(() => screen.queryByText("Querying Notion…"));
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.queryByText("Grocery Run")).not.toBeInTheDocument();
+  });
+
+  it("loads all available expenses in the All Records view without date bounds", async () => {
+    const list = vi.fn(async () => ok([expenseRecord]));
+    renderPage(
+      <ExpensePage viewMode="All Records" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      { apiOverrides: { expenses: { list } } },
+    );
+    expect(await screen.findByText("Grocery Run")).toBeInTheDocument();
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ rangeStart: undefined, rangeEnd: undefined }));
   });
 
   it("shows Payment Status in regular and Unpaid Pasabuy views", async () => {
@@ -196,6 +207,7 @@ it.each([
   ["Weekly", "2026-07-13", "2026-07-19"],
   ["Monthly", "2026-07-01", "2026-07-31"],
   ["Annually", "2026-01-01", "2026-12-31"],
+  ["All Records", undefined, undefined],
 ] as const)("CC Transaction %s passes matching purchase-date bounds", async (ccPeriod, rangeStart, rangeEnd) => {
   const list = vi.fn(async () => ok([]));
   renderPage(<ExpensePage viewMode="CC Transaction" ccPeriod={ccPeriod} onViewModeChange={vi.fn()} selectedDate="2026-07-15" />, { apiOverrides: { expenses: { list } } });
@@ -204,7 +216,7 @@ it.each([
   fireEvent.click(screen.getByRole("button", { name: "Filters" }));
   expect(screen.getByRole("combobox", { name: "CC Transaction period" })).toHaveValue(ccPeriod);
   const view = screen.getByLabelText("Expense view");
-  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "CC Transactions", "To Pay", "To Buy", "Installments"]);
+  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "All Records", "CC Transactions", "To Pay", "To Buy", "Installments"]);
   expect(within(view).queryByText("Unpaid CC")).not.toBeInTheDocument();
   expect(within(view).queryByText("Unpaid Pasabuy")).not.toBeInTheDocument();
 });

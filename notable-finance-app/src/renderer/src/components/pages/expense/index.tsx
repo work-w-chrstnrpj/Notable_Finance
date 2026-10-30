@@ -44,6 +44,7 @@ const expenseViewModes: ExpenseViewMode[] = [
   "Weekly",
   "Monthly",
   "Annually",
+  "All Records",
   "CC Transaction",
   "To pay",
   "To buy",
@@ -60,8 +61,8 @@ function ExpensePage({
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
   selectedDate: string;
-  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually";
-  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
+  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
 }) {
   const {
     activeAccounts,

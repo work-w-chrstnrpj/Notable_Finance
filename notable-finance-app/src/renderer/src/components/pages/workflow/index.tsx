@@ -47,8 +47,8 @@ function WorkflowPage({
   section: WorkflowSectionId;
   selectedMonth: string;
   selectedDate?: string;
-  viewMode?: "Daily" | "Weekly" | "Monthly" | "Annually";
-  onViewModeChange?: (mode: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
+  viewMode?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  onViewModeChange?: (mode: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
 }) {
   const {
     activeAccounts,
@@ -156,14 +156,15 @@ function WorkflowPage({
   // Payment remain month-scoped.
   const monthScoped = section === "transfer" || section === "credit-card-payment";
   const periodScoped = isAlkansya || isReceivables;
-  const selectedRange = periodScoped ? computeRange(incomeModeToUnit(viewMode), selectedDate) : undefined;
+  const viewUnit = incomeModeToUnit(viewMode);
+  const selectedRange = periodScoped && viewUnit ? computeRange(viewUnit, selectedDate) : undefined;
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
     month: monthScoped ? selectedMonth : undefined,
     rangeStart: selectedRange?.start,
     rangeEnd: selectedRange?.end,
   });
   const { state: expenseState } = useExpenses();
-  const selectedPeriodLabel = periodScoped ? rangeLabel(incomeModeToUnit(viewMode), selectedDate) : "All Time";
+  const selectedPeriodLabel = !periodScoped ? "All Time" : viewUnit ? rangeLabel(viewUnit, selectedDate) : "All Records";
   // Workflows are income-backed views, so they share the income invalidation.
   const { invalidateIncomeFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
@@ -556,7 +557,7 @@ function WorkflowPage({
       {periodScoped && (
         <SegmentedControl
           label={`${label} view`}
-          options={["Daily", "Weekly", "Monthly", "Annually"].map((mode) => ({ label: mode, value: mode }))}
+          options={["Daily", "Weekly", "Monthly", "Annually", "All Records"].map((mode) => ({ label: mode, value: mode }))}
           value={viewMode}
           onChange={(mode) => onViewModeChange(mode as typeof viewMode)}
           shortcutId="view.filterTab"

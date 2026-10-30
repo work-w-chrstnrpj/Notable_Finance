@@ -7,5 +7,11 @@ describe("workflow date selector", () => {
     expect(activeSelectorUnit(section, "Monthly", "Monthly", "Monthly", "Weekly")).toBe("week");
     expect(activeSelectorUnit(section, "Monthly", "Monthly", "Monthly", "Monthly")).toBe("month");
     expect(activeSelectorUnit(section, "Monthly", "Monthly", "Monthly", "Annually")).toBe("year");
+    expect(activeSelectorUnit(section, "Monthly", "Monthly", "Monthly", "All Records")).toBeNull();
+  });
+
+  it("hides the date selector for All Records in Income and Expense", () => {
+    expect(activeSelectorUnit("income", "All Records", "Monthly")).toBeNull();
+    expect(activeSelectorUnit("expense", "Monthly", "All Records")).toBeNull();
   });
 });

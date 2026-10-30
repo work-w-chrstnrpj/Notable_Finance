@@ -146,7 +146,7 @@ function mergeFonts(raw: unknown): UiFontSettings {
   }
 }
 
-const INCOME_MODES = new Set(['Daily', 'Weekly', 'Monthly', 'Annually'])
+const INCOME_MODES = new Set(['Daily', 'Weekly', 'Monthly', 'Annually', 'All Records'])
 const EXPENSE_MODES = new Set([
   'Daily',
   'Weekly',
@@ -176,6 +176,10 @@ function mergeWorkspace(raw: unknown): UiWorkspaceSettings {
   return {
     selectedDate: typeof r.selectedDate === 'string' && r.selectedDate ? r.selectedDate : null,
     incomeViewMode,
+    workflowViewMode:
+      typeof r.workflowViewMode === 'string' && INCOME_MODES.has(r.workflowViewMode)
+        ? (r.workflowViewMode as UiWorkspaceSettings['workflowViewMode'])
+        : 'Monthly',
     expenseViewMode: expenseViewMode === 'Unpaid CC' ? 'CC Transaction' : expenseViewMode,
     ccPeriod: typeof r.ccPeriod === 'string' && INCOME_MODES.has(r.ccPeriod)
       ? r.ccPeriod as UiWorkspaceSettings['ccPeriod'] : 'Monthly',

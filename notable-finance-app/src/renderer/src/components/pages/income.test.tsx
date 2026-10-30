@@ -27,7 +27,7 @@ function renderIncome(viewMode: IncomeViewMode) {
 }
 
 describe("IncomePage", () => {
-  const viewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Annually"];
+  const viewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Annually", "All Records"];
 
   it.each(viewModes)("renders the %s view with headers and the seeded record", async (viewMode) => {
     renderIncome(viewMode);
@@ -43,6 +43,16 @@ describe("IncomePage", () => {
     for (const header of ["Name", "Date", "Account", "Category", "Gross", "Expenditure", "Net"]) {
       expect(within(table).getByText(header)).toBeInTheDocument();
     }
+  });
+
+  it("loads all available records in the All Records view without date bounds", async () => {
+    const list = vi.fn(async () => ok([incomeRecord]));
+    renderPage(
+      <IncomePage viewMode="All Records" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      { apiOverrides: { incomes: { list } } },
+    );
+    expect(await screen.findByText("July Salary")).toBeInTheDocument();
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ rangeStart: undefined, rangeEnd: undefined }));
   });
 
   it("shows the empty state when no income records are returned", async () => {

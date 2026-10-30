@@ -51,8 +51,8 @@ export function ExpenseToolbar({
   onNewExpense,
   onViewModeChange,
 }: {
-  ccPeriod: "Daily" | "Weekly" | "Monthly" | "Annually";
-  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
+  ccPeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
   viewMode: ExpenseViewMode;
   expenseViewModes: ExpenseViewMode[];
   isAnnual: boolean;
@@ -135,7 +135,7 @@ export function ExpenseToolbar({
           {filterActive && viewMode === "CC Transaction" && (
             <label className="filter-select">
               <select aria-label="CC Transaction period" value={ccPeriod} onChange={e => onCcPeriodChange?.(e.target.value as typeof ccPeriod)}>
-                {["Daily", "Weekly", "Monthly", "Annually"].map(period => <option key={period}>{period}</option>)}
+                {["Daily", "Weekly", "Monthly", "Annually", "All Records"].map(period => <option key={period}>{period}</option>)}
               </select>
             </label>
           )}

@@ -5,6 +5,12 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-10-30
+
+### Added
+
+- **All Records views:** Show every available Income, Expense, CC Transaction, Alkansya, and Receivables record without date bounds. The selected view is persisted and the global date selector is hidden while All Records is active.
+
 ## [2.2.3] - 2026-10-15
 
 ### Fixed

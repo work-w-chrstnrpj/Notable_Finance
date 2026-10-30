@@ -32,7 +32,7 @@ import { buildIncomeMassEditFields } from "./income-mass-edit-fields";
 import type { AnnualGroupBy } from "@/components/constants";
 import type { IncomeViewMode, IncomeRecord } from "@/types/finance";
 
-const incomeViewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Annually"];
+const incomeViewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Annually", "All Records"];
 
 function IncomePage({
   viewMode,
@@ -77,7 +77,8 @@ function IncomePage({
       </span>
     );
   };
-  const range = computeRange(incomeModeToUnit(viewMode), selectedDate);
+  const rangeUnit = incomeModeToUnit(viewMode);
+  const range = rangeUnit ? computeRange(rangeUnit, selectedDate) : null;
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
@@ -128,8 +129,8 @@ function IncomePage({
   });
   const isAnnual = viewMode === "Annually";
   const { state: incomesState, refetch, applyLocal } = useIncomes({
-    rangeStart: range.start,
-    rangeEnd: range.end,
+    rangeStart: range?.start,
+    rangeEnd: range?.end,
     // Only apply the account/category filters while the filter panel is active,
     // so a stale selection can't silently hide records once the panel is closed.
     accountId: filterActive ? accountId || undefined : undefined,

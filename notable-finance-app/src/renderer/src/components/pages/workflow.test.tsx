@@ -126,6 +126,21 @@ describe("WorkflowPage", () => {
     expect(screen.getByRole("button", { name: "Daily" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Weekly" })).toBeInTheDocument();
   });
+
+  it.each(["alkansya", "receivables"] as const)("loads all available %s records in All Records view", async (section) => {
+    const list = vi.fn(async () => ok([workflowRecord]));
+    renderPage(
+      <WorkflowPage section={section} selectedMonth="2026-07" selectedDate="2026-07-11" viewMode="All Records" onViewModeChange={vi.fn()} />,
+      { apiOverrides: {
+        accounts: { list: vi.fn(async () => ok([sourceAccount, destAccount])) },
+        categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([pasabuyExpenseCategory])) },
+        incomes: { list },
+        expenses: { list: vi.fn(async () => ok([pasabuyExpense])), listForCCCoverage: vi.fn(async () => ok([])) },
+      } },
+    );
+    await screen.findByText("Weekly Transfer");
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ rangeStart: undefined, rangeEnd: undefined }));
+  });
 });
 
 
