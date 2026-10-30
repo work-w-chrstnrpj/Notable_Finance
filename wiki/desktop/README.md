@@ -22,13 +22,12 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 | [development-plan.md](development-plan.md) | Phased plan and milestones | — |
 | [chat-agent-design.md](chat-agent-design.md) | Chat copilot; **Phase 6 complete (6.6 hardening)** | P1 |
 | [chat-skills-and-overlays.md](chat-skills-and-overlays.md) | Chat runtime skills, overlays, clarify/refuse (**6.0 frozen**) | P1 |
-| [chat-diagnostic-copilot.md](chat-diagnostic-copilot.md) | Phase 8 plan: Chat as a BYOK **agent** (tool loop, Notion/local primitives) | P1 |
 | [diagrams.md](diagrams.md) | Context, process, sync, merge, and state diagrams | — |
 
 ## Decisions locked (source for all docs)
 
 - **Source of truth:** local SQLite; Notion is a bidirectional mirror/backup.
-- **Sync:** instant local write; manual or configurable-interval push+pull; remote edits surface only after a pull.
+- **Sync:** instant local write; manual or configurable-interval pull+push; remote edits surface only after a pull.
 - **Conflicts:** three-way merge with base snapshot; auto-merge disjoint fields; **prompt** on true same-field conflict; single-user so rare.
 - **Computed fields:** never synced; recomputed locally (balances/budgets real-time, offline).
 - **Deletes:** soft-delete (title rewrite + clear amount), retained.
@@ -37,6 +36,6 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 - **Platforms:** macOS, Linux, Windows; personal/unsigned now, signing later.
 - **At rest:** OS disk encryption; token in OS keychain (safeStorage).
 - **UI:** multi-window and in-window tabs; never show stale data without a badge.
-- **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md). **Phase 8 (planned):** BYOK Chat becomes an **agent** (long tool loop, local + Notion primitives, on-demand app knowledge) — [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md). Apple stays a chatbot.
+- **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md). **Phase 8 (planned):** BYOK Chat agent investigation loop (see [`development-plan.md`](development-plan.md)). Apple stays a chatbot.
 - **Reuse:** copy web logic into desktop (web untouched); pnpm workspaces.
 - **Testing:** full offline + conflict simulations + Electron e2e.

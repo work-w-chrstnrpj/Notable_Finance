@@ -2,47 +2,56 @@
 
 ## Current State
 
-This repository contains project planning, AI structure, the first frontend implementation foundation, and the first backend implementation foundation. The `application/` folder contains a Next.js app scaffold and mock Notion-backed UI surfaces. The `service/` folder contains a NestJS backend scaffold with route modules, validation, mapping, sync orchestration, schema status, and tests. Shared contracts and cross-cutting tests remain planned unless source files are added in those folders.
+The repository is a monorepo hosting two applications: `notable-finance-web/` (Next.js frontend + NestJS backend) and `notable-finance-app/` (Electron + local SQLite). This document specifies the structure and responsibilities of the **web application** (`notable-finance-web/`).
+
+The web application is at **v1.1.0**, featuring full CRUD for transactional workflows, live and cached Notion sync, schema drift detection, user preferences, PostgreSQL (Neon Free) app metadata persistence, Passport JWT authentication, and automated tests.
 
 ## Repository Tree
 
 ```text
-notion-finance/
-  application/          Next.js finance UI application foundation.
-  service/              NestJS backend API and Notion integration service foundation.
-  shared/               Future shared contracts, types, schemas, constants, and mappers.
-  tests/                Future automated and manual test assets.
-  tickets/              Planning and task artifacts.
-  wiki/                 Product, technical, data, API, testing, deployment, and diagram docs.
-  .agents/              Canonical AI roles, skills, overlays, workflows, and tool policies.
-  .ai/                  Context routing, maps, prompt recipes, and index guidance.
-  .claude/              Generated Claude adapter files.
-  .codex/               Generated Codex adapter files.
-  .cursor/              Generated Cursor adapter files.
-  .github/              Generated GitHub/Copilot adapter files and repo automation.
-  .opencode/            Generated OpenCode adapter files.
-  scripts/              AI adapter and maintenance scripts.
+notable-finance/
+  notable-finance-web/    Web application root (holds web package.json).
+    application/          Next.js finance UI application (App Router).
+    service/              NestJS backend API and Notion integration service.
+    package.json          Root commands for frontend and backend.
+  notable-finance-app/    Desktop application (Electron + SQLite local-first app; see wiki/desktop/).
+  shared/                 Future shared contracts, types, schemas, constants, and mappers.
+  tests/                  Cross-cutting automated and manual test assets.
+  tickets/                Planning, task, and investigation artifacts.
+  wiki/                   Documentation zones: shared/, web/, desktop/.
+  .agents/                Canonical AI roles, skills, overlays, workflows, and tool policies.
+  .ai/                    Context routing, maps, prompt recipes, and index guidance.
+  scripts/                AI adapter and maintenance scripts.
 ```
 
-## Planned Module Responsibilities
+## Module Responsibilities (`notable-finance-web/`)
 
-### `application/`
+### `application/` (`notable-finance-web/application/`)
 
-Owns the user-facing finance experience. Current foundation files include Next.js routing, a finance workspace shell, typed mock DTO data, frontend field-visibility rules, a backend API client boundary, CSS, and rule tests.
+Owns the user-facing finance experience. Built with Next.js (App Router) and React Query.
 
 - Dashboard and summary views.
 - Accounts, income category, and expense category reference/configuration screens.
 - Income, transaction, expense, expense scheduler, Transfer, Credit Card Payment, Alkansya, Receivables, Dashboard, and Monthly Monitoring screens.
 - Create/edit forms for supported transactional records that show writable fields only.
-- Sync status UI and pending operation indicators.
-- API client calls to the backend service.
+- Sync status UI, pending operation indicators, conflict display, and toast notifications.
+- Typed API client calls to the backend service `/api/v1`.
 
 The frontend must not call Notion directly and must not contain Notion tokens.
 Account and category maintenance remains a Notion-only function; the app should not expose create, edit, or delete actions for Accounts, Income Categories, or Expense Categories.
 
-### `service/`
+### `service/` (`notable-finance-web/service/`)
 
-Owns backend behavior. Current foundation files include NestJS modules/controllers for the planned `/api/v1` surface, server-side config loading, a Notion adapter boundary backed by an in-memory development repository, field mapping, mutation validation, sync orchestration, schema-status reporting, auth shell endpoints, and backend tests.
+Owns backend behavior. Built with NestJS.
+
+- Authentication and authorization (Passport JWT, email and Google sign-in).
+- HTTP API endpoints under `/api/v1`.
+- Input validation and mutation guards.
+- Notion API client, live adapter, in-memory cache, and property mapper.
+- Sync orchestration (pull → push → pull) and conflict handling.
+- Schema drift detection and verification endpoints.
+- Error normalization and Winston structured logging.
+- App metadata persistence (PostgreSQL / Neon Free via TypeORM/SQL migrations) for sync logs, activity logs, user preferences, and cached snapshots.
 
 - Authentication and authorization, if implemented.
 - HTTP API endpoints.

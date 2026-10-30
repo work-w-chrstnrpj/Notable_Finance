@@ -7,7 +7,7 @@ its **own local SQLite database** as the working store and syncs **bidirectional
 with Notion in the background. It is the smooth, offline-capable daily driver; the web
 app remains the on-the-go, cloud-backed client.
 
-## Planned architecture
+## Architecture
 
 - **Main process** — owns the data: SQLite + sync engine + Notion adapter. Holds the
   Notion token encrypted via Electron `safeStorage` (OS keychain).
@@ -123,14 +123,61 @@ Accounts and categories are **read-only reference data** (maintained in Notion, 
 Phase 3). Until then, `seed` provides a realistic local set so the forms and reports have
 accounts/categories to work with.
 
-## Proposed layout (subject to change)
+## Project layout
 
 ```
 notable-finance-app/
 ├── src/
-│   ├── main/        # Electron main: SQLite, sync engine, Notion adapter, IPC handlers
-│   ├── preload/     # contextBridge — typed IPC surface
-│   └── renderer/    # React UI
-├── package.json
-└── electron.vite.config.ts
+│   ├── main/                  # Electron main process — owns all data & side effects
+│   │   ├── index.ts           # App bootstrap, window lifecycle
+│   │   ├── windows/           # BrowserWindow management (multi-window + in-window tabs)
+│   │   ├── db/                # SQLite connection, Drizzle schema, migrations
+│   │   ├── domain/            # Finance validation, mapping, reporting, balance derivations
+│   │   ├── notion/            # Notion adapter: client, property mapper, query, mutation
+│   │   ├── sync/              # Reconcile engine, three-way merge, conflict detection,
+│   │   │                      #   mutation queue, incremental cursor management
+│   │   ├── chat/              # AI chat orchestrator, tools, skills, overlays
+│   │   ├── settings/          # App settings + OS keychain token access (safeStorage)
+│   │   ├── updater/           # electron-updater (GitHub Releases)
+│   │   ├── dev-logs/          # Structured dev-log persistence
+│   │   └── ipc/               # One registrar per domain — 22-line composition root
+│   │       ├── index.ts       # Composition root
+│   │       ├── handle.ts      # handle() primitive (no monkey-patching)
+│   │       ├── shared.ts      # result/changed helpers used by every registrar
+│   │       └── records.ts · sync.ts · notion.ts · chat.ts · settings.ts · updater.ts
+│   ├── preload/
+│   │   └── index.ts           # contextBridge — typed, allow-listed window.api
+│   ├── renderer/
+│   │   └── src/
+│   │       ├── components/
+│   │       │   ├── pages/     # One directory per section; index.tsx = composition only
+│   │       │   │   ├── expense/         # index + tables/toolbar/form-fields/receipt/cover-modal
+│   │       │   │   ├── income/          # index + toolbar/form-fields/mass-edit-fields
+│   │       │   │   ├── workflow/        # index + form hook/fields
+│   │       │   │   ├── chat/            # index + sidebar/message-stream/composer/draft-card
+│   │       │   │   └── dashboard · accounts · monitoring · history · sync · settings · dev-logs
+│   │       │   ├── layout/ ui/ charts/ fab/ export/ shortcuts/
+│   │       │   └── finance-workspace.tsx
+│   │       ├── features/records/  # Shared record-page engine (Income/Expense/Workflow)
+│   │       │   ├── use-record-selection.ts
+│   │       │   ├── use-persisted-filters.ts
+│   │       │   ├── use-record-search.ts
+│   │       │   ├── use-optimistic-records.ts
+│   │       │   ├── use-bulk-actions.ts
+│   │       │   └── receipt.ts
+│   │       ├── lib/           # window.api client wrapper, query hooks, router, contexts
+│   │       ├── types/         # Re-exports from src/shared — no domain redefinitions
+│   │       └── assets/        # globals.css = @import list only; rules in base/layout/components/pages/
+│   └── shared/                # Shared across main + renderer
+│       ├── finance.types.ts   # Domain DTOs — single source of truth
+│       ├── ipc-channels.ts    # IPC channel string constants
+│       └── notion-formulas.ts # Pure formula functions shared by balances and Expense UI
+├── e2e/                       # Playwright + Electron end-to-end tests
+├── test/                      # Vitest unit/integration tests (sync, domain, db)
+├── scripts/                   # seed-dev.mjs and CSS verification tooling
+├── drizzle.config.ts          # Drizzle migration config
+├── electron.vite.config.ts    # Build config (main / preload / renderer)
+└── electron-builder.yml       # Packaging config (mac / linux / windows)
 ```
+
+See [`../wiki/desktop/project-structure.md`](../wiki/desktop/project-structure.md) for the full annotated tree.

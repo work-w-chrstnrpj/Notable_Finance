@@ -1,14 +1,34 @@
-# Command Reference
+# Command Reference (Web Application)
 
-## Current Status
+Commands for building, testing, running, and verifying the web application (`notable-finance-web/`).
 
-Frontend tooling has started under `application/`. Backend tooling has started under `service/`. Integration and end-to-end tooling remain pending.
+## Root Web Commands
 
-## Frontend Commands
+Run these from `notable-finance-web/` (which hosts the web workspace `package.json`):
 
-Run these from `application/`:
+| Command | Purpose |
+| --- | --- |
+| `npm run bootstrap` | Install dependencies for both `application/` and `service/`. |
+| `npm run deps:frontend` | Install dependencies for the frontend application only. |
+| `npm run deps:backend` | Install dependencies for the backend service only. |
+| `npm run dev` | Start both frontend (Next.js) and backend (NestJS) development servers concurrently. |
+| `npm run dev:frontend` | Start the Next.js frontend development server only (port 3000). |
+| `npm run dev:backend` | Start the NestJS backend service in watch mode only (port 3001). |
+| `npm run build` | Build both frontend and backend for production. |
+| `npm run build:frontend` | Build the Next.js frontend application (`application/.next`). |
+| `npm run build:backend` | Build the NestJS backend service (`service/dist`). |
+| `npm run start:frontend` | Start the built Next.js frontend in production mode. |
+| `npm run start:backend` | Start the built NestJS backend from `service/dist`. |
+| `npm run lint` | Run ESLint checks across both frontend and backend. |
+| `npm run typecheck` | Run TypeScript type checks (`tsc --noEmit`) for both frontend and backend. |
+| `npm run test` | Run Vitest tests for both frontend and backend. |
+| `npm run verify` | Run full CI gate: lint + typecheck + test across both projects. |
 
-```powershell
+## Direct Subdirectory Commands
+
+### Frontend (`notable-finance-web/application/`)
+
+```bash
 npm install
 npm run dev
 npm run lint
@@ -17,69 +37,35 @@ npm run test
 npm run build
 ```
 
-- `npm install`: installs the Next.js frontend dependencies.
-- `npm run dev`: starts the local Next.js development server.
-- `npm run lint`: runs ESLint against the frontend source.
-- `npm run typecheck`: runs TypeScript without emitting files.
-- `npm run test`: runs Vitest rule tests.
-- `npm run build`: builds the Next.js application.
-- `npm run test:e2e`: placeholder until Playwright coverage is added.
+### Backend Service (`notable-finance-web/service/`)
 
-## Backend Commands
-
-Run these from the repository root:
-
-```powershell
-npm --prefix service install
-npm --prefix service run typecheck
-npm --prefix service run test
-npm --prefix service run build
+```bash
+npm install
+npm run dev
+npm run lint
+npm run typecheck
+npm run test
+npm run build
 ```
 
-- `npm --prefix service install`: installs backend dependencies.
-- `npm --prefix service run typecheck`: runs TypeScript without emitting files.
-- `npm --prefix service run test`: runs Vitest backend tests against the development Notion-shaped repository.
-- `npm --prefix service run build`: builds the NestJS service with TypeScript.
-
-## Documentation Checks
+## Documentation & Maintenance Checks
 
 Find template placeholders that may still need project-specific updates:
 
-```powershell
+```bash
 rg -n "\[Project Name\]|\[State the project goal here\.\]|Suggested Sections|intended to" AGENTS.md wiki
 ```
 
 Find draft files that should not remain canonical:
 
-```powershell
-Get-ChildItem -Recurse wiki -Filter *-draft.md
+```bash
+find wiki/ -name "*-draft.md"
 ```
 
-List wiki files:
+## Recommended Tooling
 
-```powershell
-Get-ChildItem -Recurse wiki -File
-```
-
-## Recommended Future Commands
-
-Add or expand these as backend and integration scaffolding land:
-
-- `npm run dev:frontend`: start the Next.js frontend.
-- `npm run dev:backend`: start the NestJS backend.
-- `npm run test:integration`: run backend/API integration tests.
-- `npm run test:e2e`: run Playwright end-to-end tests.
-- `npm run db:migrate`: apply PostgreSQL metadata-store migrations after approval.
-- `npm run schema:verify`: call backend Notion schema verification after the integration key is configured.
-
-Each command should document what it does, whether it mutates files, and whether approval is required.
-
-Recommended tooling:
-
-- ESLint for linting.
-- TypeScript for typechecking.
-- Vitest for shared/frontend-friendly unit tests.
-- React Testing Library for frontend component tests.
-- Jest or Vitest for NestJS unit tests, depending on scaffold defaults.
-- Direct controller/service contract tests for the current backend scaffold; Supertest or equivalent HTTP integration tests can be added when socket-based test execution is available.
-- Playwright for end-to-end tests.
+- **Linter:** ESLint with TypeScript and React Hooks plugins.
+- **Type Checker:** TypeScript (`tsc --noEmit`).
+- **Unit / Contract Tests:** Vitest.
+- **Component Tests:** React Testing Library.
+- **E2E Tests:** Playwright.

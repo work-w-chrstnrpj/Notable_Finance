@@ -10,7 +10,7 @@ Build a fully usable **offline** app first (Phases 0–1), then add sync in incr
 
 ## UI/UX redesign — branch implementation
 
-Status: **In Progress** (implementation and automated checks; visual acceptance pending).
+Status: **Done** (shipped in v2.1.0/v2.2.0: simplified top bar, unified navigation groups, four-card summary dashboard, full-width expense/income view tabs, unified date picker, and branding).
 
 See [UI/UX redesign](ui-ux-redesign.md) for the agreed scope, preserved settings, CC Transaction behavior, compatibility rules and acceptance checklist. This work is separate from Phase 8 Chat investigation; existing Phase 8 plans remain unchanged.
 
@@ -114,7 +114,7 @@ Design: [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md). Does **not**
 
 ## Out of scope (this cycle)
 
-Code-signing/notarization, auto-update infra, shared-package extraction, webhook-driven realtime pull. See [`packaging-and-release.md`](packaging-and-release.md) and [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
+Code-signing/notarization, shared-package extraction, webhook-driven realtime pull. Auto-update infrastructure via GitHub Releases is implemented and active (see [`packaging-and-release.md`](packaging-and-release.md)). See also [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
 
 Phase 6 also excludes: auto-commit writes, chat-driven **finance** delete, Apple-backed write tool loops, MCP-as-required-runtime, and RAG-over-SQLite as the primary retrieval path (see design doc). Incomplete create/edit prompts must clarify required fields (including CC/Pasabuy/workflow fields) rather than inventing them. **Chat conversation** delete (thread / all history) is allowed and required.
 

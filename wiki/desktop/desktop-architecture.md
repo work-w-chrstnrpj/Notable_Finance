@@ -55,8 +55,12 @@ main/
 ├── domain/        copied finance logic: validation, mapping, reporting/derivations
 ├── notion/        Notion adapter: client factory, property mapper, query, mutation
 ├── sync/          reconcile engine, conflict detection, mutation queue, cursors
-├── config/        app settings (sync mode/interval), keychain token access
-├── ipc/           IPC handlers registered per channel
+├── settings/      app settings, safeStorage token & key encryption
+├── services/      backup, history, page-content, reports, discard-unsynced
+├── chat/          AI chat orchestrator, tools, skills, overlays, credentials
+├── dev-logs/      in-memory debug ring buffer & event stream
+├── updater/       electron-updater integration
+├── ipc/           IPC registrars per domain behind a composition root
 └── windows/       BrowserWindow lifecycle, multi-window management
 ```
 
@@ -68,7 +72,7 @@ main/
 3. Main recomputes affected derived values (balances, budgets) from SQLite.
 4. Main returns the record + emits an update event; renderer re-renders with a "not yet synced" badge.
 
-**Sync (manual or interval):** see [`sync-and-conflict-design.md`](sync-and-conflict-design.md). Push dirty records → pull remote changes since cursor → reconcile → prompt on true conflict → refresh derived values.
+**Sync (manual or interval):** see [`sync-and-conflict-design.md`](sync-and-conflict-design.md). Pull remote changes since cursor → reconcile (three-way merge) → prompt on true conflict → push clean dirty records → refresh derived values.
 
 ## Key architectural rules
 
@@ -81,7 +85,6 @@ main/
 
 - [`sync-and-conflict-design.md`](sync-and-conflict-design.md) · [`local-data-schema.md`](local-data-schema.md) · [`ipc-contract.md`](ipc-contract.md) · [`offline-and-state-model.md`](offline-and-state-model.md) · [`security.md`](security.md) · [`packaging-and-release.md`](packaging-and-release.md)
 - Chat copilot (Phase 6 done): [`chat-agent-design.md`](chat-agent-design.md) · [`chat-skills-and-overlays.md`](chat-skills-and-overlays.md) · checklist in [`development-plan.md`](development-plan.md)
-- Chat agentic investigator (Phase 8 planned): [`chat-diagnostic-copilot.md`](chat-diagnostic-copilot.md)
 
 ## Desktop presentation refresh
 

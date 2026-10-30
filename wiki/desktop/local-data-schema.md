@@ -36,12 +36,13 @@ accounts(
   id, notion_page_id, account_name, account_type,
   starting_balance REAL, credit_limit REAL, inactive INTEGER,
   billing_day, due_day, annual_fee, credit_points,
+  qr_code, icon,
   notion_last_edited_at, created_at
 )
 ```
 
 ### `income_categories`, `expense_categories` (reference, read-only cache)
-Cached selectors. `expense_categories` stores `monthly_budget` (input) for local spending/remaining math. `auxiliary` marks categories excluded from normal income forms.
+Cached selectors. `expense_categories` stores `monthly_budget` (input) for local spending/remaining math. `auxiliary` marks categories excluded from normal income forms. Both cache Notion page `icon`.
 
 ### `incomes` (writable)
 ```
@@ -50,7 +51,8 @@ incomes(
   title, gross_income REAL, capital_expenditure REAL,
   account_id, category_id, date, notes,
   is_transaction INTEGER,          -- transactions extend incomes
-  transacted_account_id, cc_payment_covered_id  -- transaction-only
+  transacted_account_id, cc_payment_covered_id,  -- transaction-only
+  page_content, page_content_dirty INTEGER       -- Markdown body sync
 )
 ```
 Computed (not stored): `net_income = gross_income - capital_expenditure`.
@@ -61,8 +63,10 @@ expenses(
   <common sync columns>,
   title, amount REAL, interest REAL,
   account_id, category_id, purchase_date, date_paid,
-  is_pasabuy INTEGER, pasabuyer,        -- Pasabuy flow
-  cc_fields...                          -- shown only for Credit Account / BYPL
+  payment_status, payment_frequency, period_count, bnpl_adjustment, paid_period,
+  is_pasabuy INTEGER, pasabuyer, pasabuy_status, pasabuy_date_of_payment,
+  pasabuy_paid_period, pasabuy_account_receiver_id, cc_link_payment_receipt_id,
+  page_content, page_content_dirty INTEGER       -- Markdown body sync
 )
 ```
 
@@ -91,6 +95,7 @@ Sync mode (`manual` | `auto`), interval seconds, window prefs, onboarding state,
 | `chat_credentials` | Named API key metadata: `id`, `name`, `key_fingerprint`, `is_default`, `created_at`. Raw keys are files under userData encrypted with `safeStorage`. |
 | `chat_threads` | Conversation list: `id`, `title`, `credential_id`, `model_id`, `overlay` (slash persona), `created_at`, `updated_at`. |
 | `chat_messages` | Messages: `id`, `thread_id`, `role` (`user` \| `assistant` \| `system`), `content`, `payload_json` (drafts / provider / overlay metadata), `created_at`. |
+| `chat_drafts` | Confirm-gated write proposals: `id`, `thread_id`, `resource`, `action`, `kind`, `status`, `summary`, `missing_required`, `warnings`, `payload`, `target_ids`, `computed_preview`, `display`, `created_at`. Survives app restart before Approve. |
 
 Turning Chat off does not delete these rows. Users delete threads from Chat mode or **Delete all conversations** in Configure AI. Apple Intelligence read-only uses the same threads/messages plus preference flags; Foundation Models readiness is probed at runtime (no extra tables).
 
@@ -98,7 +103,7 @@ Turning Chat off does not delete these rows. Users delete threads from Chat mode
 Append-only journal of pending local mutations so offline edits replay in order and survive a crash. Rows are **cleared on successful push**, so it reflects only *outstanding* work, not history.
 
 ### `activity_log` (history feed)
-Durable, newest-first journal of **completed** sync events that powers the History section. Each row records `run_id`, `resource`, `record_id`, `notion_page_id`, `title` (snapshot), `action` (`create` | `update` | `delete`), `direction` (`pull` = Notion DB → App, `push` = App → Notion DB), and `at` (ms). Written by the pull engine (on insert/pull/automerge/conflict) and push engine (on create/update/delete/phantom-delete). The `run_id` groups all events from one sync pass — a single `syncNow` (pull + push) shares one id — so the History table can show just the **last two runs** (the current sync and the one before it). Unlike `mutation_queue`, it is **not** cleared on push and is capped to the newest 1000 rows. Unsynced items shown in History are derived live from `incomes`/`expenses` where `sync_state` is `dirty`/`conflict` (no separate store).
+Durable, newest-first journal of **completed** sync events that powers the History section. Each row records `run_id`, `resource`, `record_id`, `notion_page_id`, `title` (snapshot), `payload` (JSON snapshot of writable fields at event time), `action` (`create` | `update` | `delete`), `direction` (`pull` = Notion DB → App, `push` = App → Notion DB), and `at` (ms). Written by the pull engine (on insert/pull/automerge/conflict) and push engine (on create/update/delete/phantom-delete). The `run_id` groups all events from one sync pass — a single `syncNow` (pull + push) shares one id — so the History table can show just the **last two runs** (the current sync and the one before it). Unlike `mutation_queue`, it is **not** cleared on push and is capped to the newest 1000 rows. Unsynced items shown in History are derived live from `incomes`/`expenses` where `sync_state` is `dirty`/`conflict` (no separate store).
 
 ## Derived values are computed, not stored
 

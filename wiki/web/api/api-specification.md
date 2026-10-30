@@ -84,6 +84,10 @@ Error response:
 | Credit Card Payment | `/credit-card-payments` | Incomes Transaction views | Create, read, update, soft delete with fixed `Credit Card Payment` category |
 | Alkansya | `/alkansya` | Incomes Transaction views unless remapped during implementation | Create, read, update, soft delete by income title/amount mutation |
 | Receivables | `/receivables` | Incomes Transaction views | Create, read, update, soft delete by income title/amount mutation |
+| User Preferences | `/user/preferences` | App metadata (PostgreSQL) | Read, update UI theme/display preferences |
+| Notion Config | `/user/notion-config` | App metadata (PostgreSQL, encrypted token) | Read status, save/update mapping and encrypted token, disconnect |
+| Auth | `/auth` | App metadata (PostgreSQL) | Register, login, Google OAuth, me |
+| System | `/system` | Backend diagnostics | Health check, schema drift detection |
 
 ## Standard Resource Endpoints
 
@@ -309,4 +313,4 @@ When implementation starts, add contract tests for:
 - Schema drift response shape.
 - Conflict response shape.
 
-> Last updated: 2026-07-14 — reflects current codebase state
+> Last updated: 2026-07-29 — reflects v1.1.0 codebase state

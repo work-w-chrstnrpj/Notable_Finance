@@ -31,25 +31,35 @@ Planned deployment targets:
 
 ## Required Configuration
 
-Exact names may change after project scaffolding, but backend configuration should include:
+Exact backend configuration variables (from `notable-finance-web/service/.env.example`):
 
 ```text
-NOTION_TOKEN
-NOTION_VERSION
-NOTION_ACCOUNTS_DATA_SOURCE_ID
-NOTION_INCOME_CATEGORIES_DATA_SOURCE_ID
-NOTION_INCOMES_DATA_SOURCE_ID
-NOTION_EXPENSE_CATEGORIES_DATA_SOURCE_ID
-NOTION_EXPENSES_DATA_SOURCE_ID
-NOTION_MONTHLY_MONITORING_DATA_SOURCE_ID # optional/schema context only; selected-month reporting is app-calculated
-DATABASE_URL
-REDIS_URL # optional, only if Redis is enabled
-AUTH_SECRET
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
+# Server
+PORT=3001
+NODE_ENV=production
+CORS_ORIGIN=https://your-frontend-domain.vercel.app
+LIVE_CACHE_TTL_MS=45000
+
+# Notion Integration (fallback / smoke testing; per-user config in Settings)
+NOTION_TOKEN=ntn_...
+# Database IDs are configured per-user through Settings (/user/notion-config)
+
+# Auth / JWT
+JWT_SECRET=secure_random_string
+JWT_EXPIRES_IN=7d
+
+# Encryption (per-user Notion token at rest via AES-256-GCM)
+ENCRYPTION_KEY=64_char_hex_string
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# PostgreSQL App Metadata Store (Neon Free)
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 ```
 
-Configure PostgreSQL app metadata storage server-side from the start using Neon Free while usage remains within free-tier limits. Redis is optional and should be configured only for cache, rate limits, short-lived session helpers, or queue coordination. If auth, cache, or webhooks are added, configure their secrets server-side as well.
+Configure PostgreSQL app metadata storage server-side using Neon Free while usage remains within free-tier limits. Redis is optional and should be configured only for cache, rate limits, short-lived session helpers, or queue coordination.
 
 ## Free-Tier Storage Plan
 

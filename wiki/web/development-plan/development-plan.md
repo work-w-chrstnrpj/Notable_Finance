@@ -47,17 +47,16 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-14, frontend and backend implementation have advanced with v0.2.0 release. On the backend, startup configuration validation, Passport JWT strategy, PostgreSQL metadata repository design, error normalization classes, and Winston structured logging were completed. The Next.js frontend foundation exists under `application/`. The NestJS backend foundation exists under `service/`, with `/api/v1` route modules, server-side configuration loading, field mapping, mutation validation, read-only reference endpoints, app-calculated dashboard/monthly monitoring responses, sync orchestration over a development Notion-shaped repository, and automated backend tests. Live Notion API writes, live schema verification, PostgreSQL metadata persistence, and production auth hardening remain in progress or blocked on external configuration/access. Recent frontend changes include expense view filter validation updates, filter UI refactoring to collapsible toolbar rows, print receipt support for Receivables, useApiQuery stale-while-revalidate fix, and toast notification position move to top-right. See [release-memo-v0.2.0.md](release-memo-v0.2.0.md) for detailed release notes.
+As of 2026-07-29, the web application has released **v1.1.0** (following the v0.2.0 milestone on 2026-07-14). 
 
-| Workstream | Total Rows | Not Started | In Progress | Implemented | Blocked | Needs Decision | Deferred |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Frontend | 17 | 0 | 14 | 3 | 0 | 0 | 0 |
-| Backend | 21 | 0 | 8 | 11 | 2 | 0 | 0 |
-| Integration | 19 | 19 | 0 | 0 | 0 | 0 | 0 |
-| Testing | 17 | 17 | 0 | 0 | 0 | 0 | 0 |
+Key additions in **v1.1.0**:
+- **Bulk actions:** Bulk CC Pay and Bulk Pasabuy quick-action presets in the Bulk Edit modal; mass linking of CC expenses to CC Payment receipts via `CoverExpensesModal` ("Cover the expense").
+- **History enhancements:** Record detail modals with read-only form views and old→new field-level diff display; pending edit navigation from History directly into edit modals; Push Unsynced / Cancel Syncing Unsynced actions; database migration 0009 adding `payload` column to `activity_log`.
+- **Form refinements:** Expense form validation requiring Account & Category with visual cue; source account excluded from Transfer dropdown; name prefills for Transfer and CC Payment; configurable receipt font (`Instrument Serif`).
+- **Core data layer:** Position-based → UUID-based refactor across all tables and selection state; precision rounding fix for raw balance sums avoiding centavo drift; clear sync conflict display distinguishing `null` (∅ empty) vs `""` blank vs literal values.
+- **Feedback:** Full toast notification system replacing inline notices across workspace, income, expense, and history pages.
 
-Frontend status detail: 3 `Implemented`, 14 `In Progress`.
-Backend status detail: 11 `Implemented`, 8 `In Progress`, 2 `Blocked`.
+On the backend, startup configuration validation, Passport JWT strategy, PostgreSQL metadata persistence, error normalization, schema-drift reporting, and Winston structured logging are in place under `notable-finance-web/service/`.
 
 ## Resolved Decisions
 

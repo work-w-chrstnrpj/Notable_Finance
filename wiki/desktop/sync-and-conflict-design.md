@@ -30,29 +30,31 @@ Because of the minute-rounding and missing field timestamps, **we do not rely on
 ## Sync modes (configurable)
 
 - **Manual:** the user triggers a Sync action.
-- **Automated:** on a configurable interval, each run does a full **push then pull**.
+- **Automated:** on a configurable interval, each run does a full **pull (reconcile) then push**.
 - In both modes a local write is applied instantly and marked `dirty`; sync is decoupled from local correctness.
 - Remote (Notion-side) edits surface in the UI **only after a pull completes**.
 
 ## The reconcile algorithm
 
-For a sync pass:
+For a sync pass (`syncNow`):
 
 ```
-PUSH phase
-  for each local record where sync_state = 'dirty':
-    if no notion_page_id:  create Notion page (writable fields only) → store returned page id
-    else:                  update Notion page (writable fields only)
-    on success:            base_snapshot = current writable fields; sync_state = 'clean'
-    on 429/failure:        keep 'dirty'; backoff and retry next pass
-
-PULL phase
+PULL phase (Reconcile)
   cursor = last_pull_cursor
   for each Notion page changed since cursor (Search sorted by last_edited_time):
     map to record; find local by notion_page_id
     if not found locally:                 INSERT new local record (fresh local id + mapping)
     else: run THREE-WAY MERGE (below)
   advance last_pull_cursor
+  if pull has errors: PAUSE PUSH (do not push stale local snapshot over unreconciled Notion changes)
+
+PUSH phase
+  for each local record where sync_state = 'dirty':
+    if no notion_page_id:  create Notion page (writable fields only) → store returned page id
+    else:                  update Notion page (writable fields only)
+    on success:            base_snapshot = current writable fields; sync_state = 'clean'
+    on 429/failure:        keep 'dirty'; backoff and retry next pass
+```
 
 FINALIZE
   recompute derived values (balances, budgets) from SQLite
