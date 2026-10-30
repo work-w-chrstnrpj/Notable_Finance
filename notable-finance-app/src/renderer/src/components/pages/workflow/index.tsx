@@ -12,7 +12,7 @@ import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-m
 import { ShortcutHint } from "@/components/shortcuts";
 import { useWorkflowForm } from "./use-workflow-form";
 import { WorkflowFormFields } from "./workflow-form-fields";
-import { useWorkflowRecords, useFinanceInvalidation, useExpensesForCCCoverage } from "@/lib/use-data";
+import { useWorkflowRecords, useFinanceInvalidation, useExpensesForCCCoverage, useExpenses } from "@/lib/use-data";
 import { useRecordSelection } from "@/features/records/use-record-selection";
 import { buildReceipt } from "@/features/records/receipt";
 import { useBulkActions } from "@/features/records/use-bulk-actions";
@@ -31,7 +31,10 @@ import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { useFabRegister, type ReceiptContext } from "@/lib/fab-export-context";
+import { navigate } from "@/lib/router";
+import { setPendingEdit } from "@/lib/pending-edit";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
+import type { ExpenseRecord } from "@/types/finance";
 
 function WorkflowPage({
   section,
@@ -47,6 +50,7 @@ function WorkflowPage({
     normalIncomeCategories,
     accountNameById,
     incomeCategoryNameById,
+    expenseCategoryNameById,
   } = useLiveCollections();
   const fixedCategory = getWorkflowFixedCategory(section);
   const label = getActiveSectionLabel(section);
@@ -148,17 +152,31 @@ function WorkflowPage({
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
     month: monthScoped ? selectedMonth : undefined,
   });
+  const { state: expenseState } = useExpenses();
   // Workflows are income-backed views, so they share the income invalidation.
   const { invalidateIncomeFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
   const allWorkflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
   ).filter((r) => !r.name?.includes("[Deleted:"));
+  const receivablePasabuyExpenses: ExpenseRecord[] = isReceivables && expenseState.status === "success"
+    ? expenseState.data.filter((expense) =>
+        expenseCategoryNameById.get(expense.categoryId) === "Pasabuy" &&
+        expense.paymentStatus === "Paid" &&
+        Boolean(expense.datePaid) &&
+        expense.pasabuyStatus !== "Payment fully received"
+      )
+    : [];
   const accountFiltered = allWorkflowIncomes.filter((record) => {
     if (!filterActive || !accountFilterId) return true;
     if (accountFilterId === "__none__") return !record.accountId;
     return record.accountId === accountFilterId ||
       ((isTransfer || isCreditCardPayment) && record.transactedAccountId === accountFilterId);
+  });
+  const receivableExpensesFiltered = receivablePasabuyExpenses.filter((expense) => {
+    if (!filterActive || !accountFilterId) return true;
+    if (accountFilterId === "__none__") return !expense.accountId;
+    return expense.accountId === accountFilterId;
   });
   const { searchActive, searchQuery, setSearchQuery, toggleSearch, resetSearch,
     filteredRecords: workflowIncomes } = useRecordSearch(
@@ -169,6 +187,18 @@ function WorkflowPage({
       incomeCategoryNameById.get(record.categoryId) ?? ""],
     [accountNameById, incomeCategoryNameById],
   );
+  const receivableExpenseSearch = receivableExpensesFiltered.filter((expense) => {
+    if (!searchActive || !searchQuery.trim()) return true;
+    const query = searchQuery.trim().toLocaleLowerCase();
+    return [expense.description, expense.datePaid, expense.pasabuyer, accountNameById.get(expense.accountId) ?? ""]
+      .some((value) => value?.toLocaleLowerCase().includes(query));
+  });
+  const receivableRecords = isReceivables
+    ? [
+        ...workflowIncomes.map((record) => ({ id: record.id, kind: "income" as const, record })),
+        ...receivableExpenseSearch.map((record) => ({ id: `expense:${record.id}`, kind: "expense" as const, record })),
+      ]
+    : workflowIncomes.map((record) => ({ id: record.id, kind: "income" as const, record }));
   useShortcutAction("view.search", toggleSearch, !modalOpen);
   useShortcutAction("view.filters", () => setFilterActive((prev) => !prev), !modalOpen);
   useEffect(() => {
@@ -180,7 +210,9 @@ function WorkflowPage({
     clearSelection();
   }, [section, filterActive, accountFilterId, searchActive, searchQuery, clearSelection]);
   const enabledWorkflowRecords = workflowIncomes.filter((r) => !disabledIds.has(r.id));
-  const workflowAmountTotal = getIncomeGrossTotal(enabledWorkflowRecords);
+  const workflowAmountTotal = getIncomeGrossTotal(enabledWorkflowRecords) + receivableExpenseSearch
+    .filter((expense) => !disabledIds.has(`expense:${expense.id}`))
+    .reduce((sum, expense) => sum + (expense.pasabuyBalance ?? 0), 0);
 
 
   // ── Publish printable receipt for Receivables ──────────────────────
@@ -188,18 +220,18 @@ function WorkflowPage({
   const receiptContext = useMemo<ReceiptContext>(
     () =>
       buildReceipt({
-        records: workflowIncomes,
+        records: receivableRecords,
         excludeIds: disabledIds,
         viewTitle: "Receivables",
         periodLabel: "All Time",
-        toRow: (record) => ({
-          date: record.date ? formatDate(record.date) : "—",
-          description: stripNotionTag(record.name),
-          amount: formatMoney(record.grossIncome),
+        toRow: (item) => ({
+          date: item.kind === "income" ? (item.record.date ? formatDate(item.record.date) : "—") : (item.record.datePaid ? formatDate(item.record.datePaid) : "—"),
+          description: item.kind === "income" ? stripNotionTag(item.record.name) : item.record.description,
+          amount: formatMoney(item.kind === "income" ? item.record.grossIncome : item.record.pasabuyBalance ?? 0),
         }),
-        valueOf: (record) => record.grossIncome ?? 0,
+        valueOf: (item) => item.kind === "income" ? item.record.grossIncome ?? 0 : item.record.pasabuyBalance ?? 0,
       }),
-    [workflowIncomes, disabledIds],
+    [receivableRecords, disabledIds],
   );
 
   useEffect(() => {
@@ -223,8 +255,21 @@ function WorkflowPage({
     ? ["Date", "Name", "Source Account", "Amount", "Transfer Account", "Transferred Amount"]
     : isCreditCardPayment
       ? ["Date", "Name", "CC Account", "Amount", "Payer Account"]
-      : ["Name", "Date", sourceAccountLabel, "Category", "Amount"];
-  const workflowRows = workflowIncomes.map((record) => {
+      : ["Name", "Date", isReceivables ? "Account" : sourceAccountLabel, "Category", "Amount"];
+  const workflowRows = receivableRecords.map((item) => {
+    if (item.kind === "expense") {
+      const record = item.record;
+      return [
+        stripNotionTag(record.description),
+        formatDate(record.datePaid),
+        accountNameById.get(record.accountId) ?? "—",
+        "Pasabuy · Expense",
+        <span key={`${record.id}-amount`} className="num">
+          {formatMoney(record.pasabuyBalance ?? 0)}
+        </span>,
+      ];
+    }
+    const record = item.record;
     if (isTransfer) {
       return [
         formatDate(record.date),
@@ -277,6 +322,9 @@ function WorkflowPage({
             </span>,
           ],
         ];
+
+  const expenseRowIds = new Set(receivableExpenseSearch.map((expense) => `expense:${expense.id}`));
+  const tableRecordIds = receivableRecords.map((item) => item.kind === "income" ? item.record.id : `expense:${item.record.id}`);
 
   function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
     const record =
@@ -515,9 +563,10 @@ function WorkflowPage({
         {workflowRows.length ? (
           <DataTable
             selectable
-            recordIds={workflowIncomes.map((r) => r.id)}
+            recordIds={tableRecordIds}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
+            selectionDisabledIds={expenseRowIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
             showBulkEdit={false}
@@ -527,6 +576,13 @@ function WorkflowPage({
             rows={workflowRows}
             footerRows={workflowFooterRows}
             onRowClick={(recordId) => {
+              if (recordId.startsWith("expense:")) {
+                const expense = receivablePasabuyExpenses.find((candidate) => candidate.id === recordId.slice("expense:".length));
+                if (!expense) return;
+                setPendingEdit("expenses", expense.id, expense);
+                navigate("/expense");
+                return;
+              }
               const record = allWorkflowIncomes.find((r) => r.id === recordId);
               if (record) {
                 openWorkflowModal("edit", record.name, record.id);

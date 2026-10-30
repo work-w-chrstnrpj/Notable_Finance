@@ -1,6 +1,6 @@
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { useLiveCollections, isSpecificExpenseCategoryFilter } from "@/components/hooks";
 import { buildAnnualGroups, AnnualBarChart } from "@/components/charts";
 import { Panel, LoadingBlock } from "@/components/ui";
@@ -82,6 +82,8 @@ function ExpensePage({
   const isAnnual = viewMode === "Annually";
   const [filterActive, setFilterActive] = useState(false);
   const [modal, setModal] = useState<ModalState>(null);
+  const pendingEditChecked = useRef(false);
+  const pendingExpenseEdit = useRef<ReturnType<typeof consumePendingEdit>>(null);
 
   // All record-form state, derived figures and automations live in useExpenseForm.
   const form = useExpenseForm({ viewMode, activeAccounts, expenseCategoryNameById });
@@ -319,11 +321,11 @@ function ExpensePage({
     setDescriptionInput((prev) => applyNotionTag(prev, yyymmdd));
   }, [purchaseDateInput, modal?.mode]);
 
-  function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string) {
+  function openExpenseModal(mode: "new" | "edit", title: string, recordId?: string, recordOverride?: ExpenseRecord) {
     const record =
-      recordId != null
+      recordOverride ?? (recordId != null
         ? visibleExpenseRecords.find((r) => r.id === recordId)
-        : undefined;
+        : undefined);
     const nextCategoryId =
       record?.categoryId ??
       (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
@@ -611,14 +613,24 @@ function ExpensePage({
   useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
   useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
 
-  // Check for pending edit triggered by History page navigation
+  // Check for pending edit triggered by History or Receivables navigation.
   useEffect(() => {
-    const pending = consumePendingEdit("expenses");
-    if (pending && visibleExpenseRecords.length > 0) {
-      const record = visibleExpenseRecords.find((r) => r.id === pending.recordId);
-      if (record) {
-        openExpenseModal("edit", record.description, record.id);
-      }
+    if (!pendingEditChecked.current) {
+      pendingExpenseEdit.current = consumePendingEdit("expenses");
+      pendingEditChecked.current = true;
+    }
+    const pending = pendingExpenseEdit.current;
+    if (!pending) return;
+    if (pending.payload) {
+      const record = pending.payload as ExpenseRecord;
+      openExpenseModal("edit", record.description, record.id, record);
+      pendingExpenseEdit.current = null;
+      return;
+    }
+    const record = visibleExpenseRecords.find((candidate) => candidate.id === pending.recordId);
+    if (record) {
+      openExpenseModal("edit", record.description, record.id, record);
+      pendingExpenseEdit.current = null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleExpenseRecords.length]);

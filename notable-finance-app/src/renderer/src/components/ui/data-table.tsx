@@ -50,6 +50,7 @@ function DataTable({
   selectable = false,
   selectedIds,
   disabledIds,
+  selectionDisabledIds,
   onToggleSelect,
   onBulkAction,
   showBulkEdit = true,
@@ -81,6 +82,8 @@ function DataTable({
   selectedIds?: Set<string>;
   /** Set of original row indices that are temporarily disabled (dimmed, excluded from totals). */
   disabledIds?: Set<string>;
+  /** Rows that remain clickable but must not participate in selection or bulk actions. */
+  selectionDisabledIds?: Set<string>;
   /** Callback when a row checkbox is toggled. Receives the original row index and new selected state. */
   onToggleSelect?: (recordId: string, selected: boolean) => void;
   /** Callback when a bulk action is triggered from the floating toolbar. */
@@ -147,14 +150,15 @@ function DataTable({
   // Check if all visible (paginated) rows are selected
   const allVisibleSelected =
     selectable && recordIds &&
-    paginated.length > 0 &&
-    paginated.every(({ index }) => selectedIds?.has(recordIds[index]));
+    paginated.some(({ index }) => !selectionDisabledIds?.has(recordIds[index])) &&
+    paginated.filter(({ index }) => !selectionDisabledIds?.has(recordIds[index]))
+      .every(({ index }) => selectedIds?.has(recordIds[index]));
 
   // Indeterminate: some but not all visible rows are selected
   const someVisibleSelected =
     selectable && recordIds &&
     !allVisibleSelected &&
-    paginated.some(({ index }) => selectedIds?.has(recordIds[index]));
+    paginated.some(({ index }) => !selectionDisabledIds?.has(recordIds[index]) && selectedIds?.has(recordIds[index]));
 
   // Determine if we should show "Enable" or "Disable" in the toolbar
   const selectedHasDisabled =
@@ -257,7 +261,7 @@ function DataTable({
                       aria-label="Select all rows"
                       onClick={() => {
                         if (!onToggleSelect || !recordIds) return;
-                        const visibleIds = paginated.map(({ index }) => recordIds[index]).filter(Boolean);
+                        const visibleIds = paginated.map(({ index }) => recordIds[index]).filter((id) => id && !selectionDisabledIds?.has(id));
                         if (allVisibleSelected) {
                           for (const id of visibleIds) {
                             onToggleSelect(id, false);
@@ -344,7 +348,8 @@ function DataTable({
                         type="button"
                         className={cx(styles["row-checkbox"], isSelected && styles["row-checkbox--checked"])}
                         aria-label="Select row"
-                        onClick={(event) => {
+                          disabled={selectionDisabledIds?.has(recordIds?.[index] ?? "")}
+                          onClick={(event) => {
                           event.stopPropagation();
                           const id = recordIds?.[index];
                           if (id) onToggleSelect?.(id, !isSelected);

@@ -15,15 +15,15 @@
 
 export type PendingEditResource = "expenses" | "incomes" | "transfers" | "creditCardPayments" | "alkansya" | "receivables";
 
-let _pending: { resource: PendingEditResource; recordId: string } | null = null;
+let _pending: { resource: PendingEditResource; recordId: string; payload?: unknown } | null = null;
 
-export function setPendingEdit(resource: PendingEditResource, recordId: string): void {
-  _pending = { resource, recordId };
+export function setPendingEdit(resource: PendingEditResource, recordId: string, payload?: unknown): void {
+  _pending = { resource, recordId, payload };
 }
 
-export function consumePendingEdit(resource: PendingEditResource): { recordId: string } | null {
+export function consumePendingEdit(resource: PendingEditResource): { recordId: string; payload?: unknown } | null {
   if (_pending && _pending.resource === resource) {
-    const result = { recordId: _pending.recordId };
+    const result = { recordId: _pending.recordId, payload: _pending.payload };
     _pending = null;
     return result;
   }

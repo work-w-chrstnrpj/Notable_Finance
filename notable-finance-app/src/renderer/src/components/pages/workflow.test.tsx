@@ -4,11 +4,20 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { WorkflowPage } from "./workflow";
-import type { WorkflowSectionId } from "@/types/finance";
+import type { ExpenseRecord, WorkflowSectionId } from "@/types/finance";
+import { consumePendingEdit } from "@/lib/pending-edit";
 
 const sourceAccount = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const destAccount = { ...sourceAccount, id: "acc2", name: "Savings Jar" };
 const category = { id: "cat1", source: "Transfer", auxiliary: true, icon: null, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 };
+const pasabuyExpenseCategory = { id: "pasabuy", name: "Pasabuy", auxiliary: true, icon: null, monthlyBudget: 0, upcomingBudget: 0, spending: 0, remaining: 0, overview: "", totalOverview: 0 };
+const pasabuyExpense = {
+  id: "exp1", description: "Groceries for Ana", purchaseDate: "2026-07-09", datePaid: "2026-07-11",
+  amount: 1000, interest: 0, accountId: "acc1", categoryId: "pasabuy", paymentStatus: "Paid" as const,
+  paymentFrequency: null, periodCount: null, bnplAdjustment: null, paidPeriod: null, pasabuyer: "Ana",
+  pasabuyStatus: "Payment partially received" as const, pasabuyDateOfPayment: "2026-07-12",
+  pasabuyPaidPeriod: null, pasabuyAccountReceiverId: null, pasabuyBalance: 600, ccLinkPaymentReceiptId: null,
+};
 const workflowRecord = {
   id: "wf1",
   name: "Weekly Transfer",
@@ -26,10 +35,15 @@ function renderWorkflow(section: WorkflowSectionId) {
       accounts: { list: vi.fn(async () => (ok([sourceAccount, destAccount]))) },
       categories: {
         income: vi.fn(async () => (ok([category]))),
-        expense: vi.fn(async () => (ok([])))
+        expense: vi.fn(async () => (ok([pasabuyExpenseCategory])))
       },
       incomes: { list: vi.fn(async () => (ok([workflowRecord]))) },
-      expenses: { listForCCCoverage: vi.fn(async () => (ok([]))) }
+      expenses: { list: vi.fn(async () => ok([
+        pasabuyExpense,
+        { ...pasabuyExpense, id: "exp-unpaid", description: "Not yet paid", paymentStatus: "Unpaid", datePaid: null },
+        { ...pasabuyExpense, id: "exp-complete", description: "Fully received", pasabuyStatus: "Payment fully received" },
+        { ...pasabuyExpense, id: "exp-wrong-category", description: "Other category", categoryId: "cat-other" },
+      ] as ExpenseRecord[])), listForCCCoverage: vi.fn(async () => (ok([]))) }
     }
   });
 }
@@ -38,7 +52,7 @@ const HEADERS_BY_SECTION: Record<WorkflowSectionId, string[]> = {
   transfer: ["Date", "Name", "Source Account", "Amount", "Transfer Account", "Transferred Amount"],
   "credit-card-payment": ["Date", "Name", "CC Account", "Amount", "Payer Account"],
   alkansya: ["Name", "Date", "Accounts", "Category", "Amount"],
-  receivables: ["Name", "Date", "Receiving Account", "Category", "Amount"]
+  receivables: ["Name", "Date", "Account", "Category", "Amount"]
 };
 
 describe("WorkflowPage", () => {
@@ -71,6 +85,19 @@ describe("WorkflowPage", () => {
     renderWorkflow("transfer");
     const table = await screen.findByRole("table");
     expect(table.querySelector("tfoot")).toBeNull();
+  });
+
+  it("includes eligible Pasabuy expenses in Receivables and routes clicks to Expense", async () => {
+    renderWorkflow("receivables");
+    expect(await screen.findByText("Groceries for Ana")).toBeInTheDocument();
+    expect(screen.queryByText("Not yet paid")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fully received")).not.toBeInTheDocument();
+    expect(screen.queryByText("Other category")).not.toBeInTheDocument();
+    expect(screen.getByText("Pasabuy · Expense")).toBeInTheDocument();
+    expect(screen.getByText("₱600.00")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Groceries for Ana"));
+    expect(window.location.hash).toBe("#/expense");
+    expect(consumePendingEdit("expenses")).toMatchObject({ recordId: "exp1", payload: pasabuyExpense });
   });
 });
 
