@@ -47,7 +47,7 @@ Each workstream sheet includes:
 
 ## Current Summary
 
-As of 2026-07-29, the web application has released **v1.1.0** (following the v0.2.0 milestone on 2026-07-14). 
+As of 2026-07-29, the web application has released **v1.1.0** (following the v0.2.0 milestone on 2026-07-14).
 
 Key additions in **v1.1.0**:
 - **Bulk actions:** Bulk CC Pay and Bulk Pasabuy quick-action presets in the Bulk Edit modal; mass linking of CC expenses to CC Payment receipts via `CoverExpensesModal` ("Cover the expense").

@@ -143,3 +143,14 @@ No database/IPC/schema change. Web app unchanged. Live Notion acceptance and own
 ### Money Lent usability fixes (2026-10-30)
 
 Receivables New Record now includes auxiliary Money Lent in Categories and switches to lending fields when chosen; normal Income still excludes it. Repayment explicitly chooses Same account or Transfer to another account, keeps the original account as read-only Source Account, requires a distinct Transfer Account, and previews the direction before **Convert to Transfer**. Source-account and signed-amount settlement rules are unchanged. Regression coverage includes the previously missed category-picker entry path.
+
+## Notifications and record information toggle — v2.4.0 (2026-10-31)
+
+| Work item | Acceptance | Status |
+| --- | --- | --- |
+| Notifications section | Today/tomorrow credit-account and unsettled-credit reminders; recorded app/sync errors; persistent per-occurrence dismissal | Implemented; unit tests and isolated Electron smoke checks passed |
+| Notification preferences | Hide/restore the section and optionally include tomorrow; persist across reloads | Implemented; isolated Electron smoke checks passed |
+| Record information toggle | Income/Expense dialogs open on Details; header information icon toggles page content | Implemented; component and isolated Electron smoke checks passed |
+| Release verification | Desktop lint, typecheck, unit/component tests, build, and Electron regression suite | Passed: 396 tests, 7 skipped; all 47 Electron tests; lint 0 errors (105 warnings) |
+
+See [release verification](desktop-testing-strategy.md#v240-release-verification-2026-10-31). Live Notion and owner acceptance remain separate and pending.

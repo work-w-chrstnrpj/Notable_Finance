@@ -109,3 +109,11 @@ Verified 2026-10-30: 383 Vitest tests passed (7 skipped) and all 47 Electron tes
 ### Money Lent category-picker and repayment UI regression
 
 The Money Lent suite now covers New Record → Categories → auxiliary Money Lent, switching a new draft back to a normal category, required distinct Transfer Account selection, Source Account preservation, and returning from transfer mode to same-account repayment. The cross-account Electron journey creates the loan through the regular category picker, then verifies in-place Transfer conversion and source/destination balances. Verified on 2026-10-30: 386 Vitest tests passed (7 skipped), six focused Money Lent/Receivables Electron journeys passed, and typecheck, lint (no errors), and build passed.
+
+## v2.4.0 release verification (2026-10-31)
+
+Full desktop verification passed: `npm run lint` (0 errors, 105 warnings), `npm run typecheck`, `npm test` (396 passed, 7 skipped), `npm run build`, and `npx playwright test` (all 47 Electron tests passed).
+
+An additional temporary Electron smoke script exercised the real preload/main path in an isolated SQLite profile: credit-account due reminders, a synthetic error inbox entry, dismissal persistence after reload, hiding/restoring Notifications through Settings with the preference preserved after reload, and the record information icon toggling from Details to page content and back. The script and logs are local verification artifacts, not committed regression tests. `test/notifications.test.ts` covers reminder dates, unsettled-credit eligibility, and error-message redaction; `flippable-modal.test.tsx` covers the dialog toggle.
+
+These checks do not establish live Notion parity or owner acceptance. Existing Money Lent and Receivables live-workspace acceptance remains pending.

@@ -5,10 +5,12 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.4.0] - 2026-10-30
+## [2.4.0] - 2026-10-31
 
 ### Added
 
+- **Money Lent:** Record loans from Receivables with a source account, show positive receivable amounts while deducting the loan from that account, and record full repayment to the same account or another account. Same-account repayment soft-deletes the loan; cross-account repayment converts the original record to a Transfer. Existing negative Savings records can be explicitly reclassified without changing balances.
+- **Receivables Pasabuy editing:** Edit Pasabuy details without changing hidden Expense fields, select Income and Expense receivables with mouse or keyboard, and apply Bulk Pasabuy to selected Expense receivables.
 - **Notifications section:** A new workspace section listing credit accounts whose statement due date is today (or tomorrow), unsettled credit transactions — Unpaid or Installment — whose expected payment date has arrived, and errors recorded by the app such as sync pull/push failures. Dismissing a reminder clears only that day's occurrence. Settings → Notifications turns the whole section on or off and controls whether tomorrow is included, the same way Chat is toggled.
 
 ### Changed
