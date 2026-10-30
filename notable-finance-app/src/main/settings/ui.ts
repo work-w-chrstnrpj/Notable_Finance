@@ -36,6 +36,7 @@ const DEFAULT_FONTS: UiFontSettings = {
 const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
   selectedDate: null,
   incomeViewMode: 'Monthly',
+  workflowViewMode: 'Monthly',
   expenseViewMode: 'Monthly',
   ccPeriod: 'Monthly',
   sidebarCollapsed: false,

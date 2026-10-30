@@ -43,10 +43,11 @@ describe('normalizeUiSettings', () => {
 
   it('keeps valid income view modes and filters', () => {
     const next = normalizeUiSettings({
-      workspace: { incomeViewMode: 'Weekly', selectedDate: '2026-01-15' },
+      workspace: { incomeViewMode: 'Weekly', workflowViewMode: 'All Records', selectedDate: '2026-01-15' },
       incomeFilters: { accountId: 'acc-1', filterActive: true, groupBy: 'category' }
     })
     expect(next.workspace.incomeViewMode).toBe('Weekly')
+    expect(next.workspace.workflowViewMode).toBe('All Records')
     expect(next.workspace.selectedDate).toBe('2026-01-15')
     expect(next.incomeFilters.accountId).toBe('acc-1')
     expect(next.incomeFilters.groupBy).toBe('category')

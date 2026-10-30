@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: UiSettings = {
   workspace: {
     selectedDate: null,
     incomeViewMode: "Monthly",
+    workflowViewMode: "Monthly",
     expenseViewMode: "Monthly",
     sidebarCollapsed: false,
     showFab: true,
