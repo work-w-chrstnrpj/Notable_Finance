@@ -7,7 +7,7 @@ import type { FinanceSectionId } from "@/types/finance";
 
 const VALID_SECTIONS: FinanceSectionId[] = [
   "dashboard", "accounts", "income", "expense", "monthly-monitoring",
-  "transfer", "credit-card-payment", "alkansya", "receivables", "history", "sync", "chat", "dev-logs", "settings",
+  "transfer", "credit-card-payment", "alkansya", "receivables", "notifications", "history", "sync", "chat", "dev-logs", "settings",
 ];
 
 export function parseSection(hrefOrHash: string): FinanceSectionId {

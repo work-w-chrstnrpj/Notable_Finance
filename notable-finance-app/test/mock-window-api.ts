@@ -115,6 +115,10 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
       get: vi.fn(async () => ok(DEFAULT_SETTINGS)),
       update: vi.fn(async (patch) => ok({ ...DEFAULT_SETTINGS, ...patch }))
     },
+    notifications: {
+      inbox: vi.fn(async () => ok({ errors: [], dismissedIds: [] })),
+      dismiss: vi.fn(async () => ok({ errors: [], dismissedIds: [] }))
+    },
     chat: {
       status: vi.fn(async () => (err('E_UNMOCKED', 'chat.status not mocked'))),
       providers: vi.fn(async () => ok([])),

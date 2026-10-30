@@ -20,6 +20,7 @@ import { IncomePage } from "@/components/pages/income";
 import { ExpensePage } from "@/components/pages/expense";
 import { MonthlyMonitoringPage } from "@/components/pages/monitoring";
 import { WorkflowPage } from "@/components/pages/workflow";
+import { NotificationsPage } from "@/components/pages/notifications";
 import { HistoryPage } from "@/components/pages/history";
 import { SyncPage } from "@/components/pages/sync";
 import { Toast } from "@/components/ui/toast";
@@ -85,6 +86,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   // If Chat / Dev Logs disabled while on that section, bounce back to last finance section.
   useEffect(() => {
     if (!settingsReady) return;
+    if (activeSection === "notifications" && !settings.notificationsEnabled) navigate("/dashboard");
     if (activeSection === "chat" && !chatEnabled) {
       navigate(
         `/${settings.workspace.lastSection !== "chat" ? settings.workspace.lastSection || "dashboard" : "dashboard"}`,
@@ -104,6 +106,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     chatEnabled,
     devModeEnabled,
     settingsReady,
+    settings.notificationsEnabled,
     settings.workspace.lastSection,
   ]);
 
@@ -337,6 +340,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
               />
             </ErrorBoundary>
           )}
+          {activeSection === "notifications" && settings.notificationsEnabled && <ErrorBoundary sectionLabel="Notifications"><NotificationsPage /></ErrorBoundary>}
           {activeSection === "history" && (
             <ErrorBoundary sectionLabel="History">
               <HistoryPage />

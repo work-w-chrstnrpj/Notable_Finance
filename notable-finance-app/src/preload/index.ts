@@ -52,6 +52,7 @@ import type {
   UpdateSchedulerInput,
   UiSettings
 } from '../shared/finance.types'
+import type { NotificationInbox } from '../shared/notifications'
 import { IPC_CHANNELS } from '../shared/ipc-channels'
 
 // Preload — the ONLY bridge between the sandboxed renderer and main. Channels are
@@ -61,6 +62,7 @@ import { IPC_CHANNELS } from '../shared/ipc-channels'
 // is a compile error here and in main/ipc/*, not a runtime "no handler registered".
 
 const EVENT_CHANNELS: EventChannel[] = [
+  'notifications:changed',
   'records:changed',
   'derived:updated',
   'sync:status',
@@ -222,6 +224,17 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.settingsUpdate, patch)
   },
 
+  /**
+   * Notification inbox: errors recorded by main, plus the ids of due reminders the user
+   * has already dismissed. Due reminders themselves are derived in the renderer.
+   */
+  notifications: {
+    inbox: (): Promise<ApiResult<NotificationInbox>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.notificationsInbox),
+    dismiss: (id: string): Promise<ApiResult<NotificationInbox>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.notificationsDismiss, id)
+  },
+
   chat: {
     status: (opts?: { forceRefresh?: boolean }): Promise<ApiResult<ChatStatusDto>> =>
       ipcRenderer.invoke(IPC_CHANNELS.chatStatus, opts),
@@ -324,7 +337,7 @@ const api = {
    * (call it on unmount). Only the allow-listed event channels work.
    * Payload shape per channel: records:changed → RecordsChangedEvent,
    * sync:status → SyncStatus, derived:updated → {},
-   * devLogs:entry → DevLogEntry.
+   * devLogs:entry → DevLogEntry, notifications:changed → {}.
    */
   on: (channel: EventChannel, handler: (payload: unknown) => void): (() => void) => {
     if (!EVENT_CHANNELS.includes(channel)) {

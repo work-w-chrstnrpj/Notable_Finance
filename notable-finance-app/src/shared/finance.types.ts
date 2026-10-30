@@ -503,6 +503,9 @@ export interface UiSettings {
   hardDeleteEnabled: boolean
   /** When true, Chat appears in Main UI and Chat mode can open. Default false. */
   chatEnabled: boolean
+  /** Show Notifications in the workspace. Due reminders include tomorrow by default. */
+  notificationsEnabled: boolean
+  notificationsIncludeTomorrow: boolean
   /** macOS: prefer Apple Intelligence for read-only Q&A when adapter exists (6.5). */
   chatPreferAppleReadOnly: boolean
   /** Default model id for new chat threads. */
@@ -797,6 +800,7 @@ export interface RecordsChangedEvent {
 }
 
 export type EventChannel =
+  | 'notifications:changed'
   | 'records:changed'
   | 'derived:updated'
   | 'sync:status'

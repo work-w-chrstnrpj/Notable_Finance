@@ -14,6 +14,12 @@ This is the desktop analog of the web app's HTTP API specification.
 
 ## Namespaces (request/response)
 
+### Root methods
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `ping()` | `'pong'` | Quick liveness check. |
+| `health()` | `HealthData` | DB status, tables, and connection health. |
+
 ### `window.api.accounts`
 | Method | Returns | Notes |
 | --- | --- | --- |
@@ -26,6 +32,7 @@ Accounts/categories are read-only reference — no create/update/delete.
 | Method | Returns |
 | --- | --- |
 | `list(params)` | `IncomeRecord[]` (scoped by view/month) |
+| `get(id)` | `IncomeRecord` |
 | `create(dto)` | `IncomeRecord` (instant local write, `dirty`) |
 | `update(id, dto)` | `IncomeRecord` |
 | `softDelete(id)` | `IncomeRecord` (title rewrite + amount cleared) |
@@ -35,7 +42,7 @@ Accounts/categories are read-only reference — no create/update/delete.
 
 For the Expense **To Pay** form, create/update accepts `viewMode: "To pay"`: description, account, category, purchase date, date paid, and amount may be left blank (blank amount becomes zero). Supplied numbers must remain finite and supplied dates must use ISO format. Empty account/category/purchase-date inputs are stored as `NULL` and push as cleared Notion properties. Normal expense forms retain their required fields. Notion imports always accept incomplete records regardless of the current view.
 
-`list(params)`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields). List params include `paymentStatus` (`Paid` | `Unpaid` | `Installment` | `Cancelled`) alongside account/category/pasabuyer/view-mode filters.
+`list(params)`, `listForCCCoverage()`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)` — expense DTO adapts by account/category (credit-card, Pasabuy fields). `listForCCCoverage()` returns credit-card expenses eligible to be covered by CC Payment. List params include `paymentStatus` (`Paid` | `Unpaid` | `Installment` | `Cancelled`) alongside account/category/pasabuyer/view-mode filters.
 
 ### `window.api.expenseScheduler`
 `list()`, `create(dto)`, `update(id, dto)`, `softDelete(id)`, `hardDelete(id)`, `generate(id)` (materialize a scheduled expense).
@@ -45,27 +52,36 @@ For the Expense **To Pay** form, create/update accepts `viewMode: "To pay"`: des
 | --- | --- | --- |
 | `dashboard(month)` | `DashboardSummary` | Computed locally from scoped records. |
 | `monthlyMonitoring(month)` | `MonthlyMonitoring` | Computed locally. |
+| `monitoringSplit(opts?)` | `MonitoringSplitDto` | Live split breakdown (needs, wants, savings). |
 
 ### `window.api.categories`
-`incomeCategories(params)`, `expenseCategories(params)` — read-only selectors.
+`incomeCategories(params)`, `expenseCategories(params)`, `pasabuyers()` — read-only selectors.
 
 ### `window.api.history`
 | Method | Returns | Notes |
 | --- | --- | --- |
 | `get(runs?)` | `HistoryData` | Unsynced items (dirty/conflict, incl. soft deletes + pending hard-deletes) derived live, plus `activity_log` events from the last `runs` sync passes (default 2) with status + direction, and last pull/push timestamps. |
 | `discardUnsynced(resource, id)` | `true` | Cancel a never-synced create, or restore the last synced state for an unsynced edit/soft-delete/hard-delete (drops Notion-trash intent). |
+| `getItemDetail(resource, id)` | `Record<string, unknown> \| null` | Full writable payload for a synced or unsynced record (for read-only form modals). |
+
+### `window.api.windows`
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `new()` | `true` | Opens a new application window. |
 
 ### `window.api.sync`
 | Method | Returns | Notes |
 | --- | --- | --- |
 | `status()` | `SyncStatus` | mode, interval, last push/pull, dirty count, conflict count, online. |
-| `now()` | `SyncNowResult` | Full sync: pull then push. |
-| `pull()` | `PullResult` | Notion → App only (incremental). |
+| `now(since?)` | `SyncNowResult` | Full sync: reconcile (pull) then push. |
+| `pull(since?)` | `PullResult` | Notion → App only (incremental). |
 | `push()` | `PushResult` | App → Notion only (dirty records). |
 | `initialPull()` | `PullResult` | Full pull (onboarding). |
+| `reset()` | `PullResult` | Wipe all local finance data and re-pull from Notion. |
 | `setMode({ mode, intervalSeconds })` | `SyncSettings` | `manual` \| `auto`. |
-| `listConflicts()` | `Conflict[]` | Unresolved conflicts. |
-| `resolveConflict(id, resolution)` | `Conflict` | `resolution`: per-field `local`/`remote` choices, or `keepLocal`/`keepRemote`. |
+| `listConflicts()` | `ConflictGroup[]` | Unresolved conflicts. |
+| `resolveConflict(table, id, resolution)` | `ConflictGroup[]` | `resolution`: per-field `local`/`remote` choices, or `keepLocal`/`keepRemote`. |
+| `resolveAllConflicts(resolution)` | `ConflictGroup[]` | Bulk resolution: `'local'` or `'remote'`. |
 
 ### `window.api.notion` (onboarding)
 | Method | Returns | Notes |
@@ -102,10 +118,13 @@ Overlays change tone only — never amounts, never finance delete, never auto-Ap
 | `deleteAllThreads()` | `true` | Clears conversation history only (not finance records). Allowed when Chat is off. |
 | `listMessages(threadId)` | `ChatMessageDto[]` | Requires Chat enabled. |
 | `send({ threadId?, content, credentialId?, modelId?, overlay? })` | `ChatSendResult` | BYOK agent loop **or** Apple FM read-only turn for ask skills (tools → prompt → on-device summarize). Slash tokens / `overlay` set persona. Returns optional `drafts[]` for confirm cards. Finance delete refused. Write skills without BYOK error with “Select an API credential for writes.” |
+| `shareReply(text)` | `true` | Native OS share sheet (macOS) or clipboard fallback for assistant replies. |
 | `listDrafts(threadId?)` | `ChatDraftDto[]` | Pending `needs_input` / `ready` drafts. |
 | `updateDraft(draftId, edits)` | `ChatDraftDto` | Applies user edits from the confirm card, re-runs the original `propose*` validator in place (same id), and re-derives `missingRequired` / `status`. `edits` uses unified keys (`name`, `amount`, `date`, `accountId`, `categoryId`, `transactedAccountId`, plus expense/CC/Pasabuy fields); the validator maps them per resource. Rejects `applied` / `cancelled` drafts and non-editable kinds. |
 | `confirmDraft(draftId)` | `ChatConfirmResult` | Applies create/update when draft is complete **and** at least one BYOK credential exists; optional `quip`; broadcasts `records:changed`. Rejects incomplete / Apple-only / delete. |
 | `cancelDraft(draftId)` | `ChatDraftDto & { quip? }` | Discards draft; no finance write; optional cancel ack. |
+| `remoteModels(credentialId)` | `{ id, label, free? }[]` | Fetches live model list from provider using saved credential. |
+| `detectProvider(apiKey)` | `string \| null` | Sniffs provider type from API key format prefix (e.g. `gsk_`, `AIzaSy`). |
 
 ### `window.api.backup` (Phase 7.2 — local database backup & restore)
 Single-file SQLite snapshots of all local data (incomes, expenses, accounts, budgets, chat
@@ -117,6 +136,36 @@ safeStorage vault files and are **never** exported.
 | `export(opts?: { path? })` | `BackupExportResult` | Save dialog when no path; `VACUUM INTO` snapshot stamped with app version, export time, row counts (`backup.meta` in `app_settings`). |
 | `inspect(opts?: { path? })` | `BackupInspectResult` | Open dialog when no path; validates SQLite header + required tables; reads meta. Never touches the live DB. |
 | `import(path)` | `BackupImportResult` | Closes the live connection, swaps the file, clears stale WAL/SHM, re-inits (additive migrations). Refuses files from a newer app version and the live file itself. Renderer reloads the window after success. |
+
+### `window.api.updater` (Auto-Updates)
+GitHub Releases integration via `electron-updater`.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `check()` | `UpdaterCheckResult` | Checks GitHub Releases for a newer version; downloads automatically if found. |
+| `status()` | `{ updateDownloaded: boolean }` | Reports whether a downloaded update is waiting to be installed. |
+| `install()` | `true` | Calls `quitAndInstall()` to restart and apply the downloaded update. |
+
+### `window.api.pageContent` (Record Page Content / Notes)
+A record's Notion page body (block children), edited local-first as Markdown. Dirty flag (`page_content_dirty`) drives push.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `get(resource, id)` | `PageContentDto` | Fetches local markdown content for an income or expense record. |
+| `save(resource, id, markdown)` | `PageContentDto` | Saves markdown locally, marks `page_content_dirty=1` for push. |
+| `clear(resource, id)` | `PageContentDto` | Clears page content locally and queues removal for push. |
+
+### `window.api.notifications` (Workspace Notifications)
+The notification inbox persisted in `app_settings` under `notifications.inbox`: errors recorded by main (IPC throws, sync pull/push failures) plus the ids of due reminders the user dismissed. Due reminders themselves are derived in the renderer from the accounts/expenses it already holds, reusing the expected-payment-date formula, so main stores no duplicate schedule.
+
+| Method | Returns | Notes |
+| --- | --- | --- |
+| `inbox()` | `NotificationInbox` | Recorded errors (newest first, max 100) and dismissed reminder ids. |
+| `dismiss(id)` | `NotificationInbox` | Removes an error, or records a dismissal for an `account:<id>:<date>` / `expense:<id>:<date>` reminder. Rejects ids outside that shape. |
+
+Error messages are redacted before they are stored: bearer tokens, API keys, URLs, response bodies, email addresses, and local paths are stripped, and the text is capped at 500 characters.
+
+Event: `notifications:changed` — fired after an error is recorded or a notification is dismissed.
 
 ### `window.api.devLogs` (Dev Mode)
 In-memory debug ring buffer (max 500). **Never persisted to SQLite.** Cleared on app quit or when `devModeEnabled` turns off. Logging is active only while Settings → Developer → Dev Mode is on.
@@ -139,6 +188,10 @@ Event: `devLogs:entry` — live stream of each new `DevLogEntry` to all windows.
 | `derived:updated` | `{ accounts?, categories? }` | Derived values recomputed → live balances/budgets. |
 | `tabs:command` | `{ action: 'new' \| 'close' \| 'next' \| 'prev' }` | Focused window only — File/Window menu accelerators for in-window tabs. |
 | `devLogs:entry` | `DevLogEntry` | Dev Mode — each new in-memory log line (all windows). |
+| `notifications:changed` | `{}` | An error was recorded or a notification dismissed → Notifications refetches the inbox. |
+| `shortcut:menu` | `string` | Native application menu shortcut triggered. |
+| `updater:progress` | `{ percent: number }` | Background update download progress percentage. |
+| `updater:manual-download` | `{ version: string, url: string }` | Update notification when auto-install cannot proceed automatically. |
 
 Renderer subscribes via `window.api.on(channel, handler)` and unsubscribes on unmount.
 

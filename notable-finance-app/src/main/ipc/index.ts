@@ -3,6 +3,7 @@ import { registerSyncIpc } from './sync'
 import { registerNotionIpc } from './notion'
 import { registerChatIpc } from './chat'
 import { registerSettingsIpc } from './settings'
+import { registerNotificationsIpc } from './notifications'
 import { registerUpdaterIpc } from './updater'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
@@ -18,5 +19,6 @@ export function registerIpc(): void {
   registerNotionIpc()
   registerChatIpc()
   registerSettingsIpc()
+  registerNotificationsIpc()
   registerUpdaterIpc()
 }

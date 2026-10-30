@@ -3,6 +3,7 @@
 import { getSyncSettings } from './settings'
 import { syncStatus } from './status'
 import { syncNow } from './index'
+import { recordNotificationError } from '../services/notification-errors'
 
 let timer: NodeJS.Timeout | null = null
 
@@ -10,9 +11,13 @@ async function tick(): Promise<void> {
   const s = syncStatus()
   if (!s.connected || !s.mapped || !s.online || s.running) return
   try {
-    await syncNow()
-  } catch {
-    // Failures surface via status.lastError; the next tick retries.
+    const out = await syncNow()
+    for (const message of [...out.pull.errors, ...out.push.errors].slice(0, 5)) {
+      recordNotificationError('sync:auto', message)
+    }
+  } catch (error) {
+    // Failures surface via status.lastError and Notifications; the next tick retries.
+    recordNotificationError('sync:auto', error instanceof Error ? error.message : String(error))
   }
 }
 

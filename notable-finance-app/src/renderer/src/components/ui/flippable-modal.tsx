@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useState, useEffect, useId, useRef } from "react";
-import { Copy, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { Copy, Info, Pencil, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { PageContentPanel } from "./page-content-panel";
 import type { ModalState } from "./form-modals";
@@ -98,20 +98,17 @@ function FlippableModal({
             <h2 id={titleId}>{modal.title}</h2>
             <p>{editing ? subtitle : "Read-only. Choose Edit to make changes on this device."}</p>
           </div>
-          <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose} disabled={saving}>
-            <X size={17} />
-          </button>
-        </div>
-        {hasPageContent && (
-          <div className="record-dialog__sections" role="group" aria-label="Record sections">
-            <button type="button" className="button" aria-pressed={!showContent} onClick={() => setShowContent(false)}>
-              Details
-            </button>
-            <button type="button" className="button" aria-pressed={showContent} onClick={() => setShowContent(true)}>
-              Page content
+          <div className="modal-header-actions">
+            {hasPageContent && <button type="button"
+              className={cx('icon-button', showContent && 'record-dialog__info--active')}
+              aria-label="Page information" aria-pressed={showContent}
+              title={showContent ? 'Show record details' : 'Show page content'}
+              disabled={saving} onClick={() => setShowContent((shown) => !shown)}><Info size={18} /></button>}
+            <button type="button" className="icon-button" aria-label="Close modal" onClick={onClose} disabled={saving}>
+              <X size={17} />
             </button>
           </div>
-        )}
+        </div>
         <div className="modal-panel__body">
           <div hidden={showContent && hasPageContent}>
             <fieldset className="modal-fieldset" disabled={!editing || saving}>{children}</fieldset>

@@ -172,19 +172,24 @@ export function useIncomes(params?: {
 
 // ── Expense hooks ─────────────────────────────────────────────────────
 
-export function useExpenses(params?: {
-  month?: string;
-  rangeStart?: string;
-  rangeEnd?: string;
-  categoryId?: string;
-  accountId?: string;
-  paymentStatus?: string;
-  pasabuyStatus?: string;
-  expenseViewMode?: string;
-  pasabuyer?: string;
-}) {
-  return useApiQuery<ExpenseRecord[]>(["expenses", params ?? {}], () =>
-    expensesApi.list(params),
+export function useExpenses(
+  params?: {
+    month?: string;
+    rangeStart?: string;
+    rangeEnd?: string;
+    categoryId?: string;
+    accountId?: string;
+    paymentStatus?: string;
+    pasabuyStatus?: string;
+    expenseViewMode?: string;
+    pasabuyer?: string;
+  },
+  options?: { enabled?: boolean },
+) {
+  return useApiQuery<ExpenseRecord[]>(
+    ["expenses", params ?? {}],
+    () => expensesApi.list(params),
+    { enabled: options?.enabled ?? true },
   );
 }
 

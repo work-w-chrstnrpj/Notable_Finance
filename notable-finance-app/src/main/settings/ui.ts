@@ -88,6 +88,8 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
 export const DEFAULT_UI_SETTINGS: UiSettings = {
   hardDeleteEnabled: false,
   chatEnabled: false,
+  notificationsEnabled: true,
+  notificationsIncludeTomorrow: true,
   chatPreferAppleReadOnly: false,
   chatDefaultModel: 'gpt-4o-mini',
   devModeEnabled: false,
@@ -265,6 +267,8 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
   return {
     hardDeleteEnabled: r.hardDeleteEnabled === true,
     chatEnabled: r.chatEnabled === true,
+    notificationsEnabled: r.notificationsEnabled !== false,
+    notificationsIncludeTomorrow: r.notificationsIncludeTomorrow !== false,
     chatPreferAppleReadOnly: r.chatPreferAppleReadOnly === true,
     chatDefaultModel:
       typeof r.chatDefaultModel === 'string' && r.chatDefaultModel.trim()
@@ -297,6 +301,8 @@ export function getUiSettings(): UiSettings {
 export function setUiSettings(patch: Partial<{
   hardDeleteEnabled: boolean
   chatEnabled: boolean
+  notificationsEnabled: boolean
+  notificationsIncludeTomorrow: boolean
   chatPreferAppleReadOnly: boolean
   chatDefaultModel: string
   devModeEnabled: boolean
@@ -314,6 +320,8 @@ export function setUiSettings(patch: Partial<{
     hardDeleteEnabled:
       patch.hardDeleteEnabled === undefined ? current.hardDeleteEnabled : patch.hardDeleteEnabled,
     chatEnabled: patch.chatEnabled === undefined ? current.chatEnabled : patch.chatEnabled,
+    notificationsEnabled: patch.notificationsEnabled ?? current.notificationsEnabled,
+    notificationsIncludeTomorrow: patch.notificationsIncludeTomorrow ?? current.notificationsIncludeTomorrow,
     chatPreferAppleReadOnly:
       patch.chatPreferAppleReadOnly === undefined
         ? current.chatPreferAppleReadOnly

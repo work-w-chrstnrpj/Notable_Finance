@@ -13,6 +13,8 @@ import type { UiSettings } from "../../../shared/finance.types";
 export const DEFAULT_SETTINGS: UiSettings = {
   hardDeleteEnabled: false,
   chatEnabled: false,
+  notificationsEnabled: true,
+  notificationsIncludeTomorrow: true,
   chatPreferAppleReadOnly: false,
   chatDefaultModel: "gpt-4o-mini",
   devModeEnabled: false,
@@ -63,6 +65,8 @@ export const DEFAULT_SETTINGS: UiSettings = {
 type UiSettingsPatch = {
   hardDeleteEnabled?: boolean;
   chatEnabled?: boolean;
+  notificationsEnabled?: boolean;
+  notificationsIncludeTomorrow?: boolean;
   chatPreferAppleReadOnly?: boolean;
   chatDefaultModel?: string;
   devModeEnabled?: boolean;
@@ -149,6 +153,14 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
           : patch.hardDeleteEnabled === true,
       chatEnabled:
         patch.chatEnabled === undefined ? prev.chatEnabled : patch.chatEnabled === true,
+      notificationsEnabled:
+        patch.notificationsEnabled === undefined
+          ? prev.notificationsEnabled
+          : patch.notificationsEnabled === true,
+      notificationsIncludeTomorrow:
+        patch.notificationsIncludeTomorrow === undefined
+          ? prev.notificationsIncludeTomorrow
+          : patch.notificationsIncludeTomorrow === true,
       chatPreferAppleReadOnly:
         patch.chatPreferAppleReadOnly === undefined
           ? prev.chatPreferAppleReadOnly

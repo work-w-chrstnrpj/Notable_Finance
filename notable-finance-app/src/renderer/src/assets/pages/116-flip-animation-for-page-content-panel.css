@@ -1,8 +1,7 @@
 /* Shared record dialog: explicit sections, stable footer, theme-owned typography. */
 .record-dialog { width: min(680px, 100%); max-height: calc(100vh - 48px); display: flex; flex-direction: column; }
 .record-dialog .modal-panel__body { min-height: 0; overflow-y: auto; }
-.record-dialog__sections { display: flex; gap: 8px; padding: 0 24px 16px; }
-.record-dialog__sections [aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.record-dialog__info--active { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
 .record-dialog__hint { padding: 0 24px 16px; margin: 0; color: var(--ink-muted); font-size: 12px; }
 .record-dialog [hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .modal-backdrop, .modal-panel { animation: none; transition: none; } }

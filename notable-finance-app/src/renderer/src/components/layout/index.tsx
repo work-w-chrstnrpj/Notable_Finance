@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   ArrowUpDown,
   Banknote,
+  Bell,
   Bug,
   CalendarDays,
   ChevronLeft,
@@ -27,6 +28,7 @@ import { cx } from "@/lib/finance-helpers";
 import styles from "./index.module.css";
 import { userInitials } from "@/lib/avatar";
 import { useUiSettings } from "@/lib/ui-settings-context";
+import { useNotificationCount } from "@/lib/use-notifications";
 import { DateRangeSelector } from "@/components/ui/date-range";
 import { ConnectivityIndicator } from "@/components/ui/connectivity-indicator";
 import { ShortcutHint, SECTION_SHORTCUT_ID } from "@/components/shortcuts";
@@ -50,6 +52,7 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
   "credit-card-payment": CreditCard,
   alkansya: PiggyBank,
   receivables: Banknote,
+  notifications: Bell,
   history: History,
   sync: RefreshCw,
   chat: MessageSquare,
@@ -122,12 +125,14 @@ function Sidebar({
   onNavigate?: () => void;
 }) {
   const { user } = useAuth();
-  const { chatEnabled, devModeEnabled } = useUiSettings();
+  const { chatEnabled, devModeEnabled, settings } = useUiSettings();
   const conflictCount = useConflictCount();
   const dirtyCount = useDirtyCount();
+  const notificationCount = useNotificationCount();
   const sectionBadges: Partial<Record<FinanceSectionId, number>> = {
     sync: conflictCount,
     history: dirtyCount,
+    notifications: notificationCount,
   };
   const groupedSections = useMemo(
     () => ({
@@ -137,10 +142,11 @@ function Sidebar({
         (section) =>
           section.group === "system" &&
           (section.id !== "chat" || chatEnabled) &&
+          (section.id !== "notifications" || settings.notificationsEnabled) &&
           (section.id !== "dev-logs" || devModeEnabled),
       ),
     }),
-    [chatEnabled, devModeEnabled],
+    [chatEnabled, devModeEnabled, settings.notificationsEnabled],
   );
   const initials = userInitials(user?.name, user?.email);
 

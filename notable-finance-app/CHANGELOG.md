@@ -5,6 +5,17 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-10-30
+
+### Added
+
+- **Notifications section:** A new workspace section listing credit accounts whose statement due date is today (or tomorrow), unsettled credit transactions — Unpaid or Installment — whose expected payment date has arrived, and errors recorded by the app such as sync pull/push failures. Dismissing a reminder clears only that day's occurrence. Settings → Notifications turns the whole section on or off and controls whether tomorrow is included, the same way Chat is toggled.
+
+### Changed
+
+- **Record dialog:** Expense and Income records open on Details. The Details / Page content buttons are replaced by an information icon in the dialog header that highlights while page content is shown and returns to Details when clicked again.
+- **Expense category filter:** Pasabuy now sits directly below "W/out Pasabuy" at the top of the list.
+
 ## [2.3.1] - 2026-10-30
 
 ### Fixed

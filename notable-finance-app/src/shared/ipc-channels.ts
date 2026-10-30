@@ -62,6 +62,8 @@ export const IPC_CHANNELS = {
   incomesList: 'incomes:list',
   incomesSoftDelete: 'incomes:softDelete',
   incomesUpdate: 'incomes:update',
+  notificationsDismiss: 'notifications:dismiss',
+  notificationsInbox: 'notifications:inbox',
   notionConnect: 'notion:connect',
   notionDisconnect: 'notion:disconnect',
   notionDiscoverDatabases: 'notion:discoverDatabases',

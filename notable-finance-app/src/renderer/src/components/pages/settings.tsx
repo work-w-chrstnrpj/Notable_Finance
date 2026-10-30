@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
+import { Bell, CalendarClock, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
@@ -36,7 +36,7 @@ function SettingsPage({
   const [modal, setModal] = useState<SettingsModalKind>(null);
   useTheme();
   const { user } = useAuth();
-  const { chatEnabled, setChatEnabled, devModeEnabled, setDevModeEnabled } = useUiSettings();
+  const { chatEnabled, setChatEnabled, devModeEnabled, setDevModeEnabled, settings, updateSettings } = useUiSettings();
   const { openCheat } = useShortcuts();
   const initials = userInitials(user?.name, user?.email);
 
@@ -145,6 +145,62 @@ function SettingsPage({
             <Keyboard size={16} />
             View shortcuts
           </button>
+        </div>
+      </Panel>
+      <Panel title="Notifications">
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Workspace notifications</p>
+            <p className="settings-toggle__hint">
+              Show the Notifications section: credit-account due dates, unsettled credit
+              transactions that have reached their expected payment date, and recorded errors.
+            </p>
+            <label
+              className={cx("switch", settings.notificationsEnabled && "switch--on")}
+              aria-label="Show Notifications"
+              style={{ marginTop: "0.75rem" }}
+            >
+              <input
+                type="checkbox"
+                checked={settings.notificationsEnabled}
+                onChange={(e) => void updateSettings({ notificationsEnabled: e.target.checked })}
+              />
+              <span className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+            </label>
+          </div>
+          <Bell size={16} />
+        </div>
+        <div className="settings-row">
+          <div>
+            <p className="settings-toggle__title">Include tomorrow</p>
+            <p className="settings-toggle__hint">
+              Remind one day ahead as well. Turn this off to see only what is due today.
+            </p>
+            <label
+              className={cx(
+                "switch",
+                settings.notificationsIncludeTomorrow && "switch--on",
+                !settings.notificationsEnabled && "switch--disabled",
+              )}
+              aria-label="Include tomorrow in due reminders"
+              style={{ marginTop: "0.75rem" }}
+            >
+              <input
+                type="checkbox"
+                checked={settings.notificationsIncludeTomorrow}
+                disabled={!settings.notificationsEnabled}
+                onChange={(e) =>
+                  void updateSettings({ notificationsIncludeTomorrow: e.target.checked })
+                }
+              />
+              <span className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+            </label>
+          </div>
+          <CalendarClock size={16} />
         </div>
       </Panel>
       <Panel title="AI / Chat">

@@ -16,6 +16,7 @@ import { reschedule } from '../sync/scheduler'
 import { exportBackup, importBackup, inspectBackup } from '../services/backup'
 import { broadcast } from '../windows'
 import { logDevOperation } from '../dev-logs/store'
+import { recordNotificationError } from '../services/notification-errors'
 import { handle } from './handle'
 import { result } from './shared'
 
@@ -23,12 +24,39 @@ import { result } from './shared'
  * Notion sync (push/pull/reconcile), conflict resolution, and local database backup/restore.
  * refactor_development_plan.md Phase 7.1 — pure move out of ipc/index.ts, unchanged.
  */
+/**
+ * A pull/push pass reports its failures in an `errors` array rather than throwing, so
+ * surface them in Notifications here — the one place every sync entry point passes through.
+ */
+function reportSyncErrors(source: string, errors: string[]): void {
+  for (const message of errors.slice(0, 5)) recordNotificationError(source, message)
+}
+
 export function registerSyncIpc(): void {
   // sync (Phase 2.3 push + Phase 3 pull + Phase 4 reconcile)
   handle(IPC_CHANNELS.syncStatus, () => result(() => syncStatus()))
-  handle(IPC_CHANNELS.syncNow, (_e, since?: string) => result(() => syncNow(since))) // reconcile (pull) then push
-  handle(IPC_CHANNELS.syncPull, (_e, since?: string) => result(() => pullAll(false, since))) // Notion → App only
-  handle(IPC_CHANNELS.syncPush, () => result(() => pushAll())) // App → Notion only
+  handle(IPC_CHANNELS.syncNow, (_e, since?: string) =>
+    result(async () => {
+      const out = await syncNow(since) // reconcile (pull) then push
+      reportSyncErrors('sync:pull', out.pull.errors)
+      reportSyncErrors('sync:push', out.push.errors)
+      return out
+    })
+  )
+  handle(IPC_CHANNELS.syncPull, (_e, since?: string) =>
+    result(async () => {
+      const out = await pullAll(false, since) // Notion → App only
+      reportSyncErrors('sync:pull', out.errors)
+      return out
+    })
+  )
+  handle(IPC_CHANNELS.syncPush, () =>
+    result(async () => {
+      const out = await pushAll() // App → Notion only
+      reportSyncErrors('sync:push', out.errors)
+      return out
+    })
+  )
 
   // Local database backup / restore (Phase 7.2) — import swaps the live file,
   // so the renderer reloads its window after a successful import.
@@ -56,7 +84,13 @@ export function registerSyncIpc(): void {
     })
   )
 
-  handle(IPC_CHANNELS.syncInitialPull, () => result(() => pullAll(true))) // full pull (onboarding)
+  handle(IPC_CHANNELS.syncInitialPull, () =>
+    result(async () => {
+      const out = await pullAll(true) // full pull (onboarding)
+      reportSyncErrors('sync:initialPull', out.errors)
+      return out
+    })
+  )
   handle(IPC_CHANNELS.syncReset, () => result(() => resetDatabase())) // wipe local + re-pull
   handle(IPC_CHANNELS.syncGetSettings, () => result(() => getSyncSettings()))
   handle(IPC_CHANNELS.syncSetMode, (_e, patch: Partial<SyncSettings>) =>

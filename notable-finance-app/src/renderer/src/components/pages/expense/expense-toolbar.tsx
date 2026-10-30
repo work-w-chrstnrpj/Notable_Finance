@@ -11,7 +11,7 @@ import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
-import { pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
+import { isPasabuyCategoryName, pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
 import { expenseCategoryFilterWithoutPasabuy, type AnnualGroupBy } from "@/components/constants";
 import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance";
 
@@ -161,7 +161,11 @@ export function ExpenseToolbar({
                   onChange={setExpenseCategoryFilter}
                   items={[
                     { id: expenseCategoryFilterWithoutPasabuy, label: "W/out Pasabuy" },
-                    ...expenseCategories.map((category) => ({
+                    // Pasabuy sits directly under "W/out Pasabuy"; the rest keep their order.
+                    ...[
+                      ...expenseCategories.filter((category) => isPasabuyCategoryName(category.name)),
+                      ...expenseCategories.filter((category) => !isPasabuyCategoryName(category.name)),
+                    ].map((category) => ({
                       id: category.id,
                       label: category.name,
                       icon: <CategoryIcon icon={category.icon} />,

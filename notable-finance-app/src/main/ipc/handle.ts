@@ -1,5 +1,6 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { appendDevLog, summarizeForDevLog } from '../dev-logs/store'
+import { recordNotificationError } from '../services/notification-errors'
 import type { ApiResult } from '../../shared/finance.types'
 import type { IpcChannel } from '../../shared/ipc-channels'
 
@@ -49,6 +50,9 @@ export function handle<Args extends unknown[], R>(
       }
       return out
     } catch (error) {
+      // An unexpected throw (not a ValidationError, which `result()` turns into ok:false)
+      // is the kind of breakage the user should see in Notifications, not only in Dev Logs.
+      recordNotificationError(channel, error instanceof Error ? error.message : String(error))
       appendDevLog({
         kind: 'api',
         source: 'main',

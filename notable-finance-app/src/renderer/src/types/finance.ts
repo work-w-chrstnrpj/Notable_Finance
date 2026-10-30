@@ -31,6 +31,7 @@ export type FinanceSectionId =
   | "credit-card-payment"
   | "alkansya"
   | "receivables"
+  | "notifications"
   | "history"
   | "sync"
   | "chat"
