@@ -29,6 +29,7 @@ export const incomeTransactionOnlyFields = [
 
 export const auxiliaryIncomeCategoryLabels = [
   "IOU",
+  "Money Lent",
   "Transfer",
   "Old Income Logger",
   "Credit Card Payment",

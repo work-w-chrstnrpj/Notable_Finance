@@ -214,7 +214,7 @@ const APP_TOPICS: Record<string, string> = {
   alkansya:
     'Alkansya is the savings workflow (locked Savings-style category). Use the Alkansya page to log savings moves. Chat cannot delete records.',
   receivables:
-    'Receivables tracks money owed to you (income-backed, often without a receiving account). Use the Receivables workflow. Chat cannot delete records.',
+    'Receivables includes Money Lent loans, income entries without a receiving account, and outstanding paid Pasabuy. Use Receivables → Lend money for loans. Money Lent stores a negative amount against the source account but displays a positive amount owed. Record repayment supports full repayment: original account soft-deletes the loan; another account converts it to a Transfer. Negative Savings entries can be reclassified from Alkansya. Repayment must be recorded on the Receivables page; Chat cannot delete records.',
   pasabuy:
     'Pasabuy expenses track purchases you make for someone else (Pasabuyer, status, receiver). Use Expense with a Pasabuy category and Pasabuy payment status filters. Chat cannot delete records.',
   'soft delete':

@@ -93,3 +93,19 @@ Before release, open representative records in the packaged app and compare rece
 Desktop CI includes a Windows-specific job for the shared formula/form regression suites and Electron monthly installment tests. Exercise active synced accounts, monthly frequency, and blank/zero/nonzero BNPL adjustment in the built app. Assert Expense table and record-modal values, including Gross Price, Installment Amount, Paid Amount, Remaining Balance, Expected payment date, Pasabuy Received Amount and Pasabuyer Balance. Use isolated fixture data; never seed a user's profile.
 
 A passing Windows fixture test establishes behavior for those inputs only. It does not establish the values imported by another user's Notion mapping or their imported formula inputs. Keep affected-installation acceptance open until a representative actual record can be compared.
+
+## Money Lent regression coverage
+
+See [Money Lent verification](money-lent.md#verification). Run `npm test -- test/money-lent.test.ts test/page-extractors.test.ts src/renderer/src/components/pages/workflow.test.tsx` from `notable-finance-app/`; build and run `npx playwright test e2e/money-lent.spec.ts` for the three isolated Electron journeys. Full desktop lint/typecheck/Vitest/build remain required. Mocked sync verifies writable relation/sign parity and page identity; it does not establish live Notion acceptance.
+
+## Receivables Pasabuy editing and selection
+
+`src/renderer/src/components/pages/receivables-pasabuy.test.tsx` covers the in-place description/Pasabuy-only editor, sparse Expense updates, cancellation/errors, selectable mixed rows, header/keyboard select-all, child-checkbox keyboard isolation, resource-specific toolbar actions, Disable/Enable receipt totals, bulk field restrictions and partial-failure retries. Existing workflow, Expense form/formula and mass-edit tests cover shared-control regressions.
+
+`e2e/receivables-pasabuy.spec.ts` exercises the built Electron app against an isolated SQLite profile: focused edits preserve hidden Expense values, Space/Enter toggle checkboxes without opening details, header selection includes both record types, and Bulk Pasabuy settles selected Expense rows through the real preload/main path. No live user profile or Notion workspace is modified.
+
+Verified 2026-10-30: 383 Vitest tests passed (7 skipped) and all 47 Electron tests passed. Live Notion acceptance remains separate.
+
+### Money Lent category-picker and repayment UI regression
+
+The Money Lent suite now covers New Record → Categories → auxiliary Money Lent, switching a new draft back to a normal category, required distinct Transfer Account selection, Source Account preservation, and returning from transfer mode to same-account repayment. The cross-account Electron journey creates the loan through the regular category picker, then verifies in-place Transfer conversion and source/destination balances. Verified on 2026-10-30: 386 Vitest tests passed (7 skipped), six focused Money Lent/Receivables Electron journeys passed, and typecheck, lint (no errors), and build passed.

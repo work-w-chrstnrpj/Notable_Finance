@@ -37,6 +37,8 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
       expense: vi.fn(async () => ok([]))
     },
     incomes: {
+      repayMoneyLent: vi.fn(async () => err('E_UNMOCKED', 'incomes.repayMoneyLent not mocked')),
+      reclassifyMoneyLent: vi.fn(async () => err('E_UNMOCKED', 'incomes.reclassifyMoneyLent not mocked')),
       list: vi.fn(async () => ok([])),
       get: vi.fn(async () => (err('E_NOT_FOUND', 'not found'))),
       create: vi.fn(async () => (err('E_UNMOCKED', 'incomes.create not mocked'))),

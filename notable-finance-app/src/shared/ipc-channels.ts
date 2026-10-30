@@ -54,6 +54,8 @@ export const IPC_CHANNELS = {
   historyDiscardUnsynced: 'history:discardUnsynced',
   historyGet: 'history:get',
   historyGetItemDetail: 'history:getItemDetail',
+  incomesRepayMoneyLent: 'incomes:repayMoneyLent',
+  incomesReclassifyMoneyLent: 'incomes:reclassifyMoneyLent',
   incomesCreate: 'incomes:create',
   incomesGet: 'incomes:get',
   incomesHardDelete: 'incomes:hardDelete',

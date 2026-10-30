@@ -119,3 +119,27 @@ Code-signing/notarization, auto-update infra, shared-package extraction, webhook
 Phase 6 also excludes: auto-commit writes, chat-driven **finance** delete, Apple-backed write tool loops, MCP-as-required-runtime, and RAG-over-SQLite as the primary retrieval path (see design doc). Incomplete create/edit prompts must clarify required fields (including CC/Pasabuy/workflow fields) rather than inventing them. **Chat conversation** delete (thread / all history) is allowed and required.
 
 Phase 8 still excludes: a generic Notion path/body tool, sending the Notion token or raw DB to the model provider, dumping thousands of expenses into the prompt, treating Apple Intelligence as a multi-round investigator, and silent relation repair without a confirm card.
+
+## Money Lent — desktop follow-up (2026-10-30)
+
+| Work item | Acceptance | Status |
+| --- | --- | --- |
+| Money Lent entry and Receivables display | Existing Income/category storage; signed deduction with positive rows/totals/receipts; excluded from normal income | Implemented; automated checks passed (owner acceptance pending) |
+| Full repayment and explicit Savings reclassification | Same-account soft deletion, cross-account in-place Transfer, atomic validation/journal, balance-preserving reclassification | Implemented; three isolated Electron journeys passed |
+| Live workspace acceptance | Create/sync Money Lent reference category and confirm live Notion round trip | Manual acceptance pending |
+
+Details and verification: [Money Lent](money-lent.md). Full repayments only; no web implementation changes.
+
+## Receivables Pasabuy editing — desktop follow-up (2026-10-30)
+
+| Work item | Acceptance | Status |
+| --- | --- | --- |
+| Focused Pasabuy receivable editor | Description and shared Pasabuy controls only; sparse update of original Expense; stays in Receivables | Implemented; component and Electron checks passed |
+| Mixed-resource selection repair | Row/header/keyboard selection includes Expenses; checkbox keys do not open details; totals/receipt exclusions consistent | Implemented; component and Electron checks passed |
+| Bulk Pasabuy | Offered for all-Pasabuy Expense selections only; existing preset and Pasabuy field catalog; partial retries target only failed Expense IDs | Implemented; component and Electron checks passed |
+
+No database/IPC/schema change. Web app unchanged. Live Notion acceptance and owner review remain pending.
+
+### Money Lent usability fixes (2026-10-30)
+
+Receivables New Record now includes auxiliary Money Lent in Categories and switches to lending fields when chosen; normal Income still excludes it. Repayment explicitly chooses Same account or Transfer to another account, keeps the original account as read-only Source Account, requires a distinct Transfer Account, and previews the direction before **Convert to Transfer**. Source-account and signed-amount settlement rules are unchanged. Regression coverage includes the previously missed category-picker entry path.

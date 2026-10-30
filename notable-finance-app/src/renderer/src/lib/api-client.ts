@@ -129,6 +129,12 @@ const bulkCreateHelper = async <T>(items: unknown[], one: (item: unknown) => Pro
 };
 
 export const incomesApi = {
+  repayMoneyLent(id: string, input: import('@shared/money-lent').RepayMoneyLentInput) {
+    return adapt(nfApi().incomes.repayMoneyLent(id, input));
+  },
+  reclassifyMoneyLent(id: string) {
+    return adapt(nfApi().incomes.reclassifyMoneyLent(id));
+  },
   list(params?: IncomesListParams) {
     return adapt(nfApi().incomes.list({ ...params, view: "incomes" })) as Promise<ApiResult<IncomeRecord[]>>;
   },

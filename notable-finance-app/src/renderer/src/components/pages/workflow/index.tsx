@@ -4,6 +4,10 @@ import styles from "@/components/ui/filter-row.module.css";
 import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
 import { AccountIcon } from "@/components/ui/accounts";
 import { useRecordSearch } from "@/features/records/use-record-search";
+import { isMoneyLentCategory, isOutstandingMoneyLent, receivableAmount } from '@shared/money-lent';
+import { ReceivablePasabuyModal } from './receivable-pasabuy-modal';
+import { ReceivablePasabuyBulkModal } from './receivable-pasabuy-bulk-modal';
+import { MoneyLentRepayment } from './money-lent-repayment';
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
 import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar, FilterDropdown, SegmentedControl } from "@/components/ui";
@@ -22,17 +26,14 @@ import {
   stripNotionTag,
   parseNumberInput,
   getMonthLabel,
-  getIncomeGrossTotal,
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
 import { calculateCcCoveredExpenseAmount, getWorkflowFixedCategory } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
-import { alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
+import { incomesApi, alkansyaApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { useFabRegister, type ReceiptContext } from "@/lib/fab-export-context";
-import { navigate } from "@/lib/router";
-import { setPendingEdit } from "@/lib/pending-edit";
 import { computeRange, incomeModeToUnit, rangeLabel } from "@/lib/date-range";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
 import type { ExpenseRecord } from "@/types/finance";
@@ -52,6 +53,7 @@ function WorkflowPage({
 }) {
   const {
     activeAccounts,
+    allIncomeCategories,
     nonCreditActiveAccounts,
     creditActiveAccounts,
     normalIncomeCategories,
@@ -89,6 +91,16 @@ function WorkflowPage({
       : isAlkansya
         ? "Savings Amount"
         : "Gross Income";
+  const [pasabuyRecord, setPasabuyRecord] = useState<ExpenseRecord | null>(null);
+  const [bulkPasabuyIds, setBulkPasabuyIds] = useState<string[] | null>(null);
+  const [moneyLentMode, setMoneyLentMode] = useState(false);
+  const [repaymentRecord, setRepaymentRecord] = useState<IncomeRecord | null>(null);
+  const [reclassifyRecord, setReclassifyRecord] = useState<IncomeRecord | null>(null);
+  const moneyLentCategory = allIncomeCategories.find((c) => isMoneyLentCategory(c.source));
+  const receivableIncomeCategories = [...normalIncomeCategories, ...allIncomeCategories.filter((category) =>
+    isMoneyLentCategory(category.source) && !normalIncomeCategories.some((normal) => normal.id === category.id))];
+  const displayAmount = (record: IncomeRecord) => isReceivables
+    ? receivableAmount(record, incomeCategoryNameById.get(record.categoryId)) : record.grossIncome;
   const [accountFilterId, setAccountFilterId] = useState("");
   const [filterActive, setFilterActive] = useState(false);
   const [modal, setModal] = useState<ModalState>(null);
@@ -129,17 +141,17 @@ function WorkflowPage({
     .reduce((sum, e) => sum + calculateCcCoveredExpenseAmount(e), 0);
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
-  const modalOpen = modal !== null;
+  const modalOpen = modal !== null || repaymentRecord !== null || reclassifyRecord !== null || pasabuyRecord !== null || bulkPasabuyIds !== null;
   useShortcutAction("view.newRecord", () => openWorkflowModal("new", `New ${label} Record`), !modalOpen);
-  useShortcutAction("modal.save", () => void handleSaveWorkflow(), modalOpen && editing);
-  useShortcutAction("modal.edit", () => setEditing((e) => !e), modalOpen);
-  useShortcutAction("modal.duplicate", () => handleDuplicateWorkflow(), modalOpen);
-  useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modalOpen && editingId != null);
-  useShortcutAction("modal.close", () => { setModal(null); setCcCoveredIds([]); }, modalOpen);
-  useShortcutAction("mass.selectAll", () => selectAll(workflowIncomes.map((r) => r.id)), !modalOpen);
-  useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection);
-  useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection);
-  useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection);
+  useShortcutAction("modal.save", () => void handleSaveWorkflow(), modal !== null && editing && !reclassifyRecord);
+  useShortcutAction("modal.edit", () => setEditing((e) => !e), modal !== null && !reclassifyRecord);
+  useShortcutAction("modal.duplicate", () => handleDuplicateWorkflow(), modal !== null && !reclassifyRecord);
+  useShortcutAction("modal.delete", () => void handleDeleteWorkflow(), modal !== null && editingId != null && !reclassifyRecord);
+  useShortcutAction("modal.close", () => { setModal(null); setCcCoveredIds([]); }, modal !== null && !reclassifyRecord);
+  useShortcutAction("mass.selectAll", () => selectAll(receivableRecords.map((item) => item.id)), !modalOpen);
+  useShortcutAction("mass.duplicate", () => void handleBulkAction("duplicate"), hasSelection && !modalOpen);
+  useShortcutAction("mass.disable", () => void handleBulkAction("disable"), hasSelection && !modalOpen);
+  useShortcutAction("mass.delete", () => void handleBulkAction("delete"), hasSelection && !modalOpen);
 
   // Auto-update [YYMMDD] tag when date changes (new or edit mode).
   useEffect(() => {
@@ -163,10 +175,10 @@ function WorkflowPage({
     rangeStart: selectedRange?.start,
     rangeEnd: selectedRange?.end,
   });
-  const { state: expenseState } = useExpenses();
+  const { state: expenseState, applyLocal: applyExpenseLocal } = useExpenses();
   const selectedPeriodLabel = !periodScoped ? "All Time" : viewUnit ? rangeLabel(viewUnit, selectedDate) : "All Records";
   // Workflows are income-backed views, so they share the income invalidation.
-  const { invalidateIncomeFamily } = useFinanceInvalidation();
+  const { invalidateIncomeFamily, invalidateExpenseFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
   const allWorkflowIncomes: IncomeRecord[] = (
     workflowState.status === "success" ? workflowState.data : []
@@ -223,7 +235,7 @@ function WorkflowPage({
     clearSelection();
   }, [section, filterActive, accountFilterId, searchActive, searchQuery, clearSelection]);
   const enabledWorkflowRecords = workflowIncomes.filter((r) => !disabledIds.has(r.id));
-  const workflowAmountTotal = getIncomeGrossTotal(enabledWorkflowRecords) + receivableExpenseSearch
+  const workflowAmountTotal = enabledWorkflowRecords.reduce((sum, record) => sum + displayAmount(record), 0) + receivableExpenseSearch
     .filter((expense) => !disabledIds.has(`expense:${expense.id}`))
     .reduce((sum, expense) => sum + (expense.pasabuyBalance ?? 0), 0);
 
@@ -240,11 +252,11 @@ function WorkflowPage({
         toRow: (item) => ({
           date: item.kind === "income" ? (item.record.date ? formatDate(item.record.date) : "—") : (item.record.datePaid ? formatDate(item.record.datePaid) : "—"),
           description: item.kind === "income" ? stripNotionTag(item.record.name) : item.record.description,
-          amount: formatMoney(item.kind === "income" ? item.record.grossIncome : item.record.pasabuyBalance ?? 0),
+          amount: formatMoney(item.kind === "income" ? receivableAmount(item.record, incomeCategoryNameById.get(item.record.categoryId)) : item.record.pasabuyBalance ?? 0),
         }),
-        valueOf: (item) => item.kind === "income" ? item.record.grossIncome ?? 0 : item.record.pasabuyBalance ?? 0,
+        valueOf: (item) => item.kind === "income" ? receivableAmount(item.record, incomeCategoryNameById.get(item.record.categoryId)) : item.record.pasabuyBalance ?? 0,
       }),
-    [receivableRecords, disabledIds, selectedPeriodLabel],
+    [receivableRecords, disabledIds, selectedPeriodLabel, incomeCategoryNameById],
   );
 
   useEffect(() => {
@@ -308,7 +320,7 @@ function WorkflowPage({
       accountNameById.get(record.accountId ?? "") ?? "—",
       fixedCategory ?? incomeCategoryNameById.get(record.categoryId) ?? "—",
       <span key={`${record.id}-amount`} className="num">
-        {formatMoney(record.grossIncome)}
+        {formatMoney(displayAmount(record))}
       </span>,
     ];
   });
@@ -336,21 +348,60 @@ function WorkflowPage({
           ],
         ];
 
-  const expenseRowIds = new Set(receivableExpenseSearch.map((expense) => `expense:${expense.id}`));
+  const selectionHasExpenses = Array.from(selectedIds).some((id) => id.startsWith('expense:'));
+  const allSelectedPasabuy = selectedIds.size > 0 && Array.from(selectedIds).every((id) =>
+    receivableExpenseSearch.some((expense) => id === `expense:${expense.id}`));
   const tableRecordIds = receivableRecords.map((item) => item.kind === "income" ? item.record.id : `expense:${item.record.id}`);
 
-  function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string) {
+  // Keep header, row selection and shortcuts aligned after refresh or settlement.
+  useEffect(() => {
+    for (const id of selectedIds) if (!tableRecordIds.includes(id)) toggleRowSelect(id, false);
+  }, [tableRecordIds, selectedIds, toggleRowSelect]);
+  useShortcutAction('mass.edit', () => void handleBulkAction('edit'), allSelectedPasabuy && !modalOpen);
+
+  function onPasabuyUpdated(records: ExpenseRecord[]) {
+    applyExpenseLocal((rows) => rows.map((row) => records.find((record) => record.id === row.id) ?? row));
+    for (const record of records) toggleRowSelect(`expense:${record.id}`, false);
+    invalidateExpenseFamily();
+  }
+
+  function openWorkflowModal(mode: "new" | "edit", title: string, recordId?: string, newMoneyLent = false) {
     const record =
       recordId != null
         ? allWorkflowIncomes.find((r) => r.id === recordId)
         : undefined;
     loadRecord(record, { isTransfer, isCreditCardPayment, isAlkansya, savingsCategoryId });
+    const loan = newMoneyLent || Boolean(record && isMoneyLentCategory(incomeCategoryNameById.get(record.categoryId)));
+    setMoneyLentMode(loan);
+    if (loan) {
+      form.setWorkflowAmountInput(record ? String(Math.abs(record.grossIncome)) : '');
+      form.setWorkflowCategoryIdInput(record?.categoryId ?? moneyLentCategory?.id ?? '');
+    }
     setEditing(mode === "new");
     setSaveError(null);
     setModal({ mode, title });
   }
 
+  function selectReceivableCategory(id: string) {
+    form.setWorkflowCategoryIdInput(id);
+    const loan = isMoneyLentCategory(incomeCategoryNameById.get(id));
+    setMoneyLentMode(loan);
+    if (loan) {
+      if (workflowAmountInput) form.setWorkflowAmountInput(String(Math.abs(parseNumberInput(workflowAmountInput))));
+      form.setWorkflowCapitalExpenditureInput('0');
+    }
+  }
+
   async function handleSaveWorkflow() {
+    if (saving) return;
+    if (moneyLentMode) {
+      if (!workflowDateInput || !receivingAccountId || !(parseNumberInput(workflowAmountInput) > 0)) {
+        setSaveError('Enter a date lent, source account, and an amount greater than zero.'); return;
+      }
+      if (!moneyLentCategory) {
+        setSaveError('Create Money Lent in your Notion Income Categories, then sync income categories.'); return;
+      }
+    }
     // Validate required fields per section
     if (!workflowNameInput.trim()) {
       setSaveError("Name is required.");
@@ -379,10 +430,10 @@ function WorkflowPage({
     const payload: Record<string, unknown> = {
       name: workflowNameInput.trim(),
       date: workflowDateInput,
-      grossIncome: isTransfer
+      grossIncome: isTransfer || moneyLentMode
         ? -Math.abs(parseNumberInput(workflowAmountInput))
         : parseNumberInput(workflowAmountInput),
-      capitalExpenditure: parseNumberInput(workflowCapitalExpenditureInput),
+      capitalExpenditure: moneyLentMode ? 0 : parseNumberInput(workflowCapitalExpenditureInput),
       accountId: receivingAccountId,
     };
     // Transfer & CC Payment carry a transacted/payer account.
@@ -391,7 +442,13 @@ function WorkflowPage({
     }
     // Only Receivables chooses a category. Other workflows resolve their fixed
     // category in main, including Savings for Alkansya.
-    if (categoryEditable) {
+    if (moneyLentMode) {
+      payload.categoryId = moneyLentCategory!.id;
+      payload.view = 'moneyLent';
+      payload.transactedAccountId = null;
+      payload.ccPaymentCoveredIds = [];
+      payload.isTransaction = false;
+    } else if (categoryEditable) {
       payload.categoryId = workflowCategoryIdInput;
     }
     if (isCreditCardPayment) {
@@ -400,10 +457,11 @@ function WorkflowPage({
     setSaving(true);
     setSaveError(null);
     try {
+      const saveApi = moneyLentMode ? incomesApi : workflowApi;
       const res =
         modal?.mode === "edit" && editingId
-          ? await workflowApi.update(editingId, payload)
-          : await workflowApi.create(payload);
+          ? await saveApi.update(editingId, payload)
+          : await saveApi.create(payload);
       if (!res.success) {
         setSaveError(res.error.message || "Couldn't save this record. Please try again.");
         return;
@@ -438,14 +496,18 @@ function WorkflowPage({
     setModal({ mode: "new", title: `New ${label} Record (Copy)` });
   }
 
-  // No onEdit / onPrint / onCover — workflows have never offered those (the table also
-  // renders showBulkEdit={false}). Omitting them keeps that gap explicit.
+  // Receivables can select both resources. Only its all-Pasabuy selection may edit
+  // Expense fields; Income duplicate/delete must never receive namespaced Expense IDs.
   const handleBulkAction = useBulkActions({
     selectedIds,
     applyDisabled,
     clearSelection,
-    onDelete: setDeleteConfirmIds,
+    onDelete: (ids) => { if (!selectionHasExpenses) setDeleteConfirmIds(ids); },
+    onEdit: () => {
+      if (allSelectedPasabuy) setBulkPasabuyIds(Array.from(selectedIds).map((id) => id.slice('expense:'.length)));
+    },
     onDuplicate: async () => {
+      if (selectionHasExpenses) return;
       const recordsToDuplicate = workflowIncomes.filter((r) => selectedIds.has(r.id));
 
       if (recordsToDuplicate.length === 0) {
@@ -534,12 +596,34 @@ function WorkflowPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allWorkflowIncomes.length]);
 
+  const currentRecord = allWorkflowIncomes.find((r) => r.id === editingId);
+  const canRepay = currentRecord && isOutstandingMoneyLent(currentRecord, incomeCategoryNameById.get(currentRecord.categoryId));
+  const canReclassify = isAlkansya && currentRecord && currentRecord.grossIncome < 0 &&
+    currentRecord.capitalExpenditure === 0 && !currentRecord.transactedAccountId && !currentRecord.ccPaymentCoveredIds?.length;
+  function finishLoanAction(id: string) {
+    applyLocal((rows) => rows.filter((r) => r.id !== id));
+    clearSelection(); setModal(null); setRepaymentRecord(null); setReclassifyRecord(null);
+    invalidateIncomeFamily();
+  }
+  async function reclassify() {
+    if (!reclassifyRecord || saving) return;
+    setSaving(true); setSaveError(null);
+    try {
+      const result = await incomesApi.reclassifyMoneyLent(reclassifyRecord.id);
+      if (!result.success) { setSaveError(result.error.message); setReclassifyRecord(null); return; }
+      finishLoanAction(reclassifyRecord.id);
+    } catch (err) { setSaveError(err instanceof Error ? err.message : 'Could not reclassify.'); setReclassifyRecord(null); }
+    finally { setSaving(false); }
+  }
+
   return (
     <div className="page-stack">
+      {saveError && !modal && <p role="alert">{saveError}</p>}
       <PageToolbar
         title={label}
         actions={
           <>
+          {isReceivables && <button type="button" className="button" onClick={() => openWorkflowModal('new', 'New Money Lent', undefined, true)}>Lend money</button>}
           <FilterToggle active={filterActive} onToggle={() => setFilterActive((prev) => !prev)} shortcutId="view.filters" />
           <SearchToggle active={searchActive} onToggle={toggleSearch} shortcutId="view.search" />
           <button
@@ -588,10 +672,12 @@ function WorkflowPage({
             recordIds={tableRecordIds}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
-            selectionDisabledIds={expenseRowIds}
             onToggleSelect={toggleRowSelect}
             onBulkAction={handleBulkAction}
-            showBulkEdit={false}
+            showBulkEdit={allSelectedPasabuy}
+            bulkEditLabel="Bulk Pasabuy"
+            showBulkDuplicate={!selectionHasExpenses}
+            showBulkDelete={!selectionHasExpenses}
             bulkDeleteLabel={deleteLabel}
             bulkDeleteDanger={hardDeleteEnabled}
             headers={workflowHeaders}
@@ -601,8 +687,7 @@ function WorkflowPage({
               if (recordId.startsWith("expense:")) {
                 const expense = receivablePasabuyExpenses.find((candidate) => candidate.id === recordId.slice("expense:".length));
                 if (!expense) return;
-                setPendingEdit("expenses", expense.id, expense);
-                navigate("/expense");
+                setPasabuyRecord(expense);
                 return;
               }
               const record = allWorkflowIncomes.find((r) => r.id === recordId);
@@ -618,7 +703,7 @@ function WorkflowPage({
               allWorkflowIncomes.length
                 ? "Try another account or search term."
                 : isReceivables
-                ? "Receivables include income entries without a receiving account and paid Pasabuy expenses that still have a balance due."
+                ? "Receivables include Money Lent, income entries without a receiving account, and paid Pasabuy expenses that still have a balance due."
                 : isAlkansya
                   ? "Alkansya holds income records in the Savings category."
                   : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`
@@ -628,6 +713,10 @@ function WorkflowPage({
       </Panel>
 
       <FormModal
+        extraActions={modal?.mode === 'edit' && !editing ? <>
+          {canRepay && <button type="button" className="button" disabled={saving} onClick={() => { setRepaymentRecord(currentRecord); setModal(null); }}>Record repayment</button>}
+          {canReclassify && <button type="button" className="button" disabled={saving} onClick={() => setReclassifyRecord(currentRecord)}>Reclassify as money lent</button>}
+        </> : undefined}
         deleteLabel={deleteLabel}
         deleteDanger={hardDeleteEnabled}
         modal={modal}
@@ -641,25 +730,38 @@ function WorkflowPage({
         onDuplicate={handleDuplicateWorkflow}
         onClose={() => { setModal(null); setCcCoveredIds([]); }}
       >
+        {saveError && <p role="alert">{saveError}</p>}
+        {moneyLentMode && !moneyLentCategory && <p role="alert">Create Money Lent in your Notion Income Categories, then sync income categories.</p>}
         <WorkflowFormFields
           form={form}
-          label={label}
-          amountLabel={amountLabel}
-          sourceAccountLabel={sourceAccountLabel}
+          label={moneyLentMode ? 'Money Lent' : label}
+          amountLabel={moneyLentMode ? 'Amount lent' : amountLabel}
+          sourceAccountLabel={moneyLentMode ? 'Source Account' : sourceAccountLabel}
           sourceAccountOptions={sourceAccountOptions}
           secondaryAccountLabel={secondaryAccountLabel}
           nonCreditActiveAccounts={nonCreditActiveAccounts}
-          normalIncomeCategories={normalIncomeCategories}
+          incomeCategories={isReceivables ? receivableIncomeCategories : normalIncomeCategories}
+          onCategoryChange={isReceivables ? selectReceivableCategory : undefined}
           isTransfer={isTransfer}
           isCreditCardPayment={isCreditCardPayment}
           isAlkansya={isAlkansya}
-          isReceivables={isReceivables}
-          categoryEditable={categoryEditable}
-          fixedCategory={fixedCategory}
+          isReceivables={isReceivables && !moneyLentMode}
+          categoryEditable={categoryEditable && (!moneyLentMode || modal?.mode === "new")}
+          fixedCategory={moneyLentMode ? 'Money Lent' : fixedCategory}
           eligibleCcExpenses={eligibleCcExpenses}
           totalCovered={totalCovered}
         />
       </FormModal>
+      {pasabuyRecord && <ReceivablePasabuyModal key={pasabuyRecord.id} record={pasabuyRecord}
+        onClose={() => setPasabuyRecord(null)} onSaved={(record) => { onPasabuyUpdated([record]); setPasabuyRecord(null); }} />}
+      {bulkPasabuyIds && <ReceivablePasabuyBulkModal ids={bulkPasabuyIds}
+        onClose={() => { setBulkPasabuyIds(null); clearSelection(); }} onUpdated={onPasabuyUpdated} />}
+      {repaymentRecord && <MoneyLentRepayment record={repaymentRecord} accounts={nonCreditActiveAccounts}
+        sourceName={accountNameById.get(repaymentRecord.accountId ?? '') ?? 'original account'}
+        onClose={() => setRepaymentRecord(null)} onSaved={() => finishLoanAction(repaymentRecord.id)} />}
+      {reclassifyRecord && <ConfirmModal title="Reclassify as money lent?"
+        message="Move this Savings entry to Money Lent and Receivables. Its amount, source account, and account balance stay the same."
+        busy={saving} confirmLabel="Reclassify" onCancel={() => setReclassifyRecord(null)} onConfirm={() => void reclassify()} />}
       {deleteConfirmIds && (
         <ConfirmModal
           {...deleteConfirmCopy(hardDeleteEnabled, deleteConfirmIds.length)}

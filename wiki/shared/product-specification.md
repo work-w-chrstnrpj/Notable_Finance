@@ -54,3 +54,11 @@ The desktop app delivers the same features with these behavioral differences:
 ### Pasabuyer Balance includes interest
 
 Owner-confirmed correction (2026-10-15): Pasabuyer Balance is the total remaining amount owed, including interest. Compute `(Expense Amount + Interest) - ((Expense Amount + Interest) / Period count * Pasabuy paid period)`; fully received status gives zero. Keep installment precision until the final displayed balance. For ₱900 expense plus ₱90 interest across three periods with one received period, received is ₱330 and balance is ₱660. This applies consistently to desktop record forms, tables and local calculations. The saved Notion schema export contains the historical principal-only formula; do not treat that export as the corrected balance requirement or overwrite it as if freshly fetched. Notion formula parity requires the corresponding workspace formula to use Gross Price too; calculated outputs remain read-only and are not pushed as editable fields.
+
+### Desktop-only Money Lent
+
+The desktop Receivables category picker includes the auxiliary Income Category `Money Lent`, with negative persisted Income amounts that deduct from the source account and positive amounts owed in Receivables. Full repayment explicitly offers Same account (soft-delete) or Transfer to another account. The original lending account remains the read-only Source Account; Transfer requires a distinct Transfer Account and converts the same Income row. Negative Savings entries can be explicitly reclassified without changing balances. No new database or formula is required. See [desktop Money Lent behavior and acceptance](../desktop/money-lent.md). This feature does not change the web application.
+
+### Desktop-only Receivables Pasabuy editing
+
+Paid Pasabuy expenses still owed by the Pasabuyer open a focused description/Pasabuy editor directly in Receivables, without navigation to Expense. All row types support selection; an all-Pasabuy-expense selection exposes **Bulk Pasabuy**, limited to Pasabuy fields on the original Expense records. Income-only duplicate/delete actions do not apply to expense or mixed selections. Saving fully received status removes the expense from Receivables and refreshes totals/receipts. See [desktop Receivables behavior](../desktop/ui-ux-redesign.md#workflow-account-filters-and-search).

@@ -10,7 +10,8 @@ export function dashboard(month: string): DashboardSummary {
   const pasabuyCategoryIds = new Set(
     listExpenseCategories().filter((category) => /pasabuy/i.test(category.name)).map((category) => category.id)
   )
-  return dashboardSummary(month, financeSnapshot(), balanceContext(), pasabuyCategoryIds)
+  const auxiliaryIncomeIds = new Set(listIncomeCategories().filter((category) => category.auxiliary).map((category) => category.id))
+  return dashboardSummary(month, financeSnapshot(), balanceContext(), pasabuyCategoryIds, auxiliaryIncomeIds)
 }
 
 export function monitoring(month: string): MonthlyMonitoringDto {

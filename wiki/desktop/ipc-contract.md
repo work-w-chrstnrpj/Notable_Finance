@@ -155,3 +155,14 @@ DTOs (`Account`, `IncomeRecord`, `ExpenseRecord`, `DashboardSummary`, `SyncStatu
 ### `window.api.categories.pasabuyers()`
 
 Returns `ApiResult<string[]>` using channel `categories:pasabuyers`. Main reads the mapped Expense data-source schema's `Pasabuyer` select options, preserving exact labels and order, including unused choices. Successful results replace a database-scoped `app_settings` cache, including an empty list. Failed refreshes/disconnected access retain cached choices; a first fetch failure without cache returns an error. No token crosses the bridge. Reference refresh and main-process record/sync invalidations refresh the renderer query. Record forms preserve an existing removed value without offering it as a new bulk-edit choice.
+
+## Money Lent (desktop)
+
+`incomes.create` accepts `view: "moneyLent"`, resolving the locked `Money Lent` category in main. Positive or negative nonzero amounts are persisted negative; source account/date are required and Capital Expenditure/transaction fields are forbidden. `incomes.list({ view: "receivables" })` also returns outstanding account-linked negative Money Lent rows. Display inversion belongs to the renderer, not the stored DTO.
+
+| Preload method | Channel | Behavior |
+| --- | --- | --- |
+| `incomes.reclassifyMoneyLent(id)` | `incomes:reclassifyMoneyLent` | Atomically reclassify an eligible negative Savings row; returns `IncomeRecordDto`. |
+| `incomes.repayMoneyLent(id, input)` | `incomes:repayMoneyLent` | Full repayment; atomically soft-delete for original account or convert to Transfer for another account; returns `IncomeRecordDto`. |
+
+Repayment input is `{ receivingAccountId, date, expectedAmount, expectedSourceAccountId }`. Expected amount is the positive full amount displayed in the preview. Main rejects changed amounts/accounts, repeated settlement, unresolved conflicts, invalid accounts and dates before lending. Both operations broadcast the standard Income/derived/sync invalidations. See [Money Lent](money-lent.md).

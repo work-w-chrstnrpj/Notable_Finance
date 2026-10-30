@@ -49,6 +49,7 @@ describe('pageToIncomeCategoryFields', () => {
       properties: { 'Source of Income': title('Savings'), Auxiliary: chk(false) }
     })
     expect(savings.auxiliary).toBe(1)
+    expect(pageToIncomeCategoryFields({ id: 'loan', properties: { 'Source of Income': title('Money Lent'), Auxiliary: chk(false) } }).auxiliary).toBe(1)
     const salary = pageToIncomeCategoryFields({
       id: 'c2',
       properties: { 'Source of Income': title('Salary'), Auxiliary: chk(false) }

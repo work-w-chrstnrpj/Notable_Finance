@@ -1,3 +1,4 @@
+import type { RepayMoneyLentInput } from '../../shared/money-lent'
 import { listPasabuyerOptions } from '../notion/pasabuyer-options'
 import type {
   CreateExpenseInput,
@@ -112,6 +113,21 @@ export function registerRecordsIpc(): void {
       repo.hardDeleteIncome(id)
       changed('incomes', [id])
       return true
+    })
+  )
+
+  handle(IPC_CHANNELS.incomesRepayMoneyLent, (_e, id: string, input: RepayMoneyLentInput) =>
+    result(() => {
+      const record = repo.repayMoneyLent(id, input)
+      changed('incomes', [id])
+      return record
+    })
+  )
+  handle(IPC_CHANNELS.incomesReclassifyMoneyLent, (_e, id: string) =>
+    result(() => {
+      const record = repo.reclassifyMoneyLent(id)
+      changed('incomes', [id])
+      return record
     })
   )
 

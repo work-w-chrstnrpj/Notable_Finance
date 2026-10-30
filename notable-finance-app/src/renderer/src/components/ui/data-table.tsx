@@ -54,6 +54,9 @@ function DataTable({
   onToggleSelect,
   onBulkAction,
   showBulkEdit = true,
+  bulkEditLabel = "Edit",
+  showBulkDuplicate = true,
+  showBulkDelete = true,
   showBulkPrint = false,
   showBulkCover = false,
   recordIds,
@@ -90,6 +93,9 @@ function DataTable({
   onBulkAction?: (action: "enable" | "disable" | "duplicate" | "delete" | "edit" | "print" | "cover") => void;
   /** Show the mass-edit button in the bulk toolbar (Income/Expense). */
   showBulkEdit?: boolean;
+  bulkEditLabel?: string;
+  showBulkDuplicate?: boolean;
+  showBulkDelete?: boolean;
   /** Show the Print Receipt button in the bulk toolbar (Expense). */
   /** Array of record IDs, parallel to `rows`. Used for ID-based selection/disable. */
   recordIds?: string[];
@@ -189,7 +195,7 @@ function DataTable({
               onClick={() => onBulkAction?.("edit")}
             >
               <Pencil size={14} />
-              <span>Edit</span>
+              <span>{bulkEditLabel}</span>
             </button>
           )}
           {showBulkPrint && (
@@ -212,15 +218,15 @@ function DataTable({
               <span>Cover the expense</span>
             </button>
           )}
-          <button
+          {showBulkDuplicate && <button
             type="button"
             className={styles["bulk-toolbar__btn"]}
             onClick={() => onBulkAction?.("duplicate")}
           >
             <Copy size={14} />
             <span>Duplicate</span>
-          </button>
-          <button
+          </button>}
+          {showBulkDelete && <button
             type="button"
             className={cx(
               styles["bulk-toolbar__btn"],
@@ -230,7 +236,7 @@ function DataTable({
           >
             <Trash2 size={14} />
             <span>{bulkDeleteLabel}</span>
-          </button>
+          </button>}
         </div>
       )}
       <div className={styles["table-wrap"]}>
@@ -259,6 +265,7 @@ function DataTable({
                         someVisibleSelected && styles["row-checkbox--indeterminate"],
                       )}
                       aria-label="Select all rows"
+                      aria-pressed={allVisibleSelected ? true : someVisibleSelected ? "mixed" : false}
                       onClick={() => {
                         if (!onToggleSelect || !recordIds) return;
                         const visibleIds = paginated.map(({ index }) => recordIds[index]).filter((id) => id && !selectionDisabledIds?.has(id));
@@ -327,7 +334,7 @@ function DataTable({
                           if (id) onRowClick?.(id);
                         }}
                 onKeyDown={(event) => {
-                  if (!onRowClick || !recordIds) {
+                  if (event.target !== event.currentTarget || !onRowClick || !recordIds) {
                     return;
                   }
 
@@ -348,6 +355,7 @@ function DataTable({
                         type="button"
                         className={cx(styles["row-checkbox"], isSelected && styles["row-checkbox--checked"])}
                         aria-label="Select row"
+                        aria-pressed={isSelected}
                           disabled={selectionDisabledIds?.has(recordIds?.[index] ?? "")}
                           onClick={(event) => {
                           event.stopPropagation();

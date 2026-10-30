@@ -92,7 +92,7 @@ export function extractNumberOrFormula(props: Props, name: string): number | nul
 
 // Income categories tied to a workflow are always auxiliary even if the Notion checkbox
 // is unchecked (COPIED rule from the web mapper).
-const WORKFLOW_INCOME_CATEGORIES = new Set(['savings', 'transfer', 'credit card payment'])
+const WORKFLOW_INCOME_CATEGORIES = new Set(['savings', 'transfer', 'credit card payment', 'money lent'])
 
 // ── row shapes returned to the pull engine ──────────────────────────────────
 

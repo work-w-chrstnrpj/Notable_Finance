@@ -50,6 +50,13 @@ export function buildExpenseMassEditFields(
       { key: "periodCount", label: "Period Count", kind: "optionalNumber" },
       { key: "bnplAdjustment", label: "BNPL adjustment", kind: "optionalNumber" },
       { key: "paidPeriod", label: "Paid Period", kind: "optionalNumber" },
+      ...buildPasabuyMassEditFields(activeAccounts, pasabuyerOptions),
+  ];
+}
+
+/** Restrict Receivables bulk editing to Pasabuy inputs only. */
+export function buildPasabuyMassEditFields(activeAccounts: Account[], pasabuyerOptions: string[]): MassEditFieldOption[] {
+  return [
       {
         key: "pasabuyer",
         label: "Pasabuyer",

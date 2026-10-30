@@ -25,7 +25,9 @@ function FormModal({
   onInfo,
   onClose,
   children,
+  extraActions,
 }: {
+  extraActions?: ReactNode;
   modal: ModalState;
   subtitle: string;
   deleteLabel: string;
@@ -87,6 +89,7 @@ function FormModal({
           </fieldset>
         </div>
         <div className="modal-panel__footer">
+          {extraActions}
           {modal.mode === "edit" && (
             <button
               type="button"

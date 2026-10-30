@@ -113,3 +113,17 @@ stateDiagram-v2
   conflict --> dirty: user resolves
   dirty --> clean: push ok
 ```
+
+## Money Lent lifecycle (desktop only)
+
+```mermaid
+flowchart TD
+  lend[Receivables: Lend money] --> loan[Income: Money Lent, negative amount, source account]
+  savings[Selected negative Savings row] -->|Explicit reclassification| loan
+  loan --> owed[Receivables: positive amount owed]
+  owed --> repay[Record full repayment]
+  repay -->|Original account| deleted[Same Income row: soft-delete and clear amounts]
+  repay -->|Different account| transfer[Same Income row: Transfer with negative source amount and destination]
+  deleted --> sync[Normal dirty-row sync to the same Notion page]
+  transfer --> sync
+```

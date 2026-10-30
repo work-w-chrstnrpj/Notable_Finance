@@ -1,3 +1,4 @@
+import { isMoneyLentCategory } from '../../../shared/money-lent'
 import * as repo from '../../db/repositories'
 import { isCreditLike } from '../../domain/resource-utils'
 import type {
@@ -364,6 +365,9 @@ function proposeWorkflowIncome(
   }
 
   if (!cat) missing.push(lockedSource ? `Category (${lockedSource})` : 'Category')
+  if (isMoneyLentCategory(cat?.source)) {
+    missing.push('Use Receivables → Lend money for Money Lent loans')
+  }
 
   const payload: Record<string, unknown> = {
     name: name ?? '',

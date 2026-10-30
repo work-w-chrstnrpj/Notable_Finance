@@ -129,3 +129,7 @@ Only **writable inputs** (`starting_balance`, `credit_limit`, amounts, interest,
 Property names and database ids per table are **not** hardcoded — they are captured at onboarding and stored in `app_settings` / a mapping table, then validated by schema verification. See [`onboarding-and-notion-connect.md`](onboarding-and-notion-connect.md).
 
 Pasabuyer select metadata is stored in `app_settings` under `notion.pasabuyer-options:<mapped expense database id>` as a JSON string array. It is a replaceable schema cache, distinct from finance records; no table migration is needed. The main-only schema reader refreshes on reference reads and falls back to the last successful list offline.
+
+## Money Lent uses existing columns
+
+`Money Lent` is an auxiliary `income_categories.source`, with no new schema migration. Outstanding loans use `incomes.gross_income < 0`, a source `account_id`, zero `capital_expenditure`, no transaction/coverage fields, and `is_transaction = 0`. Cross-account repayment sets the existing Transfer category, `transacted_account_id`, repayment `date`, and transaction flag on the same row. Same-account repayment uses existing soft deletion. Original lending/repayment dates are appended to local `notes`; notes are not mapped to Notion. See [Money Lent](money-lent.md).

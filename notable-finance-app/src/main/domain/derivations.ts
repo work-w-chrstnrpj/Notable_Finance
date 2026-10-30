@@ -1,3 +1,4 @@
+import { isMoneyLentCategory } from '../../shared/money-lent'
 // Local derivations — the desktop's SQLite-truth analogue of the web app's reporting.
 //
 // The web app READS Current Balance / Available Limit / spending from Notion formulas.
@@ -144,9 +145,10 @@ export function dashboardSummary(
   month: string,
   snap: FinanceSnapshot,
   ctx?: BalanceContext,
-  pasabuyCategoryIds: ReadonlySet<string> = new Set()
+  pasabuyCategoryIds: ReadonlySet<string> = new Set(),
+  auxiliaryIncomeIds: ReadonlySet<string> = new Set()
 ): DashboardSummary {
-  const monthIncomes = filterByMonth(snap.incomes.filter(notDeleted), 'date', month)
+  const monthIncomes = filterByMonth(snap.incomes.filter((income) => notDeleted(income) && !auxiliaryIncomeIds.has(income.categoryId) && !isMoneyLentCategory(ctx?.incomeCategoryName(income.categoryId))), 'date', month)
   const monthExpenses = filterByMonth(snap.expenses.filter(notDeleted), 'purchaseDate', month)
 
   // Match the visible Dashboard cards: income is gross, while Pasabuy is a
@@ -185,7 +187,8 @@ export interface MonitoringInput {
 
 /** Monthly monitoring for a month — mirrors the web monthlyMonitoring reduce logic. */
 export function monthlyMonitoring(month: string, input: MonitoringInput): MonthlyMonitoringDto {
-  const monthIncomes = filterByMonth(input.incomes.filter(notDeleted), 'date', month)
+  const auxiliaryIncomeIds = new Set(input.incomeCategories.filter((category) => category.auxiliary || isMoneyLentCategory(category.source)).map((category) => category.id))
+  const monthIncomes = filterByMonth(input.incomes.filter((income) => notDeleted(income) && !auxiliaryIncomeIds.has(income.categoryId)), 'date', month)
   const monthExpenses = filterByMonth(input.expenses.filter(notDeleted), 'purchaseDate', month)
 
   const monthlyGrossIncome = roundMoney(monthIncomes.reduce((sum, i) => sum + i.grossIncome, 0))

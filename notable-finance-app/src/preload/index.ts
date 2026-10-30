@@ -1,3 +1,4 @@
+import type { RepayMoneyLentInput } from '../shared/money-lent'
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   UpdaterCheckResult,
@@ -93,6 +94,10 @@ const api = {
   },
 
   incomes: {
+    repayMoneyLent: (id: string, input: RepayMoneyLentInput): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.incomesRepayMoneyLent, id, input),
+    reclassifyMoneyLent: (id: string): Promise<ApiResult<IncomeRecordDto>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.incomesReclassifyMoneyLent, id),
     list: (params?: IncomeListParams): Promise<ApiResult<IncomeRecordDto[]>> =>
       ipcRenderer.invoke(IPC_CHANNELS.incomesList, params),
     get: (id: string): Promise<ApiResult<IncomeRecordDto>> =>

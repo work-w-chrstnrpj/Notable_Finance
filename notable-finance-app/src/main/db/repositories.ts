@@ -2,6 +2,7 @@
 // working source of truth), marks the record sync_state='dirty', and journals into
 // mutation_queue so offline edits replay in order (wiki/desktop/sync-and-conflict-design.md).
 // Soft delete follows the shared rule: rewrite the title, clear amounts, set deleted=1.
+import { isMoneyLentCategory, isOutstandingMoneyLent, MONEY_LENT_CATEGORY, type RepayMoneyLentInput } from '../../shared/money-lent'
 import { randomUUID } from 'node:crypto'
 import { getSqlite } from './index'
 import {
@@ -41,6 +42,9 @@ import {
   type UpdateSchedulerInput
 } from '../../shared/finance.types'
 import {
+  assertIsoDate,
+  assertFiniteNumber,
+  assertNonEmptyString,
   validateCreateExpense,
   validateCreateIncome,
   validateCreateScheduler,
@@ -68,7 +72,9 @@ export function listIncomeCategories(): IncomeCategoryOption[] {
   const rows = getSqlite()
     .prepare('SELECT id, source, auxiliary, icon FROM income_categories ORDER BY source')
     .all() as IncomeCategoryRow[]
-  return rows.map(mapIncomeCategory)
+  return rows.map(mapIncomeCategory).map((category) => ({
+    ...category, auxiliary: category.auxiliary || isMoneyLentCategory(category.source)
+  }))
 }
 
 export function listExpenseCategories(): ExpenseCategoryOption[] {
@@ -89,7 +95,7 @@ function auxiliaryIncomeCategoryIds(): Set<string> {
   const rows = getSqlite()
     .prepare('SELECT id FROM income_categories WHERE auxiliary = 1')
     .all() as Array<{ id: string }>
-  return new Set(rows.map((r) => r.id))
+  return new Set([...rows.map((r) => r.id), ...findIncomeCategoryIdsBySource(MONEY_LENT_CATEGORY)])
 }
 
 // ── incomes (and income-backed views) ───────────────────────────────────────
@@ -119,7 +125,9 @@ export function listIncomes(params: IncomeListParams = {}): IncomeRecordDto[] {
     records = categoryIds.size > 0 ? records.filter((r) => categoryIds.has(r.categoryId)) : []
   }
   if (view === 'receivables') {
-    records = records.filter((r) => !r.accountId)
+    const names = incomeCategoryNames()
+    records = records.filter((r) => isMoneyLentCategory(names.get(r.categoryId))
+      ? isOutstandingMoneyLent(r, names.get(r.categoryId)) : !r.accountId)
   }
   if (view === 'incomes') {
     const auxiliary = auxiliaryIncomeCategoryIds()
@@ -146,6 +154,7 @@ export function getIncome(id: string): IncomeRecordDto {
  * record lands in the right bucket, and flag transactions accordingly.
  */
 function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
+  if (input.view === 'moneyLent') return { ...input, categoryId: requiredIncomeCategory(MONEY_LENT_CATEGORY) }
   if (input.categoryId && input.categoryId.trim()) return input
   const fixed = input.view ? INCOME_VIEW_FIXED_CATEGORY[input.view] : undefined
   if (!fixed) return input
@@ -163,7 +172,7 @@ function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
 }
 
 export function createIncome(rawInput: CreateIncomeInput): IncomeRecordDto {
-  const input = resolveWorkflowIncome(rawInput)
+  const input = normalizeMoneyLent(resolveWorkflowIncome(rawInput))
   validateCreateIncome(input)
   const id = randomUUID()
   const t = now()
@@ -199,12 +208,23 @@ const INCOME_PATCH_COLS: Record<string, string> = {
   accountId: 'account_id',
   categoryId: 'category_id',
   notes: 'notes',
-  transactedAccountId: 'transacted_account_id'
+  transactedAccountId: 'transacted_account_id',
+  isTransaction: 'is_transaction'
 }
 
 export function updateIncome(id: string, patch: UpdateIncomeInput): IncomeRecordDto {
   validateUpdateIncome(patch as Record<string, unknown>)
-  getIncome(id) // existence check
+  const current = getIncome(id)
+  if (current.deleted) throw new ValidationError('Deleted income cannot be edited.')
+  if (isMoneyLentCategory(incomeCategoryNames().get(current.categoryId)) ||
+      isMoneyLentCategory(incomeCategoryNames().get(patch.categoryId ?? ''))) {
+    if (patch.categoryId && patch.categoryId !== current.categoryId) {
+      throw new ValidationError('Use Record repayment to convert Money Lent to a transfer.')
+    }
+    const normalized = normalizeMoneyLent({ ...current, ...patch })
+    patch = { ...patch, grossIncome: normalized.grossIncome, capitalExpenditure: 0,
+      isTransaction: false, transactedAccountId: null, ccPaymentCoveredIds: [] }
+  }
   // ccPaymentCoveredIds needs JSON serialization before passing to applyPatch
   const { ccPaymentCoveredIds, ...rest } = patch
   applyPatch('incomes', id, rest as Record<string, unknown>, INCOME_PATCH_COLS)
@@ -215,6 +235,88 @@ export function updateIncome(id: string, patch: UpdateIncomeInput): IncomeRecord
   }
   journal('incomes', 'update', id, patch)
   return getIncome(id)
+}
+
+function requireCashAccount(id: unknown, allowInactive = false): void {
+  assertNonEmptyString(id, 'account')
+  const account = getSqlite().prepare('SELECT account_type, inactive FROM accounts WHERE id = ?').get(id) as
+    { account_type: string; inactive: number } | undefined
+  if (!account || isCreditLike(account.account_type) || (!allowInactive && account.inactive)) {
+    throw new ValidationError('Select an existing active non-credit account.')
+  }
+}
+
+function requiredIncomeCategory(source: string): string {
+  const ids = [...findIncomeCategoryIdsBySource(source)]
+  if (ids.length !== 1) throw new ValidationError(`Create exactly one "${source}" Income Category in Notion, then sync income categories.`)
+  return ids[0]
+}
+
+function normalizeMoneyLent(input: CreateIncomeInput): CreateIncomeInput {
+  if (!isMoneyLentCategory(incomeCategoryNames().get(input.categoryId ?? ''))) return input
+  requireCashAccount(input.accountId)
+  assertIsoDate(input.date, 'date lent')
+  assertFiniteNumber(input.grossIncome, 'amount lent')
+  if (input.grossIncome === 0) throw new ValidationError('Amount lent must be greater than zero.')
+  if (input.capitalExpenditure || input.transactedAccountId || input.ccPaymentCoveredIds?.length) {
+    throw new ValidationError('Money Lent cannot include capital expenditure or transaction fields.')
+  }
+  return { ...input, grossIncome: -Math.abs(input.grossIncome), capitalExpenditure: 0,
+    isTransaction: false, transactedAccountId: null, ccPaymentCoveredIds: [] }
+}
+
+/** Explicit, balance-preserving conversion of a negative Savings row. */
+export function reclassifyMoneyLent(id: string): IncomeRecordDto {
+  const db = getSqlite()
+  return db.transaction(() => {
+    const current = getIncome(id)
+    if (current.deleted || current.syncState === 'conflict' || current.grossIncome >= 0 ||
+        incomeCategoryNames().get(current.categoryId)?.toLowerCase() !== 'savings' ||
+        current.capitalExpenditure !== 0 || current.transactedAccountId || current.ccPaymentCoveredIds?.length) {
+      throw new ValidationError('Only an outstanding negative Savings record without transaction fields or capital expenditure can be reclassified.')
+    }
+    requireCashAccount(current.accountId)
+    const categoryId = requiredIncomeCategory(MONEY_LENT_CATEGORY)
+    applyPatch('incomes', id, { categoryId, isTransaction: false }, INCOME_PATCH_COLS)
+    journal('incomes', 'update', id, { categoryId })
+    return getIncome(id)
+  })()
+}
+
+/** Full repayment is one atomic write on the original row, never a second income. */
+export function repayMoneyLent(id: string, input: RepayMoneyLentInput): IncomeRecordDto {
+  const db = getSqlite()
+  return db.transaction(() => {
+    const current = getIncome(id)
+    if (!isOutstandingMoneyLent(current, incomeCategoryNames().get(current.categoryId)) ||
+        current.syncState === 'conflict' || current.capitalExpenditure !== 0 ||
+        current.transactedAccountId || current.ccPaymentCoveredIds?.length) {
+      throw new ValidationError('This record is not an outstanding Money Lent loan ready for repayment.')
+    }
+    assertFiniteNumber(input?.expectedAmount, 'expected amount')
+    if (input.expectedAmount !== -current.grossIncome || input.expectedSourceAccountId !== current.accountId) {
+      throw new ValidationError('The loan changed. Close this preview and reopen the record before recording repayment.')
+    }
+    assertIsoDate(input.date, 'repayment date')
+    if (input.date < current.date) throw new ValidationError('Repayment date cannot be before the date lent.')
+    requireCashAccount(current.accountId, true)
+    requireCashAccount(input.receivingAccountId)
+    // Preserve existing local notes; notes are not a mapped Notion property.
+    const row = db.prepare('SELECT notes FROM incomes WHERE id = ?').get(id) as { notes: string | null }
+    const notes = [row.notes, `Money Lent: lent ${current.date}; fully repaid ${input.date}.`].filter(Boolean).join('\n')
+    let result: IncomeRecordDto
+    if (input.receivingAccountId === current.accountId) {
+      applyPatch('incomes', id, { notes }, INCOME_PATCH_COLS)
+      result = softDeleteIncome(id)
+    } else {
+      const patch = { categoryId: requiredIncomeCategory('Transfer'), date: input.date,
+        transactedAccountId: input.receivingAccountId, isTransaction: true, notes }
+      applyPatch('incomes', id, patch, INCOME_PATCH_COLS)
+      journal('incomes', 'update', id, patch)
+      result = getIncome(id)
+    }
+    return result
+  })()
 }
 
 export function softDeleteIncome(id: string): IncomeRecordDto {

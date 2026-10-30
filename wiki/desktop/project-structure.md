@@ -36,9 +36,9 @@ notable-finance-app/
 │   │       ├── main.tsx
 │   │       ├── components/
 │   │       │   ├── pages/         # one directory per god-page, index.tsx = composition only
-│   │       │   │   ├── expense/   # index + tables/toolbar/form-fields/receipt/cover-modal
+│   │       │   │   ├── expense/   # index + tables/toolbar/form-fields/receipt/cover-modal + shared Pasabuy fields
 │   │       │   │   ├── income/    # index + toolbar/form-fields/mass-edit-fields
-│   │       │   │   ├── workflow/  # index + form hook/fields
+│   │       │   │   ├── workflow/  # index + form hook/fields + money-lent-repayment (+ CSS module) + receivable-pasabuy single/bulk modals
 │   │       │   │   ├── chat/      # index + sidebar/message-stream/composer/draft-card
 │   │       │   │   ├── settings-modals/   # one file per modal + barrel index.tsx
 │   │       │   │   └── dashboard · accounts · monitoring · history · sync · settings · dev-logs
@@ -51,6 +51,7 @@ notable-finance-app/
 │   │                              #   base/ layout/ components/ pages/ + *.module.css
 │   └── shared/                    # types, pure formulas + IPC constants shared across processes
 │       ├── finance.types.ts
+│       ├── money-lent.ts          # category recognition, receivable display + repayment contract
 │       ├── notion-formulas.ts     # pure formulas used by main balances and Expense UI
 │       └── ipc-channels.ts        # single source of truth for request/response channels
 ├── e2e/                           # Playwright + Electron end-to-end tests

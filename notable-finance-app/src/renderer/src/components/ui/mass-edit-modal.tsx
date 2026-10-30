@@ -56,6 +56,15 @@ function coerceValue(
   }
 }
 
+export function pasabuyReceivePreset(): Array<{ fieldKey: string; rawValue: string }> {
+  return [
+    { fieldKey: 'pasabuyStatus', rawValue: 'Payment fully received' },
+    { fieldKey: 'pasabuyDateOfPayment', rawValue: todayIso() },
+    { fieldKey: 'pasabuyAccountReceiverId', rawValue: '' },
+    { fieldKey: 'pasabuyPaidPeriod', rawValue: '1' },
+  ];
+}
+
 function MassEditModal({
   open,
   title,
@@ -111,12 +120,7 @@ function MassEditModal({
   }
 
   function applyPresetPasabuy() {
-    setRows([
-      { id: newRow("pasabuyStatus").id, fieldKey: "pasabuyStatus", rawValue: "Payment fully received" },
-      { id: newRow("pasabuyDateOfPayment").id, fieldKey: "pasabuyDateOfPayment", rawValue: todayIso() },
-      { id: newRow("pasabuyAccountReceiverId").id, fieldKey: "pasabuyAccountReceiverId", rawValue: "" },
-      { id: newRow("pasabuyPaidPeriod").id, fieldKey: "pasabuyPaidPeriod", rawValue: "1" },
-    ]);
+    setRows(pasabuyReceivePreset().map((row) => ({ ...row, id: newRow(row.fieldKey).id })));
   }
 
   if (!open) return null;

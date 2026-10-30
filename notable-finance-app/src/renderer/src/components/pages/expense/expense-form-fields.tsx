@@ -1,13 +1,12 @@
-import { useLiveCollections } from "@/components/hooks";
+import { PasabuyFormFields } from "./pasabuy-form-fields";
 import { Field, ComputedField, FormSectionDivider, FilterDropdown } from "@/components/ui";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import {
-  pasabuyStatusLabels,
   paymentFrequencyLabels,
   paymentStatusLabels,
 } from "@/lib/finance-rules";
 import { formatMoney, formatDate } from "@/lib/format";
-import type { Account, ExpenseCategory, PasabuyStatus, PaymentFrequency, PaymentStatus } from "@/types/finance";
+import type { Account, ExpenseCategory, PaymentFrequency, PaymentStatus } from "@/types/finance";
 import type { useExpenseForm } from "./use-expense-form";
 
 /**
@@ -27,9 +26,6 @@ export function ExpenseFormFields({
   activeAccounts: Account[];
   expenseCategories: ExpenseCategory[];
 }) {
-  const { pasabuyerOptions } = useLiveCollections();
-  const buyerOptions = form.pasabuyer && !pasabuyerOptions.includes(form.pasabuyer)
-    ? [form.pasabuyer, ...pasabuyerOptions] : pasabuyerOptions;
   const {
     descriptionInput, setDescriptionInput,
     formAccountId, setFormAccountId,
@@ -42,15 +38,10 @@ export function ExpenseFormFields({
     periodCountInput, setPeriodCountInput,
     bnplAdjustmentInput, setBnplAdjustmentInput,
     paidPeriodInput, setPaidPeriodInput,
-    pasabuyer, setPasabuyer,
-    pasabuyStatus,
-    pasabuyDateOfPaymentInput, setPasabuyDateOfPaymentInput,
-    pasabuyPaidPeriodInput, setPasabuyPaidPeriodInput,
-    pasabuyAccountReceiverId, setPasabuyAccountReceiverId,
     shakeFields, linkedIncomeName,
     sections, grossPrice, installmentAmount, paidAmount, remainingBalance,
-    expectedPaymentDate, pasabuyReceivedAmount, pasabuyerBalance,
-    onSelectPaymentStatus, onSelectPasabuyStatus,
+    expectedPaymentDate,
+    onSelectPaymentStatus,
   } = form;
 
   return (
@@ -187,59 +178,7 @@ export function ExpenseFormFields({
               )}
             </>
           )}
-          {sections.pasabuy && (
-            <>
-              <FormSectionDivider title="Pasabuy Transaction" />
-              <Field label="Pasabuyer">
-                <select value={pasabuyer} onChange={(event) => setPasabuyer(event.target.value)}>
-                  <option value="">— None —</option>
-                  {buyerOptions.map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Pasabuy Status">
-                <select
-                  value={pasabuyStatus}
-                  onChange={(event) => onSelectPasabuyStatus(event.target.value as PasabuyStatus)}
-                >
-                  <option value="">— None —</option>
-                  {pasabuyStatusLabels.map((status) => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Pasabuy Date of Payment">
-                <input
-                  type="date"
-                  value={pasabuyDateOfPaymentInput}
-                  onChange={(event) => setPasabuyDateOfPaymentInput(event.target.value)}
-                />
-              </Field>
-              <Field label="Pasabuy Account Receiver">
-                <FilterDropdown
-                  placeholder="— None —"
-                  value={pasabuyAccountReceiverId}
-                  onChange={setPasabuyAccountReceiverId}
-                  items={activeAccounts.map((account) => ({
-                    id: account.id,
-                    label: account.name,
-                    icon: <AccountIcon account={account} />,
-                  }))}
-                />
-              </Field>
-              <Field label="Pasabuy paid period">
-                <input
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={pasabuyPaidPeriodInput}
-                  onChange={(event) => setPasabuyPaidPeriodInput(event.target.value)}
-                />
-              </Field>
-              <ComputedField label="Pasabuy Received Amount" value={formatMoney(pasabuyReceivedAmount)} />
-              <ComputedField label="Pasabuyer Balance" value={formatMoney(pasabuyerBalance)} />
-            </>
-          )}
+          {sections.pasabuy && <PasabuyFormFields form={form} activeAccounts={activeAccounts} />}
         </div>
   );
 }

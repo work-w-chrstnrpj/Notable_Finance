@@ -86,3 +86,7 @@ main/
 ## Desktop presentation refresh
 
 The [UI/UX redesign](ui-ux-redesign.md) preserves main/preload/renderer ownership and existing theme/font preferences. CC Transaction uses the shared expense query with explicit purchase-date bounds; its period is persisted as `workspace.ccPeriod`. Legacy unpaid queries remain compatibility inputs. Record dialogs expose Details and Page content without 3D flipping. No SQLite schema migration or Notion contract change is required.
+
+## Money Lent boundary
+
+The desktop-only [Money Lent workflow](money-lent.md) uses existing Income/category storage and balance formulas. Main owns normalization, account validation, atomic reclassification and full repayment; two allow-listed Income IPC operations expose settlement/reclassification. Shared `money-lent.ts` defines category recognition, outstanding-loan classification, positive receivable presentation, and the settlement input. The renderer provides lending entry and a separate repayment preview; it never applies balance adjustments itself. Auxiliary Income rows remain in balance derivations but are excluded from activity reports.

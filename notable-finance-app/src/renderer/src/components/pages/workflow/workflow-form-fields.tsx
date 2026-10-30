@@ -19,7 +19,7 @@ export function WorkflowFormFields({
   sourceAccountOptions,
   secondaryAccountLabel,
   nonCreditActiveAccounts,
-  normalIncomeCategories,
+  incomeCategories,
   isTransfer,
   isCreditCardPayment,
   isAlkansya,
@@ -28,6 +28,7 @@ export function WorkflowFormFields({
   fixedCategory,
   eligibleCcExpenses,
   totalCovered,
+  onCategoryChange,
 }: {
   form: ReturnType<typeof useWorkflowForm>;
   label: string;
@@ -36,7 +37,7 @@ export function WorkflowFormFields({
   sourceAccountOptions: Account[];
   secondaryAccountLabel: string | null;
   nonCreditActiveAccounts: Account[];
-  normalIncomeCategories: IncomeCategory[];
+  incomeCategories: IncomeCategory[];
   isTransfer: boolean;
   isCreditCardPayment: boolean;
   isAlkansya: boolean;
@@ -45,6 +46,7 @@ export function WorkflowFormFields({
   fixedCategory: string | undefined;
   eligibleCcExpenses: ExpenseRecord[];
   totalCovered: number;
+  onCategoryChange?: (id: string) => void;
 }) {
   const {
     workflowNameInput, setWorkflowNameInput,
@@ -152,8 +154,8 @@ export function WorkflowFormFields({
           <FilterDropdown
             placeholder="— None —"
             value={workflowCategoryIdInput}
-            onChange={setWorkflowCategoryIdInput}
-            items={normalIncomeCategories.map((category) => ({
+            onChange={onCategoryChange ?? setWorkflowCategoryIdInput}
+            items={incomeCategories.map((category) => ({
               id: category.id,
               label: category.source,
               icon: <CategoryIcon icon={category.icon} />,

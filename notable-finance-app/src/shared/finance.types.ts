@@ -229,12 +229,14 @@ export type IncomeView =
   | 'creditCardPayments'
   | 'alkansya'
   | 'receivables'
+  | 'moneyLent'
 
 /** The web fixed-category names per income view (source field of income_categories). */
 export const INCOME_VIEW_FIXED_CATEGORY: Partial<Record<IncomeView, string>> = {
   transfers: 'Transfer',
   creditCardPayments: 'Credit Card Payment',
-  alkansya: 'Savings'
+  alkansya: 'Savings',
+  moneyLent: 'Money Lent'
 }
 
 export interface ListRecordsParams {

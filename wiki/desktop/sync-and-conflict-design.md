@@ -164,3 +164,7 @@ appear in dropdowns.
 - [`local-data-schema.md`](local-data-schema.md) — the sync columns this algorithm reads/writes.
 - [`offline-and-state-model.md`](offline-and-state-model.md) — how `sync_state` surfaces in the UI.
 - [`ipc-contract.md`](ipc-contract.md) — the sync/conflict IPC channels.
+
+## Money Lent settlement
+
+Reclassification and full repayment update the original Income row, its dirty state, and mutation journal in one SQLite transaction. Existing Notion identity and base snapshot remain intact. Push/pull uses existing mapped Income fields; no repayment income or duplicate page is created. Local repayment-date notes are not a mapped Notion property. Already-settled or conflicted rows cannot be settled; stale amount/source previews fail without a write. The existing three-way merge still handles remote edits after local settlement. See [Money Lent](money-lent.md).

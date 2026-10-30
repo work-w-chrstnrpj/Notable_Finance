@@ -5,7 +5,7 @@ import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { WorkflowPage } from "./workflow";
 import type { ExpenseRecord, WorkflowSectionId } from "@/types/finance";
-import { consumePendingEdit } from "@/lib/pending-edit";
+import { useFabExport } from '@/lib/fab-export-context';
 
 const sourceAccount = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const destAccount = { ...sourceAccount, id: "acc2", name: "Savings Jar" };
@@ -87,7 +87,7 @@ describe("WorkflowPage", () => {
     expect(table.querySelector("tfoot")).toBeNull();
   });
 
-  it("includes eligible Pasabuy expenses in Receivables and routes clicks to Expense", async () => {
+  it("includes eligible Pasabuy expenses in Receivables and opens Pasabuy-only details", async () => {
     renderWorkflow("receivables");
     expect(await screen.findByText("Groceries for Ana")).toBeInTheDocument();
     expect(screen.queryByText("Not yet paid")).not.toBeInTheDocument();
@@ -95,9 +95,13 @@ describe("WorkflowPage", () => {
     expect(screen.queryByText("Other category")).not.toBeInTheDocument();
     expect(screen.getByText("Pasabuy · Expense")).toBeInTheDocument();
     expect(screen.getByText("₱600.00")).toBeInTheDocument();
+    const originalHash = window.location.hash;
     fireEvent.click(screen.getByText("Groceries for Ana"));
-    expect(window.location.hash).toBe("#/expense");
-    expect(consumePendingEdit("expenses")).toMatchObject({ recordId: "exp1", payload: pasabuyExpense });
+    const dialog = screen.getByRole('dialog', { name: 'Pasabuy receivable' });
+    expect(within(dialog).getByLabelText(/^Purchase description/)).toHaveValue('Groceries for Ana');
+    expect(within(dialog).getByLabelText('Pasabuy Status')).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('Expense Amount')).not.toBeInTheDocument();
+    expect(window.location.hash).toBe(originalHash);
   });
 
   it.each(["alkansya", "receivables"] as const)("scopes %s to the selected weekly period", async (section) => {
@@ -211,5 +215,144 @@ describe("Workflow filters and fixed Savings", () => {
     await waitFor(() => expect(create).toHaveBeenCalled());
     expect(create.mock.calls[0][0]).toMatchObject({ view: "alkansya", accountId: "acc1" });
     expect(create.mock.calls[0][0]).not.toHaveProperty("categoryId");
+  });
+});
+
+function ReceiptProbe() {
+  const { receipt } = useFabExport();
+  return <output data-testid="receipt-data">{JSON.stringify(receipt)}</output>;
+}
+
+describe('Money Lent', () => {
+  const loanCategory = { ...category, id: 'loan-cat', source: 'Money Lent' };
+  const loan = { ...workflowRecord, id: 'loan1', name: 'Ana loan', categoryId: loanCategory.id, grossIncome: -1000, transactedAccountId: null };
+  function renderLoans(options: Parameters<typeof renderPage>[1] = {}) {
+    return renderPage(<><WorkflowPage section="receivables" selectedMonth="2026-07" /><ReceiptProbe /></>, { apiOverrides: {
+      accounts: { list: vi.fn(async () => ok([sourceAccount, destAccount])) },
+      categories: { income: vi.fn(async () => ok([category, loanCategory, { ...category, id: 'salary-cat', source: 'Salary', auxiliary: false }])), expense: vi.fn(async () => ok([])) },
+      incomes: { list: vi.fn(async () => ok([loan])), ...options.apiOverrides?.incomes },
+      settings: options.apiOverrides?.settings,
+    } });
+  }
+
+  it('displays a positive loan row and total without changing the stored amount', async () => {
+    renderLoans();
+    await screen.findByText('Ana loan');
+    const table = screen.getByRole('table');
+    expect(within(table).getAllByText('₱1,000.00')).toHaveLength(2);
+    expect(within(table).queryByText('-₱1,000.00')).not.toBeInTheDocument();
+    await waitFor(() => expect(JSON.parse(screen.getByTestId('receipt-data').textContent!)).toMatchObject({
+      total: '₱1,000.00', rows: [expect.objectContaining({ amount: '₱1,000.00', description: 'Ana loan' })],
+    }));
+  });
+
+  it('creates a loan from a positive amount using the locked category and signed persistence', async () => {
+    const create = vi.fn(async (_input: unknown) => ok(loan));
+    renderLoans({ apiOverrides: { incomes: { create } } });
+    await screen.findByText('Ana loan');
+    fireEvent.click(screen.getByRole('button', { name: 'Lend money' }));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.change(within(dialog).getByPlaceholderText('Money Lent title'), { target: { value: 'Ben loan' } });
+    fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: '2026-07-15' } });
+    fireEvent.change(within(dialog).getByPlaceholderText('0.00'), { target: { value: '1000' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Source Account' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Main Wallet' }));
+    expect(within(dialog).queryByText('Capital Expenditure')).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Save/ }));
+    await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      view: 'moneyLent', grossIncome: -1000, accountId: 'acc1', categoryId: 'loan-cat', capitalExpenditure: 0,
+    })));
+  });
+
+  it('offers auxiliary Money Lent in the normal Receivables category picker and switches to lending fields', async () => {
+    const create = vi.fn(async (_input: unknown) => ok(loan));
+    renderLoans({ apiOverrides: { incomes: { create } } });
+    await screen.findByText('Ana loan');
+    fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Money Lent' }));
+    expect(within(dialog).getByText('Amount lent')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Capital Expenditure')).not.toBeInTheDocument();
+    fireEvent.change(within(dialog).getByPlaceholderText('Money Lent title'), { target: { value: 'New category loan' } });
+    fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: '2026-07-15' } });
+    fireEvent.change(within(dialog).getByPlaceholderText('0.00'), { target: { value: '1000' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Source Account' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Main Wallet' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Save/ }));
+    await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      categoryId: 'loan-cat', view: 'moneyLent', grossIncome: -1000, accountId: 'acc1', capitalExpenditure: 0,
+    })));
+  });
+
+  it('lets a new Receivables draft switch between Money Lent and a normal category', async () => {
+    renderLoans();
+    await screen.findByText('Ana loan');
+    fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Money Lent' }));
+    expect(within(dialog).getByText('Amount lent')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Salary' }));
+    expect(within(dialog).getByText('Capital Expenditure')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Amount lent')).not.toBeInTheDocument();
+  });
+
+  it('switches back from Transfer to same-account repayment without using the old destination', async () => {
+    const repayMoneyLent = vi.fn(async (_id: string, _input: unknown) => ok(loan));
+    renderLoans({ apiOverrides: { incomes: { repayMoneyLent } } });
+    fireEvent.click(await screen.findByText('Ana loan'));
+    fireEvent.click(screen.getByRole('button', { name: 'Record repayment' }));
+    const dialog = screen.getByRole('dialog', { name: 'Record full repayment' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer to another account' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer Account' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Savings Jar' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Same account' }));
+    expect(within(dialog).queryByRole('button', { name: 'Transfer Account' })).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm full repayment' }));
+    await waitFor(() => expect(repayMoneyLent).toHaveBeenCalledWith('loan1', expect.objectContaining({ receivingAccountId: 'acc1' })));
+  });
+
+  it.each(['acc1', 'acc2'])('previews full repayment into %s and uses the settlement endpoint', async (account) => {
+    const repayMoneyLent = vi.fn(async (_id: string, _input: unknown) => ok({ ...loan, deleted: account === 'acc1' }));
+    renderLoans({ apiOverrides: { incomes: { repayMoneyLent } } });
+    fireEvent.click(await screen.findByText('Ana loan'));
+    fireEvent.click(screen.getByRole('button', { name: 'Record repayment' }));
+    const dialog = screen.getByRole('dialog', { name: 'Record full repayment' });
+    if (account === 'acc2') {
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer to another account' }));
+      expect(within(dialog).getByRole('button', { name: 'Convert to Transfer' })).toBeDisabled();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer Account' }));
+      expect(within(dialog).queryByRole('button', { name: 'Main Wallet' })).not.toBeInTheDocument();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Savings Jar' }));
+      expect(within(dialog).getByText(/Convert this loan to a Transfer from Main Wallet to Savings Jar/)).toBeInTheDocument();
+    } else {
+      expect(within(dialog).getByText(/Soft-delete this loan and restore/)).toBeInTheDocument();
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: account === 'acc2' ? 'Convert to Transfer' : 'Confirm full repayment' }));
+    await waitFor(() => expect(repayMoneyLent).toHaveBeenCalledWith('loan1', expect.objectContaining({
+      receivingAccountId: account, expectedAmount: 1000, expectedSourceAccountId: 'acc1',
+    })));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('cancels repayment without changing the loan', async () => {
+    const { api } = renderLoans();
+    fireEvent.click(await screen.findByText('Ana loan'));
+    fireEvent.click(screen.getByRole('button', { name: 'Record repayment' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(api.incomes.repayMoneyLent).not.toHaveBeenCalled();
+    expect(screen.getByText('Ana loan')).toBeInTheDocument();
+  });
+
+  it('shows settlement errors and lets the user retry without losing the preview', async () => {
+    const repayMoneyLent = vi.fn(async () => ({ ok: false as const, error: { code: 'E_VALIDATION', message: 'The loan changed.' } }));
+    renderLoans({ apiOverrides: { incomes: { repayMoneyLent } } });
+    fireEvent.click(await screen.findByText('Ana loan'));
+    fireEvent.click(screen.getByRole('button', { name: 'Record repayment' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm full repayment' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The loan changed.');
+    expect(screen.getByRole('dialog', { name: 'Record full repayment' })).toBeInTheDocument();
   });
 });
