@@ -6,7 +6,7 @@ import { AccountIcon } from "@/components/ui/accounts";
 import { useRecordSearch } from "@/features/records/use-record-search";
 import { Plus } from "lucide-react";
 import { useLiveCollections } from "@/components/hooks";
-import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar, FilterDropdown } from "@/components/ui";
+import { Panel, MoneyValue, LoadingBlock, EmptyState, PageToolbar, FilterDropdown, SegmentedControl } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { FormModal, ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { ShortcutHint } from "@/components/shortcuts";
@@ -33,15 +33,22 @@ import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-se
 import { useFabRegister, type ReceiptContext } from "@/lib/fab-export-context";
 import { navigate } from "@/lib/router";
 import { setPendingEdit } from "@/lib/pending-edit";
+import { computeRange, incomeModeToUnit, rangeLabel } from "@/lib/date-range";
 import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
 import type { ExpenseRecord } from "@/types/finance";
 
 function WorkflowPage({
   section,
   selectedMonth,
+  selectedDate = `${selectedMonth}-15`,
+  viewMode = "Monthly",
+  onViewModeChange = () => {},
 }: {
   section: WorkflowSectionId;
   selectedMonth: string;
+  selectedDate?: string;
+  viewMode?: "Daily" | "Weekly" | "Monthly" | "Annually";
+  onViewModeChange?: (mode: "Daily" | "Weekly" | "Monthly" | "Annually") => void;
 }) {
   const {
     activeAccounts,
@@ -145,14 +152,18 @@ function WorkflowPage({
   // Each workflow is the Incomes data source filtered server-side by its fixed
   // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
   // alkansya→Savings) or, for receivables, by an empty receiving account.
-  // Alkansya and Receivables are month-independent buckets — they show every
-  // matching record so items can be triaged and updated later, so no month is
-  // passed for them.
+  // Alkansya and Receivables use the selected date period; Transfer and CC
+  // Payment remain month-scoped.
   const monthScoped = section === "transfer" || section === "credit-card-payment";
+  const periodScoped = isAlkansya || isReceivables;
+  const selectedRange = periodScoped ? computeRange(incomeModeToUnit(viewMode), selectedDate) : undefined;
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
     month: monthScoped ? selectedMonth : undefined,
+    rangeStart: selectedRange?.start,
+    rangeEnd: selectedRange?.end,
   });
   const { state: expenseState } = useExpenses();
+  const selectedPeriodLabel = periodScoped ? rangeLabel(incomeModeToUnit(viewMode), selectedDate) : "All Time";
   // Workflows are income-backed views, so they share the income invalidation.
   const { invalidateIncomeFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
@@ -164,7 +175,8 @@ function WorkflowPage({
         expenseCategoryNameById.get(expense.categoryId) === "Pasabuy" &&
         expense.paymentStatus === "Paid" &&
         Boolean(expense.datePaid) &&
-        expense.pasabuyStatus !== "Payment fully received"
+        expense.pasabuyStatus !== "Payment fully received" &&
+        (!selectedRange || (expense.datePaid! >= selectedRange.start && expense.datePaid! <= selectedRange.end))
       )
     : [];
   const accountFiltered = allWorkflowIncomes.filter((record) => {
@@ -223,7 +235,7 @@ function WorkflowPage({
         records: receivableRecords,
         excludeIds: disabledIds,
         viewTitle: "Receivables",
-        periodLabel: "All Time",
+        periodLabel: selectedPeriodLabel,
         toRow: (item) => ({
           date: item.kind === "income" ? (item.record.date ? formatDate(item.record.date) : "—") : (item.record.datePaid ? formatDate(item.record.datePaid) : "—"),
           description: item.kind === "income" ? stripNotionTag(item.record.name) : item.record.description,
@@ -231,7 +243,7 @@ function WorkflowPage({
         }),
         valueOf: (item) => item.kind === "income" ? item.record.grossIncome ?? 0 : item.record.pasabuyBalance ?? 0,
       }),
-    [receivableRecords, disabledIds],
+    [receivableRecords, disabledIds, selectedPeriodLabel],
   );
 
   useEffect(() => {
@@ -541,6 +553,15 @@ function WorkflowPage({
           </>
         }
       />
+      {periodScoped && (
+        <SegmentedControl
+          label={`${label} view`}
+          options={["Daily", "Weekly", "Monthly", "Annually"].map((mode) => ({ label: mode, value: mode }))}
+          value={viewMode}
+          onChange={(mode) => onViewModeChange(mode as typeof viewMode)}
+          shortcutId="view.filterTab"
+        />
+      )}
       {(filterActive || searchActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
           {filterActive && (
@@ -591,12 +612,12 @@ function WorkflowPage({
           />
         ) : (
           <EmptyState
-            title={allWorkflowIncomes.length ? "No matching records" : monthScoped ? `No ${label.toLowerCase()} records this month` : `No ${label.toLowerCase()} records`}
+            title={allWorkflowIncomes.length || receivablePasabuyExpenses.length ? "No matching records" : periodScoped || monthScoped ? `No ${label.toLowerCase()} records for ${selectedPeriodLabel}` : `No ${label.toLowerCase()} records`}
             detail={
               allWorkflowIncomes.length
                 ? "Try another account or search term."
                 : isReceivables
-                ? "Receivables are income records that do not yet have a receiving account."
+                ? "Receivables include income entries without a receiving account and paid Pasabuy expenses that still have a balance due."
                 : isAlkansya
                   ? "Alkansya holds income records in the Savings category."
                   : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`

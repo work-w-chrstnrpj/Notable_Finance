@@ -164,6 +164,7 @@ export function activeSelectorUnit(
   incomeViewMode: IncomeViewMode,
   expenseViewMode: ExpenseViewMode,
   monitoringViewMode: MonitoringViewMode = "Monthly",
+  workflowViewMode: IncomeViewMode = "Monthly",
 ): ViewUnit | null {
   switch (section) {
     case "income":
@@ -176,11 +177,9 @@ export function activeSelectorUnit(
       return "month";
     case "monthly-monitoring":
       return monitoringModeToUnit(monitoringViewMode);
-    // Alkansya (Savings) and Receivables are month-independent buckets, so
-    // they show no date selector and query every matching record.
     case "alkansya":
     case "receivables":
-      return null;
+      return incomeModeToUnit(workflowViewMode);
     default:
       return null;
   }

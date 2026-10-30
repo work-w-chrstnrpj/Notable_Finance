@@ -440,6 +440,7 @@ export interface UiWorkspaceSettings {
   /** ISO date anchor for period selectors; null means “today” on next launch. */
   selectedDate: string | null
   incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
+  workflowViewMode?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually'
   expenseViewMode:
     | 'Daily'
     | 'Weekly'

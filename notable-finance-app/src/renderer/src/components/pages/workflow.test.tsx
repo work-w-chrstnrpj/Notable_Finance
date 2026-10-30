@@ -99,6 +99,33 @@ describe("WorkflowPage", () => {
     expect(window.location.hash).toBe("#/expense");
     expect(consumePendingEdit("expenses")).toMatchObject({ recordId: "exp1", payload: pasabuyExpense });
   });
+
+  it.each(["alkansya", "receivables"] as const)("scopes %s to the selected weekly period", async (section) => {
+    const list = vi.fn(async () => ok([workflowRecord]));
+    renderPage(
+      <WorkflowPage
+        section={section}
+        selectedMonth="2026-07"
+        selectedDate="2026-07-11"
+        viewMode="Weekly"
+        onViewModeChange={vi.fn()}
+      />,
+      { apiOverrides: {
+        accounts: { list: vi.fn(async () => ok([sourceAccount, destAccount])) },
+        categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([pasabuyExpenseCategory])) },
+        incomes: { list },
+        expenses: { list: vi.fn(async () => ok([pasabuyExpense])), listForCCCoverage: vi.fn(async () => ok([])) },
+      } },
+    );
+    await screen.findByText(section === "receivables" ? "Groceries for Ana" : "Weekly Transfer");
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({
+      view: section === "alkansya" ? "alkansya" : "receivables",
+      rangeStart: "2026-07-06",
+      rangeEnd: "2026-07-12",
+    }));
+    expect(screen.getByRole("button", { name: "Daily" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Weekly" })).toBeInTheDocument();
+  });
 });
 
 
