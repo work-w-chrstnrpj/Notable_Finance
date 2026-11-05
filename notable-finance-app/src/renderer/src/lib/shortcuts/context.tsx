@@ -181,6 +181,9 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
 
   const dispatch = useCallback(
     (e: KeyboardEvent): boolean => {
+      // Let an expanded picker dismiss before an enclosing modal handles Escape.
+      if (e.key === "Escape" && e.target instanceof Element &&
+        e.target.matches('[role="combobox"][aria-expanded="true"]')) return false;
       const parsed = comboFromEvent(e);
       if (!parsed) return false;
       const typing = isTypingTarget(e.target);

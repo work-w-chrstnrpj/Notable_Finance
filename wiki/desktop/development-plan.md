@@ -154,3 +154,12 @@ Receivables New Record now includes auxiliary Money Lent in Categories and switc
 | Release verification | Desktop lint, typecheck, unit/component tests, build, and Electron regression suite | Passed: 396 tests, 7 skipped; all 47 Electron tests; lint 0 errors (105 warnings) |
 
 See [release verification](desktop-testing-strategy.md#v240-release-verification-2026-10-31). Live Notion and owner acceptance remain separate and pending.
+
+## Expense controls (2026-11-05)
+
+| Work item | Acceptance | Status |
+| --- | --- | --- |
+| Pasabuy Expense view | All purchase dates, Pasabuy columns and combined filters | Implemented and verified in Electron |
+| Expense column sizing and icon dropdowns | Drag and keyboard resize, keyboard selection, and dismissal | Implemented and verified in Electron |
+
+See [Expense controls](ui-ux-redesign.md#pasabuy-and-record-table-controls).

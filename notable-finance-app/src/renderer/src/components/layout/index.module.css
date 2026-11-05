@@ -423,3 +423,20 @@
   .topbar__date { grid-row: 2; grid-column: 1 / -1; }
   .topbar__actions { grid-row: 1; grid-column: 2; }
 }
+
+
+.sidebar-nav {
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 180ms ease;
+}
+
+.sidebar-nav--scrolling {
+  scrollbar-color: var(--ink-muted) transparent;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav {
+    transition: none;
+  }
+}

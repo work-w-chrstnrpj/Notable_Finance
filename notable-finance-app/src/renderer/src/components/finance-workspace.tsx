@@ -55,6 +55,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [incomeViewMode, setIncomeViewMode] = useState<IncomeViewMode>("Monthly");
   const [workflowViewMode, setWorkflowViewMode] = useState<IncomeViewMode>("Monthly");
   const [ccPeriod, setCcPeriod] = useState<IncomeViewMode>("Monthly");
+  const [pasabuyPeriod, setPasabuyPeriod] = useState<IncomeViewMode>("All Records");
   const [expenseViewMode, setExpenseViewMode] = useState<ExpenseViewMode>("Monthly");
   const [monitoringViewMode, setMonitoringViewMode] = useState<MonitoringViewMode>("Monthly");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -78,6 +79,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     setWorkflowViewMode(ws.workflowViewMode ?? "Monthly");
     setExpenseViewMode(ws.expenseViewMode === "Unpaid CC" ? "CC Transaction" : ws.expenseViewMode);
     setCcPeriod(ws.ccPeriod ?? "Monthly");
+    setPasabuyPeriod(ws.pasabuyPeriod ?? "All Records");
     setSidebarCollapsed(ws.sidebarCollapsed);
     setShowFab(ws.showFab);
     setWorkspaceHydrated(true);
@@ -112,7 +114,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
 
   useDebouncedPersist(
     workspaceHydrated,
-    [selectedDate, incomeViewMode, workflowViewMode, expenseViewMode, ccPeriod, sidebarCollapsed, showFab, activeSection],
+    [selectedDate, incomeViewMode, workflowViewMode, expenseViewMode, ccPeriod, pasabuyPeriod, sidebarCollapsed, showFab, activeSection],
     () => {
       void updateSettings({
         workspace: {
@@ -121,6 +123,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           workflowViewMode,
           expenseViewMode,
           ccPeriod,
+          pasabuyPeriod,
           sidebarCollapsed,
           showFab,
           // Remember last *finance* section (skip chat / dev-logs modes).
@@ -145,7 +148,9 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   const [activeSyncKind, setActiveSyncKind] = useState<"full" | "pull" | "push" | null>(null);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
-  const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseViewMode === "CC Transaction" ? ccPeriod : expenseViewMode, monitoringViewMode, workflowViewMode);
+  const expenseDateMode = expenseViewMode === "CC Transaction" ? ccPeriod
+    : expenseViewMode === "Pasabuy" ? pasabuyPeriod : expenseViewMode;
+  const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseDateMode, monitoringViewMode, workflowViewMode);
 
   const activeMonths = useMemo(() => {
     if (activeSection !== "monthly-monitoring") return undefined;
@@ -314,6 +319,8 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
               <ExpensePage
                 ccPeriod={ccPeriod}
                 onCcPeriodChange={setCcPeriod}
+                pasabuyPeriod={pasabuyPeriod}
+                onPasabuyPeriodChange={setPasabuyPeriod}
                 viewMode={expenseViewMode}
                 onViewModeChange={setExpenseViewMode}
                 selectedDate={selectedDate}

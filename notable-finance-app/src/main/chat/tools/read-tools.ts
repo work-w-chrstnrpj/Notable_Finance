@@ -167,7 +167,10 @@ export function queryExpenses(args: unknown) {
     categoryId: str(a.categoryId),
     paymentStatus: str(a.paymentStatus),
     expenseViewMode: str(a.expenseViewMode) ?? str(a.viewMode) ?? 'Monthly',
-    pasabuyer: str(a.pasabuyer)
+    pasabuyer: str(a.pasabuyer),
+    pasabuyStatus: str(a.pasabuyStatus),
+    pasabuyDateOfPayment: str(a.pasabuyDateOfPayment),
+    pasabuyAccountReceiverId: str(a.pasabuyAccountReceiverId)
   })
   const totalAmount = records.reduce((s, r) => s + (r.amount || 0) + (r.interest || 0), 0)
   return {

@@ -318,7 +318,8 @@ Drafts pending confirm stay attached to the thread until resolved or cancelled.
 | Daily / Weekly / Monthly / Annually | Period-scoped lists and totals |
 | To pay / To buy / Installments | Outstanding / scheduled-style scopes |
 | Unpaid CC | Credit-like unpaid / CC transaction context |
-| Unpaid Pasabuy | Pasabuy-scoped; category filter hidden/ignored; Pasabuyer filter allowed |
+| Pasabuy | All Pasabuy purchases by default, with optional date bounds and Pasabuyer, Pasabuy Status, payment date, and receiver filters |
+| Unpaid Pasabuy | Historical outstanding Pasabuy query |
 
 When the user says “show unpaid pasabuy” or “CC transactions this month,” tools must use the correct view filter — not a generic monthly dump.
 

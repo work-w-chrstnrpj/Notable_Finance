@@ -74,6 +74,7 @@
 
 .filter-dropdown__trigger {
   display: inline-flex;
+  justify-content: space-between;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
@@ -93,6 +94,10 @@
   color: var(--blue);
 }
 
+
+.filter-dropdown__trigger > svg {
+  flex-shrink: 0;
+}
 
 .filter-dropdown__selected {
   display: inline-flex;

@@ -43,14 +43,14 @@ async function createLoan(name: string, useCategoryPicker = false) {
   await win.getByRole('button', { name: useCategoryPicker ? /New Record/ : 'Lend money' }).click()
   const dialog = win.getByRole('dialog')
   if (useCategoryPicker) {
-    await dialog.getByRole('button', { name: 'Categories', exact: true }).click()
-    await dialog.getByRole('button', { name: 'Money Lent', exact: true }).click()
+    await dialog.getByRole('combobox', { name: 'Categories', exact: true }).click()
+    await dialog.getByRole('option', { name: 'Money Lent', exact: true }).click()
   }
   await dialog.getByPlaceholder('Money Lent title').fill(name)
   await dialog.locator('input[type="date"]').fill(date)
   await dialog.getByPlaceholder('0.00', { exact: true }).fill('1000')
-  await dialog.getByRole('button', { name: 'Source Account', exact: true }).click()
-  await dialog.getByRole('button', { name: 'Wallet', exact: true }).click()
+  await dialog.getByRole('combobox', { name: 'Source Account', exact: true }).click()
+  await dialog.getByRole('option', { name: 'Wallet', exact: true }).click()
   await dialog.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(dialog).toHaveCount(0)
   const row = win.getByRole('row').filter({ hasText: name })
@@ -64,9 +64,9 @@ async function settle(name: string, destination?: string) {
   if (destination) {
     await dialog.getByRole('button', { name: 'Transfer to another account', exact: true }).click()
     await expect(dialog.getByRole('button', { name: 'Convert to Transfer', exact: true })).toBeDisabled()
-    await dialog.getByRole('button', { name: 'Transfer Account', exact: true }).click()
-    await expect(dialog.getByRole('button', { name: 'Wallet', exact: true })).toHaveCount(0)
-    await dialog.getByRole('button', { name: destination, exact: true }).click()
+    await dialog.getByRole('combobox', { name: 'Transfer Account', exact: true }).click()
+    await expect(dialog.getByRole('option', { name: 'Wallet', exact: true })).toHaveCount(0)
+    await dialog.getByRole('option', { name: destination, exact: true }).click()
     await expect(dialog).toContainText('Convert this loan to a Transfer from Wallet to Bank')
   } else {
     await expect(dialog).toContainText('Soft-delete this loan and restore ₱1,000.00 to Wallet')

@@ -160,8 +160,8 @@ describe("Workflow filters and fixed Savings", () => {
       } });
       expect(await screen.findByText("Zebra reserve")).toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-      fireEvent.click(screen.getByRole("button", { name: "All Accounts" }));
-      fireEvent.click(screen.getByRole("button", { name: "Main Wallet" }));
+      fireEvent.click(screen.getByRole("combobox", { name: "All Accounts" }));
+      fireEvent.click(screen.getByRole("option", { name: "Main Wallet" }));
       expect(screen.queryByText("Zebra reserve")).not.toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: "Search" }));
       fireEvent.change(screen.getByPlaceholderText(/^Search /), { target: { value: "Zebra reserve" } });
@@ -179,8 +179,8 @@ describe("Workflow filters and fixed Savings", () => {
     renderWorkflow(section);
     await screen.findByText("Weekly Transfer");
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    fireEvent.click(screen.getByRole("button", { name: "All Accounts" }));
-    fireEvent.click(screen.getByRole("button", { name: "Savings Jar" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "All Accounts" }));
+    fireEvent.click(screen.getByRole("option", { name: "Savings Jar" }));
     expect(screen.getByText("Weekly Transfer")).toBeInTheDocument();
   });
 
@@ -188,8 +188,8 @@ describe("Workflow filters and fixed Savings", () => {
     renderWorkflow("receivables");
     await screen.findByText("Weekly Transfer");
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    fireEvent.click(screen.getByRole("button", { name: "All Accounts" }));
-    fireEvent.click(screen.getByRole("button", { name: "No Account" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "All Accounts" }));
+    fireEvent.click(screen.getByRole("option", { name: "No Account" }));
     expect(screen.queryByText("Weekly Transfer")).not.toBeInTheDocument();
   });
 
@@ -209,8 +209,8 @@ describe("Workflow filters and fixed Savings", () => {
     expect(within(dialog).queryByRole("button", { name: "Transfer" })).not.toBeInTheDocument();
     fireEvent.change(within(dialog).getByPlaceholderText("Alkansya title"), { target: { value: "Reserve" } });
     fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: "2026-07-15" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Accounts" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Main Wallet" }));
+    fireEvent.click(within(dialog).getByRole("combobox", { name: "Accounts" }));
+    fireEvent.click(within(dialog).getByRole("option", { name: "Main Wallet" }));
     fireEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(create).toHaveBeenCalled());
     expect(create.mock.calls[0][0]).toMatchObject({ view: "alkansya", accountId: "acc1" });
@@ -255,8 +255,8 @@ describe('Money Lent', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Money Lent title'), { target: { value: 'Ben loan' } });
     fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: '2026-07-15' } });
     fireEvent.change(within(dialog).getByPlaceholderText('0.00'), { target: { value: '1000' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Source Account' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Main Wallet' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Source Account' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Main Wallet' }));
     expect(within(dialog).queryByText('Capital Expenditure')).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: /^Save/ }));
     await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({
@@ -270,15 +270,15 @@ describe('Money Lent', () => {
     await screen.findByText('Ana loan');
     fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
     const dialog = screen.getByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Money Lent' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Money Lent' }));
     expect(within(dialog).getByText('Amount lent')).toBeInTheDocument();
     expect(within(dialog).queryByText('Capital Expenditure')).not.toBeInTheDocument();
     fireEvent.change(within(dialog).getByPlaceholderText('Money Lent title'), { target: { value: 'New category loan' } });
     fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: '2026-07-15' } });
     fireEvent.change(within(dialog).getByPlaceholderText('0.00'), { target: { value: '1000' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Source Account' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Main Wallet' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Source Account' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Main Wallet' }));
     fireEvent.click(within(dialog).getByRole('button', { name: /^Save/ }));
     await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({
       categoryId: 'loan-cat', view: 'moneyLent', grossIncome: -1000, accountId: 'acc1', capitalExpenditure: 0,
@@ -290,11 +290,11 @@ describe('Money Lent', () => {
     await screen.findByText('Ana loan');
     fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
     const dialog = screen.getByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Money Lent' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Money Lent' }));
     expect(within(dialog).getByText('Amount lent')).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Categories' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Salary' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Categories' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Salary' }));
     expect(within(dialog).getByText('Capital Expenditure')).toBeInTheDocument();
     expect(within(dialog).queryByText('Amount lent')).not.toBeInTheDocument();
   });
@@ -306,10 +306,10 @@ describe('Money Lent', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Record repayment' }));
     const dialog = screen.getByRole('dialog', { name: 'Record full repayment' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer to another account' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer Account' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Savings Jar' }));
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'Transfer Account' }));
+    fireEvent.click(within(dialog).getByRole('option', { name: 'Savings Jar' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Same account' }));
-    expect(within(dialog).queryByRole('button', { name: 'Transfer Account' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('combobox', { name: 'Transfer Account' })).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm full repayment' }));
     await waitFor(() => expect(repayMoneyLent).toHaveBeenCalledWith('loan1', expect.objectContaining({ receivingAccountId: 'acc1' })));
   });
@@ -323,9 +323,9 @@ describe('Money Lent', () => {
     if (account === 'acc2') {
       fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer to another account' }));
       expect(within(dialog).getByRole('button', { name: 'Convert to Transfer' })).toBeDisabled();
-      fireEvent.click(within(dialog).getByRole('button', { name: 'Transfer Account' }));
-      expect(within(dialog).queryByRole('button', { name: 'Main Wallet' })).not.toBeInTheDocument();
-      fireEvent.click(within(dialog).getByRole('button', { name: 'Savings Jar' }));
+      fireEvent.click(within(dialog).getByRole('combobox', { name: 'Transfer Account' }));
+      expect(within(dialog).queryByRole('option', { name: 'Main Wallet' })).not.toBeInTheDocument();
+      fireEvent.click(within(dialog).getByRole('option', { name: 'Savings Jar' }));
       expect(within(dialog).getByText(/Convert this loan to a Transfer from Main Wallet to Savings Jar/)).toBeInTheDocument();
     } else {
       expect(within(dialog).getByText(/Soft-delete this loan and restore/)).toBeInTheDocument();

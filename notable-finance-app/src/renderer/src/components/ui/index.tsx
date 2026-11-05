@@ -1,6 +1,6 @@
 
-import { useRef, useState, type ReactNode } from "react";
-import { FileWarning, RefreshCw } from "lucide-react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { ChevronDown, FileWarning, RefreshCw } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
 import { getMoneyValueTone } from "@/lib/finance-rules";
@@ -103,6 +103,8 @@ export function MoneyLine({
   );
 }
 
+const FieldLabelContext = createContext<string | null>(null);
+
 export function Field({
   label,
   required,
@@ -122,7 +124,7 @@ export function Field({
         {label}
         {required && <span className={styles.field__required} aria-hidden="true"> *</span>}
       </span>
-      {children}
+      <FieldLabelContext.Provider value={label}>{children}</FieldLabelContext.Provider>
     </label>
   );
 }
@@ -272,42 +274,131 @@ export function FilterDropdown({
   items: Array<{ id: string; label: string; icon?: ReactNode }>;
 }) {
   const [open, setOpen] = useState(false);
-  const selected = items.find((i) => i.id === value);
+  const [highlight, setHighlight] = useState(0);
+  const id = useId();
+  const label = useContext(FieldLabelContext) ?? placeholder;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const typeahead = useRef({ text: "", time: 0 });
+  const options = [{ id: "", label: placeholder, icon: undefined }, ...items];
+  const selectedIndex = Math.max(0, options.findIndex((item) => item.id === value));
+  const selected = options[selectedIndex];
+
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [open]);
+
+  useEffect(() => {
+    const menu = menuRef.current;
+    const option = menu?.children[highlight] as HTMLElement | undefined;
+    if (!open || !menu || !option) return;
+    const top = option.offsetTop;
+    const bottom = top + option.offsetHeight;
+    if (top < menu.scrollTop) menu.scrollTop = top;
+    else if (bottom > menu.scrollTop + menu.clientHeight) menu.scrollTop = bottom - menu.clientHeight;
+  }, [open, highlight]);
+
+  function choose(index: number) {
+    const option = options[index];
+    if (option) onChange(option.id);
+    setOpen(false);
+  }
+
+  function handleKey(event: KeyboardEvent<HTMLButtonElement>) {
+    const { key } = event;
+    if (key === "Escape" && open) {
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      return;
+    }
+    if (key === "Tab") {
+      if (open) choose(highlight);
+      return;
+    }
+    if (key === "Enter" || key === " ") {
+      event.preventDefault();
+      if (open) choose(highlight);
+      else {
+        setHighlight(selectedIndex);
+        setOpen(true);
+      }
+      return;
+    }
+    if (["ArrowDown", "ArrowUp", "Home", "End"].includes(key)) {
+      event.preventDefault();
+      const current = open ? highlight : selectedIndex;
+      const next = key === "Home" ? 0 : key === "End" ? options.length - 1
+        : Math.max(0, Math.min(options.length - 1, current + (key === "ArrowDown" ? 1 : -1)));
+      setHighlight(next);
+      setOpen(true);
+      return;
+    }
+    if (key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) return;
+    event.preventDefault();
+    const now = Date.now();
+    const char = key.toLowerCase();
+    const previous = now - typeahead.current.time < 700 ? typeahead.current.text : "";
+    const prefix = previous === char ? char : previous + char;
+    typeahead.current = { text: prefix, time: now };
+    const start = (open ? highlight : selectedIndex) + (prefix.length === 1 ? 1 : 0);
+    for (let offset = 0; offset < options.length; offset++) {
+      const index = (start + offset) % options.length;
+      if (!options[index].label.toLowerCase().startsWith(prefix)) continue;
+      if (open) setHighlight(index);
+      else choose(index);
+      break;
+    }
+  }
+
   return (
-    <div className={cx(styles["filter-dropdown"], open && styles["filter-dropdown--open"])}>
+    <div ref={rootRef} className={cx(styles["filter-dropdown"], open && styles["filter-dropdown--open"])}>
       <button
         type="button"
+        role="combobox"
+        aria-label={label}
+        aria-describedby={`${id}-value`}
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        aria-activedescendant={open ? `${id}-${highlight}` : undefined}
         className={styles["filter-dropdown__trigger"]}
-        onClick={() => setOpen((o) => !o)}
+        onBlur={() => setOpen(false)}
+        onKeyDown={handleKey}
+        onClick={() => {
+          setHighlight(selectedIndex);
+          setOpen(!open);
+        }}
       >
-        {selected ? (
-          <span className={styles["filter-dropdown__selected"]}>
-            {selected.icon}
-            {selected.label}
-          </span>
-        ) : (
-          <span className={styles["filter-dropdown__placeholder"]}>{placeholder}</span>
-        )}
+        <span id={`${id}-value`} className={selected.id ? styles["filter-dropdown__selected"] : styles["filter-dropdown__placeholder"]}>
+          {selected.icon}
+          {selected.label}
+        </span>
+        <ChevronDown size={14} aria-hidden="true" />
       </button>
       {open && (
-        <div className={styles["filter-dropdown__menu"]}>
-          <button
-            type="button"
-            className={cx(styles["filter-dropdown__item"], !value && styles["filter-dropdown__item--active"])}
-            onClick={() => { onChange(""); setOpen(false); }}
-          >
-            {placeholder}
-          </button>
-          {items.map((item) => (
-            <button
-              type="button"
-              key={item.id}
-              className={cx(styles["filter-dropdown__item"], value === item.id && styles["filter-dropdown__item--active"])}
-              onClick={() => { onChange(item.id); setOpen(false); }}
+        <div ref={menuRef} id={id} role="listbox" aria-label={label} className={styles["filter-dropdown__menu"]}>
+          {options.map((option, index) => (
+            <div
+              key={option.id}
+              id={`${id}-${index}`}
+              role="option"
+              aria-selected={index === selectedIndex}
+              className={cx(styles["filter-dropdown__item"], index === highlight && styles["filter-dropdown__item--active"])}
+              onMouseDown={(event) => event.preventDefault()}
+              onMouseMove={() => setHighlight(index)}
+              onClick={(event) => {
+                event.preventDefault();
+                choose(index);
+              }}
             >
-              {item.icon}
-              {item.label}
-            </button>
+              {option.icon}
+              {option.label}
+            </div>
           ))}
         </div>
       )}

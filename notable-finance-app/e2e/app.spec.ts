@@ -134,8 +134,8 @@ test('CC Transaction periods and filters survive the desktop shell', async ({ br
     await expect(period).toHaveValue(value)
   }
   await expect(win.locator('select').filter({ has: win.locator('option', { hasText: 'All payment statuses' }) })).toBeVisible()
-  await win.getByRole('button', { name: 'All Categories', exact: true }).click()
-  await win.getByRole('button', { name: 'Pasabuy', exact: true }).click()
+  await win.getByRole('combobox', { name: 'All Categories', exact: true }).click()
+  await win.getByRole('option', { name: 'Pasabuy', exact: true }).click()
   await expect(win.locator('select').filter({ has: win.locator('option', { hasText: 'All Pasabuy payment statuses' }) })).toBeVisible()
   await expect(win.getByRole('columnheader', { name: 'Pasabuyer Balance' })).toBeVisible()
   await win.screenshot({ path: testInfo.outputPath('cc-transaction-redesign.png') })

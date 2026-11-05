@@ -21,8 +21,10 @@ import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance"
  * Presentational — every piece of state stays owned by the page and is passed in.
  */
 export function ExpenseToolbar({
-  ccPeriod,
-  onCcPeriodChange,
+  purchasePeriod,
+  pasabuyColorFilter,
+  onPasabuyColorChange,
+  onPurchasePeriodChange,
   viewMode,
   expenseViewModes,
   isAnnual,
@@ -44,6 +46,11 @@ export function ExpenseToolbar({
   setPaymentStatusFilter,
   pasabuyStatusFilter,
   setPasabuyStatusFilter,
+  pasabuyDateOfPaymentFilter,
+  setPasabuyDateOfPaymentFilter,
+  pasabuyAccountReceiverFilter,
+  setPasabuyAccountReceiverFilter,
+  clearFilters,
   annualView,
   setAnnualView,
   groupBy,
@@ -51,8 +58,10 @@ export function ExpenseToolbar({
   onNewExpense,
   onViewModeChange,
 }: {
-  ccPeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
-  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
+  pasabuyColorFilter: string;
+  onPasabuyColorChange: (value: string) => void;
+  purchasePeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  onPurchasePeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
   viewMode: ExpenseViewMode;
   expenseViewModes: ExpenseViewMode[];
   isAnnual: boolean;
@@ -74,6 +83,11 @@ export function ExpenseToolbar({
   setPaymentStatusFilter: (value: string) => void;
   pasabuyStatusFilter: string;
   setPasabuyStatusFilter: (value: string) => void;
+  pasabuyDateOfPaymentFilter: string;
+  setPasabuyDateOfPaymentFilter: (value: string) => void;
+  pasabuyAccountReceiverFilter: string;
+  setPasabuyAccountReceiverFilter: (value: string) => void;
+  clearFilters: () => void;
   annualView: "table" | "chart";
   setAnnualView: (value: "table" | "chart") => void;
   groupBy: AnnualGroupBy;
@@ -82,6 +96,10 @@ export function ExpenseToolbar({
   onViewModeChange: (mode: ExpenseViewMode) => void;
 }) {
   const { pasabuyerOptions } = useLiveCollections();
+  const isPasabuyView = viewMode === "Pasabuy";
+  const showsPasabuyFilters = isPasabuyView || expenseCategories.some(
+    (category) => category.id === expenseCategoryFilter && isPasabuyCategoryName(category.name),
+  );
   return (
     <>
       <PageToolbar
@@ -91,13 +109,7 @@ export function ExpenseToolbar({
             <FilterToggle
               active={filterActive}
               onToggle={() => {
-                if (filterActive) {
-                  setAccountFilterId("");
-                  setExpenseCategoryFilter("");
-                  setPasabuyerFilter("");
-                  setPaymentStatusFilter("");
-                  setPasabuyStatusFilter("");
-                }
+                if (filterActive) clearFilters();
                 setFilterActive((prev) => !prev);
               }}
               shortcutId="view.filters"
@@ -132,9 +144,13 @@ export function ExpenseToolbar({
         />
       {(searchActive || filterActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
-          {filterActive && viewMode === "CC Transaction" && (
+          {filterActive && (isPasabuyView || viewMode === "CC Transaction") && (
             <label className="filter-select">
-              <select aria-label="CC Transaction period" value={ccPeriod} onChange={e => onCcPeriodChange?.(e.target.value as typeof ccPeriod)}>
+              <select
+                aria-label={isPasabuyView ? "Pasabuy purchase period" : "CC Transaction period"}
+                value={purchasePeriod}
+                onChange={(event) => onPurchasePeriodChange?.(event.target.value as typeof purchasePeriod)}
+              >
                 {["Daily", "Weekly", "Monthly", "Annually", "All Records"].map(period => <option key={period}>{period}</option>)}
               </select>
             </label>
@@ -154,7 +170,7 @@ export function ExpenseToolbar({
                   icon: <AccountIcon account={account} />,
                 }))]}
               />
-              {viewMode !== "Unpaid Pasabuy" && (
+              {!isPasabuyView && viewMode !== "Unpaid Pasabuy" && (
                 <FilterDropdown
                   placeholder="All Categories"
                   value={expenseCategoryFilter}
@@ -173,7 +189,7 @@ export function ExpenseToolbar({
                   ]}
                 />
               )}
-              {expenseCategories.some(c => c.id === expenseCategoryFilter && /pasabuy/i.test(c.name)) && (
+              {showsPasabuyFilters && (
                 <FilterSelect
                   placeholder="All pasabuyers"
                   placeholderDisabled={false}
@@ -200,9 +216,7 @@ export function ExpenseToolbar({
                   ))}
                 </FilterSelect>
               )}
-              {expenseCategories.some(
-                  (category) => category.id === expenseCategoryFilter && /pasabuy/i.test(category.name),
-                ) && (
+              {showsPasabuyFilters && (
                   <FilterSelect
                     placeholder="All Pasabuy payment statuses"
                     placeholderDisabled={false}
@@ -214,6 +228,39 @@ export function ExpenseToolbar({
                     ))}
                   </FilterSelect>
                 )}
+              {isPasabuyView && (
+                <>
+                  <FilterSelect
+                    placeholder="All status colors"
+                    placeholderDisabled={false}
+                    value={pasabuyColorFilter}
+                    onChange={onPasabuyColorChange}
+                  >
+                    <option value="red">Red · Unpaid</option>
+                    <option value="blue">Blue · Pasabuy payment pending</option>
+                    <option value="violet">Violet · Unpaid and Pasabuy pending</option>
+                    <option value="yellow">Yellow · Installment</option>
+                  </FilterSelect>
+                  <label className="filter-select">
+                    <input
+                      type="date"
+                      aria-label="Pasabuy Date of Payment"
+                      value={pasabuyDateOfPaymentFilter}
+                      onChange={(event) => setPasabuyDateOfPaymentFilter(event.target.value)}
+                    />
+                  </label>
+                  <FilterDropdown
+                    placeholder="All Pasabuy receivers"
+                    value={pasabuyAccountReceiverFilter}
+                    onChange={setPasabuyAccountReceiverFilter}
+                    items={activeAccounts.map((account) => ({
+                      id: account.id,
+                      label: account.name,
+                      icon: <AccountIcon account={account} />,
+                    }))}
+                  />
+                </>
+              )}
             </>
           )}
           {searchActive && (
