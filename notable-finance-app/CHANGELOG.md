@@ -5,6 +5,19 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-11-05
+
+### Added
+
+- **Expense → Pasabuy.** Browse Pasabuy purchases by day, week, month, year, or across all records. Filter by Pasabuyer, payment status, payment date, or receiver.
+- **Pasabuy status colors.** Filter or scan rows by color. Red marks unpaid expenses, blue marks pending Pasabuy payments, violet marks both, and yellow marks installments.
+- **Resizable Expense columns.** Drag column edges or resize with the keyboard.
+
+### Changed
+
+- **Account and category pickers.** Use arrow keys, type to select, and dismiss with Escape or an outside click.
+- **Sidebar scrollbar.** Appears while scrolling and fades out when idle in both expanded and collapsed layouts.
+
 ## [2.4.0] - 2026-10-31
 
 ### Added
