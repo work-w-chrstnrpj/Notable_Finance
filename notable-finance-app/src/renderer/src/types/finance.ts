@@ -53,6 +53,7 @@ export type ExpenseViewMode =
   | "To buy"
   | "Installments"
   | "CC Transaction"
+  | "Pasabuy"
     | "Unpaid CC";
 
 export type SyncState = "idle" | "syncing" | "fresh" | "error";

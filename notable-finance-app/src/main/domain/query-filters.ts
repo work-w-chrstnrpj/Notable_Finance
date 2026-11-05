@@ -17,6 +17,8 @@ export interface ExpenseQuery extends RangeQuery {
   pasabuyer?: string
   paymentStatus?: string
   pasabuyStatus?: string
+  pasabuyDateOfPayment?: string
+  pasabuyAccountReceiverId?: string
   expenseViewMode?: string
 }
 
@@ -29,6 +31,8 @@ export interface ExpenseFilterContext {
 
 export function normalizeExpenseViewMode(mode?: string): string {
   switch ((mode ?? '').toLowerCase().replace(/\s+/g, '')) {
+    case 'pasabuy':
+      return 'pasabuy'
     case 'unpaidpasabuy':
       return 'unpaidPasabuy'
     case 'topay':
@@ -122,6 +126,7 @@ export function filterExpensesByQuery(
       })
       break
     default:
+      if (mode === 'pasabuy') filtered = filtered.filter((r) => ctx.pasabuyCategoryIds.has(r.categoryId))
       if (query.rangeStart || query.rangeEnd) {
         filtered = filterByRange(filtered, 'purchaseDate', query.rangeStart, query.rangeEnd)
       } else if (query.month) {
@@ -131,7 +136,7 @@ export function filterExpensesByQuery(
   }
 
   if (query.accountId) filtered = filtered.filter((r) => r.accountId === query.accountId)
-  if (query.categoryId && query.categoryId !== 'all') {
+  if (mode !== 'pasabuy' && query.categoryId && query.categoryId !== 'all') {
     if (query.categoryId === 'withoutPasabuy' || query.categoryId === '__without-pasabuy') {
       filtered = filtered.filter((r) => r.categoryId !== ctx.pasabuyCategoryId)
     } else {
@@ -141,5 +146,11 @@ export function filterExpensesByQuery(
   if (query.pasabuyer) filtered = filtered.filter((r) => r.pasabuyer === query.pasabuyer)
   if (query.paymentStatus) filtered = filtered.filter((r) => r.paymentStatus === query.paymentStatus)
   if (query.pasabuyStatus) filtered = filtered.filter((r) => r.pasabuyStatus === query.pasabuyStatus)
+  if (query.pasabuyDateOfPayment) {
+    filtered = filterByRange(filtered, 'pasabuyDateOfPayment', query.pasabuyDateOfPayment, query.pasabuyDateOfPayment)
+  }
+  if (query.pasabuyAccountReceiverId) {
+    filtered = filtered.filter((r) => r.pasabuyAccountReceiverId === query.pasabuyAccountReceiverId)
+  }
   return filtered
 }

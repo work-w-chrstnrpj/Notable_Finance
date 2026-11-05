@@ -16,12 +16,12 @@ import type { ExpenseComputed } from "./expense-tables";
 export function makeExpenseReceiptBuilder({
   viewMode,
   selectedDate,
-  ccPeriod = "Monthly",
+  purchasePeriod,
   derive,
 }: {
   viewMode: ExpenseViewMode;
   selectedDate: string;
-  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  purchasePeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
   derive: (record: ExpenseRecord) => ExpenseComputed;
 }) {
   return function buildExpenseReceipt(
@@ -35,14 +35,13 @@ export function makeExpenseReceiptBuilder({
       if (viewMode === "Unpaid Pasabuy") return record.pasabuyBalance ?? 0;
       return record.amount;
     };
+    const periodUnit = expenseModeToUnit(purchasePeriod);
     return buildReceipt({
       records,
       excludeIds,
       viewTitle: `${viewMode} Expenses`,
-      periodLabel: viewMode === "CC Transaction"
-        ? expenseModeToUnit(ccPeriod)
-          ? rangeLabel(expenseModeToUnit(ccPeriod)!, selectedDate)
-          : "All Records"
+      periodLabel: viewMode === "CC Transaction" || viewMode === "Pasabuy"
+        ? periodUnit ? rangeLabel(periodUnit, selectedDate) : "All Records"
         : viewMode === "All Records"
           ? "All Records"
           : getMonthLabel(anchorMonth(selectedDate)),

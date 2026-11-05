@@ -1,4 +1,4 @@
-import { expenseAmounts } from "@shared/notion-formulas";
+import { expenseAmounts, pasabuyReceivedAmount } from "@shared/notion-formulas";
 import type { ReactNode } from "react";
 import { formatMoney, formatDate } from "@/lib/format";
 import {
@@ -6,15 +6,6 @@ import {
 } from "@/lib/finance-rules";
 import { stripNotionTag, getExpenseTotal } from "@/lib/finance-helpers";
 import type { Account, ExpenseRecord, ExpenseViewMode } from "@/types/finance";
-
-/**
- * Per-view-mode table shape for the Expense page, as DATA rather than a 4-deep JSX ternary
- * chain (refactor_development_plan.md F1, Phase 4.1). `DataTable` and every prop it receives
- * are unchanged — only *how the shape is chosen* moved here.
- *
- * The four configs below are transcribed cell-for-cell from the original branches. Where the
- * original was odd, the oddity is preserved verbatim (see the Unpaid Pasabuy footer note).
- */
 
 /** Derived credit/installment figures for one record — mirrors the form modal's math. */
 export interface ExpenseComputed {
@@ -44,6 +35,16 @@ export interface ExpenseTableConfig {
 
 const sum = (records: ExpenseRecord[], pick: (r: ExpenseRecord) => number): number =>
   records.reduce((total, r) => total + pick(r), 0);
+
+export function getPasabuyRowColor(record: ExpenseRecord) {
+  if (record.paymentStatus === "Installment") return "yellow";
+  const unpaid = record.paymentStatus === "Unpaid";
+  const awaitingPayment = record.pasabuyStatus === "Payment not yet receive";
+  if (unpaid && awaitingPayment) return "violet";
+  if (unpaid) return "red";
+  if (awaitingPayment) return "blue";
+  return null;
+}
 
 const money = (value: number) => <span className="num">{formatMoney(value)}</span>;
 
@@ -237,6 +238,17 @@ function baseExpenseTableConfig(
   ctx: ExpenseTableContext,
 ): ExpenseTableConfig {
   switch (viewMode) {
+    case "Pasabuy":
+      return {
+        headers: ["Purchase Date", "Description", "Amount", "Account"],
+        buildRow: (record) => [
+          formatDate(record.purchaseDate),
+          stripNotionTag(record.description),
+          money(record.amount),
+          ctx.accountCell(record.accountId),
+        ],
+        buildFooter: () => [["Total", "", money(sum(ctx.enabledRecords, (r) => r.amount)), ""]],
+      };
     case "Unpaid Pasabuy":
       return unpaidPasabuyConfig(ctx);
     case "CC Transaction":
@@ -252,6 +264,30 @@ function baseExpenseTableConfig(
 /** Keep the payment workflow columns while making Pasabuy details available on cash too. */
 export function getExpenseTableConfig(viewMode: ExpenseViewMode, ctx: ExpenseTableContext): ExpenseTableConfig {
   const base = baseExpenseTableConfig(viewMode, ctx);
+  if (viewMode === "Pasabuy") {
+    const received = (record: ExpenseRecord) => pasabuyReceivedAmount(record, "Pasabuy");
+    return {
+      headers: [
+        ...base.headers, "Pasabuyer", "Pasabuy Status", "Pasabuy Date of Payment",
+        "Pasabuy Account Receiver", "Pasabuy Paid Period", "Pasabuy Received Amount", "Pasabuyer Balance",
+      ],
+      buildRow: (record) => [
+        ...base.buildRow(record),
+        record.pasabuyer ?? "—",
+        record.pasabuyStatus ?? "—",
+        record.pasabuyDateOfPayment ? formatDate(record.pasabuyDateOfPayment) : "—",
+        ctx.accountCell(record.pasabuyAccountReceiverId),
+        record.pasabuyPaidPeriod ?? "—",
+        money(received(record)),
+        money(record.pasabuyBalance ?? 0),
+      ],
+      buildFooter: () => base.buildFooter().map((row) => [
+        ...row, "", "", "", "", "",
+        money(sum(ctx.enabledRecords, received)),
+        money(sum(ctx.enabledRecords, (r) => r.pasabuyBalance ?? 0)),
+      ]),
+    };
+  }
   if (!ctx.showPasabuyDetails || viewMode === "Unpaid Pasabuy") return base;
   return {
     ...base,

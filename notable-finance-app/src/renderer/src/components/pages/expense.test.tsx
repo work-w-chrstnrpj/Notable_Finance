@@ -66,6 +66,7 @@ describe("ExpensePage", () => {
     "To buy": DEFAULT_HEADERS,
     Installments: INSTALLMENT_HEADERS,
     "CC Transaction": CC_HEADERS,
+    Pasabuy: ["Purchase Date", "Description", "Amount", "Account", "Pasabuyer", "Pasabuy Status", "Pasabuy Date of Payment", "Pasabuy Account Receiver", "Pasabuy Paid Period", "Pasabuy Received Amount", "Pasabuyer Balance"],
     "Unpaid CC": CC_HEADERS,
     "Unpaid Pasabuy": PASABUY_HEADERS
   };
@@ -176,8 +177,8 @@ describe("ExpensePage", () => {
     fireEvent.change(screen.getByText("All payment statuses").closest("select")!, { target: { value: "Paid" } });
     expect(screen.queryByText("All Pasabuy payment statuses")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "All Categories" }));
-    fireEvent.click(screen.getByRole("button", { name: "Pasabuy" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "All Categories" }));
+    fireEvent.click(screen.getByRole("option", { name: "Pasabuy" }));
 
     const pasabuyStatusOption = await screen.findByText("All Pasabuy payment statuses");
     const pasabuyStatus = pasabuyStatusOption.closest("select");
@@ -216,9 +217,52 @@ it.each([
   fireEvent.click(screen.getByRole("button", { name: "Filters" }));
   expect(screen.getByRole("combobox", { name: "CC Transaction period" })).toHaveValue(ccPeriod);
   const view = screen.getByLabelText("Expense view");
-  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "All Records", "CC Transactions", "To Pay", "To Buy", "Installments"]);
+  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "All Records", "CC Transactions", "Pasabuy", "To Pay", "To Buy", "Installments"]);
   expect(within(view).queryByText("Unpaid CC")).not.toBeInTheDocument();
   expect(within(view).queryByText("Unpaid Pasabuy")).not.toBeInTheDocument();
+});
+
+it.each([
+  ["Daily", "2026-07-15", "2026-07-15"],
+  ["Weekly", "2026-07-13", "2026-07-19"],
+  ["Monthly", "2026-07-01", "2026-07-31"],
+  ["Annually", "2026-01-01", "2026-12-31"],
+  ["All Records", undefined, undefined],
+] as const)("Pasabuy %s applies purchase-date bounds", async (pasabuyPeriod, rangeStart, rangeEnd) => {
+  const list = vi.fn(async () => ok([expenseRecord]));
+  const changePeriod = vi.fn();
+  renderPage(
+    <ExpensePage viewMode="Pasabuy" pasabuyPeriod={pasabuyPeriod} onPasabuyPeriodChange={changePeriod}
+      onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+    { apiOverrides: { expenses: { list } } },
+  );
+  await waitFor(() => expect(list).toHaveBeenCalledWith(expect.objectContaining({ expenseViewMode: "Pasabuy", rangeStart, rangeEnd })));
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+  const period = screen.getByRole("combobox", { name: "Pasabuy purchase period" });
+  expect(period).toHaveValue(pasabuyPeriod);
+  fireEvent.change(period, { target: { value: pasabuyPeriod === "Daily" ? "Weekly" : "Daily" } });
+  expect(changePeriod).toHaveBeenCalled();
+});
+
+it("filters Pasabuy by the same status colors used to highlight rows", async () => {
+  const pending = "Payment not yet receive" as const;
+  const records = [
+    { description: "Red expense", paymentStatus: "Unpaid" as const, pasabuyStatus: null },
+    { description: "Blue expense", paymentStatus: "Paid" as const, pasabuyStatus: pending },
+    { description: "Violet expense", paymentStatus: "Unpaid" as const, pasabuyStatus: pending },
+    { description: "Yellow expense", paymentStatus: "Installment" as const, pasabuyStatus: pending },
+  ].map((record) => ({ ...expenseRecord, ...record, id: record.description }));
+  renderPage(<ExpensePage viewMode="Pasabuy" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />, {
+    apiOverrides: { expenses: { list: vi.fn(async () => ok(records)) } },
+  });
+  await screen.findByText("Yellow expense");
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+  const filter = screen.getByRole("option", { name: "All status colors" }).closest("select")!;
+  for (const color of ["Red", "Blue", "Violet", "Yellow"]) {
+    fireEvent.change(filter, { target: { value: color.toLowerCase() } });
+    expect(screen.getByText(`${color} expense`)).toBeInTheDocument();
+    expect(within(screen.getByRole("table")).getAllByText(/ expense$/)).toHaveLength(1);
+  }
 });
 
  it.each(["Paid", "Unpaid", "Cancelled"] as const)("CC description highlights only outstanding records: %s", async paymentStatus => {
@@ -241,8 +285,8 @@ it.each([["All Credit Accounts", "Credit purchase", "Cash purchase"], ["All Debi
   } });
   await screen.findByText("Cash purchase");
   fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-  fireEvent.click(screen.getByRole("button", { name: "All accounts" }));
-  fireEvent.click(screen.getByRole("button", { name: label }));
+  fireEvent.click(screen.getByRole("combobox", { name: "All accounts" }));
+  fireEvent.click(screen.getByRole("option", { name: label }));
   await waitFor(() => expect(screen.queryByText(excluded)).not.toBeInTheDocument());
   expect(screen.getByText(included)).toBeInTheDocument();
   expect(list).not.toHaveBeenCalledWith(expect.objectContaining({ accountId: expect.stringMatching(/^__/) }));

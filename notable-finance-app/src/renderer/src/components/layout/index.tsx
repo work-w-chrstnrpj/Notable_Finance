@@ -1,6 +1,6 @@
 
 import Link from "@/lib/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -148,6 +148,15 @@ function Sidebar({
     }),
     [chatEnabled, devModeEnabled, settings.notificationsEnabled],
   );
+  const [navScrolling, setNavScrolling] = useState(false);
+  const navScrollTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(navScrollTimer.current), []);
+
+  function showNavScrollbar() {
+    setNavScrolling(true);
+    clearTimeout(navScrollTimer.current);
+    navScrollTimer.current = setTimeout(() => setNavScrolling(false), 500);
+  }
   const initials = userInitials(user?.name, user?.email);
 
   return (
@@ -169,7 +178,11 @@ function Sidebar({
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </div>
-      <nav className="nav" aria-label="Finance sections">
+      <nav
+        className={cx("nav", styles["sidebar-nav"], navScrolling && styles["sidebar-nav--scrolling"])}
+        aria-label="Finance sections"
+        onScroll={showNavScrollbar}
+      >
         <NavGroup title="Overview" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
         <NavGroup title="Money movement" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
         <NavGroup title="Workspace" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />

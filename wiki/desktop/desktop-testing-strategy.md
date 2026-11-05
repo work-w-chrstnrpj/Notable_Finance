@@ -117,3 +117,7 @@ Full desktop verification passed: `npm run lint` (0 errors, 105 warnings), `npm 
 An additional temporary Electron smoke script exercised the real preload/main path in an isolated SQLite profile: credit-account due reminders, a synthetic error inbox entry, dismissal persistence after reload, hiding/restoring Notifications through Settings with the preference preserved after reload, and the record information icon toggling from Details to page content and back. The script and logs are local verification artifacts, not committed regression tests. `test/notifications.test.ts` covers reminder dates, unsettled-credit eligibility, and error-message redaction; `flippable-modal.test.tsx` covers the dialog toggle.
 
 These checks do not establish live Notion parity or owner acceptance. Existing Money Lent and Receivables live-workspace acceptance remains pending.
+
+### Expense controls regression
+
+The Electron Expense fixture covers the Pasabuy tab, payment-date filtering, column resizing by pointer and keyboard, and picker dismissal inside an expense dialog. The query-filter tests cover cash, installments, fully received records, and combined Pasabuy filters.

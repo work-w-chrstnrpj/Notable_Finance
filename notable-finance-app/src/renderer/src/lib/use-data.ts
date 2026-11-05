@@ -181,6 +181,8 @@ export function useExpenses(
     accountId?: string;
     paymentStatus?: string;
     pasabuyStatus?: string;
+    pasabuyDateOfPayment?: string;
+    pasabuyAccountReceiverId?: string;
     expenseViewMode?: string;
     pasabuyer?: string;
   },

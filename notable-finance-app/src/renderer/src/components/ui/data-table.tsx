@@ -1,5 +1,5 @@
 
-import { useMemo, useState, isValidElement } from "react";
+import { useMemo, useRef, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer, CreditCard } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
@@ -43,6 +43,7 @@ function DataTable({
   onRowClick,
   unsortableColumns = [],
   wide = true,
+  resizable = false,
   pageSize = 0,
   pageSizeOptions = [10, 25, 50, 100],
   pageSummary,
@@ -71,6 +72,7 @@ function DataTable({
   unsortableColumns?: number[];
   /** Size the table to its content and let the wrapper scroll horizontally. */
   wide?: boolean;
+  resizable?: boolean;
   /** Rows per page. 0 = no pagination (default, backward-compatible). */
   pageSize?: number;
   /** Available page-size options when pagination is active. */
@@ -110,6 +112,15 @@ function DataTable({
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [activePageSize, setActivePageSize] = useState(pageSize);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const drag = useRef<{ x: number; width: number } | null>(null);
+  const widths = headers.map((header, index) =>
+    columnWidths[header] ?? (index === 0 ? 176 : header === "Description" ? 240 : Math.max(140, header.length * 8 + 40)),
+  );
+  const minColumnWidth = 96;
+  function resizeColumn(header: string, width: number) {
+    setColumnWidths((previous) => ({ ...previous, [header]: Math.max(minColumnWidth, width) }));
+  }
   const skip = new Set(unsortableColumns);
 
   function toggleSort(col: number) {
@@ -240,7 +251,15 @@ function DataTable({
         </div>
       )}
       <div className={styles["table-wrap"]}>
-        <table className={cx(wide && styles["data-table--wide"])}>
+        <table
+          className={cx(wide && styles["data-table--wide"], resizable && styles["data-table--resizable"])}
+          style={resizable ? { width: widths.reduce((sum, width) => sum + width, 0) } : undefined}
+        >
+        {resizable && (
+          <colgroup>
+            {headers.map((header, index) => <col key={header} style={{ width: widths[index] }} />)}
+          </colgroup>
+        )}
         <thead>
           <tr>
             {headers.map((header, columnIndex) => {
@@ -251,6 +270,8 @@ function DataTable({
                 <th
                   key={header}
                   className={cx(isFirstColumn && styles["th-checkbox"])}
+                  style={resizable && wide && columnIndex === 1 ? { left: widths[0] } : undefined}
+                  aria-label={resizable ? header : undefined}
                   aria-sort={
                     active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"
                   }
@@ -311,6 +332,32 @@ function DataTable({
                   ) : (
                     header
                   )}
+                  {resizable && (
+                    <div
+                      className={styles["column-resize"]}
+                      role="separator"
+                      aria-label={`Resize ${header} column`}
+                      aria-orientation="vertical"
+                      aria-valuemin={minColumnWidth}
+                      aria-valuenow={widths[columnIndex]}
+                      tabIndex={0}
+                      onPointerDown={(event) => {
+                        if (event.button !== 0) return;
+                        drag.current = { x: event.clientX, width: widths[columnIndex] };
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                      }}
+                      onPointerMove={(event) => {
+                        if (!drag.current || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
+                        resizeColumn(header, drag.current.width + event.clientX - drag.current.x);
+                      }}
+                      onLostPointerCapture={() => { drag.current = null; }}
+                      onKeyDown={(event) => {
+                        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+                        event.preventDefault();
+                        resizeColumn(header, widths[columnIndex] + (event.key === "ArrowRight" ? 16 : -16));
+                      }}
+                    />
+                  )}
                 </th>
               );
             })}
@@ -348,6 +395,8 @@ function DataTable({
                 {row.map((cell, cellIndex) => (
                   <td
                     key={`cell-${index}-${cellIndex}`}
+                    title={resizable ? cellText(cell) : undefined}
+                    style={resizable && wide && cellIndex === 1 ? { left: widths[0] } : undefined}
                     className={cx(selectable && cellIndex === 0 && styles["td-checkbox"])}
                   >
                     {selectable && cellIndex === 0 && (
@@ -380,7 +429,10 @@ function DataTable({
             {footerRows.map((row, rowIndex) => (
               <tr key={`footer-${rowIndex}`}>
                 {row.map((cell, cellIndex) => (
-                  <td key={`footer-cell-${rowIndex}-${cellIndex}`}>{cell}</td>
+                  <td
+                    key={`footer-cell-${rowIndex}-${cellIndex}`}
+                    style={resizable && wide && cellIndex === 1 ? { left: widths[0] } : undefined}
+                  >{cell}</td>
                 ))}
               </tr>
             ))}

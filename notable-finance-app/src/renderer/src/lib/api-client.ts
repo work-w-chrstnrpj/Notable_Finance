@@ -187,7 +187,7 @@ export const incomesApi = {
 // ── Expenses ──────────────────────────────────────────────────────────
 export type ExpensesListParams = {
   month?: string; rangeStart?: string; rangeEnd?: string; categoryId?: string; accountId?: string;
-  paymentStatus?: string; pasabuyStatus?: string; expenseViewMode?: string; pasabuyer?: string;
+  paymentStatus?: string; pasabuyStatus?: string; pasabuyDateOfPayment?: string; pasabuyAccountReceiverId?: string; expenseViewMode?: string; pasabuyer?: string;
 };
 
 export const expensesApi = {

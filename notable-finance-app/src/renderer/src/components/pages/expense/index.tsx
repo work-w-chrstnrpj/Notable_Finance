@@ -6,11 +6,12 @@ import { buildAnnualGroups, AnnualBarChart } from "@/components/charts";
 import { Panel, LoadingBlock } from "@/components/ui";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { DataTable } from "@/components/ui/data-table";
-import { getExpenseTableConfig, makeDeriveExpenseComputed } from "./expense-tables";
+import { getExpenseTableConfig, getPasabuyRowColor, makeDeriveExpenseComputed } from "./expense-tables";
 import { CoverExpensesModal } from "./cover-expenses-modal";
 import { useExpenseForm } from "./use-expense-form";
 import { ExpenseFormFields } from "./expense-form-fields";
 import { buildExpenseMassEditFields } from "./expense-mass-edit-fields";
+import pasabuyRows from "./pasabuy-rows.module.css";
 import { ExpenseToolbar } from "./expense-toolbar";
 import { ConfirmModal, type ModalState } from "@/components/ui/form-modals";
 import { FlippableModal } from "@/components/ui/flippable-modal";
@@ -46,6 +47,7 @@ const expenseViewModes: ExpenseViewMode[] = [
   "Annually",
   "All Records",
   "CC Transaction",
+  "Pasabuy",
   "To pay",
   "To buy",
   "Installments",
@@ -57,12 +59,16 @@ function ExpensePage({
   selectedDate,
   ccPeriod = "Monthly",
   onCcPeriodChange,
+  pasabuyPeriod = "All Records",
+  onPasabuyPeriodChange,
 }: {
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
   selectedDate: string;
   ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
   onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
+  pasabuyPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  onPasabuyPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
 }) {
   const {
     activeAccounts,
@@ -71,13 +77,18 @@ function ExpensePage({
     accountNameById,
     expenseCategoryNameById,
   } = useLiveCollections();
-  const expenseUnit = expenseModeToUnit(viewMode === "CC Transaction" ? ccPeriod : viewMode);
+  const isPasabuyView = viewMode === "Pasabuy";
+  const purchasePeriod = isPasabuyView ? pasabuyPeriod : ccPeriod;
+  const expenseUnit = expenseModeToUnit(isPasabuyView || viewMode === "CC Transaction" ? purchasePeriod : viewMode);
   const expenseRange = expenseUnit ? computeRange(expenseUnit, selectedDate) : null;
   const [accountFilterId, setAccountFilterId] = useState("");
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState("");
+  const [pasabuyColorFilter, setPasabuyColorFilter] = useState("");
   const [pasabuyerFilter, setPasabuyerFilter] = useState("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
   const [pasabuyStatusFilter, setPasabuyStatusFilter] = useState("");
+  const [pasabuyDateOfPaymentFilter, setPasabuyDateOfPaymentFilter] = useState("");
+  const [pasabuyAccountReceiverFilter, setPasabuyAccountReceiverFilter] = useState("");
   const [annualView, setAnnualView] = useState<"table" | "chart">("table");
   const [groupBy, setGroupBy] = useState<AnnualGroupBy>("month");
   const isAnnual = viewMode === "Annually";
@@ -101,7 +112,7 @@ function ExpensePage({
     (category) => category.id === expenseCategoryFilter && /pasabuy/i.test(category.name),
   );
   const showsPaymentStatusFilter = !["To pay", "Installments"].includes(viewMode);
-  const showsPasabuyStatusFilter = selectedCategoryIsPasabuy;
+  const showsPasabuyFilters = isPasabuyView || selectedCategoryIsPasabuy;
 
   // Table cell renderers — passed into the per-view-mode table config.
   const expenseCategoryById = useMemo(
@@ -167,11 +178,13 @@ function ExpensePage({
       setPasabuyerFilter(f.pasabuyerFilter);
       setPaymentStatusFilter(f.paymentStatusFilter ?? "");
       setPasabuyStatusFilter(f.pasabuyStatusFilter ?? "");
+      setPasabuyDateOfPaymentFilter(f.pasabuyDateOfPaymentFilter ?? "");
+      setPasabuyAccountReceiverFilter(f.pasabuyAccountReceiverFilter ?? "");
       setFilterActive(f.filterActive);
       setAnnualView(f.annualView);
       setGroupBy(f.groupBy);
     },
-    values: [accountFilterId, expenseCategoryFilter, pasabuyerFilter, paymentStatusFilter, pasabuyStatusFilter, filterActive, annualView, groupBy],
+    values: [accountFilterId, expenseCategoryFilter, pasabuyerFilter, paymentStatusFilter, pasabuyStatusFilter, pasabuyDateOfPaymentFilter, pasabuyAccountReceiverFilter, filterActive, annualView, groupBy],
     persist: () => {
       void updateSettings({
         expenseFilters: {
@@ -180,6 +193,8 @@ function ExpensePage({
           pasabuyerFilter,
           paymentStatusFilter,
           pasabuyStatusFilter,
+          pasabuyDateOfPaymentFilter,
+          pasabuyAccountReceiverFilter,
           filterActive,
           annualView,
           groupBy,
@@ -205,14 +220,16 @@ function ExpensePage({
       // the panel off would silently hide records with the control hidden.
       accountId: filterActive && !["__credit__", "__debit__"].includes(accountFilterId) ? accountFilterId || undefined : undefined,
       categoryId:
-        filterActive && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
+        filterActive && !isPasabuyView && isSpecificExpenseCategoryFilter(expenseCategoryFilter)
           ? expenseCategoryFilter
           : undefined,
       paymentStatus:
         filterActive && showsPaymentStatusFilter ? paymentStatusFilter || undefined : undefined,
       pasabuyStatus:
-        filterActive && showsPasabuyStatusFilter ? pasabuyStatusFilter || undefined : undefined,
-      pasabuyer: filterActive && selectedCategoryIsPasabuy ? pasabuyerFilter || undefined : undefined,
+        filterActive && showsPasabuyFilters ? pasabuyStatusFilter || undefined : undefined,
+      pasabuyer: filterActive && showsPasabuyFilters ? pasabuyerFilter || undefined : undefined,
+      pasabuyDateOfPayment: filterActive && isPasabuyView ? pasabuyDateOfPaymentFilter || undefined : undefined,
+      pasabuyAccountReceiverId: filterActive && isPasabuyView ? pasabuyAccountReceiverFilter || undefined : undefined,
       expenseViewMode: viewMode,
     }),
     [
@@ -225,8 +242,10 @@ function ExpensePage({
       paymentStatusFilter,
       pasabuyStatusFilter,
       showsPaymentStatusFilter,
-      showsPasabuyStatusFilter,
-      selectedCategoryIsPasabuy,
+      showsPasabuyFilters,
+      isPasabuyView,
+      pasabuyDateOfPaymentFilter,
+      pasabuyAccountReceiverFilter,
       viewMode,
     ],
   );
@@ -250,7 +269,7 @@ function ExpensePage({
   // Clear selection when view mode changes
   useEffect(() => {
     resetSelection();
-  }, [viewMode, ccPeriod, selectedDate, resetSelection]);
+  }, [viewMode, purchasePeriod, selectedDate, resetSelection]);
 
   const isLoading = expensesState.status === "loading";
   const allExpenseRecords: ExpenseRecord[] =
@@ -260,12 +279,15 @@ function ExpensePage({
     () =>
       allExpenseRecords.filter((record) => {
         if (record.description?.includes("[Deleted:")) return false;
+        if (isPasabuyView && filterActive && pasabuyColorFilter && getPasabuyRowColor(record) !== pasabuyColorFilter) {
+          return false;
+        }
         if (filterActive && viewMode === "To pay" && ["__credit__", "__debit__"].includes(accountFilterId)) {
           const account = activeAccounts.find(a => a.id === record.accountId);
           if (!account || isCreditLikeAccountType(account.type) !== (accountFilterId === "__credit__")) return false;
         }
         if (
-          filterActive && expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
+          filterActive && !isPasabuyView && expenseCategoryFilter === expenseCategoryFilterWithoutPasabuy &&
           pasabuyCategory &&
           record.categoryId === pasabuyCategory.id
         ) {
@@ -273,7 +295,7 @@ function ExpensePage({
         }
         return true;
       }),
-    [allExpenseRecords, expenseCategoryFilter, filterActive, pasabuyCategory, accountFilterId, activeAccounts, viewMode],
+    [allExpenseRecords, expenseCategoryFilter, filterActive, pasabuyCategory, accountFilterId, activeAccounts, viewMode, isPasabuyView, pasabuyColorFilter],
   );
 
   // Fuzzy search: filter visible records by search query (client-side only)
@@ -329,8 +351,9 @@ function ExpensePage({
         : undefined);
     const nextCategoryId =
       record?.categoryId ??
-      (viewMode === "Unpaid Pasabuy" ? pasabuyCategory?.id : undefined) ??
-      (isSpecificExpenseCategoryFilter(expenseCategoryFilter) ? expenseCategoryFilter : "");
+      (isPasabuyView || viewMode === "Unpaid Pasabuy"
+        ? pasabuyCategory?.id ?? ""
+        : isSpecificExpenseCategoryFilter(expenseCategoryFilter) ? expenseCategoryFilter : "");
 
     form.loadRecord(record, { accountId: accountFilterId.startsWith("__") ? "" : accountFilterId, categoryId: nextCategoryId });
     setEditing(mode === "new");
@@ -395,13 +418,19 @@ function ExpensePage({
     setDeleteConfirmIds([editingId]);
   }
 
-  function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
-    // Reset all filters when view mode changes (Issue #3)
+  function clearFilters() {
+    setPasabuyColorFilter("");
     setAccountFilterId("");
     setExpenseCategoryFilter("");
     setPasabuyerFilter("");
     setPaymentStatusFilter("");
     setPasabuyStatusFilter("");
+    setPasabuyDateOfPaymentFilter("");
+    setPasabuyAccountReceiverFilter("");
+  }
+
+  function handleExpenseViewModeChange(nextViewMode: ExpenseViewMode) {
+    clearFilters();
     setFilterActive(false);
     resetSearch();
 
@@ -545,6 +574,10 @@ function ExpensePage({
     });
   }
 
+  const pasabuyColors = isPasabuyView
+    ? new Map(searchFilteredRecords.map((record) => [record.id, getPasabuyRowColor(record)]))
+    : null;
+
   const enabledExpenseRecords = searchFilteredRecords.filter(
     (r) => !disabledIds.has(r.id),
   );
@@ -565,7 +598,7 @@ function ExpensePage({
   const buildExpenseReceipt = makeExpenseReceiptBuilder({
     viewMode,
     selectedDate,
-    ccPeriod,
+    purchasePeriod,
     derive: deriveExpenseComputed,
   });
 
@@ -573,7 +606,7 @@ function ExpensePage({
     () => buildExpenseReceipt(searchFilteredRecords, disabledIds),
     // deriveExpenseComputed is a stable closure over the same render inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [viewMode, ccPeriod, selectedDate, searchFilteredRecords, disabledIds],
+    [viewMode, purchasePeriod, selectedDate, searchFilteredRecords, disabledIds],
   );
 
   useEffect(() => {
@@ -590,13 +623,7 @@ function ExpensePage({
   useShortcutAction("view.newRecord", () => openExpenseModal("new", "New Expense"), !modalOpen);
   useShortcutAction("view.search", toggleSearch, !modalOpen);
   useShortcutAction("view.filters", () => {
-    if (filterActive) {
-      setAccountFilterId("");
-      setExpenseCategoryFilter("");
-      setPasabuyerFilter("");
-      setPaymentStatusFilter("");
-      setPasabuyStatusFilter("");
-    }
+    if (filterActive) clearFilters();
     setFilterActive((f) => !f);
   }, !modalOpen);
   useShortcutAction("modal.save", () => void handleSaveExpense(), modalOpen && editing);
@@ -639,8 +666,13 @@ function ExpensePage({
   return (
     <div className="page-stack">
       <ExpenseToolbar
-        ccPeriod={ccPeriod}
-        onCcPeriodChange={onCcPeriodChange}
+        purchasePeriod={purchasePeriod}
+        pasabuyColorFilter={pasabuyColorFilter}
+        onPasabuyColorChange={(color) => {
+          setPasabuyColorFilter(color);
+          resetSelection();
+        }}
+        onPurchasePeriodChange={isPasabuyView ? onPasabuyPeriodChange : onCcPeriodChange}
         viewMode={viewMode}
         expenseViewModes={expenseViewModes}
         isAnnual={isAnnual}
@@ -662,6 +694,11 @@ function ExpensePage({
         setPaymentStatusFilter={setPaymentStatusFilter}
         pasabuyStatusFilter={pasabuyStatusFilter}
         setPasabuyStatusFilter={setPasabuyStatusFilter}
+        pasabuyDateOfPaymentFilter={pasabuyDateOfPaymentFilter}
+        setPasabuyDateOfPaymentFilter={setPasabuyDateOfPaymentFilter}
+        pasabuyAccountReceiverFilter={pasabuyAccountReceiverFilter}
+        setPasabuyAccountReceiverFilter={setPasabuyAccountReceiverFilter}
+        clearFilters={clearFilters}
         annualView={annualView}
         setAnnualView={setAnnualView}
         groupBy={groupBy}
@@ -676,6 +713,7 @@ function ExpensePage({
         ) : (
           <DataTable
             selectable
+            resizable
             recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}
@@ -687,7 +725,10 @@ function ExpensePage({
             showBulkPrint
             wide
             headers={tableConfig.headers}
-            rowClassName={pendingRowClassName}
+            rowClassName={(id) => {
+              const color = pasabuyColors?.get(id);
+              return [pendingRowClassName(id), color && pasabuyRows[color]].filter(Boolean).join(" ");
+            }}
             rows={searchFilteredRecords.map(tableConfig.buildRow)}
             footerRows={tableConfig.buildFooter()}
             onRowClick={(recordId) => {

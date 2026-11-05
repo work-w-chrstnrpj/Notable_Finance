@@ -75,7 +75,15 @@ The implemented slice covers the shared foundations, shell grouping, Dashboard h
 
 ### Expense header revision
 
-Expense views use the shared header segmented control again, ordered Daily, Weekly, Monthly, Annually, All Records, CC Transactions, To Pay, To Buy, Installments. All Records removes the date bounds and lists every available expense. The CC period selector offers Daily, Weekly, Monthly, Annually, and All Records; its All Records option includes every available credit-account transaction. The optional payment/Pasabuy filters remain available. CC Transactions includes every credit-account payment status within the selected purchase-date period; selecting the view clears previous filters. The persisted internal `CC Transaction` key remains unchanged for compatibility.
+Expense views use the shared header segmented control again, ordered Daily, Weekly, Monthly, Annually, All Records, CC Transactions, Pasabuy, To Pay, To Buy, Installments. All Records removes the date bounds and lists every available expense. The CC period selector offers Daily, Weekly, Monthly, Annually, and All Records; its All Records option includes every available credit-account transaction. The optional payment/Pasabuy filters remain available. CC Transactions includes every credit-account payment status within the selected purchase-date period; selecting the view clears previous filters. The persisted internal `CC Transaction` key remains unchanged for compatibility.
+
+### Pasabuy and record table controls
+
+The Pasabuy tab lists expenses across all account types, including fully received and installment records. The purchase period defaults to All Records and can be set to Daily, Weekly, Monthly, or Annually. The workspace remembers this choice. It shows purchase date, description, amount, account, and the Pasabuy fields, including received amount and balance. Filters combine purchase account, payment status, Pasabuyer, Pasabuy Status, an exact Pasabuy Date of Payment, and Pasabuy Account Receiver. Category is fixed by the tab. Rows and the status color filter use red for Unpaid, blue for pending Pasabuy payment, violet when both apply, and yellow for any Installment. New Expense opens with the Pasabuy category selected when available.
+
+Drag an Expense column's right edge to resize it. Keyboard users can focus the resize handle and press Left or Right. Widths have a 96-pixel minimum and apply while the table is mounted. Long text is truncated to the column width and remains available on hover.
+
+Icon pickers support arrow navigation, Home, End, typing a label prefix, Enter or Space to select, and Escape or an outside click to dismiss.
 
 ### Expense review corrections
 

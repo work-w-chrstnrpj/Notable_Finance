@@ -1,0 +1,13 @@
+.red { --pasabuy-status-color: #ef4444; }
+.blue { --pasabuy-status-color: #3b82f6; }
+.violet { --pasabuy-status-color: #8b5cf6; }
+.yellow { --pasabuy-status-color: #eab308; }
+
+:is(.red, .blue, .violet, .yellow) > td {
+  --pasabuy-tint: color-mix(in srgb, var(--pasabuy-status-color) 13%, transparent);
+  box-shadow: inset 0 0 0 100vmax var(--pasabuy-tint);
+}
+
+:is(.red, .blue, .violet, .yellow) > td:first-child {
+  box-shadow: inset 3px 0 var(--pasabuy-status-color), inset 0 0 0 100vmax var(--pasabuy-tint);
+}

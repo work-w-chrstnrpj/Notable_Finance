@@ -91,6 +91,27 @@ describe('filterExpensesByQuery view modes', () => {
     expect(out.map((r) => r.id)).toEqual(['unpaid-cc'])
   })
 
+  it('includes fully received cash and installment Pasabuy rows across dates and combines receiver filters', () => {
+    const records = [
+      expense({ id: 'cash', categoryId: 'pasabuy', accountId: 'cash', purchaseDate: '2025-07-01',
+        pasabuyStatus: 'Payment fully received', pasabuyDateOfPayment: '2025-08-01',
+        pasabuyer: 'Ana', pasabuyAccountReceiverId: 'wallet' }),
+      expense({ id: 'credit', categoryId: 'pasabuy', accountId: 'cc', paymentStatus: 'Installment',
+        pasabuyStatus: 'Payment not yet receive', pasabuyer: 'Ben', pasabuyAccountReceiverId: 'bank' }),
+      expense({ id: 'regular', categoryId: 'food' }),
+    ]
+    expect(filterExpensesByQuery(records, { expenseViewMode: 'Pasabuy', categoryId: 'food' }, ctx)
+      .map((record) => record.id)).toEqual(['cash', 'credit'])
+    expect(filterExpensesByQuery(records, {
+      expenseViewMode: 'Pasabuy', accountId: 'cash', pasabuyer: 'Ana',
+      pasabuyStatus: 'Payment fully received', pasabuyDateOfPayment: '2025-08-01',
+      pasabuyAccountReceiverId: 'wallet',
+    }, ctx).map((record) => record.id)).toEqual(['cash'])
+    expect(filterExpensesByQuery(records, {
+      expenseViewMode: 'Pasabuy', pasabuyDateOfPayment: '2025-08-02',
+    }, ctx)).toEqual([])
+  })
+
   it('unpaidPasabuy: pasabuy category with pending payment signals', () => {
     const records = [
       expense({ id: 'pending', categoryId: 'pasabuy', pasabuyStatus: 'Payment not yet receive' }),

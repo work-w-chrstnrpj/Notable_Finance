@@ -111,7 +111,7 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     function: {
       name: 'queryExpenses',
       description:
-        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, To pay, To buy, Installments, CC Transaction. For year-level totals use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
+        'Query expenses. Use expenseViewMode for UI scopes: Daily, Weekly, Monthly, Annually, To pay, To buy, Installments, CC Transaction, Pasabuy. For year-level totals use year ("2026"); rangeStart/rangeEnd are inclusive YYYY-MM-DD bounds.',
       parameters: {
         type: 'object',
         properties: {
@@ -124,7 +124,10 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           paymentStatus: { type: 'string' },
           expenseViewMode: { type: 'string' },
           viewMode: { type: 'string' },
-          pasabuyer: { type: 'string' }
+          pasabuyer: { type: 'string' },
+          pasabuyStatus: { type: 'string' },
+          pasabuyDateOfPayment: { type: 'string', description: 'YYYY-MM-DD payment date.' },
+          pasabuyAccountReceiverId: { type: 'string' }
         },
         additionalProperties: false
       }

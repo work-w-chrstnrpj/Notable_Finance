@@ -39,6 +39,7 @@ const DEFAULT_WORKSPACE: UiWorkspaceSettings = {
   workflowViewMode: 'Monthly',
   expenseViewMode: 'Monthly',
   ccPeriod: 'Monthly',
+  pasabuyPeriod: 'All Records',
   sidebarCollapsed: false,
   showFab: true,
   pushFabAutoHideMs: 180_000,
@@ -66,6 +67,8 @@ const DEFAULT_EXPENSE: UiExpenseFilters = {
   pasabuyerFilter: '',
   paymentStatusFilter: '',
   pasabuyStatusFilter: '',
+  pasabuyDateOfPaymentFilter: '',
+  pasabuyAccountReceiverFilter: '',
   filterActive: false,
   annualView: 'table',
   groupBy: 'month'
@@ -159,6 +162,7 @@ const EXPENSE_MODES = new Set([
   'To buy',
   'Installments',
   'CC Transaction',
+  'Pasabuy',
   'Unpaid CC',
   'Unpaid Pasabuy'
 ])
@@ -186,6 +190,8 @@ function mergeWorkspace(raw: unknown): UiWorkspaceSettings {
     expenseViewMode: expenseViewMode === 'Unpaid CC' ? 'CC Transaction' : expenseViewMode,
     ccPeriod: typeof r.ccPeriod === 'string' && INCOME_MODES.has(r.ccPeriod)
       ? r.ccPeriod as UiWorkspaceSettings['ccPeriod'] : 'Monthly',
+    pasabuyPeriod: typeof r.pasabuyPeriod === 'string' && INCOME_MODES.has(r.pasabuyPeriod)
+      ? r.pasabuyPeriod as UiWorkspaceSettings['pasabuyPeriod'] : 'All Records',
     sidebarCollapsed: r.sidebarCollapsed === true,
     showFab: r.showFab !== false,
     pushFabAutoHideMs: coercePushFabAutoHideMs(r.pushFabAutoHideMs),
@@ -221,6 +227,8 @@ function mergeExpense(raw: unknown): UiExpenseFilters {
       typeof r.expenseCategoryFilter === 'string' ? r.expenseCategoryFilter : '',
     pasabuyerFilter: typeof r.pasabuyerFilter === 'string' ? r.pasabuyerFilter : '',
     paymentStatusFilter: typeof r.paymentStatusFilter === 'string' ? r.paymentStatusFilter : '',
+    pasabuyDateOfPaymentFilter: typeof r.pasabuyDateOfPaymentFilter === 'string' ? r.pasabuyDateOfPaymentFilter : '',
+    pasabuyAccountReceiverFilter: typeof r.pasabuyAccountReceiverFilter === 'string' ? r.pasabuyAccountReceiverFilter : '',
     pasabuyStatusFilter: typeof r.pasabuyStatusFilter === 'string' ? r.pasabuyStatusFilter : '',
     filterActive: r.filterActive === true,
     annualView: r.annualView === 'chart' ? 'chart' : 'table',

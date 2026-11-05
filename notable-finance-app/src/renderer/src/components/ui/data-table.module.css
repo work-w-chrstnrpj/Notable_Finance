@@ -558,3 +558,65 @@ table.data-table--wide {
 }
 
 .row-checkbox--visible { opacity: 1; }
+
+table.data-table--resizable {
+  table-layout: fixed;
+  min-width: 0;
+}
+
+table.data-table--resizable th,
+table.data-table--resizable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+table.data-table--resizable th {
+  position: relative;
+}
+
+table.data-table--resizable th:nth-child(1),
+table.data-table--resizable td:nth-child(1) {
+  width: auto;
+  min-width: 0;
+}
+
+table.data-table--resizable th:nth-child(-n+2) {
+  position: sticky;
+}
+
+.data-table--resizable .th-sort {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table--resizable .th-sort__icon {
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.column-resize {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.column-resize::after {
+  content: "";
+  position: absolute;
+  inset: 20% 3px 20% auto;
+  width: 1px;
+  background: var(--line);
+}
+
+.column-resize:hover,
+.column-resize:focus-visible,
+.column-resize:active {
+  background: var(--accent);
+}

@@ -258,6 +258,8 @@ export interface IncomeListParams extends ListRecordsParams {
 export interface ExpenseListParams extends ListRecordsParams {
   paymentStatus?: string
   pasabuyStatus?: string
+  pasabuyDateOfPayment?: string
+  pasabuyAccountReceiverId?: string
   /** Daily/Weekly/Monthly/Annually or a workflow view (Unpaid Pasabuy, To pay, …). */
   expenseViewMode?: string
   pasabuyer?: string
@@ -453,9 +455,11 @@ export interface UiWorkspaceSettings {
     | 'To buy'
     | 'Installments'
     | 'CC Transaction'
+    | 'Pasabuy'
     | 'Unpaid CC'
     | 'Unpaid Pasabuy'
-  ccPeriod?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
+  ccPeriod?: UiWorkspaceSettings['incomeViewMode']
+  pasabuyPeriod?: UiWorkspaceSettings['incomeViewMode']
   sidebarCollapsed: boolean
   showFab: boolean
   /** Auto-hide delay (ms) for the floating Push Sync button after a change.
@@ -479,6 +483,8 @@ export interface UiExpenseFilters {
   pasabuyerFilter: string
   paymentStatusFilter: string
   pasabuyStatusFilter: string
+  pasabuyDateOfPaymentFilter?: string
+  pasabuyAccountReceiverFilter?: string
   filterActive: boolean
   annualView: 'table' | 'chart'
   groupBy: 'month' | 'account' | 'category'
