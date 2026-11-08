@@ -333,7 +333,7 @@ Same rules as forms / `getExpenseConditionalSections`:
 | **Credit card (CC)** | Account type is credit-like (`Credit Account`, `BYPL`/`BNPL`, `e-Credit`, …) | Payment Status, Interest, Payment Frequency, Period count, BNPL adjustment, Paid period, CC Link Payment Receipt; computed gross/installment/remaining shown read-only on confirm |
 | **Pasabuy** | Pasabuy category or Unpaid Pasabuy flow | Pasabuyer, Pasabuy Status, Pasabuy Date of Payment, Pasabuy Account Receiver, Pasabuy paid period; computed received/balance read-only on confirm |
 
-Profiles can combine when both credit account and Pasabuy category apply — required-field union; clarify all missing.
+The draft card updates the visible sections when Account or Category changes. Credit accounts require Payment Status, and installment drafts also require Payment Frequency and a positive whole-number Period Count. Pasabuy drafts require Pasabuyer and Pasabuy Status. Pasabuy Date of Payment, receiver, and paid period can be filled in when available. A credit-account Pasabuy draft requires both sets of fields.
 
 Chat must **not** show or require CC fields for a cash wallet purchase, and must **not** require Pasabuy fields for a normal Food expense.
 

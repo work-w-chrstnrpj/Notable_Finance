@@ -118,6 +118,6 @@ An additional temporary Electron smoke script exercised the real preload/main pa
 
 These checks do not establish live Notion parity or owner acceptance. Existing Money Lent and Receivables live-workspace acceptance remains pending.
 
-### Expense controls regression
+### Expense controls and chat draft regression
 
-The Electron Expense fixture covers the Pasabuy tab, payment-date filtering, column resizing by pointer and keyboard, and picker dismissal inside an expense dialog. The query-filter tests cover cash, installments, fully received records, and combined Pasabuy filters.
+The Electron Expense fixture covers the Pasabuy tab, payment-date filtering, column resizing by pointer and keyboard, and picker dismissal inside an expense dialog. The query-filter tests cover cash, installments, fully received records, and combined Pasabuy filters. Chat draft tests cover Account and Category changes, missing installment fields, and Pasabuy field persistence in the draft payload.

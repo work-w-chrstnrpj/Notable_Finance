@@ -155,11 +155,12 @@ Receivables New Record now includes auxiliary Money Lent in Categories and switc
 
 See [release verification](desktop-testing-strategy.md#v240-release-verification-2026-10-31). Live Notion and owner acceptance remain separate and pending.
 
-## Expense controls (2026-11-05)
+## Expense controls and chat drafts (2026-11-05)
 
 | Work item | Acceptance | Status |
 | --- | --- | --- |
 | Pasabuy Expense view | All purchase dates, Pasabuy columns and combined filters | Implemented and verified in Electron |
 | Expense column sizing and icon dropdowns | Drag and keyboard resize, keyboard selection, and dismissal | Implemented and verified in Electron |
+| Chat expense draft profiles | Required fields recompute for debit, credit, Pasabuy, and credit Pasabuy | Implemented and verified with validator and renderer tests |
 
-See [Expense controls](ui-ux-redesign.md#pasabuy-and-record-table-controls).
+See [Expense controls](ui-ux-redesign.md#pasabuy-and-record-table-controls) and [chat expense profiles](chat-agent-design.md#expense-conditional-field-profiles-write).

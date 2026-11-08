@@ -46,7 +46,7 @@ export function expenseProfileMissingFields(input: {
   if (input.creditCard && !input.paymentStatus) missing.push('Payment Status')
   if (input.creditCard && input.paymentStatus === 'Installment') {
     if (!input.paymentFrequency) missing.push('Payment Frequency')
-    if (!input.periodCount) missing.push('Period count')
+    if (!input.periodCount || input.periodCount <= 0 || !Number.isInteger(input.periodCount)) missing.push('Period count')
   }
   if (input.pasabuy && !input.pasabuyer) missing.push('Pasabuyer')
   if (input.pasabuy && !input.pasabuyStatus) missing.push('Pasabuy Status')

@@ -13,7 +13,7 @@ import type {
 } from '../../../shared/finance.types'
 import { getDraft, putDraft, updateDraftSpec, type DraftSpec } from '../drafts'
 import { resolveDate, todayIso } from '../dates'
-import { resolveExpenseProfile, WORKFLOW_LOCKED_CATEGORIES } from '../expense-profile'
+import { expenseProfileMissingFields, resolveExpenseProfile, WORKFLOW_LOCKED_CATEGORIES } from '../expense-profile'
 
 export const MASS_EDIT_CAP = 50
 
@@ -172,7 +172,6 @@ export function proposeCreateIncome(args: unknown, ctx: WriteToolContext) {
 
 export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
   const a = asRecord(args)
-  const missing: string[] = []
   const warnings: string[] = []
 
   const description = str(a.description) ?? str(a.name) ?? str(a.title)
@@ -188,16 +187,10 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
   const { creditCard, pasabuy } = resolveExpenseProfile({
     accountType: account?.type,
     categoryName: cat?.name,
-    viewMode: str(a.viewMode),
-    forcePasabuy,
-    forceCc
+    viewMode: cat ? undefined : str(a.viewMode),
+    forcePasabuy: !cat && forcePasabuy,
+    forceCc: !account && forceCc
   })
-
-  if (!description) missing.push('Purchase description')
-  if (!purchaseDate) missing.push('Purchase Date')
-  if (amount === undefined) missing.push('Expense Amount')
-  if (!account) missing.push('Account')
-  if (!cat) missing.push('Category')
 
   const paymentStatus = (str(a.paymentStatus) as PaymentStatus | undefined) ?? undefined
   const paymentFrequency = (str(a.paymentFrequency) as PaymentFrequency | undefined) ?? undefined
@@ -205,22 +198,25 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
   const bnplAdjustment = num(a.bnplAdjustment) ?? null
   const paidPeriod = num(a.paidPeriod) ?? null
 
-  if (creditCard && !paymentStatus) missing.push('Payment Status')
-  if (creditCard && paymentStatus === 'Installment') {
-    if (!paymentFrequency) missing.push('Payment Frequency')
-    if (!periodCount) missing.push('Period count')
-  }
-
   const pasabuyer = str(a.pasabuyer) ?? null
   const pasabuyStatus = (str(a.pasabuyStatus) as PasabuyStatus | undefined) ?? null
-  if (pasabuy && !pasabuyer) missing.push('Pasabuyer')
-  if (pasabuy && !pasabuyStatus) missing.push('Pasabuy Status')
+  const missing = expenseProfileMissingFields({
+    creditCard,
+    pasabuy,
+    hasDescription: Boolean(description),
+    hasPurchaseDate: Boolean(purchaseDate),
+    hasAmount: amount !== undefined && amount > 0,
+    hasAccount: Boolean(account),
+    hasCategory: Boolean(cat),
+    paymentStatus,
+    paymentFrequency,
+    periodCount,
+    pasabuyer,
+    pasabuyStatus
+  })
 
-  if (account && creditCard && !isCreditLike(account.type) && forceCc) {
-    warnings.push('creditCard profile requested but account is not credit-like.')
-  }
-  if (account && !creditCard && isCreditLike(account.type)) {
-    warnings.push('Account is credit-like — CC fields will apply.')
+  if (account && forceCc && !creditCard) {
+    warnings.push('The selected account is not a credit account.')
   }
 
   const payload: Record<string, unknown> = {
@@ -231,7 +227,7 @@ export function proposeCreateExpense(args: unknown, ctx: WriteToolContext) {
     interest: creditCard ? interest : 0,
     accountId: account?.id ?? '',
     categoryId: cat?.id ?? '',
-    paymentStatus: creditCard ? paymentStatus ?? 'Unpaid' : paymentStatus ?? null,
+    paymentStatus: !creditCard && asRecord(a._profile).creditCard === true ? null : paymentStatus ?? null,
     paymentFrequency: creditCard ? paymentFrequency ?? null : null,
     periodCount: creditCard ? periodCount : null,
     bnplAdjustment: creditCard ? bnplAdjustment : null,
@@ -663,10 +659,13 @@ function buildEditArgs(
   const base: Record<string, unknown> = { ...draft.payload }
 
   if (draft.resource === 'expenses') {
-    // Keep the resolved profile so account/category-driven fields survive edits.
-    const profile = (draft.payload._profile ?? {}) as { creditCard?: boolean }
-    if (profile.creditCard) base.creditCard = true
-    if (draft.payload.isPasabuy === true) base.pasabuy = true
+    if (draft.kind === 'proposeCreateExpense') {
+      // Keep provisional hints only while the corresponding selection is unresolved.
+      const profile = draft.payload._profile as { creditCard?: boolean } | undefined
+      if (!base.accountId && !('accountId' in edits)) base.creditCard = profile?.creditCard
+      if (!base.categoryId && !('categoryId' in edits)) base.pasabuy = draft.payload.isPasabuy
+      if (draft.missingRequired.includes('Payment Status')) base.paymentStatus = null
+    }
     for (const [k, v] of Object.entries(edits)) {
       if (k === 'name') base.description = v
       else if (k === 'date') base.purchaseDate = v

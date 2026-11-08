@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, Check, X } from "lucide-react";
+import {
+  isCreditLikeAccountType,
+  isPasabuyCategoryName,
+  pasabuyStatusLabels,
+  paymentFrequencyLabels,
+  paymentStatusLabels,
+} from "@/lib/finance-rules";
 import { cx } from "@/lib/finance-helpers";
 import styles from "./draft-card.module.css";
 import type {
@@ -8,23 +15,6 @@ import type {
   ExpenseCategoryOption,
   IncomeCategoryOption,
 } from "@shared/finance.types";
-
-const PAYMENT_STATUSES = ["Unpaid", "Paid", "Installment", "Cancelled"] as const;
-const PAYMENT_FREQUENCIES = [
-  "Daily",
-  "Weekly",
-  "Monthly",
-  "Bi-monthly",
-  "Quarterly",
-  "Semi-annually",
-  "Annually",
-] as const;
-const PASABUY_STATUSES = [
-  "Payment not yet receive",
-  "Payment partially received",
-  "Payment partially received (installment)",
-  "Payment fully received",
-] as const;
 
 /** Kinds whose category is fixed by the workflow (locked in the validator). */
 const CATEGORY_LOCKED_KINDS = new Set([
@@ -42,6 +32,12 @@ type DraftForm = {
   accountId: string;
   categoryId: string;
   transactedAccountId: string;
+  datePaid: string;
+  interest: string;
+  paidPeriod: string;
+  pasabuyDateOfPayment: string;
+  pasabuyPaidPeriod: string;
+  pasabuyAccountReceiverId: string;
   paymentStatus: string;
   paymentFrequency: string;
   periodCount: string;
@@ -61,7 +57,13 @@ function draftToForm(d: ChatDraftDto): DraftForm {
     accountId: s(p.accountId),
     categoryId: s(p.categoryId),
     transactedAccountId: s(p.transactedAccountId),
-    paymentStatus: s(p.paymentStatus),
+    datePaid: s(p.datePaid),
+    interest: s(p.interest),
+    paidPeriod: s(p.paidPeriod),
+    pasabuyDateOfPayment: s(p.pasabuyDateOfPayment),
+    pasabuyPaidPeriod: s(p.pasabuyPaidPeriod),
+    pasabuyAccountReceiverId: s(p.pasabuyAccountReceiverId),
+    paymentStatus: d.missingRequired.includes("Payment Status") ? "" : s(p.paymentStatus),
     paymentFrequency: s(p.paymentFrequency),
     periodCount: s(p.periodCount),
     bnplAdjustment: s(p.bnplAdjustment),
@@ -116,8 +118,12 @@ function DraftCard({
   }, [sig]);
 
   const profile = (draft.payload._profile ?? {}) as { creditCard?: boolean };
-  const showCc = draft.resource === "expenses" && profile.creditCard === true;
-  const showPasabuy = draft.resource === "expenses" && draft.payload.isPasabuy === true;
+  const account = accounts.find((item) => item.id === form.accountId);
+  const category = expenseCategories.find((item) => item.id === form.categoryId);
+  const showCc = draft.resource === "expenses" &&
+    (account ? isCreditLikeAccountType(account.type) : profile.creditCard === true);
+  const showPasabuy = draft.resource === "expenses" &&
+    (category ? isPasabuyCategoryName(category.name) : draft.payload.isPasabuy === true);
   const showCategory = !CATEGORY_LOCKED_KINDS.has(draft.kind);
   const showTransacted = TRANSACTED_KINDS.has(draft.kind);
   const isCcPayment = draft.kind === "proposeCreateCcPayment";
@@ -141,6 +147,23 @@ function DraftCard({
   const commitIfChanged = (key: keyof DraftForm, editKey: string) => {
     if (form[key] !== draftToForm(draft)[key]) commit(editKey, form[key]);
   };
+
+  function expenseInput(key: keyof DraftForm, label: string, type: "number" | "date", step?: string) {
+    return (
+      <label className={styles["chat-field"]}>
+        <span className={styles["chat-field__label"]}>{label}</span>
+        <input
+          className={styles["chat-field__input"]}
+          type={type}
+          step={step}
+          value={form[key]}
+          disabled={busy}
+          onChange={(event) => setField(key, event.target.value)}
+          onBlur={() => commitIfChanged(key, key)}
+        />
+      </label>
+    );
+  }
 
   return (
     <div className={styles["chat-action-card"]} data-status={draft.status}>
@@ -280,6 +303,7 @@ function DraftCard({
             </label>
           )}
 
+          {draft.kind === "proposeCreateExpense" && expenseInput("datePaid", "Date Paid", "date")}
           {showCc && (
             <div className={styles["chat-field-row"]}>
               <label className={styles["chat-field"]}>
@@ -287,6 +311,7 @@ function DraftCard({
                 <select
                   className={styles["chat-field__input"]}
                   value={form.paymentStatus}
+                  aria-required="true"
                   disabled={busy}
                   onChange={(e) => {
                     setField("paymentStatus", e.target.value);
@@ -294,7 +319,7 @@ function DraftCard({
                   }}
                 >
                   <option value="">Select…</option>
-                  {PAYMENT_STATUSES.map((s) => (
+                  {paymentStatusLabels.map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -307,6 +332,7 @@ function DraftCard({
                   <select
                     className={styles["chat-field__input"]}
                     value={form.paymentFrequency}
+                    aria-required="true"
                     disabled={busy}
                     onChange={(e) => {
                       setField("paymentFrequency", e.target.value);
@@ -314,7 +340,7 @@ function DraftCard({
                     }}
                   >
                     <option value="">Select…</option>
-                    {PAYMENT_FREQUENCIES.map((f) => (
+                    {paymentFrequencyLabels.map((f) => (
                       <option key={f} value={f}>
                         {f}
                       </option>
@@ -335,6 +361,7 @@ function DraftCard({
                 min="1"
                 step="1"
                 value={form.periodCount}
+                aria-required="true"
                 disabled={busy}
                 onChange={(e) => setField("periodCount", e.target.value)}
                 onBlur={() => commitIfChanged("periodCount", "periodCount")}
@@ -343,19 +370,11 @@ function DraftCard({
           )}
 
           {showCc && (
-            <label className={styles["chat-field"]}>
-              <span className={styles["chat-field__label"]}>BNPL adjustment</span>
-              <input
-                className={styles["chat-field__input"]}
-                type="number"
-                inputMode="numeric"
-                step="1"
-                value={form.bnplAdjustment}
-                disabled={busy}
-                onChange={(e) => setField("bnplAdjustment", e.target.value)}
-                onBlur={() => commitIfChanged("bnplAdjustment", "bnplAdjustment")}
-              />
-            </label>
+            <div className={styles["chat-field-row"]}>
+              {expenseInput("interest", "Interest", "number", "0.01")}
+              {expenseInput("paidPeriod", "Paid Period", "number", "1")}
+              {expenseInput("bnplAdjustment", "BNPL adjustment", "number", "1")}
+            </div>
           )}
 
           {showPasabuy && (
@@ -366,6 +385,7 @@ function DraftCard({
                   className={styles["chat-field__input"]}
                   type="text"
                   value={form.pasabuyer}
+                  aria-required="true"
                   disabled={busy}
                   onChange={(e) => setField("pasabuyer", e.target.value)}
                   onBlur={() => commitIfChanged("pasabuyer", "pasabuyer")}
@@ -376,6 +396,7 @@ function DraftCard({
                 <select
                   className={styles["chat-field__input"]}
                   value={form.pasabuyStatus}
+                  aria-required="true"
                   disabled={busy}
                   onChange={(e) => {
                     setField("pasabuyStatus", e.target.value);
@@ -383,7 +404,7 @@ function DraftCard({
                   }}
                 >
                   <option value="">Select…</option>
-                  {PASABUY_STATUSES.map((s) => (
+                  {pasabuyStatusLabels.map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -391,6 +412,32 @@ function DraftCard({
                 </select>
               </label>
             </div>
+          )}
+
+          {showPasabuy && (
+            <>
+              <div className={styles["chat-field-row"]}>
+                {expenseInput("pasabuyDateOfPayment", "Pasabuy Date of Payment", "date")}
+                {expenseInput("pasabuyPaidPeriod", "Pasabuy Paid Period", "number", "1")}
+              </div>
+              <label className={styles["chat-field"]}>
+                <span className={styles["chat-field__label"]}>Pasabuy Account Receiver</span>
+                <select
+                  className={styles["chat-field__input"]}
+                  value={form.pasabuyAccountReceiverId}
+                  disabled={busy}
+                  onChange={(event) => {
+                    setField("pasabuyAccountReceiverId", event.target.value);
+                    commit("pasabuyAccountReceiverId", event.target.value);
+                  }}
+                >
+                  <option value="">Select account…</option>
+                  {accountOptions.map((option) => (
+                    <option key={option.id} value={option.id}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            </>
           )}
 
           {draft.missingRequired.length > 0 && (
