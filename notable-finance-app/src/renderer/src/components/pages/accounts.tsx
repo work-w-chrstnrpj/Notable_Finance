@@ -242,7 +242,7 @@ function AccountsPage() {
         // Wrap in a Panel exactly like Income/Expense — the Panel provides the
         // min-width:0 containment so the wide table scrolls INSIDE it instead of
         // stretching the whole page.
-        <Panel title="Accounts">
+        <Panel>
           <DataTable
             headers={accountTableHeaders}
             rows={accountTableRows}

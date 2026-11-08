@@ -75,6 +75,21 @@
   border-color: var(--line-strong);
 }
 
+/* The toggle holds two stacked slots: the brand mark and the chevron. Expanded,
+   only the chevron shows (the mark has its own place beside the wordmark);
+   collapsed, the mark shows at rest and the chevron takes over on hover. */
+.sidebar-toggle__chevron {
+  display: grid;
+  place-items: center;
+}
+
+.sidebar-toggle__logo {
+  display: none;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
 .nav__title,
 .sync-meta {
   color: var(--ink-muted);
@@ -344,8 +359,39 @@
 
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle {
   margin: 0;
+  width: 34px;
+  height: 34px;
+  /* At rest this is the brand mark, not a button — the frame appears on hover
+     together with the chevron. */
+  border-color: transparent;
+  background: transparent;
 }
 
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:hover,
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle__logo {
+  display: block;
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle__chevron {
+  display: none;
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:hover .sidebar-toggle__logo,
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:focus-visible .sidebar-toggle__logo {
+  display: none;
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:hover .sidebar-toggle__chevron,
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-toggle:focus-visible .sidebar-toggle__chevron {
+  display: grid;
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .brand__text,
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .brand__name,
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__title,
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item span,
@@ -354,18 +400,43 @@
   display: none;
 }
 
+/* Group titles are hidden on the rail, so a hairline rule keeps Overview /
+   Money movement / Workspace readable as three separate clusters instead of
+   one long, undifferentiated column of icons. */
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__group {
-  gap: 8px;
+  gap: 4px;
+  justify-items: center;
 }
 
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__group + .nav__group {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+/* Uniform 40×40 icon buttons: the hover/active chip is a square centred in the
+   rail rather than a full-width block. */
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item {
   justify-content: center;
-  padding: 8px;
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+/* Cmd/Ctrl-held shortcut hints have nowhere to go on a 40px button. */
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item :global(.shortcut-hint) {
+  display: none;
 }
 
 :global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-profile {
   justify-content: center;
-  padding: 10px 8px;
+  padding: 12px 8px;
+}
+
+:global(.workspace--sidebar-collapsed) :global(.sidebar) .sidebar-profile__avatar {
+  width: 32px;
+  height: 32px;
 }
 
 /* Collapsed sidebar: labels are hidden, so pin the badge as a small corner pill. */
@@ -383,6 +454,8 @@
 
 /* ── Tablet / iPad & below: drawer mode shows full labels and left-aligned items ── */
 @media (max-width: 1023px) {
+  :global(.workspace--sidebar-collapsed) :global(.sidebar) .brand__mark,
+  :global(.workspace--sidebar-collapsed) :global(.sidebar) .brand__text,
   :global(.workspace--sidebar-collapsed) :global(.sidebar) .brand__name,
   :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__title,
   :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item span,
@@ -393,6 +466,20 @@
 
   :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__item {
     justify-content: flex-start;
+    width: auto;
+    min-height: 34px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__group {
+    justify-items: stretch;
+  }
+
+  :global(.workspace--sidebar-collapsed) :global(.sidebar) .nav__group + .nav__group {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 }
 

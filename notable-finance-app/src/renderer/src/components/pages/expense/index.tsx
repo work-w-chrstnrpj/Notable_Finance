@@ -706,7 +706,7 @@ function ExpensePage({
         onNewExpense={() => openExpenseModal("new", "New Expense")}
         onViewModeChange={handleExpenseViewModeChange}
       />
-      <Panel title={`${viewMode} Expenses`}>
+      <Panel>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         {isAnnual && annualView === "chart" ? (
           <AnnualBarChart data={annualExpenseGroups} color="#E11D48" />

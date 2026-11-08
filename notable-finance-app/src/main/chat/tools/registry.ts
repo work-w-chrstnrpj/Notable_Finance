@@ -259,7 +259,7 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     function: {
       name: 'proposeCreateExpense',
       description:
-        'Propose an expense create. Set profile/pasabuy/creditCard when known. Returns draft for Approve.',
+        'Propose an expense create. The selected account and category determine the credit and Pasabuy sections. Pass profile hints if the selection is unresolved. Omit unknown fields.',
       parameters: {
         type: 'object',
         properties: {
@@ -285,6 +285,8 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           pasabuyer: { type: 'string' },
           pasabuyStatus: { type: 'string' },
           pasabuyDateOfPayment: dateProp,
+          pasabuyPaidPeriod: { type: 'number' },
+          pasabuyAccountReceiverId: { type: 'string' },
           pasabuyAccountReceiver: { type: 'string' },
           viewMode: { type: 'string' }
         },

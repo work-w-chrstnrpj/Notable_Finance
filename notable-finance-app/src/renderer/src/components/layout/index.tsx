@@ -165,7 +165,7 @@ function Sidebar({
         <div className={styles.brand__mark} aria-hidden="true">
           <img src="./favicon.png" alt="" />
         </div>
-        <div>
+        <div className={styles.brand__text}>
           <p className={styles.brand__name}>Notable Finance</p>
         </div>
         <button
@@ -175,7 +175,13 @@ function Sidebar({
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           onClick={onToggle}
         >
-          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {/* Collapsed rail: the mark sits here at rest and gives way to the
+              chevron on hover/focus, so the brand and the expand control share
+              one centred 34px slot. CSS decides which of the two is shown. */}
+          <img className={styles["sidebar-toggle__logo"]} src="./favicon.png" alt="" aria-hidden="true" />
+          <span className={styles["sidebar-toggle__chevron"]} aria-hidden="true">
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </span>
         </button>
       </div>
       <nav
@@ -183,9 +189,9 @@ function Sidebar({
         aria-label="Finance sections"
         onScroll={showNavScrollbar}
       >
-        <NavGroup title="Overview" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
-        <NavGroup title="Money movement" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
-        <NavGroup title="Workspace" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} />
+        <NavGroup title="Overview" sections={groupedSections.primary} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} collapsed={collapsed} />
+        <NavGroup title="Money movement" sections={groupedSections.workflow} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} collapsed={collapsed} />
+        <NavGroup title="Workspace" sections={groupedSections.system} activeSection={activeSection} onNavigate={onNavigate} sectionBadges={sectionBadges} collapsed={collapsed} />
       </nav>
       <div className={styles["sidebar-profile"]}>
         <div className={styles["sidebar-profile__avatar"]} aria-hidden="true">
@@ -210,12 +216,15 @@ function NavGroup({
   activeSection,
   onNavigate,
   sectionBadges,
+  collapsed = false,
 }: {
   title: string;
   sections: FinanceSection[];
   activeSection: FinanceSectionId;
   onNavigate?: () => void;
   sectionBadges?: Partial<Record<FinanceSectionId, number>>;
+  /** Collapsed rail hides the labels, so each item needs a tooltip instead. */
+  collapsed?: boolean;
 }) {
   return (
     <div className={styles.nav__group}>
@@ -229,16 +238,25 @@ function NavGroup({
         const badgeHint = isHistory
           ? `${badge} item${badge > 1 ? "s" : ""} waiting to sync`
           : `${badge} item${badge > 1 ? "s" : ""} to resolve`;
+        const navLabel = section.shortLabel ?? section.label;
+        const tooltip = collapsed
+          ? badge > 0
+            ? `${navLabel} — ${badgeHint}`
+            : navLabel
+          : badge > 0
+            ? badgeHint
+            : undefined;
         return (
           <Link
             key={section.id}
             href={`/${section.id}`}
             className={cx(styles.nav__item, activeSection === section.id && styles["nav__item--active"])}
             onClick={onNavigate}
-            title={badge > 0 ? badgeHint : undefined}
+            title={tooltip}
+            aria-label={collapsed ? navLabel : undefined}
           >
             <Icon size={17} />
-            <span>{section.shortLabel ?? section.label}</span>
+            <span>{navLabel}</span>
             {SECTION_SHORTCUT_ID[section.id] && (
               <ShortcutHint id={SECTION_SHORTCUT_ID[section.id]!} className="nav__shortcut" />
             )}

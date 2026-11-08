@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { resolveDate } from '../src/main/chat/dates'
 import { routeChatSkill } from '../src/main/chat/skills/router'
 import {
@@ -6,9 +6,53 @@ import {
   executeChatTool,
   WRITE_TOOL_DEFINITIONS
 } from '../src/main/chat/tools/registry'
-import { MASS_EDIT_CAP, editDraftFields } from '../src/main/chat/tools/write-tools'
+import { MASS_EDIT_CAP, editDraftFields, proposeCreateExpense } from '../src/main/chat/tools/write-tools'
 import { putDraft, getDraft, listDrafts, updateDraftSpec } from '../src/main/chat/drafts'
 import { cancelDraft } from '../src/main/chat/confirm'
+
+vi.mock('../src/main/db/repositories', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../src/main/db/repositories')>(),
+  listAccounts: () => [
+    { id: 'debit', name: 'Wallet', type: 'Cash' },
+    { id: 'cc', name: 'Card', type: 'Credit Account' },
+  ],
+  listExpenseCategories: () => [
+    { id: 'food', name: 'Food' },
+    { id: 'pasabuy', name: 'Pasabuy' },
+  ],
+}))
+
+describe('expense draft profiles', () => {
+  it('revalidates credit and Pasabuy requirements when selections or status change', () => {
+    const { draft } = proposeCreateExpense({
+      description: 'Groceries', accountId: 'debit', categoryId: 'food',
+      creditCard: true, pasabuy: true,
+    }, { threadId: 'profile-test' })
+    expect(draft.missingRequired).toEqual(['Expense Amount'])
+    const combined = editDraftFields(draft.id, { accountId: 'cc', categoryId: 'pasabuy' })
+    expect(combined.missingRequired).toEqual(['Expense Amount', 'Payment Status', 'Pasabuyer', 'Pasabuy Status'])
+    const installment = editDraftFields(draft.id, {
+      paymentStatus: 'Installment', pasabuyer: 'Ana', pasabuyStatus: 'Payment not yet receive',
+    })
+    expect(installment.missingRequired).toEqual(['Expense Amount', 'Payment Frequency', 'Period count'])
+    const ready = editDraftFields(draft.id, {
+      amount: '500', paymentFrequency: 'Monthly', periodCount: '3',
+      pasabuyDateOfPayment: '2026-11-05', pasabuyPaidPeriod: '1', pasabuyAccountReceiverId: 'debit',
+    })
+    expect(ready.status).toBe('ready')
+    expect(ready.payload).toMatchObject({
+      pasabuyDateOfPayment: '2026-11-05', pasabuyPaidPeriod: 1, pasabuyAccountReceiverId: 'debit',
+    })
+    const debit = editDraftFields(draft.id, { accountId: 'debit' })
+    expect(debit.payload).toMatchObject({
+      paymentStatus: null, periodCount: null, _profile: { creditCard: false, pasabuy: true },
+    })
+    const regular = editDraftFields(draft.id, { categoryId: 'food' })
+    expect(regular.payload).toMatchObject({
+      pasabuyer: null, pasabuyAccountReceiverId: null, _profile: { creditCard: false, pasabuy: false },
+    })
+  })
+})
 
 describe('routeChatSkill write intents', () => {
   it('routes log/workflow skills', () => {

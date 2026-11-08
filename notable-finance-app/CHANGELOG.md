@@ -5,6 +5,19 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-11-08
+
+### Added
+
+- **Transfer and CC Payment date filter.** Both views now have the Daily, Weekly, Monthly, Annually, and All Records tabs that Income, Expense, Alkansya, and Receivables already had, instead of being pinned to the selected month. The top date selector follows the chosen period and hides on All Records.
+- **Chat expense drafts.** Draft cards recompute their required fields when Account or Category changes, covering debit, credit, installment, Pasabuy, and credit-account Pasabuy purchases.
+
+### Changed
+
+- **Record tables.** Removed the heading above the table on Income, Expense, Accounts, and the four workflow views — the page toolbar already names the view.
+- **Collapsed sidebar.** Uniform icon buttons with the three nav groups separated by a rule, section names on hover, and the Notable Finance mark in the brand slot that swaps to the expand arrow on hover. The brand slot is now properly centred.
+- **Active tab.** Takes the same surface colour as the bar beneath it, so the tab and its view read as one connected sheet.
+
 ## [2.5.0] - 2026-11-05
 
 ### Added

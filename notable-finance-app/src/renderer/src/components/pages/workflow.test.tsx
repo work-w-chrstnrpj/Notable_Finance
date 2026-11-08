@@ -104,7 +104,7 @@ describe("WorkflowPage", () => {
     expect(window.location.hash).toBe(originalHash);
   });
 
-  it.each(["alkansya", "receivables"] as const)("scopes %s to the selected weekly period", async (section) => {
+  it.each(["transfer", "credit-card-payment", "alkansya", "receivables"] as const)("scopes %s to the selected weekly period", async (section) => {
     const list = vi.fn(async () => ok([workflowRecord]));
     renderPage(
       <WorkflowPage
@@ -121,9 +121,15 @@ describe("WorkflowPage", () => {
         expenses: { list: vi.fn(async () => ok([pasabuyExpense])), listForCCCoverage: vi.fn(async () => ok([])) },
       } },
     );
+    const viewBySection = {
+      transfer: "transfers",
+      "credit-card-payment": "creditCardPayments",
+      alkansya: "alkansya",
+      receivables: "receivables",
+    } as const;
     await screen.findByText(section === "receivables" ? "Groceries for Ana" : "Weekly Transfer");
     expect(list).toHaveBeenCalledWith(expect.objectContaining({
-      view: section === "alkansya" ? "alkansya" : "receivables",
+      view: viewBySection[section],
       rangeStart: "2026-07-06",
       rangeEnd: "2026-07-12",
     }));
@@ -131,7 +137,7 @@ describe("WorkflowPage", () => {
     expect(screen.getByRole("button", { name: "Weekly" })).toBeInTheDocument();
   });
 
-  it.each(["alkansya", "receivables"] as const)("loads all available %s records in All Records view", async (section) => {
+  it.each(["transfer", "credit-card-payment", "alkansya", "receivables"] as const)("loads all available %s records in All Records view", async (section) => {
     const list = vi.fn(async () => ok([workflowRecord]));
     renderPage(
       <WorkflowPage section={section} selectedMonth="2026-07" selectedDate="2026-07-11" viewMode="All Records" onViewModeChange={vi.fn()} />,
@@ -144,6 +150,41 @@ describe("WorkflowPage", () => {
     );
     await screen.findByText("Weekly Transfer");
     expect(list).toHaveBeenCalledWith(expect.objectContaining({ rangeStart: undefined, rangeEnd: undefined }));
+    expect(list).not.toHaveBeenCalledWith(expect.objectContaining({ month: expect.anything() }));
+  });
+
+  it.each(["transfer", "credit-card-payment"] as const)(
+    "offers the full date filter on %s",
+    async (section) => {
+      const { unmount } = renderWorkflow(section);
+      await screen.findByText("Weekly Transfer");
+      for (const mode of ["Daily", "Weekly", "Monthly", "Annually", "All Records"]) {
+        expect(screen.getByRole("button", { name: mode })).toBeInTheDocument();
+      }
+      unmount();
+    },
+  );
+
+  it("switches the Transfer view mode through the date filter", async () => {
+    const onViewModeChange = vi.fn();
+    renderPage(
+      <WorkflowPage
+        section="transfer"
+        selectedMonth="2026-07"
+        selectedDate="2026-07-11"
+        viewMode="Monthly"
+        onViewModeChange={onViewModeChange}
+      />,
+      { apiOverrides: {
+        accounts: { list: vi.fn(async () => ok([sourceAccount, destAccount])) },
+        categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([])) },
+        incomes: { list: vi.fn(async () => ok([workflowRecord])) },
+        expenses: { listForCCCoverage: vi.fn(async () => ok([])) },
+      } },
+    );
+    await screen.findByText("Weekly Transfer");
+    fireEvent.click(screen.getByRole("button", { name: "All Records" }));
+    expect(onViewModeChange).toHaveBeenCalledWith("All Records");
   });
 });
 

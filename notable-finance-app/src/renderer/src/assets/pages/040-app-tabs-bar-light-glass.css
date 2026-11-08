@@ -5,3 +5,16 @@
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
 }
+
+/* The active tab must composite to the same tone as the glass .topbar beneath
+   it. It is painted ON TOP of this strip, so its own alpha has to account for
+   the strip already sitting over the body gradient:
+     strip  = 42% surface over body        (rule above)
+     topbar = 50% surface over body        (layout/index.module.css)
+   Solving a·S + (1−a)·(0.42·S + 0.58·B) = 0.50·S + 0.50·B gives a ≈ 0.14, so
+   tab-over-strip lands on the same colour as topbar-over-body. Keep this value
+   in step with those two percentages. */
+[data-preset="hig"] .app-tabs__tab--active {
+  --tab-active-surface: color-mix(in srgb, var(--surface) 14%, transparent);
+  border-color: color-mix(in srgb, var(--line) 42%, transparent);
+}
