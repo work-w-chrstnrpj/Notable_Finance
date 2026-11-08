@@ -434,7 +434,7 @@ function IncomePage({
       />
 
 
-      <Panel title={`${viewMode} Income Records`}>
+      <Panel>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         {isAnnual && annualView === "chart" ? (
           <AnnualBarChart data={annualIncomeGroups} color="#0D9488" />

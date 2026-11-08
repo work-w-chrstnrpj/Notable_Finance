@@ -25,7 +25,6 @@ import {
   applyIncomeTag,
   stripNotionTag,
   parseNumberInput,
-  getMonthLabel,
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
@@ -164,19 +163,16 @@ function WorkflowPage({
   // Each workflow is the Incomes data source filtered server-side by its fixed
   // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
   // alkansya→Savings) or, for receivables, by an empty receiving account.
-  // Alkansya and Receivables use the selected date period; Transfer and CC
-  // Payment remain month-scoped.
-  const monthScoped = section === "transfer" || section === "credit-card-payment";
-  const periodScoped = isAlkansya || isReceivables;
+  // Every workflow view is scoped by the shared Daily/Weekly/Monthly/Annually/
+  // All Records selector, matching Income and Expense.
   const viewUnit = incomeModeToUnit(viewMode);
-  const selectedRange = periodScoped && viewUnit ? computeRange(viewUnit, selectedDate) : undefined;
+  const selectedRange = viewUnit ? computeRange(viewUnit, selectedDate) : undefined;
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
-    month: monthScoped ? selectedMonth : undefined,
     rangeStart: selectedRange?.start,
     rangeEnd: selectedRange?.end,
   });
   const { state: expenseState, applyLocal: applyExpenseLocal } = useExpenses();
-  const selectedPeriodLabel = !periodScoped ? "All Time" : viewUnit ? rangeLabel(viewUnit, selectedDate) : "All Records";
+  const selectedPeriodLabel = viewUnit ? rangeLabel(viewUnit, selectedDate) : "All Records";
   // Workflows are income-backed views, so they share the income invalidation.
   const { invalidateIncomeFamily, invalidateExpenseFamily } = useFinanceInvalidation();
   const isLoading = workflowState.status === "loading";
@@ -638,15 +634,13 @@ function WorkflowPage({
           </>
         }
       />
-      {periodScoped && (
-        <SegmentedControl
-          label={`${label} view`}
-          options={["Daily", "Weekly", "Monthly", "Annually", "All Records"].map((mode) => ({ label: mode, value: mode }))}
-          value={viewMode}
-          onChange={(mode) => onViewModeChange(mode as typeof viewMode)}
-          shortcutId="view.filterTab"
-        />
-      )}
+      <SegmentedControl
+        label={`${label} view`}
+        options={["Daily", "Weekly", "Monthly", "Annually", "All Records"].map((mode) => ({ label: mode, value: mode }))}
+        value={viewMode}
+        onChange={(mode) => onViewModeChange(mode as typeof viewMode)}
+        shortcutId="view.filterTab"
+      />
       {(filterActive || searchActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
           {filterActive && (
@@ -664,7 +658,7 @@ function WorkflowPage({
         </div>
       )}
 
-      <Panel title="Records">
+      <Panel>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
         {workflowRows.length ? (
           <DataTable
@@ -698,7 +692,7 @@ function WorkflowPage({
           />
         ) : (
           <EmptyState
-            title={allWorkflowIncomes.length || receivablePasabuyExpenses.length ? "No matching records" : periodScoped || monthScoped ? `No ${label.toLowerCase()} records for ${selectedPeriodLabel}` : `No ${label.toLowerCase()} records`}
+            title={allWorkflowIncomes.length || receivablePasabuyExpenses.length ? "No matching records" : viewUnit ? `No ${label.toLowerCase()} records for ${selectedPeriodLabel}` : `No ${label.toLowerCase()} records`}
             detail={
               allWorkflowIncomes.length
                 ? "Try another account or search term."
@@ -706,7 +700,7 @@ function WorkflowPage({
                 ? "Receivables include Money Lent, income entries without a receiving account, and paid Pasabuy expenses that still have a balance due."
                 : isAlkansya
                   ? "Alkansya holds income records in the Savings category."
-                  : `No ${label} entries were found for ${getMonthLabel(selectedMonth)}.`
+                  : `No ${label} entries were found for ${selectedPeriodLabel}.`
             }
           />
         )}

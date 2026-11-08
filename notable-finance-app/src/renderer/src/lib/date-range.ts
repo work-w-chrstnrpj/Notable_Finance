@@ -174,11 +174,11 @@ export function activeSelectorUnit(
     case "expense":
       return expenseModeToUnit(expenseViewMode);
     case "dashboard":
-    case "transfer":
-    case "credit-card-payment":
       return "month";
     case "monthly-monitoring":
       return monitoringModeToUnit(monitoringViewMode);
+    case "transfer":
+    case "credit-card-payment":
     case "alkansya":
     case "receivables":
       return incomeModeToUnit(workflowViewMode);

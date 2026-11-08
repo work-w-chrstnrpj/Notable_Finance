@@ -32,16 +32,19 @@ export function Panel({
   action,
   children,
 }: {
-  title: string;
+  /** Omit to render a header-less panel (record tables already have a page title). */
+  title?: string;
   action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="panel">
-      <div className={styles.panel__header}>
-        <h2>{title}</h2>
-        {action}
-      </div>
+      {(title || action) && (
+        <div className={styles.panel__header}>
+          {title && <h2>{title}</h2>}
+          {action}
+        </div>
+      )}
       {children}
     </section>
   );

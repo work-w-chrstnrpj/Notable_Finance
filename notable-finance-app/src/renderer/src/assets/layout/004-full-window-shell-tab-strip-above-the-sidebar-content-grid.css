@@ -46,11 +46,22 @@
 }.app-tabs__tab:hover {
   background: color-mix(in srgb, var(--surface) 70%, transparent);
   color: var(--ink-soft);
-}.app-tabs__tab--active {
-  background: var(--surface);
+}
+/* The active tab paints the same surface as the .topbar directly beneath it, so
+   the tab and the view it opens read as one connected sheet. Themes and presets
+   override only --tab-active-surface; the 1px shadow bridges the strip's bottom
+   border with that same value. */
+.app-tabs__tab--active {
+  --tab-active-surface: var(--bg);
+  background: var(--tab-active-surface);
   border-color: var(--line);
   color: var(--ink);
-  box-shadow: 0 1px 0 var(--surface);
+  box-shadow: 0 1px 0 var(--tab-active-surface);
+}
+
+/* Dark .topbar is --surface rather than --bg (see layout/index.module.css). */
+[data-theme="dark"] .app-tabs__tab--active {
+  --tab-active-surface: var(--surface);
 }.app-tabs__label {
   overflow: hidden;
   text-overflow: ellipsis;

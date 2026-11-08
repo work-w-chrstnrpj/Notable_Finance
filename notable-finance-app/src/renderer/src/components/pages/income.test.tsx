@@ -45,6 +45,13 @@ describe("IncomePage", () => {
     }
   });
 
+  it("renders the table without a redundant panel heading above it", async () => {
+    renderIncome("Daily");
+    expect(await screen.findByText("July Salary")).toBeInTheDocument();
+    // The PageToolbar already names the view; the panel must not repeat it.
+    expect(screen.queryByRole("heading", { name: /Income Records$/ })).not.toBeInTheDocument();
+  });
+
   it("loads all available records in the All Records view without date bounds", async () => {
     const list = vi.fn(async () => ok([incomeRecord]));
     renderPage(
