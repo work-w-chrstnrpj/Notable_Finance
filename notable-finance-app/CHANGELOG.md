@@ -5,6 +5,17 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2] - 2026-11-09
+
+### Added
+
+- **Alibaba Model Studio (Qwen) provider.** Chat can now spend the account's Model Studio free quota, which no provider reached before — the existing Qwen entries are hosted by Groq, Cerebras and OpenRouter and bill those services instead. Carries 20 free-quota models in the account's own text-chat priority order, led by Qwen Flash, and sits at the top of the provider picker.
+- **Automatic free-quota fallback.** Alibaba grants its quota per model, so when one runs out the chat moves down the priority list instead of failing the turn. The switch holds for the rest of the turn and is saved to the thread, so later messages start on a model that still has a grant. Rate limits and other errors are untouched.
+
+### Changed
+
+- **Quota errors are legible.** A spent grant used to surface as `Provider error (403)`. It now names the model, explains that the quota is per model and shared across the account, and points at the next model to use.
+
 ## [2.5.1] - 2026-11-08
 
 ### Added

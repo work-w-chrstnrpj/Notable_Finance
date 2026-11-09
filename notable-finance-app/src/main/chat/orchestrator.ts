@@ -25,8 +25,10 @@ import {
   providerPresetFromBaseUrl,
   type ChatModelOption
 } from './models'
+import { createModelFallback } from './model-fallback'
 import {
   completeChat,
+  QuotaExhaustedError,
   fetchRemoteModelIds,
   type ChatCompletionMessage,
   type ChatCompletionResult,
@@ -255,6 +257,7 @@ function synthesizeDraftReply(drafts: ChatDraftDto[]): string {
 async function runToolLoop(input: {
   apiKey: string
   model: string
+  providerId?: string | null
   messages: ChatCompletionMessage[]
   threadId: string
   baseUrl?: string | null
@@ -268,6 +271,8 @@ async function runToolLoop(input: {
   drafts: ChatDraftDto[]
   toolResults: unknown[]
   toolNames: string[]
+  /** Model that actually answered — differs from input.model after a fallback. */
+  modelUsed: string
 }> {
   const messages = [...input.messages]
   const drafts: ChatDraftDto[] = []
@@ -276,44 +281,71 @@ async function runToolLoop(input: {
   const baseUrl = input.baseUrl ?? undefined
   const headers = input.headers
 
-  const done = (text: string) => ({ text, drafts, toolResults, toolNames })
-
-  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const forceThisRound = Boolean(input.forceToolFirstRound) && round === 0
-    let result: ChatCompletionResult
-    try {
-      result = await completeChat({
-        apiKey: input.apiKey,
-        model: input.model,
-        messages,
-        tools: CHAT_TOOL_DEFINITIONS,
-        toolChoice: forceThisRound ? 'required' : undefined,
-        baseUrl,
-        headers,
-        temperature: input.temperature
-      })
-    } catch (err) {
-      if (!forceThisRound) throw err
-      // Some OpenAI-compatible hosts reject tool_choice:"required" — retry the
-      // same round with auto so forcing never hard-fails the turn.
+  // One instance per turn: a spent free-quota grant costs a single 403, then
+  // every later round in this turn uses the model we moved to.
+  const fallback = createModelFallback({
+    providerId: input.providerId,
+    model: input.model,
+    onSwitch: (from, to) => {
       appendDevLog({
         kind: 'api',
         source: 'main',
-        action: 'chat.provider.forceToolFallback',
-        message: `${input.model} rejected tool_choice=required; retrying with auto`,
-        detail: { model: input.model },
+        action: 'chat.provider.quotaFallback',
+        message: `${from} free quota exhausted (403) — falling back to ${to}`,
+        detail: { from, to, threadId: input.threadId },
         ok: false
       })
-      result = await completeChat({
-        apiKey: input.apiKey,
-        model: input.model,
-        messages,
-        tools: CHAT_TOOL_DEFINITIONS,
-        baseUrl,
-        headers,
-        temperature: input.temperature
-      })
     }
+  })
+
+  const done = (text: string) => ({
+    text,
+    drafts,
+    toolResults,
+    toolNames,
+    modelUsed: fallback.model
+  })
+
+  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+    const forceThisRound = Boolean(input.forceToolFirstRound) && round === 0
+    const result: ChatCompletionResult = await fallback.run(async (model) => {
+      try {
+        return await completeChat({
+          apiKey: input.apiKey,
+          model,
+          messages,
+          tools: CHAT_TOOL_DEFINITIONS,
+          toolChoice: forceThisRound ? 'required' : undefined,
+          baseUrl,
+          headers,
+          temperature: input.temperature
+        })
+      } catch (err) {
+        // A spent free-quota grant is the fallback's business, not this
+        // round's — let it through so the next model is tried.
+        if (err instanceof QuotaExhaustedError) throw err
+        if (!forceThisRound) throw err
+        // Some OpenAI-compatible hosts reject tool_choice:"required" — retry the
+        // same round with auto so forcing never hard-fails the turn.
+        appendDevLog({
+          kind: 'api',
+          source: 'main',
+          action: 'chat.provider.forceToolFallback',
+          message: `${model} rejected tool_choice=required; retrying with auto`,
+          detail: { model },
+          ok: false
+        })
+        return await completeChat({
+          apiKey: input.apiKey,
+          model,
+          messages,
+          tools: CHAT_TOOL_DEFINITIONS,
+          baseUrl,
+          headers,
+          temperature: input.temperature
+        })
+      }
+    })
 
     if (!result.toolCalls.length) {
       const text = result.content?.trim()
@@ -364,21 +396,23 @@ async function runToolLoop(input: {
     }
   }
 
-  const final = await completeChat({
-    apiKey: input.apiKey,
-    model: input.model,
-    baseUrl,
-    headers,
-    temperature: input.temperature,
-    messages: [
-      ...messages,
-      {
-        role: 'user',
-        content:
-          'Please answer the user now. If drafts were created, summarize them and any missing fields. Do not call more tools. Do not claim records were saved.'
-      }
-    ]
-  })
+  const final = await fallback.run((model) =>
+    completeChat({
+      apiKey: input.apiKey,
+      model,
+      baseUrl,
+      headers,
+      temperature: input.temperature,
+      messages: [
+        ...messages,
+        {
+          role: 'user',
+          content:
+            'Please answer the user now. If drafts were created, summarize them and any missing fields. Do not call more tools. Do not claim records were saved.'
+        }
+      ]
+    })
+  )
   const text = final.content?.trim()
   if (text) return done(text)
   // Last-ditch salvage so real work (a draft, or fetched data) is never lost to
@@ -389,8 +423,8 @@ async function runToolLoop(input: {
       kind: 'api',
       source: 'main',
       action: 'chat.orchestrator.emptyAfterTools',
-      message: `${input.model} returned no text after ${toolResults.length} tool result(s)`,
-      detail: { model: input.model, toolResultCount: toolResults.length },
+      message: `${fallback.model} returned no text after ${toolResults.length} tool result(s)`,
+      detail: { model: fallback.model, toolResultCount: toolResults.length },
       ok: false
     })
     return done(
@@ -623,9 +657,16 @@ export async function sendChatMessage(input: {
     { role: 'user', content: text }
   ]
 
-  const { text: reply, drafts, toolResults, toolNames } = await runToolLoop({
+  const {
+    text: reply,
+    drafts,
+    toolResults,
+    toolNames,
+    modelUsed
+  } = await runToolLoop({
     apiKey,
     model: modelId,
+    providerId,
     messages,
     threadId: thread.id,
     baseUrl,
@@ -633,6 +674,12 @@ export async function sendChatMessage(input: {
     temperature: temperatureForOverlay(activeOverlay),
     forceToolFirstRound: writeSkill
   })
+
+  // A free-quota fallback stuck for this turn; persist it so the next turn
+  // starts on the model that still has a grant instead of re-paying the 403.
+  if (modelUsed && modelUsed !== modelId) {
+    thread = updateThread(thread.id, { modelId: modelUsed })
+  }
 
   const budgetNotes = detectBudgetGuardFromToolResults(toolResults)
   const appendix = formatBudgetGuardAppendix(activeOverlay, budgetNotes)
