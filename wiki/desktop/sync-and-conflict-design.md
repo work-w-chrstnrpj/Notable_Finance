@@ -24,6 +24,7 @@ The core of the desktop app. It defines how the local SQLite store reconciles wi
 - Rate limit ≈ **3 requests/second** (HTTP 429 on exceed) → incremental sync + a throttled queue with backoff.
 - The **Search** endpoint can sort/filter by `last_edited_time` → used to pull "what changed since cursor T".
 - **Relation properties embed at most 25 related pages.** When `has_more` is true (typical for a large `CC Payment Covered` list), pull paginates via Retrieve a page property. Pull also loads expenses before incomes so those ids can resolve locally, then unions any `CC Link Payment Receipt` reverse links onto the income.
+- Each CC Payment stores its own `CC Payment Covered` list, so the same expense can appear on several payment records. Normal expense pushes omit the unchanged legacy single receipt field to preserve the complete two-way relation. For a Notion workspace that uses a two-way relation, the expense-side `CC Link Payment Receipt` must allow multiple pages.
 
 Because of the minute-rounding and missing field timestamps, **we do not rely on timestamps for correctness.** The base snapshot is primary; timestamps are only a coarse "did anything change" hint.
 

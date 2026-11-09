@@ -282,7 +282,10 @@ export interface CreateIncomeInput {
   view?: IncomeView
 }
 
-export type UpdateIncomeInput = Partial<CreateIncomeInput>
+export type UpdateIncomeInput = Partial<CreateIncomeInput> & {
+  /** Append coverage to the latest stored list. Omit ccPaymentCoveredIds for this operation. */
+  addCcPaymentCoveredIds?: string[]
+}
 
 export interface CreateExpenseInput {
   /** To Pay permits incomplete planning records; other forms retain normal requirements. */

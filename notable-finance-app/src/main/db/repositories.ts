@@ -216,6 +216,16 @@ export function updateIncome(id: string, patch: UpdateIncomeInput): IncomeRecord
   validateUpdateIncome(patch as Record<string, unknown>)
   const current = getIncome(id)
   if (current.deleted) throw new ValidationError('Deleted income cannot be edited.')
+  const { addCcPaymentCoveredIds, ...changes } = patch
+  if (addCcPaymentCoveredIds !== undefined) {
+    if (!Array.isArray(addCcPaymentCoveredIds) || addCcPaymentCoveredIds.length === 0 ||
+        changes.ccPaymentCoveredIds !== undefined) {
+      throw new ValidationError('Provide expense IDs to append without replacing existing coverage.')
+    }
+    for (const expenseId of addCcPaymentCoveredIds) assertNonEmptyString(expenseId, 'covered expense ID')
+    changes.ccPaymentCoveredIds = [...new Set([...(current.ccPaymentCoveredIds ?? []), ...addCcPaymentCoveredIds])]
+  }
+  patch = changes
   if (isMoneyLentCategory(incomeCategoryNames().get(current.categoryId)) ||
       isMoneyLentCategory(incomeCategoryNames().get(patch.categoryId ?? ''))) {
     if (patch.categoryId && patch.categoryId !== current.categoryId) {
@@ -418,7 +428,7 @@ export function listExpenses(params: ExpenseListParams = {}): ExpenseRecordDto[]
 
 /**
  * List expenses eligible for CC Payment Covered relation.
- * Returns expenses on credit-like accounts that are NOT fully paid.
+ * Returns non-deleted expenses on credit-like accounts, including paid and installment records.
  */
 export function listExpensesForCCCoverage(): ExpenseRecordDto[] {
   const creditAccountIds = new Set(

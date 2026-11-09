@@ -5,6 +5,7 @@ import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { ExpensePage } from "./expense";
 import type { ExpenseViewMode } from "@/types/finance";
+import type { IncomeRecordDto, UpdateIncomeInput } from "@shared/finance.types";
 
 const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const category = { id: "cat1", name: "Groceries", monthlyBudget: 0, auxiliary: false, icon: null };
@@ -56,6 +57,54 @@ const INSTALLMENT_HEADERS = ["Date", "Description", "Account", "Amount", "Catego
 const PASABUY_HEADERS = ["Date", "Name", "Account", "Pasabuyer Balance", "Pasabuyer", "Status", "DOP", "Account Receiver"];
 
 describe("ExpensePage", () => {
+  it("links an installment expense to two receipts and shows both in its details", async () => {
+    const card = { ...account, type: "Credit Account" as const };
+    const expense = { ...expenseRecord, ccLinkPaymentReceiptId: "payment-1" };
+    const firstPayment = {
+      id: "payment-1", name: "July payment", date: "2026-07-15", grossIncome: 1000,
+      capitalExpenditure: 0, accountId: card.id, categoryId: "credit-card-payment",
+      ccPaymentCoveredIds: [expense.id],
+    };
+    const payments: IncomeRecordDto[] = [
+      firstPayment,
+      { ...firstPayment, id: "payment-2", name: "August payment", date: "2026-08-15", ccPaymentCoveredIds: ["another-expense"] },
+    ];
+    const update = vi.fn(async (id: string, patch: UpdateIncomeInput) => {
+      const payment = payments.find((record) => record.id === id)!;
+      payment.ccPaymentCoveredIds = [...(payment.ccPaymentCoveredIds ?? []), ...patch.addCcPaymentCoveredIds!];
+      return ok(payment);
+    });
+    renderPage(
+      <ExpensePage viewMode="CC Transaction" onViewModeChange={vi.fn()} selectedDate="2026-07-15" />,
+      {
+        apiOverrides: {
+          accounts: { list: vi.fn(async () => ok([card])) },
+          categories: { expense: vi.fn(async () => ok([category])) },
+          expenses: { list: vi.fn(async () => ok([expense])) },
+          incomes: {
+            list: vi.fn(async () => ok(payments)),
+            update,
+          },
+        },
+      },
+    );
+
+    await screen.findByText(expense.description);
+    fireEvent.click(screen.getByRole("button", { name: "Select row" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cover the expense" }));
+    expect(await screen.findByRole("radio", { name: /July payment.*Already linked/ })).toBeDisabled();
+    fireEvent.click(screen.getByRole("radio", { name: /August payment/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Cover" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Cover 1 Expense" })).toBeNull());
+    expect(update).toHaveBeenCalledExactlyOnceWith("payment-2", { addCcPaymentCoveredIds: [expense.id] });
+    expect(screen.queryByText("Continue to Bulk CC Pay?")).toBeNull();
+    fireEvent.click(screen.getByText(expense.description));
+    expect(await screen.findByText("CC Payment Receipts")).toBeInTheDocument();
+    expect(screen.getByText("July payment")).toBeInTheDocument();
+    expect(screen.getByText("August payment")).toBeInTheDocument();
+  });
+
   const headersByMode: Record<ExpenseViewMode, string[]> = {
     Daily: DEFAULT_HEADERS,
     Weekly: DEFAULT_HEADERS,

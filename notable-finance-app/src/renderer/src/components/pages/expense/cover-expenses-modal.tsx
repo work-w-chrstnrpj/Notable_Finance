@@ -21,7 +21,7 @@ function CoverExpensesModal({
   onCovered: () => void;
 }) {
   const { creditActiveAccounts, nonCreditActiveAccounts } = useLiveCollections();
-  const [ccPayments, setCcPayments] = useState<Array<{ id: string; name: string; date: string }>>([]);
+  const [ccPayments, setCcPayments] = useState<IncomeRecord[]>([]);
   const [selectedCcPaymentId, setSelectedCcPaymentId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -33,25 +33,27 @@ function CoverExpensesModal({
   const [newPayerAccountId, setNewPayerAccountId] = useState("");
   const [newAmount, setNewAmount] = useState("");
 
-  // Load existing CC Payment incomes
   useEffect(() => {
     if (!open) return;
+    let active = true;
     setLoading(true);
     setError(null);
+    setCcPayments([]);
     setSelectedCcPaymentId("");
     setShowCreateForm(false);
     creditCardPaymentsApi.list({}).then((res) => {
+      if (!active) return;
       if (res.success) {
-        setCcPayments(
-          (res.data as IncomeRecord[])
-            .filter((r) => !r.name?.includes("[Deleted:"))
-            .map((r) => ({ id: r.id, name: stripNotionTag(r.name), date: r.date }))
-        );
+        setCcPayments(res.data.filter((r) => !r.deleted && !r.name?.includes("[Deleted:")));
       } else {
         setError("Failed to load CC Payment records.");
       }
-    }).catch(() => setError("Network error loading CC Payment records."))
-    .finally(() => setLoading(false));
+    }).catch(() => {
+      if (active) setError("Network error loading CC Payment records.");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
   }, [open]);
 
   async function handleCover() {
@@ -62,14 +64,8 @@ function CoverExpensesModal({
     setSaving(true);
     setError(null);
     try {
-      // Fetch current CC Payment to merge expense IDs into its ccPaymentCoveredIds
-      const detail = await creditCardPaymentsApi.detail(selectedCcPaymentId);
-      const existingIds: string[] = detail.success
-        ? detail.data.ccPaymentCoveredIds ?? []
-        : [];
-      const mergedIds = [...new Set([...existingIds, ...selectedExpenseIds])];
       const res = await creditCardPaymentsApi.update(selectedCcPaymentId, {
-        ccPaymentCoveredIds: mergedIds,
+        addCcPaymentCoveredIds: selectedExpenseIds,
       });
       if (!res.success) {
         setError(res.error.message || "Failed to cover expenses.");
@@ -91,27 +87,17 @@ function CoverExpensesModal({
     setSaving(true);
     setError(null);
     try {
-      // Create the CC Payment income record
       const createRes = await creditCardPaymentsApi.create({
         name: newName.trim(),
         date: newDate,
         grossIncome: parseNumberInput(newAmount),
         accountId: newCcAccountId,
         transactedAccountId: newPayerAccountId || null,
+        ccPaymentCoveredIds: selectedExpenseIds,
         // Category is set server-side via the workflow view parameter
       });
       if (!createRes.success) {
         setError(createRes.error.message || "Failed to create CC Payment.");
-        return;
-      }
-      const newCcPaymentId = createRes.data.id;
-
-      // Link the selected expenses by updating the CC Payment's ccPaymentCoveredIds
-      const linkRes = await creditCardPaymentsApi.update(newCcPaymentId, {
-        ccPaymentCoveredIds: selectedExpenseIds,
-      });
-      if (!linkRes.success) {
-        setError(linkRes.error.message || "Created CC Payment but failed to link expenses.");
         return;
       }
       onCovered();
@@ -136,7 +122,7 @@ function CoverExpensesModal({
         <div className="modal-panel__header">
           <div>
             <h2 id="cover-title">Cover {selectedExpenseIds.length} Expense{selectedExpenseIds.length > 1 ? "s" : ""}</h2>
-            <p>Link these unpaid CC expenses to a CC Payment receipt.</p>
+            <p>Add a CC Payment receipt to the selected expenses. Each expense can have multiple receipts.</p>
           </div>
           <button type="button" className="icon-button" aria-label="Close" onClick={onClose} disabled={saving}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -150,8 +136,7 @@ function CoverExpensesModal({
             <>
               {/* Existing CC Payments list */}
               <div className="form-grid form-grid--single" style={{ marginBottom: "1rem" }}>
-                <Field label="Select a CC Payment Receipt">
-                  <>
+                <div role="group" aria-label="Select a CC Payment Receipt">
                     {/* Header row: label + [+] button */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                       <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--ink)" }}>Available Receipts</span>
@@ -178,33 +163,32 @@ function CoverExpensesModal({
                       <p style={{ color: "var(--ink-muted)", fontSize: "0.8125rem" }}>No CC Payment records found.</p>
                     ) : (
                       <div style={{ maxHeight: 220, overflowY: "auto", display: "flex", flexDirection: "column", gap: "1px" }}>
-                        {ccPayments.map((cp) => (
-                          <label
-                            key={cp.id}
-                            style={{
-                              display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.375rem",
-                              borderRadius: 3, cursor: "pointer",
-                              background: selectedCcPaymentId === cp.id ? "var(--blue-soft, #dbeafe)" : "transparent",
-                            }}
-                            onClick={() => setSelectedCcPaymentId(cp.id)}
-                          >
-                            <span
+                        {ccPayments.map((cp) => {
+                          const alreadyLinked = selectedExpenseIds.every((id) => cp.ccPaymentCoveredIds?.includes(id));
+                          return (
+                            <label
+                              key={cp.id}
                               style={{
-                                width: 12, height: 12, flexShrink: 0,
-                                borderRadius: "50%",
-                                border: selectedCcPaymentId === cp.id ? "4px solid var(--blue)" : "1.5px solid var(--ink-muted, #9b9a97)",
-                                background: selectedCcPaymentId === cp.id ? "var(--blue)" : "transparent",
-                                transition: "all 0.1s ease",
+                                display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.25rem 0.375rem",
+                                borderRadius: 3, cursor: "pointer",
+                                background: selectedCcPaymentId === cp.id ? "var(--blue-soft, #dbeafe)" : "transparent",
                               }}
-                            />
-                            <span style={{ flex: 1, fontSize: "0.8125rem", lineHeight: 1.3 }}>{cp.name}</span>
-                            <span style={{ fontSize: "0.6875rem", color: "var(--ink-muted)", flexShrink: 0 }}>{formatDate(cp.date)}</span>
-                          </label>
-                        ))}
+                            >
+                              <input
+                                type="radio"
+                                name="cover-cc-payment"
+                                checked={selectedCcPaymentId === cp.id}
+                                disabled={saving || alreadyLinked}
+                                onChange={() => setSelectedCcPaymentId(cp.id)}
+                              />
+                              <span style={{ flex: 1, fontSize: "0.8125rem", lineHeight: 1.3 }}>{stripNotionTag(cp.name)}{alreadyLinked && " (Already linked)"}</span>
+                              <span style={{ fontSize: "0.6875rem", color: "var(--ink-muted)", flexShrink: 0 }}>{formatDate(cp.date)}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
-                  </>
-                </Field>
+                </div>
               </div>
 
             </>

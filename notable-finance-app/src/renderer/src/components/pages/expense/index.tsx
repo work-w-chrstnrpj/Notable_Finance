@@ -250,7 +250,7 @@ function ExpensePage({
     ],
   );
   const { state: expensesState, refetch, applyLocal } = useExpenses(expenseParams);
-  const { invalidateExpenseFamily } = useFinanceInvalidation();
+  const { invalidateExpenseFamily, invalidateIncomeFamily } = useFinanceInvalidation();
   const { pendingRowClassName, commit, commitMany, commitDelete } =
     useOptimisticRecords<ExpenseRecord>({
       applyLocal,
@@ -492,20 +492,7 @@ function ExpensePage({
       setMassEditPreset(undefined); // plain bulk edit starts with an empty row
       setMassEditOpen(true);
     },
-    onCover: () => {
-      const selected = searchFilteredRecords.filter(record => selectedIds.has(record.id));
-      const hasIneligibleRecord = selected.some(record =>
-        record.paymentStatus === "Installment" || (
-          record.datePaid && record.paymentStatus !== "Unpaid" &&
-          record.paidPeriod != null && deriveExpenseComputed(record).remaining <= 0.1
-        ),
-      );
-      if (viewMode === "CC Transaction" && hasIneligibleRecord) {
-        setSaveNotice("Cover expenses requires outstanding, non-installment transactions. Refine your selection.");
-        return;
-      }
-      setCoverExpensesOpen(true);
-    },
+    onCover: () => setCoverExpensesOpen(true),
     onPrint: () => {
       setReceiptModalCtx(
         buildExpenseReceipt(searchFilteredRecords.filter((r) => selectedIds.has(r.id))),
@@ -817,10 +804,16 @@ function ExpensePage({
         selectedExpenseIds={Array.from(selectedIds)}
         onClose={() => setCoverExpensesOpen(false)}
         onCovered={() => {
-          // Keep the selection so the user can continue into Bulk CC Pay if they choose.
           setCoverExpensesOpen(false);
-          invalidateExpenseFamily();
-          setBulkPayPromptOpen(true);
+          invalidateIncomeFamily();
+          setSaveNotice("CC Payment receipt linked.");
+          const selected = searchFilteredRecords.filter(record => selectedIds.has(record.id));
+          const canBulkPay = selected.length > 0 && selected.every(record =>
+            record.paymentStatus !== "Installment" && record.paymentStatus !== "Paid" &&
+            (!record.datePaid || record.paymentStatus === "Unpaid" ||
+              record.paidPeriod == null || deriveExpenseComputed(record).remaining > 0.1),
+          );
+          if (canBulkPay) setBulkPayPromptOpen(true);
         }}
       />
       {bulkPayPromptOpen && (
