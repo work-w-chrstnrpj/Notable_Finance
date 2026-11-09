@@ -210,10 +210,11 @@ export function useTransfers(params?: WorkflowListParams) {
   );
 }
 
-export function useCreditCardPayments(params?: WorkflowListParams) {
+export function useCreditCardPayments(params?: WorkflowListParams, enabled = true) {
   return useApiQuery<IncomeRecord[]>(
     ["workflow", "credit-card-payment", params ?? {}],
     () => creditCardPaymentsApi.list(params),
+    { enabled },
   );
 }
 

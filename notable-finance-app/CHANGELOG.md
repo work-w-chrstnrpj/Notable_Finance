@@ -5,6 +5,12 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.3] - 2026-11-09
+
+### Fixed
+
+- A credit card expense can link to several payment receipts for installments or staggered payments. Expense details list the linked receipts, and ordinary expense edits preserve the receipt links during Notion sync.
+
 ## [2.5.2] - 2026-11-09
 
 ### Added

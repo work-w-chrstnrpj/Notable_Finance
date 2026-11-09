@@ -252,7 +252,9 @@ async function pushAllInner(): Promise<PushResult> {
         accountId: translate(relations.accounts, dto.accountId as string | null, 'accountId'),
         categoryId: translate(relations.expenseCategories, dto.categoryId as string | null, 'categoryId'),
         pasabuyAccountReceiverId: translate(relations.accounts, dto.pasabuyAccountReceiverId as string | null, 'pasabuyAccountReceiverId'),
-        ccLinkPaymentReceiptId: translate(relations.incomes, dto.ccLinkPaymentReceiptId as string | null, 'ccLinkPaymentReceiptId')
+        ccLinkPaymentReceiptId: dto.ccLinkPaymentReceiptId === undefined
+          ? undefined
+          : translate(relations.incomes, dto.ccLinkPaymentReceiptId as string | null, 'ccLinkPaymentReceiptId')
       })
     }
   ]
@@ -292,7 +294,15 @@ async function pushAllInner(): Promise<PushResult> {
         const localDto = t.writable(row)
         let translated: Record<string, unknown>
         try {
-          translated = t.translateRelations(localDto)
+          const base = t.table === 'expenses'
+            ? JSON.parse((row.base_snapshot as string | null) ?? '{}')
+            : null
+          // This legacy single-ID projection would replace the full two-way relation
+          // in Notion if we sent it with unrelated expense edits.
+          const dto = base && localDto.ccLinkPaymentReceiptId === (base.ccLinkPaymentReceiptId ?? null)
+            ? { ...localDto, ccLinkPaymentReceiptId: undefined }
+            : localDto
+          translated = t.translateRelations(dto)
         } catch (error) {
           // Relation target not pushed/pulled yet — leave dirty for a later pass.
           result.skipped++

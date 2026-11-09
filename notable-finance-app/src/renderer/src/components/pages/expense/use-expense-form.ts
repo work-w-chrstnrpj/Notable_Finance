@@ -6,7 +6,6 @@ import {
 } from "@/lib/finance-rules";
 import { parseNumberInput, parseOptionalNumberInput } from "@/lib/finance-helpers";
 import { todayIso } from "@/lib/date-range";
-import { incomesApi } from "@/lib/api-client";
 import type {
   Account,
   ExpenseRecord,
@@ -54,7 +53,7 @@ export function useExpenseForm({
 
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [linkedIncomeName, setLinkedIncomeName] = useState<string | null>(null);
+  const [legacyReceiptId, setLegacyReceiptId] = useState<string | null>(null);
   const [automationNotice, setAutomationNotice] = useState<string | null>(null);
 
   const selectedFormAccount = activeAccounts.find((account) => account.id === formAccountId);
@@ -145,17 +144,7 @@ export function useExpenseForm({
     setPasabuyPaidPeriodInput(record?.pasabuyPaidPeriod?.toString() ?? "");
     setPasabuyAccountReceiverId(record?.pasabuyAccountReceiverId ?? "");
     setEditingId(record?.id ?? null);
-    // Look up linked CC Payment income name
-    if (record?.ccLinkPaymentReceiptId) {
-      incomesApi
-        .detail(record.ccLinkPaymentReceiptId)
-        .then((res) => {
-          setLinkedIncomeName(res.success ? res.data.name : null);
-        })
-        .catch(() => setLinkedIncomeName(null));
-    } else {
-      setLinkedIncomeName(null);
-    }
+    setLegacyReceiptId(record?.ccLinkPaymentReceiptId ?? null);
   }
 
   /**
@@ -223,7 +212,7 @@ export function useExpenseForm({
     pasabuyAccountReceiverId, setPasabuyAccountReceiverId,
     // record binding
     editingId, setEditingId,
-    linkedIncomeName,
+    legacyReceiptId,
     shakeFields,
     // derived
     sections,

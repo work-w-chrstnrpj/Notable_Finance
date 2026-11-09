@@ -6,6 +6,8 @@ import {
   paymentStatusLabels,
 } from "@/lib/finance-rules";
 import { formatMoney, formatDate } from "@/lib/format";
+import { stripNotionTag } from "@/lib/finance-helpers";
+import { useCreditCardPayments } from "@/lib/use-data";
 import type { Account, ExpenseCategory, PaymentFrequency, PaymentStatus } from "@/types/finance";
 import type { useExpenseForm } from "./use-expense-form";
 
@@ -38,11 +40,17 @@ export function ExpenseFormFields({
     periodCountInput, setPeriodCountInput,
     bnplAdjustmentInput, setBnplAdjustmentInput,
     paidPeriodInput, setPaidPeriodInput,
-    shakeFields, linkedIncomeName,
+    shakeFields, editingId, legacyReceiptId,
     sections, grossPrice, installmentAmount, paidAmount, remainingBalance,
     expectedPaymentDate,
     onSelectPaymentStatus,
   } = form;
+  const { state: ccPayments } = useCreditCardPayments(undefined, Boolean(editingId && sections.creditCard));
+  const linkedReceipts = ccPayments.status === "success" && editingId
+    ? ccPayments.data.filter((payment) =>
+      payment.ccPaymentCoveredIds?.includes(editingId) ||
+      (payment.id === legacyReceiptId && !payment.ccPaymentCoveredIds?.length))
+    : [];
 
   return (
         <div className="form-grid form-grid--single">
@@ -168,11 +176,13 @@ export function ExpenseFormFields({
                 label="Expected payment date"
                 value={expectedPaymentDate ? formatDate(expectedPaymentDate) : "-"}
               />
-              {linkedIncomeName && (
+              {linkedReceipts.length > 0 && (
                 <>
-                  <FormSectionDivider title="CC Payment Receipt" />
+                  <FormSectionDivider title="CC Payment Receipts" />
                   <div className="form-grid form-grid--single">
-                    <ComputedField label="Covered by" value={linkedIncomeName} />
+                    {linkedReceipts.map((payment) => (
+                      <ComputedField key={payment.id} label={formatDate(payment.date)} value={stripNotionTag(payment.name)} />
+                    ))}
                   </div>
                 </>
               )}
