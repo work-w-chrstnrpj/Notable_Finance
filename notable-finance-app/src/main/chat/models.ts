@@ -4,6 +4,7 @@
  */
 
 export type ChatProviderId =
+  | 'alibaba'
   | 'openai'
   | 'gemini'
   | 'mistral'
@@ -38,8 +39,64 @@ export type ChatProviderDef = {
 
 export const DEFAULT_CHAT_BASE_URL = 'https://api.openai.com/v1'
 export const GEMINI_CHAT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai'
+/**
+ * Alibaba Model Studio, international (Singapore) estate.
+ *
+ * The account's own console export records the endpoint as workspace-scoped:
+ * `https://<workspace>.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1`.
+ * The legacy region domain below needs no workspace id and the docs still list
+ * it as available, so it is the default. If a key returns 401
+ * `invalid_api_key`, switch the credential to Custom and paste the
+ * workspace host (Model Studio -> Workspace Management); keys are region-bound,
+ * so a non-Singapore key fails here regardless of host.
+ *
+ * Free quota is granted per model (1,000,000 combined input+output tokens for
+ * the text models) and is SHARED ACROSS EVERY SINGAPORE WORKSPACE on the
+ * account — other apps on the same account draw down the same pool. Real-time
+ * inference only: batch, fine-tuning and deployed/custom models are excluded.
+ * When a model's grant is spent and Stop-on-Exhaust is on, the API returns
+ * HTTP 403 `AllocationQuota.FreeTierOnly`.
+ */
+export const ALIBABA_CHAT_BASE_URL = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
 
 export const CHAT_PROVIDERS: ChatProviderDef[] = [
+  {
+    id: 'alibaba',
+    label: 'Alibaba Model Studio (Qwen)',
+    baseUrl: ALIBABA_CHAT_BASE_URL,
+    keyPlaceholder: 'sk-… (Model Studio, Singapore region)',
+    hint: '1M free tokens per model. Order below follows the account\u2019s text-chat priority \u2014 on HTTP 403 AllocationQuota.FreeTierOnly, pick the next one down.',
+    docsUrl: 'https://modelstudio.console.alibabacloud.com/ap-southeast-1/costing-balance/free-quota',
+    defaultModelId: 'qwen-flash',
+    models: [
+      // Priority order captured from the Model Studio free-quota console on
+      // 2026-11-09 (see SpeechCoachAI/docs/api/alibaba-free-quota-models.json).
+      // Quota is shared across every Singapore workspace on the account, so
+      // other apps draw this pool down too. Most grants expire 2027-01-13.
+      { id: 'qwen-flash', label: 'Qwen Flash', free: true },
+      { id: 'qwen3.5-flash', label: 'Qwen3.5 Flash', free: true },
+      { id: 'qwen3.6-flash', label: 'Qwen3.6 Flash', free: true },
+      { id: 'qwen3.7-flash', label: 'Qwen3.7 Flash', free: true },
+      { id: 'qwen3.8-flash', label: 'Qwen3.8 Flash', free: true },
+      { id: 'qwen-flash-2025-07-28', label: 'Qwen Flash (2025-07-28)', free: true },
+      { id: 'deepseek-v4.1-flash', label: 'DeepSeek V4.1 Flash', free: true },
+      // Expires 2026-11-14, well before the rest of the pool.
+      { id: 'qwen-plus', label: 'Qwen Plus (expires 2026-11-14)', free: true },
+      { id: 'qwen3.5-plus', label: 'Qwen3.5 Plus', free: true },
+      { id: 'qwen3.6-plus', label: 'Qwen3.6 Plus', free: true },
+      { id: 'qwen3.7-plus', label: 'Qwen3.7 Plus', free: true },
+      { id: 'qwen-plus-latest', label: 'Qwen Plus (latest)', free: true },
+      { id: 'qwen-max', label: 'Qwen Max', free: true },
+      { id: 'qwen3.7-max', label: 'Qwen3.7 Max', free: true },
+      // Outside the priority chain, still 1M free each on this account.
+      { id: 'qwen3.8-max', label: 'Qwen3.8 Max', free: true },
+      { id: 'qwen3-coder-flash', label: 'Qwen3 Coder Flash', free: true },
+      { id: 'qwen3.5-397b-a17b', label: 'Qwen3.5 397B A17B', free: true },
+      { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro', free: true },
+      { id: 'glm-5.3', label: 'GLM-5.3', free: true },
+      { id: 'kimi-k3', label: 'Kimi K3', free: true }
+    ]
+  },
   {
     id: 'gemini',
     label: 'Gemini (Google AI)',
@@ -330,4 +387,25 @@ export function coerceModelForProvider(
   const normalized = normalizeChatModelId(modelId ?? '')
   if (normalized && providerId === 'custom' && normalized) return normalized
   return pickModelForProviderList(normalized, models, defaultModelForProvider(providerId))
+}
+
+/**
+ * Free-quota models for a provider in catalog order, starting at `startId`.
+ *
+ * Catalog order is the account's own priority order, so this is the sequence to
+ * walk when a model answers 403 `AllocationQuota.FreeTierOnly` — each entry
+ * carries its own independent grant. `startId` leads even when it is not itself
+ * flagged free (an explicit paid pick still gets free fallbacks behind it), and
+ * is never repeated later in the chain.
+ */
+export function freeModelChain(
+  providerId: string | null | undefined,
+  startId: string
+): string[] {
+  const free = modelsForProvider(providerId)
+    .filter((m) => m.free)
+    .map((m) => m.id)
+  const startIndex = free.indexOf(startId)
+  if (startIndex >= 0) return free.slice(startIndex)
+  return startId ? [startId, ...free] : free
 }

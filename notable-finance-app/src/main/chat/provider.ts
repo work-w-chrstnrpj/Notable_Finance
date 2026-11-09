@@ -21,6 +21,22 @@ export type ChatCompletionResult = {
   toolCalls: ChatToolCall[]
 }
 
+/**
+ * A model's free-quota grant is spent (Alibaba Model Studio answers HTTP 403
+ * `AllocationQuota.FreeTierOnly`). Distinct from a generic failure because the
+ * grant is per model: the next model in the provider's free list usually still
+ * has one, so callers can transparently move down the chain.
+ */
+export class QuotaExhaustedError extends Error {
+  readonly model: string
+  readonly status = 403
+  constructor(model: string, message: string) {
+    super(message)
+    this.name = 'QuotaExhaustedError'
+    this.model = model
+  }
+}
+
 function looksLikeGeminiKey(apiKey: string): boolean {
   const k = apiKey.trim()
   return k.startsWith('AIza') || k.startsWith('AQ.')
@@ -126,6 +142,7 @@ async function postChatCompletions(input: {
       continue
     }
 
+    let quotaExhausted = false
     let errMsg =
       parsed &&
       typeof parsed === 'object' &&
@@ -135,7 +152,18 @@ async function postChatCompletions(input: {
         ? (parsed as { error: { message: string } }).error.message
         : `Provider error (${res.status})`
 
-    if (res.status === 429) {
+    // Model Studio signals a spent free-quota grant with 403
+    // AllocationQuota.FreeTierOnly (not 402/429) when Stop-on-Exhaust is on.
+    // The grant is per model, so the next model in the list usually still has
+    // one — say so instead of surfacing a bare "Provider error (403)".
+    if (res.status === 403 && /FreeTierOnly|AllocationQuota/i.test(text)) {
+      quotaExhausted = true
+      errMsg =
+        `Free quota for "${input.model}" is exhausted (403 AllocationQuota.FreeTierOnly). ` +
+        `Alibaba grants the quota per model and it is shared across every Singapore ` +
+        `workspace on the account, so pick the next model down in the Model dropdown — ` +
+        `each one has its own 1M-token grant. Provider said: ${errMsg}`
+    } else if (res.status === 429) {
       errMsg = `Rate limit reached (429) on ${input.model}. Free tiers allow only a few requests per minute and one chat turn can use several. Wait ~30–60s, or switch to a different model/provider in Configure AI. Provider said: ${errMsg}`
     } else if (
       base === DEFAULT_CHAT_BASE_URL &&
@@ -153,6 +181,7 @@ async function postChatCompletions(input: {
       errMsg = `${errMsg} — the model "${input.model}" isn't available for this key's provider. Pick a listed model in the Model dropdown.`
     }
 
+    if (quotaExhausted) throw new QuotaExhaustedError(input.model, errMsg)
     throw new Error(errMsg)
   }
 }

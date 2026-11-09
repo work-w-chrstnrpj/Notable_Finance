@@ -213,6 +213,7 @@ function AiChatConfigModal({ onClose }: { onClose: () => void }) {
               {(providers.length > 0
                 ? providers
                 : [
+                    { id: "alibaba", label: "Alibaba Model Studio (Qwen)" },
                     { id: "gemini", label: "Gemini (Google AI)" },
                     { id: "groq", label: "Groq" },
                     { id: "openrouter", label: "OpenRouter" },
