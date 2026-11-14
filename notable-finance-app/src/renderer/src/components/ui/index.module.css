@@ -322,7 +322,8 @@
 
 /* ── Field error + shake ──────────────────────────────────────────── */
 .field--error input,
-.field--error select {
+.field--error select,
+.field--error .filter-dropdown__trigger {
   border-color: var(--rose) !important;
   animation: shake 0.4s ease-in-out;
 }

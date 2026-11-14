@@ -35,6 +35,7 @@ export function WorkflowFormFields({
   eligibleCcExpenses,
   totalCovered,
   onCategoryChange,
+  invalidFields,
 }: {
   form: ReturnType<typeof useWorkflowForm>;
   label: string;
@@ -58,7 +59,9 @@ export function WorkflowFormFields({
   eligibleCcExpenses: ExpenseRecord[];
   totalCovered: number;
   onCategoryChange?: (id: string) => void;
+  invalidFields?: ReadonlySet<string>;
 }) {
+  const bad = (key: string) => invalidFields?.has(key) ?? false;
   const {
     workflowNameInput, setWorkflowNameInput,
     workflowDateInput, setWorkflowDateInput,
@@ -73,22 +76,25 @@ export function WorkflowFormFields({
 
   return (
     <div className="form-grid form-grid--single">
-      <Field label="Name" required>
+      <Field label="Name" required error={bad("name")}>
         <input
+          className={bad("name") ? "field__input--shake" : undefined}
           placeholder={`${label} title`}
           value={workflowNameInput}
           onChange={(event) => setWorkflowNameInput(event.target.value)}
         />
       </Field>
-      <Field label="Date" required={!isReceivables}>
+      <Field label="Date" required={!isReceivables} error={bad("date")}>
         <input
+          className={bad("date") ? "field__input--shake" : undefined}
           type="date"
           value={workflowDateInput}
           onChange={(event) => setWorkflowDateInput(event.target.value)}
         />
       </Field>
-      <Field label={amountLabel}>
+      <Field label={amountLabel} error={bad("amount")}>
         <input
+          className={bad("amount") ? "field__input--shake" : undefined}
           inputMode="decimal"
           placeholder={isAlkansya ? "-0.00" : "0.00"}
           value={workflowAmountInput}
@@ -115,7 +121,7 @@ export function WorkflowFormFields({
               items={[{ id: "borrowed", label: "Borrowed" }, { id: "repayment", label: "Repayment" }]}
             />
           </Field>
-          <Field label="Borrow Account" required>
+          <Field label="Borrow Account" required error={bad("account")}>
             <FilterDropdown
               placeholder="— None —"
               value={receivingAccountId}
@@ -123,7 +129,7 @@ export function WorkflowFormFields({
               items={placeholderAccounts.map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
             />
           </Field>
-          <Field label={borrowKind === "borrowed" ? "Received Into" : "Paid From"} required>
+          <Field label={borrowKind === "borrowed" ? "Received Into" : "Paid From"} required error={bad("secondary")}>
             <FilterDropdown
               placeholder="— None —"
               value={transactedAccountId}
@@ -135,7 +141,7 @@ export function WorkflowFormFields({
           </Field>
         </>
       ) : (
-      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || sourceAccountRequired}>
+      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || sourceAccountRequired} error={bad("account")}>
         <FilterDropdown
           placeholder="— None —"
           value={receivingAccountId}
@@ -149,7 +155,7 @@ export function WorkflowFormFields({
       </Field>
       )}
       {secondaryAccountLabel && (
-        <Field label={secondaryAccountLabel} required={isTransfer}>
+        <Field label={secondaryAccountLabel} required={isTransfer} error={bad("secondary")}>
           <FilterDropdown
             placeholder="— None —"
             value={transactedAccountId}

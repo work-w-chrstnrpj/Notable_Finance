@@ -148,6 +148,12 @@ function WorkflowPage({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [invalidFields, setInvalidFields] = useState<ReadonlySet<string>>(new Set());
+  const flagInvalid = (message: string, ...keys: string[]) => {
+    setSaveError(message);
+    setInvalidFields(new Set(keys));
+    setTimeout(() => setInvalidFields(new Set()), 600);
+  };
   const {
     selectedIds,
     disabledIds,
@@ -514,7 +520,8 @@ function WorkflowPage({
     if (saving) return;
     if (moneyLentMode) {
       if (!workflowDateInput || !receivingAccountId || !(parseNumberInput(workflowAmountInput) > 0)) {
-        setSaveError('Enter a date lent, source account, and an amount greater than zero.'); return;
+        flagInvalid('Enter a date lent, source account, and an amount greater than zero.',
+          ...(!workflowDateInput ? ['date'] : []), ...(!receivingAccountId ? ['account'] : []), ...(!(parseNumberInput(workflowAmountInput) > 0) ? ['amount'] : [])); return;
       }
       if (!moneyLentCategory) {
         setSaveError('Create Money Lent in your Notion Income Categories, then sync income categories.'); return;
@@ -522,32 +529,32 @@ function WorkflowPage({
     }
     // Validate required fields per section
     if (!workflowNameInput.trim()) {
-      setSaveError("Name is required.");
+      flagInvalid("Name is required.", "name");
       return;
     }
     if (!isReceivables && !workflowDateInput) {
-      setSaveError("Date is required.");
+      flagInvalid("Date is required.", "date");
       return;
     }
     if (isTransfer && !receivingAccountId) {
-      setSaveError("Source Account is required.");
+      flagInvalid("Source Account is required.", "account");
       return;
     }
     if (isTransfer && !transactedAccountId) {
-      setSaveError("Transfer Account is required.");
+      flagInvalid("Transfer Account is required.", "secondary");
       return;
     }
     if (isBorrowings) {
-      if (!receivingAccountId) { setSaveError("Borrow Account is required. Create an Auxiliary account whose name has 'borrow', 'debt' or 'loan' in it."); return; }
-      if (!transactedAccountId) { setSaveError(borrowKind === "borrowed" ? "Choose the account that received the money." : "Choose the account you paid from."); return; }
-      if (!(parseNumberInput(workflowAmountInput) > 0)) { setSaveError("Enter an amount greater than zero."); return; }
+      if (!receivingAccountId) { flagInvalid("Borrow Account is required. Create an Auxiliary account whose name has 'borrow', 'debt' or 'loan' in it.", "account"); return; }
+      if (!transactedAccountId) { flagInvalid(borrowKind === "borrowed" ? "Choose the account that received the money." : "Choose the account you paid from.", "secondary"); return; }
+      if (!(parseNumberInput(workflowAmountInput) > 0)) { flagInvalid("Enter an amount greater than zero.", "amount"); return; }
     }
     if (isCreditCardPayment && !receivingAccountId) {
-      setSaveError("CC Account is required.");
+      flagInvalid("CC Account is required.", "account");
       return;
     }
     if (!isReceivables && !isTransfer && !isBorrowings && !isCreditCardPayment && !receivingAccountId) {
-      setSaveError("Account is required.");
+      flagInvalid("Account is required.", "account");
       return;
     }
     const payload: Record<string, unknown> = {
@@ -912,10 +919,11 @@ function WorkflowPage({
         onDuplicate={handleDuplicateWorkflow}
         onClose={() => { setModal(null); setCcCoveredIds([]); }}
       >
-        {saveError && <p role="alert">{saveError}</p>}
-        {moneyLentMode && !moneyLentCategory && <p role="alert">Create Money Lent in your Notion Income Categories, then sync income categories.</p>}
+        {saveError && <p role="alert" className="page-content__error">{saveError}</p>}
+        {moneyLentMode && !moneyLentCategory && <p role="alert" className="page-content__error">Create Money Lent in your Notion Income Categories, then sync income categories.</p>}
         <WorkflowFormFields
           form={form}
+          invalidFields={invalidFields}
           label={moneyLentMode ? 'Money Lent' : label}
           amountLabel={moneyLentMode ? 'Amount lent' : amountLabel}
           sourceAccountLabel={moneyLentMode ? 'Source Account' : sourceAccountLabel}
