@@ -2,10 +2,9 @@
 
 Offline-first desktop version of Notable Finance, built with Electron.
 
-Unlike `notable-finance-web/` (where Notion is the source of truth), this app keeps
-its **own local SQLite database** as the working store and syncs **bidirectionally**
-with Notion in the background. It is the smooth, offline-capable daily driver; the web
-app remains the on-the-go, cloud-backed client.
+This app keeps its **own local SQLite database** as the working store and syncs
+**bidirectionally** with Notion in the background. It is the smooth, offline-capable
+daily driver.
 
 ## Architecture
 
@@ -30,10 +29,9 @@ app remains the on-the-go, cloud-backed client.
   mutation-queue journal, soft-delete via title rewrite, validation in main.
 - **1.3** — balances/budgets/net/monthly computed live from SQLite on every edit
   (golden-checked at runtime; 27 unit tests).
-- **1.4** — the renderer is the **web app's UI ported verbatim** (workspace shell, all pages
-  incl. Settings, charts, FAB, themes) over an IPC-backed `api-client` with the same
-  interface as the web's HTTP client — look and behavior match the web app; only the data
-  transport and local-first sync differ.
+- **1.4** — the renderer UI (workspace shell, all pages incl. Settings, charts, FAB,
+  themes) runs over an IPC-backed `api-client`; the data transport is IPC to main and
+  sync is local-first. (The UI originated as a port of the earlier web app, since removed.)
 - **1.5** — multi-window (File → New Window, Cmd/Ctrl+N): every data change broadcasts
   `records:changed` / `derived:updated` to all windows, which refetch — windows stay consistent.
 - **In-window tabs** — File → New Tab (Cmd/Ctrl+T) opens another section view in the same

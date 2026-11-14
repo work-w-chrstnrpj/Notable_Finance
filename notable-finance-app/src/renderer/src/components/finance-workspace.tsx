@@ -89,6 +89,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
   useEffect(() => {
     if (!settingsReady) return;
     if (activeSection === "notifications" && !settings.notificationsEnabled) navigate("/dashboard");
+    if (settings.hiddenSections.includes(activeSection as never)) navigate("/dashboard");
     if (activeSection === "chat" && !chatEnabled) {
       navigate(
         `/${settings.workspace.lastSection !== "chat" ? settings.workspace.lastSection || "dashboard" : "dashboard"}`,
@@ -109,6 +110,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     devModeEnabled,
     settingsReady,
     settings.notificationsEnabled,
+    settings.hiddenSections,
     settings.workspace.lastSection,
   ]);
 
@@ -336,7 +338,7 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
               />
             </ErrorBoundary>
           )}
-          {isWorkflowSection(activeSection) && (
+          {isWorkflowSection(activeSection) && !settings.hiddenSections.includes(activeSection as never) && (
             <ErrorBoundary sectionLabel={activeSection}>
               <WorkflowPage
                 section={activeSection}

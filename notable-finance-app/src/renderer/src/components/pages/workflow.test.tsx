@@ -52,6 +52,7 @@ const HEADERS_BY_SECTION: Record<WorkflowSectionId, string[]> = {
   transfer: ["Date", "Name", "Source Account", "Amount", "Transfer Account", "Transferred Amount"],
   "credit-card-payment": ["Date", "Name", "CC Account", "Amount", "Payer Account"],
   alkansya: ["Name", "Date", "Accounts", "Category", "Amount"],
+  borrowings: ["Date", "Name", "Type", "Borrow Account", "Borrowed Amount", "Other Account", "Other Amount"],
   receivables: ["Name", "Date", "Account", "Category", "Amount"]
 };
 
@@ -193,15 +194,18 @@ describe("Workflow filters and fixed Savings", () => {
   const other = { ...workflowRecord, id: "wf2", name: "Zebra reserve", accountId: "acc2", transactedAccountId: null, grossIncome: 200 };
   for (const section of ["alkansya", "transfer", "credit-card-payment", "receivables"] as WorkflowSectionId[]) {
     it(`combines account filtering and search on ${section} and restores records when controls close`, async () => {
+      const firstFilter = { transfer: "All Source Accounts", "credit-card-payment": "All CC Accounts" }[section as string] ?? "All Accounts";
+      // The CC Account filter only offers credit accounts.
+      const first = section === "credit-card-payment" ? { ...sourceAccount, type: "Credit Account" as const } : sourceAccount;
       renderPage(<WorkflowPage section={section} selectedMonth="2026-07" />, { apiOverrides: {
-        accounts: { list: vi.fn(async () => ok([sourceAccount, destAccount])) },
+        accounts: { list: vi.fn(async () => ok([first, destAccount])) },
         categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([])) },
         incomes: { list: vi.fn(async () => ok([workflowRecord, other])) },
         expenses: { listForCCCoverage: vi.fn(async () => ok([])) },
       } });
       expect(await screen.findByText("Zebra reserve")).toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-      fireEvent.click(screen.getByRole("combobox", { name: "All Accounts" }));
+      fireEvent.click(screen.getByRole("combobox", { name: firstFilter }));
       fireEvent.click(screen.getByRole("option", { name: "Main Wallet" }));
       expect(screen.queryByText("Zebra reserve")).not.toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: "Search" }));
@@ -220,9 +224,55 @@ describe("Workflow filters and fixed Savings", () => {
     renderWorkflow(section);
     await screen.findByText("Weekly Transfer");
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    fireEvent.click(screen.getByRole("combobox", { name: "All Accounts" }));
+    fireEvent.click(screen.getByRole("combobox", { name: section === "transfer" ? "All Transfer Accounts" : "All Payer Accounts" }));
     fireEvent.click(screen.getByRole("option", { name: "Savings Jar" }));
     expect(screen.getByText("Weekly Transfer")).toBeInTheDocument();
+  });
+
+  it("keeps credit accounts out of the Transfer filters and non-credit accounts out of CC Account", async () => {
+    const credit = { ...sourceAccount, id: "acc3", name: "Blue Card", type: "Credit Account" as const };
+    const render = (section: WorkflowSectionId) => renderPage(<WorkflowPage section={section} selectedMonth="2026-07" />, { apiOverrides: {
+      accounts: { list: vi.fn(async () => ok([sourceAccount, credit])) },
+      categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([])) },
+      incomes: { list: vi.fn(async () => ok([workflowRecord])) },
+      expenses: { listForCCCoverage: vi.fn(async () => ok([])) },
+    } });
+    const transfer = render("transfer");
+    await screen.findByText("Weekly Transfer");
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "All Source Accounts" }));
+    expect(screen.getByRole("option", { name: "Main Wallet" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Blue Card" })).not.toBeInTheDocument();
+    transfer.unmount();
+    render("credit-card-payment");
+    await screen.findByText("Weekly Transfer");
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "All CC Accounts" }));
+    expect(screen.getByRole("option", { name: "Blue Card" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Main Wallet" })).not.toBeInTheDocument();
+  });
+
+  it("asks Borrow or Repayment first and pre-fills the title and type", async () => {
+    const borrowAccount = { ...sourceAccount, id: "acc9", name: "Borrowed Money", type: "Auxiliary" as const };
+    renderPage(<WorkflowPage section="borrowings" selectedMonth="2026-07" />, { apiOverrides: {
+      accounts: { list: vi.fn(async () => ok([sourceAccount, borrowAccount])) },
+      categories: { income: vi.fn(async () => ok([category])), expense: vi.fn(async () => ok([])) },
+      incomes: { list: vi.fn(async () => ok([])) },
+      expenses: { listForCCCoverage: vi.fn(async () => ok([])) },
+    } });
+    expect(screen.queryByRole("button", { name: /Pay borrowed money/ })).not.toBeInTheDocument();
+    await screen.findByText(/No borrowings records/);
+    fireEvent.click(screen.getByRole("button", { name: /New Record/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Repayment/ }));
+    let dialog = screen.getByRole("dialog");
+    expect((within(dialog).getByPlaceholderText("Borrowings title") as HTMLInputElement).value).toContain("Repayment: ");
+    expect(within(dialog).getByText("Paid From")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close modal" }));
+    fireEvent.click(screen.getByRole("button", { name: /New Record/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Money you borrowed/ }));
+    dialog = screen.getByRole("dialog");
+    expect((within(dialog).getByPlaceholderText("Borrowings title") as HTMLInputElement).value).toContain("Borrow: ");
+    expect(within(dialog).getByText("Received Into")).toBeInTheDocument();
   });
 
   it("allows filtering Receivables with no receiving account", async () => {
@@ -291,7 +341,8 @@ describe('Money Lent', () => {
     const create = vi.fn(async (_input: unknown) => ok(loan));
     renderLoans({ apiOverrides: { incomes: { create } } });
     await screen.findByText('Ana loan');
-    fireEvent.click(screen.getByRole('button', { name: 'Lend money' }));
+    fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Lend Money/ }));
     const dialog = screen.getByRole('dialog');
     fireEvent.change(within(dialog).getByPlaceholderText('Money Lent title'), { target: { value: 'Ben loan' } });
     fireEvent.change(dialog.querySelector('input[type="date"]')!, { target: { value: '2026-07-15' } });
@@ -310,6 +361,7 @@ describe('Money Lent', () => {
     renderLoans({ apiOverrides: { incomes: { create } } });
     await screen.findByText('Ana loan');
     fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Expected Income/ }));
     const dialog = screen.getByRole('dialog');
     fireEvent.click(within(dialog).getByRole('combobox', { name: 'Categories' }));
     fireEvent.click(within(dialog).getByRole('option', { name: 'Money Lent' }));
@@ -326,10 +378,21 @@ describe('Money Lent', () => {
     })));
   });
 
+  it('pre-fills the Lend Money name and locks the Money Lent category from the chooser', async () => {
+    renderLoans();
+    await screen.findByText('Ana loan');
+    fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Lend Money/ }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByPlaceholderText('Money Lent title')).toHaveValue('Lend Money: ');
+    expect(within(dialog).getByText('Amount lent')).toBeInTheDocument();
+  });
+
   it('lets a new Receivables draft switch between Money Lent and a normal category', async () => {
     renderLoans();
     await screen.findByText('Ana loan');
     fireEvent.click(screen.getByRole('button', { name: /New Record/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Expected Income/ }));
     const dialog = screen.getByRole('dialog');
     fireEvent.click(within(dialog).getByRole('combobox', { name: 'Categories' }));
     fireEvent.click(within(dialog).getByRole('option', { name: 'Money Lent' }));

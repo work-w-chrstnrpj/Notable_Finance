@@ -11,6 +11,7 @@ import {
   accountsApi,
   pasabuyersApi,
   alkansyaApi,
+  borrowingsApi,
   creditCardPaymentsApi,
   dashboardApi,
   expenseCategoriesApi,
@@ -235,12 +236,14 @@ export type WorkflowSection =
   | "transfer"
   | "credit-card-payment"
   | "alkansya"
+  | "borrowings"
   | "receivables";
 
 const workflowApiBySection = {
   transfer: transfersApi,
   "credit-card-payment": creditCardPaymentsApi,
   alkansya: alkansyaApi,
+  borrowings: borrowingsApi,
   receivables: receivablesApi,
 } as const;
 

@@ -40,7 +40,8 @@ async function balances() {
 }
 async function createLoan(name: string, useCategoryPicker = false) {
   await win.evaluate(() => { window.location.hash = '#/receivables' })
-  await win.getByRole('button', { name: useCategoryPicker ? /New Record/ : 'Lend money' }).click()
+  await win.getByRole('button', { name: /New Record/ }).click()
+  await win.getByRole('button', { name: useCategoryPicker ? /Expected Income/ : /Lend Money/ }).click()
   const dialog = win.getByRole('dialog')
   if (useCategoryPicker) {
     await dialog.getByRole('combobox', { name: 'Categories', exact: true }).click()

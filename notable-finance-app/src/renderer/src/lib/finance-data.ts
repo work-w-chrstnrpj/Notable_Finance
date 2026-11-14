@@ -9,6 +9,7 @@ export const financeSections: FinanceSection[] = [
   { id: "transfer", label: "Transfer", group: "workflow" },
   { id: "credit-card-payment", label: "Credit Card Payment", shortLabel: "CC Payment", group: "workflow" },
   { id: "alkansya", label: "Alkansya", group: "workflow" },
+  { id: "borrowings", label: "Borrowings", group: "workflow" },
   { id: "receivables", label: "Receivables", group: "workflow" },
   { id: "notifications", label: "Notifications", group: "system" },
   { id: "history", label: "History", group: "system" },

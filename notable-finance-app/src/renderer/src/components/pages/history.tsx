@@ -424,6 +424,7 @@ function HistoryPage() {
     transfer: "transfers",
     "credit-card-payment": "creditCardPayments",
     alkansya: "alkansya",
+    borrowings: "borrowings",
     receivables: "receivables",
     income: "incomes",
     expense: "expenses",

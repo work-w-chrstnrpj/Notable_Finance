@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   ArrowUpDown,
   Banknote,
+  HandCoins,
   Bell,
   Bug,
   CalendarDays,
@@ -51,6 +52,7 @@ const sectionIcons: Record<FinanceSectionId, LucideIcon> = {
   transfer: ArrowUpDown,
   "credit-card-payment": CreditCard,
   alkansya: PiggyBank,
+  borrowings: HandCoins,
   receivables: Banknote,
   notifications: Bell,
   history: History,
@@ -137,7 +139,9 @@ function Sidebar({
   const groupedSections = useMemo(
     () => ({
       primary: financeSections.filter((section) => section.group === "primary"),
-      workflow: financeSections.filter((section) => section.group === "workflow"),
+      workflow: financeSections.filter(
+        (section) => section.group === "workflow" && !settings.hiddenSections.includes(section.id as never),
+      ),
       system: financeSections.filter(
         (section) =>
           section.group === "system" &&
@@ -146,7 +150,7 @@ function Sidebar({
           (section.id !== "dev-logs" || devModeEnabled),
       ),
     }),
-    [chatEnabled, devModeEnabled, settings.notificationsEnabled],
+    [chatEnabled, devModeEnabled, settings.notificationsEnabled, settings.hiddenSections],
   );
   const [navScrolling, setNavScrolling] = useState(false);
   const navScrollTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);

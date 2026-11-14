@@ -3,6 +3,7 @@ import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { calculateCcCoveredExpenseAmount, getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import type { Account, ExpenseRecord, IncomeCategory } from "@/types/finance";
+import type { BorrowingKind } from "@shared/borrowings";
 import type { useWorkflowForm } from "./use-workflow-form";
 
 /**
@@ -21,6 +22,11 @@ export function WorkflowFormFields({
   nonCreditActiveAccounts,
   incomeCategories,
   isTransfer,
+  isBorrowings,
+  borrowKind,
+  onBorrowKindChange,
+  placeholderAccounts,
+  sourceAccountRequired,
   isCreditCardPayment,
   isAlkansya,
   isReceivables,
@@ -39,6 +45,11 @@ export function WorkflowFormFields({
   nonCreditActiveAccounts: Account[];
   incomeCategories: IncomeCategory[];
   isTransfer: boolean;
+  isBorrowings: boolean;
+  borrowKind: BorrowingKind;
+  onBorrowKindChange: (kind: BorrowingKind) => void;
+  placeholderAccounts: Account[];
+  sourceAccountRequired: boolean;
   isCreditCardPayment: boolean;
   isAlkansya: boolean;
   isReceivables: boolean;
@@ -94,7 +105,37 @@ export function WorkflowFormFields({
           />
         </Field>
       )}
-      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || isReceivables}>
+      {isBorrowings ? (
+        <>
+          <Field label="Type" required>
+            <FilterDropdown
+              placeholder="Type"
+              value={borrowKind}
+              onChange={(value) => onBorrowKindChange(value as BorrowingKind)}
+              items={[{ id: "borrowed", label: "Borrowed" }, { id: "repayment", label: "Repayment" }]}
+            />
+          </Field>
+          <Field label="Borrow Account" required>
+            <FilterDropdown
+              placeholder="— None —"
+              value={receivingAccountId}
+              onChange={setReceivingAccountId}
+              items={placeholderAccounts.map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+            />
+          </Field>
+          <Field label={borrowKind === "borrowed" ? "Received Into" : "Paid From"} required>
+            <FilterDropdown
+              placeholder="— None —"
+              value={transactedAccountId}
+              onChange={setTransactedAccountId}
+              items={nonCreditActiveAccounts
+                .filter((account) => account.type !== "Auxiliary")
+                .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+            />
+          </Field>
+        </>
+      ) : (
+      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || sourceAccountRequired}>
         <FilterDropdown
           placeholder="— None —"
           value={receivingAccountId}
@@ -106,6 +147,7 @@ export function WorkflowFormFields({
           }))}
         />
       </Field>
+      )}
       {secondaryAccountLabel && (
         <Field label={secondaryAccountLabel} required={isTransfer}>
           <FilterDropdown

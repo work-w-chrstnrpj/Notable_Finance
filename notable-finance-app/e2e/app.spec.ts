@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // Full-app Electron e2e against the PORTED web workspace UI (Sidebar + TopBar +
-// pages copied from notable-finance-web). Isolated userData; reference data seeded
+// pages copied from the removed web app). Isolated userData; reference data seeded
 // between two launches (first launch creates + migrates the DB).
 
 // Classes owned by a CSS Module are hashed in the built bundle, so a literal

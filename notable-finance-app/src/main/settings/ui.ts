@@ -1,5 +1,6 @@
 // UI preferences stored in app_settings (profile, theme, workspace views, page filters).
 import { getSqlite } from '../db'
+import { HIDEABLE_SECTIONS } from '../../shared/finance.types'
 import type {
   UiAccountsFilters,
   UiExpenseFilters,
@@ -89,6 +90,7 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
 }
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {
+  hiddenSections: [],
   hardDeleteEnabled: false,
   chatEnabled: false,
   notificationsEnabled: true,
@@ -273,6 +275,9 @@ function mergeMonitoring(raw: unknown): UiMonitoringFilters {
 export function normalizeUiSettings(raw: unknown): UiSettings {
   const r = asRecord(raw)
   return {
+    hiddenSections: Array.isArray(r.hiddenSections)
+      ? HIDEABLE_SECTIONS.filter((id) => (r.hiddenSections as unknown[]).includes(id))
+      : [],
     hardDeleteEnabled: r.hardDeleteEnabled === true,
     chatEnabled: r.chatEnabled === true,
     notificationsEnabled: r.notificationsEnabled !== false,
@@ -307,6 +312,7 @@ export function getUiSettings(): UiSettings {
 }
 
 export function setUiSettings(patch: Partial<{
+  hiddenSections: string[]
   hardDeleteEnabled: boolean
   chatEnabled: boolean
   notificationsEnabled: boolean
@@ -325,6 +331,7 @@ export function setUiSettings(patch: Partial<{
 }>): UiSettings {
   const current = getUiSettings()
   const next = normalizeUiSettings({
+    hiddenSections: patch.hiddenSections ?? current.hiddenSections,
     hardDeleteEnabled:
       patch.hardDeleteEnabled === undefined ? current.hardDeleteEnabled : patch.hardDeleteEnabled,
     chatEnabled: patch.chatEnabled === undefined ? current.chatEnabled : patch.chatEnabled,

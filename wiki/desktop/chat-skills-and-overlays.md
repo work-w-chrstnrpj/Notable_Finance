@@ -310,15 +310,25 @@ Computed read-only on card: Pasabuy Received Amount, Pasabuyer Balance.
 
 **In scope for Phase 6 writes:** **Yes** (propose + confirm).
 
-**Triggers:** “receivable”, “utang sa akin”, “IOU collect”.
+**Triggers:** “receivable”, “utang sa akin”, “IOU collect”, “expected income”.
 
-**Tools:** `proposeCreateReceivable` / update variant.
+**Tools:** `getReceivablesSummary` (Expected Income / Money Lent / Pasabuy totals), `proposeCreateReceivable` (Expected Income), `proposeCreateMoneyLent` (see `workflow-money-lent`), update variants. Pasabuy fields are edited on the Expense.
 
 **Required:** Per receivables form (date, amount, accounts / counterparty fields as product defines).
 
 **Clarify:** Counterparty / account gaps → ask.
 
 ---
+
+### Skill: `workflow-money-lent`
+
+Lend Money (Receivables → Lend Money): `proposeCreateMoneyLent` with name (`Lend Money: <who>`), date, positive amount and a regular non-credit source account; the category locks to Money Lent and the app stores the amount negative. Triggers: “lend”, “lent”, “pautang”, “nagpautang”. Recording a loan repayment stays on the Receivables page.
+
+### Skill: `workflow-borrowings`
+
+Money the user **owes** (see [borrowings.md](borrowings.md)). Questions use `getBorrowingsSummary` and `queryIncomes` with `view: "borrowings"`; logging uses `proposeCreateBorrowing` with `type` `borrowed` or `repayment`, a Borrow account (Auxiliary account with “borrow” in its name; auto-picked when there is one) and a regular non-credit other account. Triggers: “borrow”, “repay”, “hiram”, “utang ko”, “how much do I owe”.
+
+Chat can create and edit everything the app can; it never deletes, changes settings, runs sync, or records a Money Lent repayment.
 
 ### Workflow skills — inclusion summary
 
@@ -328,6 +338,8 @@ Computed read-only on card: Pasabuy Received Amount, Pasabuyer Balance.
 | `workflow-cc-payment` | **Yes** | Yes (after confirm) |
 | `workflow-alkansya` | **Yes** | Yes (after confirm) |
 | `workflow-receivables` | Yes | Yes (after confirm) |
+| `workflow-money-lent` | Yes | Yes (after confirm) |
+| `workflow-borrowings` | Yes | Yes (after confirm) |
 | `rebudget` | Yes | **No** — chat plan only |
 | `monitoring-summary` | Yes | **No** — read-only report |
 

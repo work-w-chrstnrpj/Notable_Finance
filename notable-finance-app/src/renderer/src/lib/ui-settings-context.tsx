@@ -11,6 +11,7 @@ import {
 import type { UiSettings } from "../../../shared/finance.types";
 
 export const DEFAULT_SETTINGS: UiSettings = {
+  hiddenSections: [],
   hardDeleteEnabled: false,
   chatEnabled: false,
   notificationsEnabled: true,
@@ -65,6 +66,7 @@ export const DEFAULT_SETTINGS: UiSettings = {
 };
 
 type UiSettingsPatch = {
+  hiddenSections?: UiSettings["hiddenSections"];
   hardDeleteEnabled?: boolean;
   chatEnabled?: boolean;
   notificationsEnabled?: boolean;
@@ -149,6 +151,7 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
   const updateSettings = useCallback(async (patch: UiSettingsPatch) => {
     setSettings((prev) => ({
       ...prev,
+      hiddenSections: patch.hiddenSections ?? prev.hiddenSections,
       hardDeleteEnabled:
         patch.hardDeleteEnabled === undefined
           ? prev.hardDeleteEnabled

@@ -180,6 +180,7 @@ export function activeSelectorUnit(
     case "transfer":
     case "credit-card-payment":
     case "alkansya":
+    case "borrowings":
     case "receivables":
       return incomeModeToUnit(workflowViewMode);
     default:

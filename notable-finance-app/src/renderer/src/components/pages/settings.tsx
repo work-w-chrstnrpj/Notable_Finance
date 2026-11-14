@@ -9,7 +9,8 @@ import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { ConfirmModal } from "@/components/ui/form-modals";
 import { StatusPill } from "@/components/ui/date-range";
-import type { BackupMeta } from "@shared/finance.types";
+import { HIDEABLE_SECTIONS, type BackupMeta } from "@shared/finance.types";
+import { getSectionById } from "@/lib/finance-data";
 import {
   SettingsModalKind,
   ThemeCustomizeModal,
@@ -146,6 +147,34 @@ function SettingsPage({
             View shortcuts
           </button>
         </div>
+      </Panel>
+      <Panel title="Sections">
+        <p className="settings-toggle__hint">Choose which sections appear in the sidebar. Hiding a section keeps its records and sync; it only removes it from navigation.</p>
+        {HIDEABLE_SECTIONS.map((id) => {
+          const visible = !settings.hiddenSections.includes(id);
+          const label = getSectionById(id)?.label ?? id;
+          return (
+            <div className="settings-row" key={id}>
+              <div>
+                <p className="settings-toggle__title">{label}</p>
+                <label className={cx("switch", visible && "switch--on")} aria-label={`Show ${label}`} style={{ marginTop: "0.75rem" }}>
+                  <input
+                    type="checkbox"
+                    checked={visible}
+                    onChange={(e) =>
+                      void updateSettings({
+                        hiddenSections: e.target.checked
+                          ? settings.hiddenSections.filter((s) => s !== id)
+                          : [...settings.hiddenSections, id],
+                      })
+                    }
+                  />
+                  <span className="switch__track"><span className="switch__thumb" /></span>
+                </label>
+              </div>
+            </div>
+          );
+        })}
       </Panel>
       <Panel title="Notifications">
         <div className="settings-row">

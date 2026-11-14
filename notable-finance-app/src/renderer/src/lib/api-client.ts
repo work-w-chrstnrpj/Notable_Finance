@@ -250,7 +250,7 @@ export const expensesApi = {
 // ── Workflows (income-backed views) ───────────────────────────────────
 export type WorkflowListParams = { month?: string; rangeStart?: string; rangeEnd?: string; accountId?: string };
 
-function workflowApi(view: "transfers" | "creditCardPayments" | "alkansya" | "receivables" | "incomes") {
+function workflowApi(view: "transfers" | "creditCardPayments" | "alkansya" | "borrowings" | "receivables" | "incomes") {
   return {
     list(params?: WorkflowListParams) {
       return adapt(nfApi().incomes.list({ ...params, view } as IncomeListParams)) as Promise<ApiResult<IncomeRecord[]>>;
@@ -271,6 +271,7 @@ export const transactionsApi = workflowApi("incomes");
 export const transfersApi = workflowApi("transfers");
 export const creditCardPaymentsApi = workflowApi("creditCardPayments");
 export const alkansyaApi = workflowApi("alkansya");
+export const borrowingsApi = workflowApi("borrowings");
 export const receivablesApi = workflowApi("receivables");
 
 // ── Monthly Monitoring / Dashboard / Scheduler ────────────────────────
