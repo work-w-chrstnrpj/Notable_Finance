@@ -1,6 +1,6 @@
 # Notable Finance App — Desktop Docs
 
-Documentation for the **local-first Electron desktop app**. It has the same features and business logic as the web app but keeps its own local SQLite database as the working source of truth and syncs bidirectionally with Notion.
+Documentation for the **local-first Electron desktop app**. It keeps its own local SQLite database as the working source of truth and syncs bidirectionally with Notion.
 
 For shared product intent, the finance glossary, and the canonical Notion field mapping, see [`../shared/`](../shared/).
 
@@ -17,7 +17,6 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 | [security.md](security.md) | Token in keychain, process isolation, data at rest | P1 |
 | [packaging-and-release.md](packaging-and-release.md) | electron-builder, mac/linux/windows, signing (future) | P1 |
 | [project-structure.md](project-structure.md) | Folder layout and boundary intent | P1 |
-| [shared-core-and-monorepo.md](shared-core-and-monorepo.md) | Copy-now/extract-later reuse strategy, pnpm workspace | P1 |
 | [desktop-testing-strategy.md](desktop-testing-strategy.md) | Sync simulations, offline coverage, Electron e2e | P1 |
 | [development-plan.md](development-plan.md) | Phased plan and milestones | — |
 | [chat-agent-design.md](chat-agent-design.md) | Chat copilot; **Phase 6 complete (6.6 hardening)** | P1 |
@@ -37,5 +36,5 @@ For shared product intent, the finance glossary, and the canonical Notion field 
 - **At rest:** OS disk encryption; token in OS keychain (safeStorage).
 - **UI:** multi-window and in-window tabs; never show stale data without a badge.
 - **Chat (Phase 6 done):** Opt-in Settings; Configure AI saves keys as **Name + API Key** (many). **Chat mode** replaces side nav with history and **Go Back to Main**. Confirm-gated create/edit; overlays; Mac Apple Intelligence read-only Q&A via bundled `fm-proxy` when System Settings are ready; no finance delete via chat. See [`chat-agent-design.md`](chat-agent-design.md). **Phase 8 (planned):** BYOK Chat agent investigation loop (see [`development-plan.md`](development-plan.md)). Apple stays a chatbot.
-- **Reuse:** copy web logic into desktop (web untouched); pnpm workspaces.
+- **Repo:** single app managed with pnpm workspaces.
 - **Testing:** full offline + conflict simulations + Electron e2e.

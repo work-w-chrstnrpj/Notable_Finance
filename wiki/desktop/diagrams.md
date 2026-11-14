@@ -13,8 +13,6 @@ flowchart LR
     r <-- IPC --> m
   end
   m <-- bidirectional sync --> notion[(Notion workspace)]
-  webuser([Same user, on the go]) --> web[Notable Finance Web]
-  web <-- Notion is source of truth --> notion
 ```
 
 ## Process model & data ownership

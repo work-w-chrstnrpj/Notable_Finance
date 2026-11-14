@@ -1,10 +1,6 @@
 # Shared Product Specification
 
-This document is the **shared** product intent for both Notable Finance apps. The finance features, workflows, validation rules, and acceptance criteria are **identical** across web and desktop — they are canonically specified in the web product spec, which this document does not duplicate:
-
-- Canonical feature/workflow detail: [`web/product-specification/product-specification.md`](../web/product-specification/product-specification.md)
-
-What follows is (1) the shared product summary and (2) the **desktop-specific deltas** — the behaviors that differ because the desktop app is local-first.
+This document is the product intent for Notable Finance. The web app (and its full feature specification, `wiki/web/product-specification/product-specification.md`) was removed; that original spec remains in git history before the removal commit. What follows is (1) the product summary and (2) the **desktop-specific behaviors** — the ones that exist because the app is local-first, plus features added since (Borrowings, Money Lent, Receivables types).
 
 ## Product summary
 
@@ -58,6 +54,10 @@ Owner-confirmed correction (2026-10-15): Pasabuyer Balance is the total remainin
 ### Desktop-only Money Lent
 
 The desktop Receivables category picker includes the auxiliary Income Category `Money Lent`, with negative persisted Income amounts that deduct from the source account and positive amounts owed in Receivables. Full repayment explicitly offers Same account (soft-delete) or Transfer to another account. The original lending account remains the read-only Source Account; Transfer requires a distinct Transfer Account and converts the same Income row. Negative Savings entries can be explicitly reclassified without changing balances. No new database or formula is required. See [desktop Money Lent behavior and acceptance](../desktop/money-lent.md). This feature does not change the web application.
+
+### Desktop-only Borrowings
+
+A Borrowings section records money you owe as auxiliary `Borrowed Money` Income rows between an Auxiliary-type Borrow account and the account that received or paid the money. It stays out of Income totals; Receivables is split into All / Expected Income / Money Lent / Pasabuy tabs. See [desktop Borrowings](../desktop/borrowings.md).
 
 ### Desktop-only Receivables Pasabuy editing
 

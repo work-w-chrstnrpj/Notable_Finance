@@ -17,11 +17,8 @@ Use this guide before reading broad wiki pages or source folders.
 | Task Type | Read First | Then Inspect |
 | --- | --- | --- |
 | Application behavior | `.ai/maps/application-map.md` | Entry points, feature modules, state, tests |
-| Service or API behavior | `.ai/maps/service-map.md` | Handlers, services, contracts, tests |
 | Data model or persistence | `.ai/maps/data-map.md` | Schemas, repositories, migrations, data wiki pages |
-| API contract | `.ai/maps/api-map.md` | Contracts, clients, handlers, contract tests |
 | Tests or failing checks | `.ai/maps/testing-map.md` | Exact failing test, subject file, setup |
-| Deployment or runtime config | `.ai/maps/deployment-map.md` | Deployment wiki pages, config, environment examples |
 
 ## Hard Rule
 

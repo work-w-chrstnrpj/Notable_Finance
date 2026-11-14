@@ -81,8 +81,8 @@ simply don't pass `onPrint`/`onCover`, so they don't get those actions.
 - **main** is the only place with filesystem, SQLite, network, and secret access.
 - **preload** is the sole bridge; it exposes exactly the [`ipc-contract.md`](ipc-contract.md) surface.
 - **renderer** is untrusted UI: no Node, no direct DB/Notion access.
-- **shared** holds DTOs/types kept contract-compatible with the web app.
+- **shared** holds DTOs/types and pure formulas used by both main and renderer.
 
 ## Monorepo placement
 
-`notable-finance-app/` sits beside `notable-finance-web/` under the repo root, managed with **pnpm workspaces**. Shared domain logic is **copied** into `src/main/domain` for now (web left untouched); extracting a shared package is a future step. See [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
+`notable-finance-app/` is the only app under the repo root, managed with **pnpm workspaces**. A future shared package can be extracted if a second consumer appears.

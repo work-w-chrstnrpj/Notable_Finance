@@ -2,7 +2,7 @@
 
 The desktop app's internal "API". Because the renderer has no direct access to SQLite, Notion, or Node, every data operation crosses the process boundary through a **typed, allow-listed** IPC surface exposed by the preload script as `window.api`.
 
-This is the desktop analog of the web app's HTTP API specification.
+This is the app's API specification (main ↔ renderer).
 
 ## Boundary rules
 
@@ -197,7 +197,7 @@ Renderer subscribes via `window.api.on(channel, handler)` and unsubscribes on un
 
 ## Type sources
 
-DTOs (`Account`, `IncomeRecord`, `ExpenseRecord`, `DashboardSummary`, `SyncStatus`, …) are copied from the web app's `notable-finance-web/application/src/types/finance.ts` and `notable-finance-web/service/src/common/finance.types.ts` into the shared desktop types, keeping the two apps contract-compatible. See [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
+DTOs (`Account`, `IncomeRecord`, `ExpenseRecord`, `DashboardSummary`, `SyncStatus`, …) live in `src/shared/finance.types.ts`; the renderer re-exports and never redefines them.
 
 ## Security notes
 

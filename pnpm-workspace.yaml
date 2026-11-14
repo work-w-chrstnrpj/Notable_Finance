@@ -1,6 +1,4 @@
-# pnpm workspace — additive, does not disturb the web app.
-# notable-finance-web keeps its existing npm-based setup (see wiki/desktop/shared-core-and-monorepo.md).
-# Only the desktop app (and future shared packages) are managed by pnpm for now.
+# pnpm workspace — the desktop app (and future shared packages) are managed by pnpm.
 packages:
   - 'notable-finance-app'
   # - 'packages/*'   # future: extracted shared core (packages/core, packages/notion-adapter)

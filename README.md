@@ -1,19 +1,14 @@
 # Notable Finance
 
-A personal finance application layered over a Notion workspace. Notion is the canonical store for all financial records. The app is a clean encoding, viewing, validation, and sync interface — not a replacement for Notion, but a much better daily driver on top of it.
+A local-first personal finance desktop app layered over a Notion workspace. Records live in a local SQLite database, so the app works fully offline, and Notion is kept in sync as a bidirectional mirror. It is a clean encoding, viewing, validation, and sync interface — not a replacement for Notion, but a much better daily driver on top of it.
 
-This monorepo ships **two apps** that share the same finance domain and product intent:
-
-| App | Directory | Source of truth | Status |
-|---|---|---|---|
-| **Web** (Next.js + NestJS) | `notable-finance-web/` | Notion | v1.1.0 — implemented |
-| **Desktop** (Electron + SQLite) | `notable-finance-app/` | Local SQLite; Notion is a bidirectional mirror | v2.2.3 — implemented and shipping |
+The app is an Electron desktop app in `notable-finance-app/` (current version v3.0.0). Local SQLite is the working source of truth and Notion is a bidirectional mirror.
 
 ---
 
 ## What the app does
 
-Both apps cover the same sections and finance workflows:
+The app covers these sections and finance workflows:
 
 **Sections**
 
@@ -27,106 +22,19 @@ Both apps cover the same sections and finance workflows:
 | Transfer | Record a fund transfer between accounts |
 | Credit Card Payment | Record a credit card payment and link it to covered expenses |
 | Alkansya | Record savings jar deposits |
-| Receivables | Record amounts owed by others; print receipts |
+| Borrowings | Record money you owe: borrowed and repayment entries against Borrow (Auxiliary) accounts, with a Borrowed Accounts view |
+| Receivables | Money owed to you: Expected Income, Money Lent (Lend Money) and Pasabuy; print receipts |
 
-**Core rules that hold for both apps**
+CC Payment, Alkansya, Borrowings and Receivables can be hidden or shown from Settings → Sections.
 
-- Notion is the canonical finance data store. The app never bypasses it.
+**Core rules**
+
+- Local SQLite is the working source of truth; Notion is a bidirectional mirror reconciled by sync (pull, push, pull) with conflict handling.
 - Computed Notion fields (formulas, rollups, reverse relations) are read-only in all forms.
 - Accounts, Income Categories, and Expense Categories are read-only reference data maintained in Notion.
 - Incomes and expenses are **soft-deleted** — the title is rewritten to `[Deleted: Amount]` and the amount is cleared; records are never hard-deleted.
 - Dashboard, Monitoring, Income, and Expense totals are calculated in app code from local records, not read from Notion's calculator formulas.
-- The frontend/renderer never touches Notion secrets or calls Notion directly.
-
----
-
-## Web App (`notable-finance-web/`)
-
-**Stack:** Next.js 14 (App Router) frontend + NestJS backend service. Notion is the source of truth — every read and write goes through the backend to Notion.
-
-### Architecture
-
-```
-notable-finance-web/
-├── application/          # Next.js frontend (App Router)
-│   └── src/
-│       ├── app/
-│       │   ├── [section]/    # Single catch-all route renders the active section
-│       │   ├── login/        # Email sign-in
-│       │   ├── register/     # User registration
-│       │   └── notion-connect/  # Integration key setup
-│       ├── components/
-│       │   ├── pages/        # One component per section (dashboard, income, expense, workflow, …)
-│       │   ├── layout/       # Workspace shell, navigation
-│       │   ├── charts/       # Recharts wrappers
-│       │   ├── export/       # Receipt / export UI
-│       │   ├── fab/          # Floating action button
-│       │   └── ui/           # Shared primitives
-│       ├── lib/              # API client (calls /api/v1), query hooks, auth utils
-│       └── types/            # Shared finance DTOs
-└── service/              # NestJS backend service
-    └── src/
-        ├── accounts/         # Read-only accounts resource
-        ├── incomes/          # Writable incomes
-        ├── expenses/         # Writable expenses
-        ├── expense-scheduler/
-        ├── transactions/     # Transfer / CC Payment / Alkansya / Receivables
-        ├── income-categories/
-        ├── expense-categories/
-        ├── monthly-monitoring/
-        ├── dashboard/        # Computed summaries
-        ├── sync/             # Pull from Notion, push app changes, re-pull
-        ├── conflict/         # Field-level conflict resolution
-        ├── schema-drift/     # Schema verification endpoint
-        ├── notion/           # Notion API adapter (client, property mapper)
-        ├── mapping/          # Field classification (writable vs. read-only vs. computed)
-        ├── validation/       # Input validation and mutation guards
-        ├── auth/             # Passport JWT strategy, email + Google sign-in
-        ├── users/            # User management
-        ├── database/         # PostgreSQL (Neon Free) for app metadata
-        └── logging/          # Winston structured logging
-```
-
-### Web sync flow
-
-1. Pull from Notion → populate/update local state.
-2. App changes write through the backend to Notion.
-3. Pull latest Notion data again → refresh UI from the pulled Notion state.
-
-The Sync Center page supports both direct-save form submissions and an explicit queued-changes Sync button.
-
-### Web development commands
-
-Run from `notable-finance-web/` (the web root with its own `package.json`):
-
-| Command | Purpose |
-|---|---|
-| `npm run bootstrap` | Install frontend and backend dependencies |
-| `npm run dev` | Start frontend and backend development servers together |
-| `npm run dev:frontend` | Start the Next.js frontend dev server only |
-| `npm run dev:backend` | Start the NestJS backend in watch mode only |
-| `npm run build` | Build frontend and backend for deployment |
-| `npm run start:frontend` | Start the built frontend |
-| `npm run start:backend` | Start the built backend from `service/dist` |
-| `npm run lint` | Run frontend and backend lint checks |
-| `npm run typecheck` | Run frontend and backend TypeScript checks |
-| `npm run test` | Run frontend and backend tests |
-| `npm run verify` | Lint + typecheck + test (full CI gate) |
-
-### Web environment setup
-
-```bash
-cp notable-finance-web/service/.env.example notable-finance-web/service/.env
-# Fill in NOTION_TOKEN, NOTION_DATABASE_IDs, DATABASE_URL (Neon), JWT_SECRET, etc.
-```
-
-Never commit `.env`, Notion tokens, database credentials, or any provider secrets.
-
-### Web deployment targets
-
-- **Frontend:** Vercel
-- **Backend:** Render
-- **App metadata DB:** Neon Free (PostgreSQL)
+- The renderer never touches Notion secrets or calls Notion directly; the main process owns all data and side effects.
 
 ---
 
@@ -271,10 +179,6 @@ pnpm --filter notable-finance-app seed     # OPTIONAL: seed dev accounts/categor
 
 ```
 Notable Finance/
-├── notable-finance-web/      # Web app (Next.js frontend + NestJS backend)
-│   ├── application/          # Next.js frontend
-│   ├── service/              # NestJS backend service
-│   └── package.json          # Web root — run web commands here
 ├── notable-finance-app/      # Desktop app (Electron + SQLite)
 │   ├── src/                  # main / preload / renderer / shared
 │   ├── e2e/                  # Playwright + Electron tests
@@ -282,7 +186,6 @@ Notable Finance/
 │   └── package.json
 ├── wiki/
 │   ├── shared/               # Product spec, finance glossary, Notion field mapping
-│   ├── web/                  # Web TDD, API docs, database, deployment, development plan
 │   └── desktop/              # Desktop architecture, sync/conflict, local schema, IPC, packaging
 ├── shared/                   # Future shared contracts and DTOs (not yet extracted)
 ├── tests/                    # Cross-cutting manual and automated tests
@@ -298,9 +201,8 @@ Notable Finance/
 
 | Document | Purpose |
 |---|---|
-| [`wiki/shared/product-specification.md`](wiki/shared/product-specification.md) | Shared product intent (both apps) |
-| [`wiki/web/product-specification/product-specification.md`](wiki/web/product-specification/product-specification.md) | Full web feature specification |
-| [`wiki/web/tdd/tdd.md`](wiki/web/tdd/tdd.md) | Web technical design document |
+| [`wiki/shared/product-specification.md`](wiki/shared/product-specification.md) | Product intent and acceptance criteria |
+| [`wiki/desktop/borrowings.md`](wiki/desktop/borrowings.md) | Borrowings and Receivables behavior |
 | [`wiki/desktop/desktop-architecture.md`](wiki/desktop/desktop-architecture.md) | Desktop architecture |
 | [`wiki/desktop/development-plan.md`](wiki/desktop/development-plan.md) | Desktop phased development plan and status |
 | [`wiki/desktop/project-structure.md`](wiki/desktop/project-structure.md) | Desktop project structure (detailed tree) |
@@ -310,18 +212,17 @@ Notable Finance/
 | [`wiki/shared/notion-field-mapping.md`](wiki/shared/notion-field-mapping.md) | Canonical Notion field taxonomy |
 | [`wiki/shared/finance-domain-glossary.md`](wiki/shared/finance-domain-glossary.md) | Finance domain term definitions |
 | [`notable-finance-app/CHANGELOG.md`](notable-finance-app/CHANGELOG.md) | Desktop release history |
-| [`CHANGELOG.md`](CHANGELOG.md) | Web release history |
 | [`AGENTS.md`](AGENTS.md) | AI agent operating rules for this repo |
 
 ---
 
 ## Core rules
 
-- **Notion is the canonical finance data store.** The app never replaces or bypasses it.
-- **The frontend/renderer must never contain Notion secrets** and must never call Notion directly.
-- **The backend/main process owns all Notion API access**, validation, field mapping, and sync.
+- **Local SQLite is the working source of truth; Notion is the mirror.** Sync reconciles both with a three-way merge and surfaces conflicts.
+- **The renderer must never contain Notion secrets** and must never call Notion directly.
+- **The main process owns all Notion API access**, validation, field mapping, and sync.
 - **Computed Notion fields are never editable** in normal user forms — formulas, rollups, reverse relations, and system-managed values are read-only.
-- **Sync flow:** pull from Notion → write app changes to Notion → pull latest → refresh UI from pulled data.
-- **Soft-delete only:** incomes and expenses are never hard-deleted; title is rewritten and amount is cleared.
+- **Sync flow:** pull from Notion → push local changes to Notion → pull latest → refresh the UI from local data.
+- **Soft-delete by default:** incomes and expenses are soft-deleted (title rewritten, amount cleared) unless hard delete is enabled in Settings.
 - **Draft wiki files are not canonical.** Fold useful content into canonical pages, then remove the draft.
-- **No secrets in commits.** Notion tokens, database credentials, JWT secrets, and provider keys stay in environment variables and the OS keychain.
+- **No secrets in commits.** Notion tokens and AI provider keys stay in the OS keychain, never in the repo.
