@@ -177,6 +177,7 @@ function CoverExpensesModal({
                               <input
                                 type="radio"
                                 name="cover-cc-payment"
+                                style={{ width: 14, height: 14, minHeight: 0, padding: 0, flexShrink: 0, margin: 0, accentColor: "var(--blue)" }}
                                 checked={selectedCcPaymentId === cp.id}
                                 disabled={saving || alreadyLinked}
                                 onChange={() => setSelectedCcPaymentId(cp.id)}
