@@ -22,6 +22,11 @@ The desktop app is now the whole project: the earlier web app and its docs were 
 - **Separate account filters.** Transfer filters Source Account and Transfer Account (non-credit only). CC Payment filters CC Account (credit accounts only) and Payer Account (non-credit only). Borrowings filters Borrow Account and Other Account.
 - The lend button and the standalone repayment button are replaced by the initial type choosers.
 
+### Fixed
+
+- The Cover Expenses modal radio buttons no longer stretch to full width and squeeze the receipt names.
+- Workflow forms (Transfer, CC Payment, Borrowings, Receivables, Alkansya) show required-field errors in red and shake the invalid field, including dropdowns, as Expense and Income forms already did.
+
 ### Removed
 
 - The web app (`notable-finance-web/`), its wiki zone, user guide and changelog. The repository now contains only the desktop app. The removed code remains in git history.
