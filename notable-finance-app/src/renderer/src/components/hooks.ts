@@ -72,6 +72,7 @@ function isWorkflowSection(section: FinanceSectionId): section is WorkflowSectio
     section === "transfer" ||
     section === "credit-card-payment" ||
     section === "alkansya" ||
+    section === "borrowings" ||
     section === "receivables"
   );
 }

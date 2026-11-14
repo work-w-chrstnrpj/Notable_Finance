@@ -1,5 +1,5 @@
 // Notion page → local-row extractors (Phase 3 pull). The low-level extract helpers are
-// COPIED from notable-finance-web/service/src/notion/notion-property-mapper.ts; the pageTo*
+// COPIED from web-service/src/notion/notion-property-mapper.ts; the pageTo*
 // functions produce the snake_case-ish field bags the pull upserts store. Relation fields
 // are returned as NOTION page ids — the pull engine translates them to local ids.
 import { NOTION_PROPERTY_NAMES } from './property-mapper'
@@ -92,7 +92,7 @@ export function extractNumberOrFormula(props: Props, name: string): number | nul
 
 // Income categories tied to a workflow are always auxiliary even if the Notion checkbox
 // is unchecked (COPIED rule from the web mapper).
-const WORKFLOW_INCOME_CATEGORIES = new Set(['savings', 'transfer', 'credit card payment', 'money lent'])
+const WORKFLOW_INCOME_CATEGORIES = new Set(['savings', 'transfer', 'credit card payment', 'money lent', 'borrowed money'])
 
 // ── row shapes returned to the pull engine ──────────────────────────────────
 

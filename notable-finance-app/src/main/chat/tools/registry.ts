@@ -99,11 +99,29 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           categoryId: { type: 'string' },
           view: {
             type: 'string',
-            enum: ['incomes', 'transfers', 'creditCardPayments', 'alkansya', 'receivables']
+            enum: ['incomes', 'transfers', 'creditCardPayments', 'alkansya', 'receivables', 'borrowings', 'moneyLent']
           }
         },
         additionalProperties: false
       }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'getBorrowingsSummary',
+      description:
+        'Borrow accounts (Auxiliary accounts whose name has "borrow", "debt" or "loan") with how much is still owed on each, plus the total owed. Use for "how much do I owe".',
+      parameters: { type: 'object', properties: {}, additionalProperties: false }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'getReceivablesSummary',
+      description:
+        'Money owed TO the user, split by type: expectedIncome, moneyLent (outstanding loans, positive), pasabuy (paid Pasabuy awaiting payment), plus grandTotal.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false }
     }
   },
   {
@@ -366,8 +384,52 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
   {
     type: 'function',
     function: {
+      name: 'proposeCreateBorrowing',
+      description:
+        'Propose a Borrowings record (money the user owes). type "borrowed": money received into otherAccount, debited on the Borrow account. type "repayment": paid from otherAccount back to the Borrow account. Name convention: "Borrow: <who>" / "Repayment: <who>". Borrow account = Auxiliary account whose name has "borrow", "debt" or "loan" (auto-picked if there is only one). otherAccount must be a regular non-credit account. Amount is positive.',
+      parameters: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['borrowed', 'repayment'] },
+          name: { type: 'string' },
+          date: dateProp,
+          amount: { type: 'number', description: 'Positive amount.' },
+          borrowAccount: { type: 'string', description: 'Borrow (Auxiliary) account name or id.' },
+          borrowAccountId: { type: 'string' },
+          otherAccount: { type: 'string', description: 'Account the money was received into (borrowed) or paid from (repayment).' },
+          otherAccountId: { type: 'string' },
+          notes: { type: 'string' }
+        },
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'proposeCreateMoneyLent',
+      description:
+        'Propose Lend Money (Receivables → Money Lent): money the user lent to someone, taken from a non-credit source account. Name convention "Lend Money: <who>". Amount is positive; the app stores it negative on the source account and shows it as owed to the user. Category is locked to Money Lent.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          date: dateProp,
+          amount: { type: 'number', description: 'Positive amount lent.' },
+          sourceAccount: { type: 'string' },
+          sourceAccountId: { type: 'string' },
+          accountId: { type: 'string' },
+          notes: { type: 'string' }
+        },
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'proposeCreateReceivable',
-      description: 'Propose Receivable (income; account may be empty). Requires category.',
+      description: 'Propose an Expected Income receivable (money the user expects to receive; account may be empty). Requires a normal income category. For lending money use proposeCreateMoneyLent.',
       parameters: {
         type: 'object',
         properties: {
@@ -526,6 +588,10 @@ export function executeChatTool(
       return read.queryIncomes(args)
     case 'queryExpenses':
       return read.queryExpenses(args)
+    case 'getBorrowingsSummary':
+      return read.getBorrowingsSummary(args)
+    case 'getReceivablesSummary':
+      return read.getReceivablesSummary(args)
     case 'getCategoryBudgetStatus':
       return read.getCategoryBudgetStatus(args)
     case 'explainAppTopic':
@@ -546,6 +612,10 @@ export function executeChatTool(
       return write.proposeCreateCcPayment(args, ctx)
     case 'proposeCreateAlkansya':
       return write.proposeCreateAlkansya(args, ctx)
+    case 'proposeCreateBorrowing':
+      return write.proposeCreateBorrowing(args, ctx)
+    case 'proposeCreateMoneyLent':
+      return write.proposeCreateMoneyLent(args, ctx)
     case 'proposeCreateReceivable':
       return write.proposeCreateReceivable(args, ctx)
     case 'proposeUpdateIncome':

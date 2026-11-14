@@ -1,5 +1,7 @@
 import * as repo from '../../db/repositories'
 import * as reports from '../../services/reports'
+import { isPlaceholderAccount } from '../../../shared/borrowings'
+import { isMoneyLentCategory, receivableAmount } from '../../../shared/money-lent'
 import { requireMonth, resolveMonth, currentMonth } from '../dates'
 
 /**
@@ -144,6 +146,8 @@ export function queryIncomes(args: unknown) {
       | 'creditCardPayments'
       | 'alkansya'
       | 'receivables'
+      | 'borrowings'
+      | 'moneyLent'
       | undefined) ?? 'incomes'
   })
   const total = records.reduce((s, r) => s + (r.grossIncome || 0), 0)
@@ -152,6 +156,54 @@ export function queryIncomes(args: unknown) {
     totalGrossIncome: total,
     truncated: records.length > MAX_ROWS,
     records: records.slice(0, MAX_ROWS).map(slimIncome)
+  }
+}
+
+/** Borrow accounts (Auxiliary accounts whose name has "borrow", "debt" or "loan") and what is still owed on each. */
+export function getBorrowingsSummary(_args: unknown) {
+  const accounts = repo.listAccounts(false).filter(isPlaceholderAccount)
+  const rows = accounts.map((a) => ({
+    id: a.id,
+    name: a.name,
+    // A Borrow account's balance is the negative of what is still owed.
+    stillOwed: Math.round((-a.currentBalance + Number.EPSILON) * 100) / 100
+  }))
+  return {
+    borrowAccounts: rows,
+    totalStillOwed: Math.round((rows.reduce((s, r) => s + r.stillOwed, 0) + Number.EPSILON) * 100) / 100,
+    note: rows.length
+      ? 'Use queryIncomes with view="borrowings" for the Borrowed/Repayment rows.'
+      : 'No Borrow account yet: create an Auxiliary-type account whose name has "borrow", "debt" or "loan" in Notion, then sync.'
+  }
+}
+
+/** Receivables by type: Expected Income (no account), Money Lent (outstanding loans), Pasabuy (paid, not yet received). */
+export function getReceivablesSummary(_args: unknown) {
+  const catNames = new Map(repo.listIncomeCategories().map((c) => [c.id, c.source]))
+  const incomes = repo.listIncomes({ view: 'receivables' })
+  const lent = incomes.filter((r) => isMoneyLentCategory(catNames.get(r.categoryId)))
+  const expected = incomes.filter((r) => !isMoneyLentCategory(catNames.get(r.categoryId)))
+  const pasabuyCategoryIds = new Set(
+    repo.listExpenseCategories().filter((c) => c.name === 'Pasabuy').map((c) => c.id)
+  )
+  const pasabuy = repo
+    .listExpenses({})
+    .filter(
+      (e) =>
+        pasabuyCategoryIds.has(e.categoryId) &&
+        e.paymentStatus === 'Paid' &&
+        Boolean(e.datePaid) &&
+        e.pasabuyStatus !== 'Payment fully received'
+    )
+  const round = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
+  const sumLent = lent.reduce((s, r) => s + receivableAmount(r, catNames.get(r.categoryId)), 0)
+  const sumExpected = expected.reduce((s, r) => s + r.grossIncome, 0)
+  const sumPasabuy = pasabuy.reduce((s, e) => s + (e.pasabuyBalance ?? 0), 0)
+  return {
+    expectedIncome: { count: expected.length, total: round(sumExpected) },
+    moneyLent: { count: lent.length, total: round(sumLent) },
+    pasabuy: { count: pasabuy.length, total: round(sumPasabuy) },
+    grandTotal: round(sumExpected + sumLent + sumPasabuy)
   }
 }
 
@@ -210,6 +262,12 @@ export function getCategoryBudgetStatus(args: unknown) {
 }
 
 const APP_TOPICS: Record<string, string> = {
+  borrowings:
+    'Borrowings (money you owe) is its own section, separate from Receivables. Each event is one Income row in the auxiliary "Borrowed Money" category, stored like a Transfer. Borrowed: Borrow account −X, receiving account +X. Repayment: paying account −X, Borrow account +X. A Borrow account is an Auxiliary-type account whose name has "borrow", "debt" or "loan"; its balance is the negative of what is still owed, and you can have several. The page columns are Date, Name, Type, Borrow Account, Borrowed Amount, Other Account, Other Amount; the Net footer is negative when money is still owed. Borrowings stay out of Income totals and Monthly Monitoring. New Record asks Borrow or Repayment first. Chat can draft Borrowed and Repayment records; it cannot delete.',
+  'money lent':
+    'Money Lent is money you lent someone, in the Receivables section. New Record → Lend Money (title "Lend Money: …", category Money Lent). It is stored as a negative amount on the source account but shown as a positive amount owed to you. Chat can draft a Lend Money record. Recording a repayment (same account soft-deletes the loan; another account converts it to a Transfer) must be done on the Receivables page.',
+  hidden:
+    'Settings → Sections lets the user hide CC Payment, Alkansya, Borrowings, and Receivables from the sidebar. Hiding keeps all records and sync; showing them again restores them. Chat does not change settings.',
   transfer:
     'Transfer moves money between two non-credit accounts using the locked Transfer income category. Use the Transfer workflow page. Chat cannot delete records.',
   'credit card payment':
@@ -217,7 +275,7 @@ const APP_TOPICS: Record<string, string> = {
   alkansya:
     'Alkansya is the savings workflow (locked Savings-style category). Use the Alkansya page to log savings moves. Chat cannot delete records.',
   receivables:
-    'Receivables includes Money Lent loans, income entries without a receiving account, and outstanding paid Pasabuy. Use Receivables → Lend money for loans. Money Lent stores a negative amount against the source account but displays a positive amount owed. Record repayment supports full repayment: original account soft-deletes the loan; another account converts it to a Transfer. Negative Savings entries can be reclassified from Alkansya. Repayment must be recorded on the Receivables page; Chat cannot delete records.',
+    'Receivables is money owed TO the user, in three types (filter by Type; default All): Expected Income (income with no receiving account), Money Lent (loans with a source account), and Pasabuy (paid CC Pasabuy expenses still awaiting payment). New Record asks Lend Money or Expected Income first. Amounts are colored: Lend Money yellow, Pasabuy blue, Expected Income green. Money Lent stores a negative amount against the source account but displays a positive amount owed. Record repayment supports full repayment on the Receivables page: original account soft-deletes the loan; another account converts it to a Transfer. Negative Savings entries can be reclassified from Alkansya. Money the user owes to others is Borrowings, a separate section. Chat cannot delete records.',
   pasabuy:
     'Pasabuy expenses track purchases you make for someone else (Pasabuyer, status, receiver). Use Expense with a Pasabuy category and Pasabuy payment status filters. Chat cannot delete records.',
   'soft delete':
@@ -248,7 +306,7 @@ export function explainAppTopic(args: unknown) {
   }
   return {
     found: false,
-    message: `No canned explanation for "${topic}". Try Transfer, CC Payment, Alkansya, Receivables, Pasabuy, Soft delete, Hard delete, Sync, Monitoring, or Chat.`,
+    message: `No canned explanation for "${topic}". Try Transfer, CC Payment, Alkansya, Borrowings, Receivables, Money Lent, Pasabuy, Soft delete, Hard delete, Sync, Monitoring, or Chat.`,
     knownTopics: Object.keys(APP_TOPICS)
   }
 }

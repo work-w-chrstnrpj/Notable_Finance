@@ -1,5 +1,5 @@
 // Pure, stateless helpers — COPIED from
-// notable-finance-web/service/src/notion/notion-resource-utils.ts
+// web-service/src/notion/notion-resource-utils.ts
 // (trimmed to what the desktop derivations need). No cache/client state.
 import type { ResourceName } from '../../shared/finance.types'
 

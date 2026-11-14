@@ -1,7 +1,7 @@
 // Finance DTOs — COPIED from the web app to keep the two apps contract-compatible.
-// Sources: notable-finance-web/service/src/common/finance.types.ts
-//          notable-finance-web/application/src/types/finance.ts
-// Per wiki/desktop/shared-core-and-monorepo.md the web app is left untouched; this is a
+// Sources: web-service/src/common/finance.types.ts
+//          web-app/src/types/finance.ts
+// The web app this was copied from has since been removed; this is a
 // controlled snapshot. Extracting a shared package is a future step.
 
 export type ResourceName =
@@ -230,13 +230,15 @@ export type IncomeView =
   | 'alkansya'
   | 'receivables'
   | 'moneyLent'
+  | 'borrowings'
 
 /** The web fixed-category names per income view (source field of income_categories). */
 export const INCOME_VIEW_FIXED_CATEGORY: Partial<Record<IncomeView, string>> = {
   transfers: 'Transfer',
   creditCardPayments: 'Credit Card Payment',
   alkansya: 'Savings',
-  moneyLent: 'Money Lent'
+  moneyLent: 'Money Lent',
+  borrowings: 'Borrowed Money'
 }
 
 export interface ListRecordsParams {
@@ -507,7 +509,13 @@ export interface UiMonitoringFilters {
   zeroFilter: 'all' | 'hide-both' | 'hide-spending' | 'hide-budget'
 }
 
+/** Workflow sections the user may hide from the sidebar (Settings → Sections). */
+export const HIDEABLE_SECTIONS = ['credit-card-payment', 'alkansya', 'borrowings', 'receivables'] as const
+export type HideableSection = (typeof HIDEABLE_SECTIONS)[number]
+
 export interface UiSettings {
+  /** Sections hidden from the sidebar. Data is untouched; showing them again restores them. */
+  hiddenSections: HideableSection[]
   /** When true, delete actions permanently remove local rows and archive Notion pages to trash. */
   hardDeleteEnabled: boolean
   /** When true, Chat appears in Main UI and Chat mode can open. Default false. */

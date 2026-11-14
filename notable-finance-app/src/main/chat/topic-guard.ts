@@ -38,6 +38,8 @@ const APP_TERMS = new Set([
   'record', 'records', 'entry', 'entries', 'list', 'listing',
   'report', 'reports', 'chart', 'charts', 'graph', 'graphs',
   'alkansya', 'receivable', 'receivables',
+  'borrow', 'borrowed', 'borrowing', 'borrowings', 'lend', 'lent', 'repay', 'repayment',
+  'hiram', 'humiram', 'nanghiram', 'pautang', 'nagpautang', 'pasabuy', 'sections',
   'monitoring', 'monthly', 'overview', 'summary',
   'copilot', 'finance copilot', 'app',
   'filter', 'filters', 'search', 'sort', 'view',

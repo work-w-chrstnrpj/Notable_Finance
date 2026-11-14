@@ -30,6 +30,7 @@ export type FinanceSectionId =
   | "transfer"
   | "credit-card-payment"
   | "alkansya"
+  | "borrowings"
   | "receivables"
   | "notifications"
   | "history"
@@ -188,6 +189,7 @@ export type WorkflowSectionId =
   | "transfer"
   | "credit-card-payment"
   | "alkansya"
+  | "borrowings"
   | "receivables";
 
 // ── API types from the backend ────────────────────────────────────────

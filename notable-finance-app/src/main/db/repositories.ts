@@ -2,6 +2,7 @@
 // working source of truth), marks the record sync_state='dirty', and journals into
 // mutation_queue so offline edits replay in order (wiki/desktop/sync-and-conflict-design.md).
 // Soft delete follows the shared rule: rewrite the title, clear amounts, set deleted=1.
+import { BORROWED_MONEY_CATEGORY, isBorrowedMoneyCategory } from '../../shared/borrowings'
 import { isMoneyLentCategory, isOutstandingMoneyLent, MONEY_LENT_CATEGORY, type RepayMoneyLentInput } from '../../shared/money-lent'
 import { randomUUID } from 'node:crypto'
 import { getSqlite } from './index'
@@ -73,7 +74,7 @@ export function listIncomeCategories(): IncomeCategoryOption[] {
     .prepare('SELECT id, source, auxiliary, icon FROM income_categories ORDER BY source')
     .all() as IncomeCategoryRow[]
   return rows.map(mapIncomeCategory).map((category) => ({
-    ...category, auxiliary: category.auxiliary || isMoneyLentCategory(category.source)
+    ...category, auxiliary: category.auxiliary || isMoneyLentCategory(category.source) || isBorrowedMoneyCategory(category.source)
   }))
 }
 
@@ -95,7 +96,7 @@ function auxiliaryIncomeCategoryIds(): Set<string> {
   const rows = getSqlite()
     .prepare('SELECT id FROM income_categories WHERE auxiliary = 1')
     .all() as Array<{ id: string }>
-  return new Set([...rows.map((r) => r.id), ...findIncomeCategoryIdsBySource(MONEY_LENT_CATEGORY)])
+  return new Set([...rows.map((r) => r.id), ...findIncomeCategoryIdsBySource(MONEY_LENT_CATEGORY), ...findIncomeCategoryIdsBySource(BORROWED_MONEY_CATEGORY)])
 }
 
 // ── incomes (and income-backed views) ───────────────────────────────────────
@@ -165,7 +166,7 @@ function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
     )
   }
   const isTransaction =
-    input.view === 'transfers' || input.view === 'creditCardPayments'
+    input.view === 'transfers' || input.view === 'creditCardPayments' || input.view === 'borrowings'
       ? true
       : input.isTransaction
   return { ...input, categoryId, isTransaction }

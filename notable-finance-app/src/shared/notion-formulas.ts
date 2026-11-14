@@ -26,7 +26,7 @@ import type { ExpenseRecordDto, IncomeRecordDto } from './finance.types'
 export const round2 = (v: number): number => Math.round((v + Number.EPSILON) * 100) / 100
 
 // ── Income · Transaction Amount ─────────────────────────────────────────────
-const TRANSACTION_CATEGORY_TOKENS = ['transfer', 'credit card payment', 'debit payment']
+const TRANSACTION_CATEGORY_TOKENS = ['transfer', 'credit card payment', 'debit payment', 'borrowed money']
 
 export function isTransactionCategory(categoryName: string | undefined): boolean {
   const n = (categoryName ?? '').toLowerCase()

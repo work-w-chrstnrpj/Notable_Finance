@@ -11,6 +11,8 @@ export type ChatSkillId =
   | 'workflow-cc-payment'
   | 'workflow-alkansya'
   | 'workflow-receivables'
+  | 'workflow-borrowings'
+  | 'workflow-money-lent'
   | 'general'
 
 // Write-intent vocabulary — English + Taglish. Filipinos commonly say
@@ -32,7 +34,7 @@ export function routeChatSkill(userText: string): ChatSkillId {
     /\b(delete|remove|trash|archive|hard\s*delete|soft\s*delete|burahin|i-delete|idelete|tanggalin)\b/.test(
       t
     ) &&
-    /\b(income|expense|account|record|transaction|entry|bayad|utang|pasabuy|transfer|budget)\b/.test(
+    /\b(income|expense|account|record|transaction|entry|bayad|utang|pasabuy|transfer|budget|borrow\w*|repayment|loan|lent|receivable)\b/.test(
       t
     )
   ) {
@@ -60,6 +62,17 @@ export function routeChatSkill(userText: string): ChatSkillId {
   }
 
   // Workflows before generic ask-app / ask-data
+  // Money the user owes: borrow / repay. ("utang ko", "humiram ako")
+  if (
+    /\b(borrow|borrowed|borrowing|borrowings|hiram|humiram|nanghiram|nanghiram|repay|repayment|repaid)\b/.test(t) ||
+    /\b(utang\s+ko|may\s+utang\s+ako|bayad\s+(sa\s+)?utang|how\s+much\s+do\s+i\s+owe|i\s+owe)\b/.test(t)
+  ) {
+    return 'workflow-borrowings'
+  }
+  // Money the user lent out (Receivables → Lend Money).
+  if (/\b(lend|lent|lending|money\s+lent|nagpautang|pinautang|pautang)\b/.test(t)) {
+    return 'workflow-money-lent'
+  }
   if (
     /\b(transfer|ilipat|maglipat)\b/.test(t) &&
     /\b(from|to|→|->|galing|papunta|mula|move\s+money)\b/.test(t)
@@ -75,7 +88,7 @@ export function routeChatSkill(userText: string): ChatSkillId {
   if (/\b(alkansya|mag-?ipon|nag-?ipon|savings\s+set\s+aside|set\s+aside)\b/.test(t)) {
     return 'workflow-alkansya'
   }
-  if (/\b(receivable|utang\s+sa\s+akin|iou\s+collect|pautang)\b/.test(t)) {
+  if (/\b(receivable|receivables|utang\s+sa\s+akin|iou\s+collect|expected\s+income)\b/.test(t)) {
     return 'workflow-receivables'
   }
 
@@ -197,8 +210,27 @@ ${writeRules}`
 
     case 'workflow-receivables':
       return `${base}
-Active skill: workflow-receivables.
-Call proposeCreateReceivable with name, date, amount, category (account may be empty).
+Active skill: workflow-receivables (money owed TO the user: Expected Income, Money Lent, Pasabuy).
+- Questions ("how much is owed to me"): getReceivablesSummary (and queryIncomes view="receivables" for rows).
+- Expected Income (no account needed): proposeCreateReceivable with name, date, amount, normal income category.
+- Lending money: proposeCreateMoneyLent. Pasabuy: edit the Expense (proposeUpdateExpense) — Pasabuy fields live on the expense.
+- How-it-works questions: explainAppTopic("receivables").
+${writeRules}`
+
+    case 'workflow-money-lent':
+      return `${base}
+Active skill: workflow-money-lent (Receivables → Lend Money).
+1. listAccounts; the source must be a regular non-credit account.
+2. proposeCreateMoneyLent with name ("Lend Money: <who>"), date, amount (positive), source account. Category locks to Money Lent.
+3. Recording a repayment of a loan (same account soft-deletes, another account converts it to a Transfer) is done on the Receivables page — Chat cannot do it. Say so.
+${writeRules}`
+
+    case 'workflow-borrowings':
+      return `${base}
+Active skill: workflow-borrowings (money the user OWES — separate from Receivables).
+- "How much do I owe?": getBorrowingsSummary; rows via queryIncomes view="borrowings".
+- Logging: proposeCreateBorrowing with type "borrowed" (money received into otherAccount) or "repayment" (paid from otherAccount). Name "Borrow: <who>" / "Repayment: <who>". The Borrow account is an Auxiliary account whose name has "borrow", "debt" or "loan" (auto-picked if only one; otherwise ask which). Amount positive. A partial repayment is just a smaller amount.
+- How-it-works questions: explainAppTopic("borrowings").
 ${writeRules}`
 
     default:

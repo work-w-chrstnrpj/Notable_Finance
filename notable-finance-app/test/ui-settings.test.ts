@@ -6,6 +6,15 @@ describe('normalizeUiSettings', () => {
     expect(normalizeUiSettings({})).toEqual(DEFAULT_UI_SETTINGS)
   })
 
+  it('keeps only hideable sections and defaults to none hidden', () => {
+    expect(DEFAULT_UI_SETTINGS.hiddenSections).toEqual([])
+    expect(normalizeUiSettings({ hiddenSections: ['borrowings', 'income', 'alkansya', 42] }).hiddenSections).toEqual([
+      'alkansya',
+      'borrowings'
+    ])
+    expect(normalizeUiSettings({ hiddenSections: 'receivables' }).hiddenSections).toEqual([])
+  })
+
   it('merges profile and hard-delete flag', () => {
     const next = normalizeUiSettings({
       hardDeleteEnabled: true,

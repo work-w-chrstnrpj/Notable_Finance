@@ -3,6 +3,7 @@ import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { calculateCcCoveredExpenseAmount, getMoneyValueTone } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import type { Account, ExpenseRecord, IncomeCategory } from "@/types/finance";
+import type { BorrowingKind } from "@shared/borrowings";
 import type { useWorkflowForm } from "./use-workflow-form";
 
 /**
@@ -21,6 +22,11 @@ export function WorkflowFormFields({
   nonCreditActiveAccounts,
   incomeCategories,
   isTransfer,
+  isBorrowings,
+  borrowKind,
+  onBorrowKindChange,
+  placeholderAccounts,
+  sourceAccountRequired,
   isCreditCardPayment,
   isAlkansya,
   isReceivables,
@@ -29,6 +35,7 @@ export function WorkflowFormFields({
   eligibleCcExpenses,
   totalCovered,
   onCategoryChange,
+  invalidFields,
 }: {
   form: ReturnType<typeof useWorkflowForm>;
   label: string;
@@ -39,6 +46,11 @@ export function WorkflowFormFields({
   nonCreditActiveAccounts: Account[];
   incomeCategories: IncomeCategory[];
   isTransfer: boolean;
+  isBorrowings: boolean;
+  borrowKind: BorrowingKind;
+  onBorrowKindChange: (kind: BorrowingKind) => void;
+  placeholderAccounts: Account[];
+  sourceAccountRequired: boolean;
   isCreditCardPayment: boolean;
   isAlkansya: boolean;
   isReceivables: boolean;
@@ -47,7 +59,9 @@ export function WorkflowFormFields({
   eligibleCcExpenses: ExpenseRecord[];
   totalCovered: number;
   onCategoryChange?: (id: string) => void;
+  invalidFields?: ReadonlySet<string>;
 }) {
+  const bad = (key: string) => invalidFields?.has(key) ?? false;
   const {
     workflowNameInput, setWorkflowNameInput,
     workflowDateInput, setWorkflowDateInput,
@@ -62,22 +76,25 @@ export function WorkflowFormFields({
 
   return (
     <div className="form-grid form-grid--single">
-      <Field label="Name" required>
+      <Field label="Name" required error={bad("name")}>
         <input
+          className={bad("name") ? "field__input--shake" : undefined}
           placeholder={`${label} title`}
           value={workflowNameInput}
           onChange={(event) => setWorkflowNameInput(event.target.value)}
         />
       </Field>
-      <Field label="Date" required={!isReceivables}>
+      <Field label="Date" required={!isReceivables} error={bad("date")}>
         <input
+          className={bad("date") ? "field__input--shake" : undefined}
           type="date"
           value={workflowDateInput}
           onChange={(event) => setWorkflowDateInput(event.target.value)}
         />
       </Field>
-      <Field label={amountLabel}>
+      <Field label={amountLabel} error={bad("amount")}>
         <input
+          className={bad("amount") ? "field__input--shake" : undefined}
           inputMode="decimal"
           placeholder={isAlkansya ? "-0.00" : "0.00"}
           value={workflowAmountInput}
@@ -94,7 +111,37 @@ export function WorkflowFormFields({
           />
         </Field>
       )}
-      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || isReceivables}>
+      {isBorrowings ? (
+        <>
+          <Field label="Type" required>
+            <FilterDropdown
+              placeholder="Type"
+              value={borrowKind}
+              onChange={(value) => onBorrowKindChange(value as BorrowingKind)}
+              items={[{ id: "borrowed", label: "Borrowed" }, { id: "repayment", label: "Repayment" }]}
+            />
+          </Field>
+          <Field label="Borrow Account" required error={bad("account")}>
+            <FilterDropdown
+              placeholder="— None —"
+              value={receivingAccountId}
+              onChange={setReceivingAccountId}
+              items={placeholderAccounts.map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+            />
+          </Field>
+          <Field label={borrowKind === "borrowed" ? "Received Into" : "Paid From"} required error={bad("secondary")}>
+            <FilterDropdown
+              placeholder="— None —"
+              value={transactedAccountId}
+              onChange={setTransactedAccountId}
+              items={nonCreditActiveAccounts
+                .filter((account) => account.type !== "Auxiliary")
+                .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+            />
+          </Field>
+        </>
+      ) : (
+      <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || sourceAccountRequired} error={bad("account")}>
         <FilterDropdown
           placeholder="— None —"
           value={receivingAccountId}
@@ -106,8 +153,9 @@ export function WorkflowFormFields({
           }))}
         />
       </Field>
+      )}
       {secondaryAccountLabel && (
-        <Field label={secondaryAccountLabel} required={isTransfer}>
+        <Field label={secondaryAccountLabel} required={isTransfer} error={bad("secondary")}>
           <FilterDropdown
             placeholder="— None —"
             value={transactedAccountId}

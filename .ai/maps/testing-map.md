@@ -1,24 +1,21 @@
 # Testing Map
 
-Use this map for future test planning and implementation.
+Use this map for test planning and implementation.
 
 ## Read First
 
-- `wiki/web/testing/test-specification.md`
-- `wiki/web/commands/commands.md`
+- `wiki/desktop/desktop-testing-strategy.md`
 - `tests/README.md`
 
-## Planned Test Areas
+## Test Areas
 
-- Unit tests for mappers, validators, field access rules, and sync state.
-- Integration tests for backend API behavior with mocked Notion responses.
-- Contract tests for request/response shapes.
-- End-to-end tests for pull, create, edit, delete, and sync workflows.
-- Manual tests against a non-production Notion workspace/page.
+- Vitest unit and integration tests in `notable-finance-app/test/` (main process) and next to renderer components.
+- Playwright + Electron e2e tests in `notable-finance-app/e2e/` (not part of `npm test`).
+- Manual tests against a non-production Notion workspace.
 
-## Current Commands
+## Commands (run in `notable-finance-app/`)
 
-No runnable app commands exist yet. Add commands after project scaffolding.
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:e2e`.
 
 ## Rule
 

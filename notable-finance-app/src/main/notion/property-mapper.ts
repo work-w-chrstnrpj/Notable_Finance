@@ -1,5 +1,5 @@
 // Notion property names + DTO→properties builders — COPIED from
-// notable-finance-web/service/src/notion/notion-property-mapper.ts (builders section).
+// web-service/src/notion/notion-property-mapper.ts (builders section).
 // Page→DTO extractors join in Phase 3 (pull). Only WRITABLE fields have builders:
 // computed fields (formulas/rollups) are never written (wiki/shared/notion-field-mapping.md).
 

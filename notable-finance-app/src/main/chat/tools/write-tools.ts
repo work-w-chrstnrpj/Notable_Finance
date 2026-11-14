@@ -1,4 +1,5 @@
-import { isMoneyLentCategory } from '../../../shared/money-lent'
+import { BORROWED_MONEY_CATEGORY, isPlaceholderAccount } from '../../../shared/borrowings'
+import { isMoneyLentCategory, MONEY_LENT_CATEGORY } from '../../../shared/money-lent'
 import * as repo from '../../db/repositories'
 import { isCreditLike } from '../../domain/resource-utils'
 import type {
@@ -362,7 +363,7 @@ function proposeWorkflowIncome(
 
   if (!cat) missing.push(lockedSource ? `Category (${lockedSource})` : 'Category')
   if (isMoneyLentCategory(cat?.source)) {
-    missing.push('Use Receivables → Lend money for Money Lent loans')
+    missing.push('Use proposeCreateMoneyLent for Money Lent loans')
   }
 
   const payload: Record<string, unknown> = {
@@ -453,6 +454,153 @@ export function proposeCreateReceivable(args: unknown, ctx: WriteToolContext) {
     requireTransacted: false,
     allowEmptyAccount: true
   })
+}
+
+type BorrowKind = 'borrowed' | 'repayment'
+
+function parseBorrowKind(v: unknown): BorrowKind | undefined {
+  const t = str(v)?.toLowerCase()
+  if (!t) return undefined
+  if (/repay|bayad|pay\s*back|settle|paid/.test(t)) return 'repayment'
+  if (/borrow|hiram|utang|loan/.test(t)) return 'borrowed'
+  return undefined
+}
+
+/**
+ * Borrowings: one Income row in the auxiliary "Borrowed Money" category, stored like a Transfer.
+ * Borrowed → Account = Borrow account (negative), Transacted = where the cash landed.
+ * Repayment → Account = paying account (negative), Transacted = Borrow account.
+ */
+export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
+  const a = asRecord(args)
+  const missing: string[] = []
+  const warnings: string[] = []
+  const kind = parseBorrowKind(a.type ?? a.borrowKind ?? a.kind)
+  const name = str(a.name) ?? str(a.title) ?? str(a.description)
+  const date = optDate(a.date) ?? todayIso()
+  const rawAmount = num(a.amount) ?? num(a.grossIncome)
+  const amount = rawAmount === undefined ? undefined : Math.abs(rawAmount)
+  const cat = findIncomeCategoryBySource(BORROWED_MONEY_CATEGORY)
+
+  // Card edits re-validate from the stored payload, whose canonical keys are accountId / transactedAccountId.
+  const accountRef = str(a.accountId)
+  const transactedRef = str(a.transactedAccountId)
+  const borrowRef =
+    str(a.borrowAccountId) ?? str(a.borrowAccount) ?? (kind === 'borrowed' ? accountRef : kind === 'repayment' ? transactedRef : undefined)
+  const otherRef =
+    str(a.otherAccountId) ?? str(a.otherAccount) ?? str(a.receivedInto) ?? str(a.paidFrom) ??
+    (kind === 'borrowed' ? transactedRef : kind === 'repayment' ? accountRef : undefined) ?? str(a.account)
+  const borrowAccounts = repo.listAccounts(false).filter(isPlaceholderAccount)
+  const borrow = findAccount(borrowRef) ?? (borrowAccounts.length === 1 ? borrowAccounts[0] : null)
+  const other = findAccount(otherRef)
+
+  if (!kind) missing.push('Type (Borrowed or Repayment)')
+  if (!name) missing.push('Name')
+  if (amount === undefined || amount === 0) missing.push('Amount')
+  if (!cat) missing.push(`Category (${BORROWED_MONEY_CATEGORY}) — create it in Notion Income Categories and sync`)
+  if (!borrow) {
+    missing.push(
+      borrowAccounts.length > 1
+        ? `Borrow Account (one of: ${borrowAccounts.map((b) => b.name).join(', ')})`
+        : 'Borrow Account (an Auxiliary account whose name has "borrow", "debt" or "loan")'
+    )
+  } else if (!isPlaceholderAccount(borrow)) {
+    missing.push('Borrow Account (must be an Auxiliary account whose name has "borrow", "debt" or "loan")')
+  }
+  const otherLabel = kind === 'repayment' ? 'Paid From account' : 'Received Into account'
+  if (!other) missing.push(otherLabel)
+  else if (isCreditLike(other.type) || other.type === 'Auxiliary') {
+    missing.push(`${otherLabel} (regular non-credit account only)`)
+  }
+
+  const borrowedSide = kind !== 'repayment'
+  const payload: Record<string, unknown> = {
+    name: name ?? '',
+    date,
+    grossIncome: -(amount ?? 0),
+    capitalExpenditure: 0,
+    accountId: (borrowedSide ? borrow?.id : other?.id) ?? null,
+    transactedAccountId: (borrowedSide ? other?.id : borrow?.id) ?? null,
+    categoryId: cat?.id ?? '',
+    isTransaction: true,
+    ccPaymentCoveredIds: [],
+    notes: str(a.notes) ?? null,
+    borrowKind: kind ?? null
+  }
+  const draft = commitDraft(ctx, {
+    resource: 'incomes',
+    action: 'create',
+    kind: 'proposeCreateBorrowing',
+    missingRequired: missing,
+    warnings,
+    payload,
+    display: {
+      title: name || (kind === 'repayment' ? 'Repayment' : 'Borrowed money'),
+      amount: amount ?? null,
+      currency: 'PHP',
+      date,
+      from: (borrowedSide ? borrow?.name : other?.name) ?? null,
+      fromLabel: borrowedSide ? 'Borrow account' : 'Paid from',
+      to: (borrowedSide ? other?.name : borrow?.name) ?? null,
+      toLabel: borrowedSide ? 'Received into' : 'Borrow account',
+      note: kind === 'repayment' ? 'Repayment' : 'Borrowed'
+    },
+    summary: `${kind === 'repayment' ? 'Repayment' : 'Borrowed'}: ${name ?? '?'} · ₱${amount ?? '?'} · ${date} · ${borrow?.name ?? '?'} ↔ ${other?.name ?? '?'}`
+  })
+  return draftResult(draft)
+}
+
+/** Lend Money: Money Lent category, negative on the source account (shown as a positive receivable in the app). */
+export function proposeCreateMoneyLent(args: unknown, ctx: WriteToolContext) {
+  const a = asRecord(args)
+  const missing: string[] = []
+  const name = str(a.name) ?? str(a.title) ?? str(a.description)
+  const date = optDate(a.date) ?? todayIso()
+  const rawAmount = num(a.amount) ?? num(a.grossIncome)
+  const amount = rawAmount === undefined ? undefined : Math.abs(rawAmount)
+  const source = findAccount(
+    str(a.accountId) ?? str(a.sourceAccountId) ?? str(a.sourceAccount) ?? str(a.account)
+  )
+  const cat = findIncomeCategoryBySource(MONEY_LENT_CATEGORY)
+
+  if (!name) missing.push('Name (e.g. "Lend Money: Ana")')
+  if (amount === undefined || amount === 0) missing.push('Amount')
+  if (!cat) missing.push(`Category (${MONEY_LENT_CATEGORY}) — create it in Notion Income Categories and sync`)
+  if (!source) missing.push('Source Account')
+  else if (isCreditLike(source.type) || source.type === 'Auxiliary') missing.push('Source Account (regular non-credit account only)')
+
+  const draft = commitDraft(ctx, {
+    resource: 'incomes',
+    action: 'create',
+    kind: 'proposeCreateMoneyLent',
+    missingRequired: missing,
+    warnings: [],
+    payload: {
+      name: name ?? '',
+      date,
+      grossIncome: -(amount ?? 0),
+      capitalExpenditure: 0,
+      accountId: source?.id ?? null,
+      categoryId: cat?.id ?? '',
+      isTransaction: false,
+      transactedAccountId: null,
+      ccPaymentCoveredIds: [],
+      notes: str(a.notes) ?? null
+    },
+    display: {
+      title: name || 'Lend Money',
+      amount: amount ?? null,
+      currency: 'PHP',
+      date,
+      from: source?.name ?? null,
+      fromLabel: 'Lent from',
+      to: cat?.source ?? null,
+      toLabel: 'Category',
+      note: 'Money Lent'
+    },
+    summary: `Lend Money: ${name ?? '?'} · ₱${amount ?? '?'} · ${date} · ${source?.name ?? '?'}`
+  })
+  return draftResult(draft)
 }
 
 export function proposeUpdateIncome(args: unknown, ctx: WriteToolContext) {
@@ -634,6 +782,8 @@ const EDIT_VALIDATORS: Record<string, ProposeValidator> = {
   proposeCreateCcPayment,
   proposeCreateAlkansya,
   proposeCreateReceivable,
+  proposeCreateBorrowing,
+  proposeCreateMoneyLent,
   proposeUpdateIncome,
   proposeUpdateExpense,
   proposeMassUpdateIncomes,

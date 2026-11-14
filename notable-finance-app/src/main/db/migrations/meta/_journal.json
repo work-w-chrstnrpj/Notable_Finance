@@ -92,6 +92,20 @@
       "when": 1786300000000,
       "tag": "0012_bnpl_adjustment",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1786400000000,
+      "tag": "0013_reapply_transfer_icons",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1786500000000,
+      "tag": "0014_reapply_borrowed_icons",
+      "breakpoints": true
     }
   ]
 }

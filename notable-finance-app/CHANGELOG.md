@@ -5,6 +5,27 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-11-14
+
+The desktop app is now the whole project: the earlier web app and its docs were removed.
+
+### Added
+
+- **Borrowings section** for money you owe, kept out of income totals. Borrowed and Repayment entries are one Income row each in the auxiliary `Borrowed Money` category, stored like a Transfer against a Borrow account (an Auxiliary-type account whose name contains borrow, debt, loan, utang or hiram). **New Record** asks Borrow or Repayment first and pre-fills the title (`Borrow: ` / `Repayment: `). The table shows `Date, Name, Type, Borrow Account, Borrowed Amount, Other Account, Other Amount` with a Net footer, a Type filter, and a **Borrowed Accounts** view listing what is still owed per Borrow account. See `wiki/desktop/borrowings.md`.
+- **Receivables types.** Receivables is filtered by Type (Expected Income, Money Lent, Pasabuy) from the filter bar. **New Record** asks Lend Money or Expected Income first; Lend Money pre-fills `Lend Money: ` with the Money Lent category. Amounts are colored: Lend Money yellow, Pasabuy blue, Expected Income green.
+- **Settings → Sections** toggles to hide or show CC Payment, Alkansya, Borrowings and Receivables. Records and sync are unaffected.
+- **Chat knows the new features.** It can draft Borrowed/Repayment records and Lend Money, answer "how much do I owe" and "how much is owed to me", and explain Borrowings, Money Lent and Sections. It still never deletes, changes settings, runs sync or records a loan repayment.
+- Notion page icons: Borrowed Money rows get a blue anchor. Existing synced Transfer, Credit Card Payment and Borrowed Money rows are re-pushed once (migrations 0013 and 0014) so their icons appear, which shows up as pending items until the next sync.
+
+### Changed
+
+- **Separate account filters.** Transfer filters Source Account and Transfer Account (non-credit only). CC Payment filters CC Account (credit accounts only) and Payer Account (non-credit only). Borrowings filters Borrow Account and Other Account.
+- The lend button and the standalone repayment button are replaced by the initial type choosers.
+
+### Removed
+
+- The web app (`notable-finance-web/`), its wiki zone, user guide and changelog. The repository now contains only the desktop app. The removed code remains in git history.
+
 ## [2.5.3] - 2026-11-09
 
 ### Fixed

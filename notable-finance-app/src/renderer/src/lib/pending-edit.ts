@@ -13,7 +13,7 @@
  *   }, []);
  */
 
-export type PendingEditResource = "expenses" | "incomes" | "transfers" | "creditCardPayments" | "alkansya" | "receivables";
+export type PendingEditResource = "expenses" | "incomes" | "transfers" | "creditCardPayments" | "alkansya" | "borrowings" | "receivables";
 
 let _pending: { resource: PendingEditResource; recordId: string; payload?: unknown } | null = null;
 

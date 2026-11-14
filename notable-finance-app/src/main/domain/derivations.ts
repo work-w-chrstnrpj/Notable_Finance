@@ -1,9 +1,10 @@
+import { isBorrowedMoneyCategory } from '../../shared/borrowings'
 import { isMoneyLentCategory } from '../../shared/money-lent'
 // Local derivations — the desktop's SQLite-truth analogue of the web app's reporting.
 //
 // The web app READS Current Balance / Available Limit / spending from Notion formulas.
 // The desktop app is local-first, so it must COMPUTE them from the raw inputs. The
-// reduce logic mirrors notable-finance-web/service/src/notion/notion-reporting.service.ts;
+// reduce logic mirrors web-service/src/notion/notion-reporting.service.ts;
 // the account-balance math implements the formula table in
 // wiki/desktop/local-data-schema.md ("Derived values are computed, not stored").
 //
@@ -148,7 +149,7 @@ export function dashboardSummary(
   pasabuyCategoryIds: ReadonlySet<string> = new Set(),
   auxiliaryIncomeIds: ReadonlySet<string> = new Set()
 ): DashboardSummary {
-  const monthIncomes = filterByMonth(snap.incomes.filter((income) => notDeleted(income) && !auxiliaryIncomeIds.has(income.categoryId) && !isMoneyLentCategory(ctx?.incomeCategoryName(income.categoryId))), 'date', month)
+  const monthIncomes = filterByMonth(snap.incomes.filter((income) => notDeleted(income) && !auxiliaryIncomeIds.has(income.categoryId) && !isMoneyLentCategory(ctx?.incomeCategoryName(income.categoryId)) && !isBorrowedMoneyCategory(ctx?.incomeCategoryName(income.categoryId))), 'date', month)
   const monthExpenses = filterByMonth(snap.expenses.filter(notDeleted), 'purchaseDate', month)
 
   // Match the visible Dashboard cards: income is gross, while Pasabuy is a
@@ -187,7 +188,7 @@ export interface MonitoringInput {
 
 /** Monthly monitoring for a month — mirrors the web monthlyMonitoring reduce logic. */
 export function monthlyMonitoring(month: string, input: MonitoringInput): MonthlyMonitoringDto {
-  const auxiliaryIncomeIds = new Set(input.incomeCategories.filter((category) => category.auxiliary || isMoneyLentCategory(category.source)).map((category) => category.id))
+  const auxiliaryIncomeIds = new Set(input.incomeCategories.filter((category) => category.auxiliary || isMoneyLentCategory(category.source) || isBorrowedMoneyCategory(category.source)).map((category) => category.id))
   const monthIncomes = filterByMonth(input.incomes.filter((income) => notDeleted(income) && !auxiliaryIncomeIds.has(income.categoryId)), 'date', month)
   const monthExpenses = filterByMonth(input.expenses.filter(notDeleted), 'purchaseDate', month)
 

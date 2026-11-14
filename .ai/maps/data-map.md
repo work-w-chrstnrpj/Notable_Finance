@@ -1,44 +1,20 @@
 # Data Map
 
-Use this map for Notion schema, field mapping, and future persistence work.
+Use this map for local schema, Notion field mapping, and sync work.
 
 ## Read First
 
-- `wiki/web/database/data-model.md`
-- `wiki/web/tdd/tdd.md`
-- `wiki/web/diagrams/entity-relationship.md`
+- `wiki/desktop/local-data-schema.md`
+- `wiki/shared/notion-field-mapping.md`
+- `wiki/desktop/sync-and-conflict-design.md`
 
-## Canonical Finance Data
+## Source Areas
 
-Notion is the source of truth for:
-
-- Accounts
-- Income Categories
-- Incomes
-- Transactions backed by Incomes views
-- Expense Categories
-- Expenses
-- Expense Scheduler backed by Expenses views
-
-Monthly Monitoring exists in Notion but is out of app scope.
-
-## Supporting App Data
-
-Planned app-owned metadata starts with:
-
-- Sessions or users.
-- Notion connection settings.
-- Data source mapping metadata.
-- Sync runs and attempts.
-- Pending mutations.
-- Conflict records.
-- Cache snapshots.
-- Audit events.
-
-Supporting app data must not become the canonical finance database.
-
-Live Notion select labels must be preserved exactly in canonical mapping and validation data.
+- `notable-finance-app/src/main/db/` (schema, migrations, repositories).
+- `notable-finance-app/src/main/notion/` (property mapper, page extractors, client).
+- `notable-finance-app/src/main/sync/` (pull, push, conflict handling).
+- `notable-finance-app/src/main/domain/` (derived balances and reporting).
 
 ## Key Boundary
 
-Writable versus computed field classification lives in the data model and must be enforced by backend validation before any Notion write.
+Local SQLite is the working source of truth and Notion is a bidirectional mirror. Writable versus computed field classification lives in `wiki/shared/notion-field-mapping.md` and is enforced in main before any Notion write.

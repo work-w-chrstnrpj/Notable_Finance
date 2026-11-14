@@ -1,12 +1,12 @@
 # Desktop Architecture (Technical Design)
 
-The technical design for **Notable Finance App**, the local-first Electron desktop client. This is the desktop analog of the web app's TDD.
+The technical design for **Notable Finance App**, the local-first Electron desktop client. This is the project's technical design document.
 
 ## Goals
 
 - **Local-first:** local SQLite is the working source of truth; the app is fully usable offline.
 - **Real-time derived values:** balances/budgets recompute locally on every edit, before any sync.
-- **Same business logic as the web app:** domain/reporting logic is copied from `notable-finance-web/service`, not re-invented.
+- **Proven business logic:** the domain/reporting logic originated in the earlier web service (since removed) and now lives in `src/main/domain`.
 - **Bring-your-own-Notion:** no workspace details hardcoded; configured at first run.
 - **Cross-platform:** macOS, Linux, Windows.
 
@@ -79,7 +79,6 @@ main/
 - **Derived values are computed, never persisted as truth.** Balances/budgets are always recomputed from current SQLite records. See [`local-data-schema.md`](local-data-schema.md#derived-values-are-computed-not-stored).
 - **Only writable fields are pushed** to Notion (see [`../shared/notion-field-mapping.md`](../shared/notion-field-mapping.md)).
 - **The renderer is untrusted-by-design.** All validation and all secrets live in main.
-- **Web app is untouched.** Shared logic is copied into `notable-finance-app`; extracting a shared package is a future refactor. See [`shared-core-and-monorepo.md`](shared-core-and-monorepo.md).
 
 ## Related documents
 

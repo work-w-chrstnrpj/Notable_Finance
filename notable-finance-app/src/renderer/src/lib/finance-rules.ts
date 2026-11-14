@@ -30,6 +30,7 @@ export const incomeTransactionOnlyFields = [
 export const auxiliaryIncomeCategoryLabels = [
   "IOU",
   "Money Lent",
+  "Borrowed Money",
   "Transfer",
   "Old Income Logger",
   "Credit Card Payment",
@@ -64,6 +65,7 @@ export const transactionWorkflowCategories: Partial<Record<WorkflowSectionId, st
   transfer: "Transfer",
   "credit-card-payment": "Credit Card Payment",
   alkansya: "Savings",
+  borrowings: "Borrowed Money",
 };
 
 export function isCreditLikeAccountType(type: AccountType) {

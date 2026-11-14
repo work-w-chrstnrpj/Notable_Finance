@@ -16,6 +16,13 @@ describe('iconForIncome', () => {
     })
   })
 
+  it('uses a blue anchor for Borrowed Money', () => {
+    expect(iconForIncome({ categorySource: 'Borrowed Money', accountId: 'acc-1' })).toEqual({
+      type: 'icon',
+      icon: { name: 'anchor', color: 'blue' }
+    })
+  })
+
   it('uses credit card for Credit Card Payment', () => {
     expect(iconForIncome({ categorySource: 'Credit Card Payment', accountId: 'acc-1' })).toEqual({
       type: 'icon',

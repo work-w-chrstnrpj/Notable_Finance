@@ -2,7 +2,7 @@
 
 **Scope:** `notable-finance-app/` (Electron desktop app) only.
 **Goal:** make the codebase maintainable and consistently structured, without changing a single user-visible behaviour.
-**Non-goals:** no new features, no UI changes, no dependency swaps, no performance rewrites, no changes to `notable-finance-web/`.
+**Non-goals:** no new features, no UI changes, no dependency swaps, no performance rewrites.
 
 ---
 
