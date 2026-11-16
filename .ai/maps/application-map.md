@@ -22,3 +22,12 @@ Use this map for finance UI work in the desktop app (`notable-finance-app/`).
 - The renderer calls `window.api` only; it never calls Notion and never holds secrets.
 - Forms show writable fields only; computed fields are read-only display values.
 - Live Notion select labels are preserved exactly in app labels.
+
+## Code Index
+
+- IPC registrars (one per domain) → `notable-finance-app/src/main/ipc/index.ts`
+- Preload allow-listed `window.api` → `notable-finance-app/src/preload/index.ts`
+- IPC channel names → `notable-finance-app/src/shared/ipc-channels.ts`
+- Shared DTOs → `notable-finance-app/src/shared/finance.types.ts`
+- Monitoring page → `notable-finance-app/src/renderer/src/components/pages/monitoring.tsx`
+- Renderer API client → `notable-finance-app/src/renderer/src/lib/api-client.ts`

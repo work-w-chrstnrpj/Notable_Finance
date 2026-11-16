@@ -42,7 +42,7 @@ CC Payment, Alkansya, Borrowings and Receivables can be hidden or shown from Set
 
 **Stack:** Electron + electron-vite + React renderer. Local SQLite (`better-sqlite3` + Drizzle ORM) is the source of truth on the device. Notion is a bidirectional mirror — the app works fully offline and syncs on demand or on a configurable interval.
 
-Current version: **v2.2.3** (see [`notable-finance-app/CHANGELOG.md`](notable-finance-app/CHANGELOG.md)).
+Current version: **v3.0.0** (see [`notable-finance-app/CHANGELOG.md`](notable-finance-app/CHANGELOG.md)).
 
 ### Architecture
 
@@ -73,16 +73,17 @@ notable-finance-app/
 │   │   └── src/
 │   │       ├── components/
 │   │       │   ├── pages/     # One directory per section; index.tsx = composition only
-│   │       │   │   ├── dashboard/   # Monthly summary + account metrics
-│   │       │   │   ├── accounts/    # Read-only account cards/table
-│   │       │   │   ├── income/      # Income CRUD + filters + bulk actions
-│   │       │   │   ├── expense/     # Expense CRUD + 9 view modes + filters + bulk actions
-│   │       │   │   ├── monitoring/  # Monthly budget tracking
-│   │       │   │   ├── workflow/    # Transfer, CC Payment, Alkansya, Receivables
-│   │       │   │   ├── chat/        # AI chat sidebar, history, message stream
-│   │       │   │   ├── sync/        # Notion connect, schema verify, sync controls, conflict resolver
-│   │       │   │   ├── settings/    # Appearance, AI config, backup/restore
-│   │       │   │   └── history/     # Activity log, record diff modals
+│   │       │   │   ├── dashboard.tsx   # Monthly summary + account metrics
+│   │       │   │   ├── accounts.tsx    # Read-only account cards/table
+│   │       │   │   ├── income/         # Income CRUD + filters + bulk actions
+│   │       │   │   ├── expense/        # Expense CRUD + view modes + filters + bulk actions
+│   │       │   │   ├── monitoring.tsx  # Monthly budget tracking (Monthly/Quarterly/Semi-Annual/Annual)
+│   │       │   │   ├── workflow/       # Transfer, CC Payment, Alkansya, Borrowings, Receivables
+│   │       │   │   ├── chat/           # AI chat sidebar, history, message stream
+│   │       │   │   ├── sync.tsx        # Notion connect, schema verify, sync controls, conflict resolver
+│   │       │   │   ├── settings.tsx    # Appearance, AI config, backup/restore (+ settings-modals/)
+│   │       │   │   ├── history.tsx     # Activity log, record diff modals
+│   │       │   │   └── dev-logs.tsx · notifications.tsx
 │   │       │   ├── layout/    # Workspace shell, side nav, top bar, online badge
 │   │       │   ├── charts/    # Recharts wrappers
 │   │       │   ├── fab/       # Floating action button
@@ -187,13 +188,32 @@ Notable Finance/
 ├── wiki/
 │   ├── shared/               # Product spec, finance glossary, Notion field mapping
 │   └── desktop/              # Desktop architecture, sync/conflict, local schema, IPC, packaging
-├── shared/                   # Future shared contracts and DTOs (not yet extracted)
+├── docs/                     # architecture.md (one-page map) and adr/ (decision records)
+├── GLOSSARY.md               # Shared project language
+├── shared/                   # Future shared contracts (current ones live in notable-finance-app/src/shared)
 ├── tests/                    # Cross-cutting manual and automated tests
-├── tickets/                  # Planning and investigation artifacts
-├── scripts/                  # sync-ai-adapters.ps1 and other project scripts
+├── tickets/                  # Tickets (<feature>/NN-slug.md), BOARD.md, earlier investigation reports
+├── scripts/                  # Legacy adapter scripts (PowerShell); see scripts/README.md
 ├── .agents/                  # Canonical AI roles, skills, overlays, workflows, tool policies
-└── .ai/                      # Context routing, maps, indexes for AI tooling
+├── .ai/                      # Context routing, maps, and the workflow CLI (.ai/cli)
+└── engr-toolbox.json         # Toolbox install choices
 ```
+
+---
+
+## Working on this repo (engr-toolbox)
+
+The repo uses the [engr-toolbox](https://github.com/work-w-chrstnrpj/engr-toolbox) ticket workflow for AI coding agents: no work without a ticket, and every ticket ends with evidence.
+
+| Need | Do |
+|---|---|
+| See the board | `node .ai/cli/bin/cli.mjs status` |
+| Check docs, roles, skills, tickets | `node .ai/cli/bin/cli.mjs validate` |
+| Find docs behind the code | `node .ai/cli/bin/cli.mjs drift` |
+| Not sure what is next | `/next` in your AI tool |
+| New feature | `/grill-with-docs`, then `/to-spec`, then `/to-tickets`, then `/implement <ticket>` |
+
+Rules, ticket format and commit convention are in [`AGENTS.md`](AGENTS.md) (Ticket Workflow). Decisions are in [`docs/adr/`](docs/adr/), the architecture map in [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
@@ -211,6 +231,11 @@ Notable Finance/
 | [`wiki/desktop/ipc-contract.md`](wiki/desktop/ipc-contract.md) | IPC channel contract (main ↔ renderer) |
 | [`wiki/shared/notion-field-mapping.md`](wiki/shared/notion-field-mapping.md) | Canonical Notion field taxonomy |
 | [`wiki/shared/finance-domain-glossary.md`](wiki/shared/finance-domain-glossary.md) | Finance domain term definitions |
+| [`docs/architecture.md`](docs/architecture.md) | One-page architecture map |
+| [`docs/adr/`](docs/adr/) | Architecture Decision Records |
+| [`GLOSSARY.md`](GLOSSARY.md) | Shared project language |
+| [`wiki/desktop/monthly-budget-snapshots.md`](wiki/desktop/monthly-budget-snapshots.md) | Proposed: saved per-month budgets (not built) |
+| [`tickets/BOARD.md`](tickets/BOARD.md) | Ticket board |
 | [`notable-finance-app/CHANGELOG.md`](notable-finance-app/CHANGELOG.md) | Desktop release history |
 | [`AGENTS.md`](AGENTS.md) | AI agent operating rules for this repo |
 

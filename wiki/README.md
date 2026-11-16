@@ -15,3 +15,12 @@ Notable Finance is a **local-first Electron desktop app**: local SQLite is the w
 4. [`desktop/local-data-schema.md`](desktop/local-data-schema.md) — SQLite tables and sync columns.
 5. [`desktop/ipc-contract.md`](desktop/ipc-contract.md) — the main↔renderer contract.
 6. The remaining desktop docs for offline behavior, onboarding, packaging, security, testing, and the plan.
+
+## Outside the wiki
+
+The wiki is canonical for product and desktop design. The ticket workflow keeps its own files and links back here:
+
+- [`../docs/architecture.md`](../docs/architecture.md): one-page map of modules, data flow and trust boundaries.
+- [`../docs/adr/`](../docs/adr/): Architecture Decision Records (why the system is built this way).
+- [`../GLOSSARY.md`](../GLOSSARY.md): the project's shared language; finance terms in full are in [`shared/finance-domain-glossary.md`](shared/finance-domain-glossary.md).
+- [`../tickets/BOARD.md`](../tickets/BOARD.md): the work board. A feature spec stays in `desktop/` (for example [`desktop/monthly-budget-snapshots.md`](desktop/monthly-budget-snapshots.md)) and its tickets link to it.

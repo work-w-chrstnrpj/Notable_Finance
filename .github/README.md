@@ -6,4 +6,4 @@ Use this folder for repository automation, issue templates, pull-request templat
 - Copilot skills: `.github/skills/<skill>/SKILL.md`
 - GitHub Actions: `.github/workflows/`
 
-Copilot adapters are generated from `.agents/roles/` and `.agents/skills/` by `scripts/generate-ai-adapters.ps1`.
+Copilot adapters are generated from `.agents/roles/` and `.agents/skills/` by `node .ai/cli/bin/cli.mjs sync`.

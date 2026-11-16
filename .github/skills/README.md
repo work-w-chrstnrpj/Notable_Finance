@@ -2,4 +2,4 @@
 
 This folder contains generated GitHub Copilot skill copies.
 
-Canonical skill instructions live in `.agents/skills/`. Run `scripts/generate-ai-adapters.ps1` after changing a skill.
+Canonical skill instructions live in `.agents/skills/`. Run `node .ai/cli/bin/cli.mjs sync` after changing a skill.

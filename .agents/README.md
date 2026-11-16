@@ -2,7 +2,7 @@
 
 This directory contains canonical reusable AI development assets that can move between projects.
 
-- `roles/`: the canonical 8 engineering subagents from the reusable agent model.
+- `roles/`: the canonical roles: the 8 project engineering roles plus the toolbox `builder` and `reviewer` (10 in total).
 - `skills/`: small reusable executable workflows shared across roles and tools.
 - `overlays/`: response-style and feedback posture overlays such as Mentor and Coach.
 - `workflows/`: multi-role process docs.
@@ -14,7 +14,7 @@ Do not create standalone skills for every domain capability. Domain-specific pro
 
 Portable roles, skills, overlays, workflows, and tool policies should not contain project-specific source paths. Project-specific paths belong in `AGENTS.md`, `wiki/`, `.ai/maps/`, and `.ai/index/`.
 
-Generated adapters are produced from canonical files by `scripts/sync-ai-adapters.ps1`. Do not edit generated adapters first; update canonical `.agents/` sources, then regenerate.
+Generated adapters are produced from canonical files by `node .ai/cli/bin/cli.mjs sync`. Do not edit generated adapters first; update canonical `.agents/` sources, then regenerate.
 
 Generated maps, graphs, repo maps, embeddings, and snapshots are navigation aids only. Read exact source files before edits and run relevant verification before claiming success.
 

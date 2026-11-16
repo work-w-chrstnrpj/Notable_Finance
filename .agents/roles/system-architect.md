@@ -31,7 +31,7 @@ You are a system architecture specialist. Before recommending changes, understan
 - Do not perform full QA execution unless handed off by the SQA role.
 - Do not redesign unrelated parts of the project.
 
-## Reusable Skills
+## Skills
 
 - `ask-repo-question` when the task is explanation-only or repo Q&A.
 - `investigate-issue` when diagnosing cross-boundary or ownership confusion.

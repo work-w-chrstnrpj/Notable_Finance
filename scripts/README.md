@@ -1,6 +1,8 @@
-# Scripts Placeholder
+# Scripts
 
-This folder is intended for project automation scripts.
+This folder holds project automation scripts.
+
+> **Toolbox note.** The repo now uses the engr-toolbox CLI for validation and adapter sync: `node .ai/cli/bin/cli.mjs validate` and `node .ai/cli/bin/cli.mjs sync`. The PowerShell scripts below predate it. `validate-ai-template.ps1` still expects exactly 13 curated skills and the `## Reusable Skills` role heading, so it will report failures against the toolbox layout (roles now use `## Skills`). Prefer the CLI; reconcile or retire these scripts in a separate ticket. PowerShell is not installed on every machine.
 
 Use scripts for repeatable development, verification, setup, maintenance, data processing, release, or operational tasks.
 

@@ -1,0 +1,222 @@
+{
+  "$schema": "./preset.schema.json",
+  "name": "engr-toolbox",
+  "version": "0.3.1",
+  "defaultTier": "medium",
+  "providers": [
+    "claude",
+    "cursor",
+    "codex",
+    "opencode",
+    "antigravity",
+    "copilot",
+    "windsurf",
+    "cline",
+    "kilo",
+    "aider",
+    "openhands"
+  ],
+  "tiers": {
+    "small": {
+      "description": "Solo or small project: ticket workflow, test-first build, review, glossary and ADRs. No team-input or design layer.",
+      "roles": [
+        "builder",
+        "reviewer"
+      ],
+      "skills": [
+        "tickets",
+        "next",
+        "ask-engr",
+        "grilling",
+        "grill-with-docs",
+        "to-spec",
+        "to-tickets",
+        "implement",
+        "cook-a-ticket",
+        "catch-up",
+        "tdd",
+        "code-review",
+        "diagnosing-bugs",
+        "update-docs",
+        "ask-repo-question",
+        "research",
+        "adopt-project",
+        "domain-modeling",
+        "handoff",
+        "mentor",
+        "coach",
+        "prototype",
+        "codebase-design",
+        "cli",
+        "setup-pipeline",
+        "cut-release",
+        "pr",
+        "report-bug"
+      ],
+      "workflows": [
+        "main-flow",
+        "scenarios",
+        "release"
+      ],
+      "tools": [
+        "adapter-generation-policy",
+        "allowed-commands",
+        "context-policy",
+        "verification-commands",
+        "verification-policy"
+      ],
+      "playbooks": [
+        "fullstack",
+        "frontend",
+        "backend",
+        "devops",
+        "security"
+      ],
+      "scaffold": [
+        "AGENTS.md",
+        "GLOSSARY.md",
+        ".ai/context-routing.md",
+        "docs/architecture.md",
+        "docs/adr",
+        "docs/agents",
+        "tickets"
+      ]
+    },
+    "medium": {
+      "extends": "small",
+      "description": "Team project: adds team inputs, design-first work, QA, triage, release checks, reference docs and context maps.",
+      "roles": [
+        "architect",
+        "qa",
+        "sdet"
+      ],
+      "skills": [
+        "ingest",
+        "design",
+        "triage",
+        "retro",
+        "to-questionnaire",
+        "manual-testing",
+        "generate-rca",
+        "use-context-tools",
+        "test-strategy",
+        "test-plan",
+        "automate-tests",
+        "fix-flaky-tests",
+        "test-report"
+      ],
+      "workflows": [
+        "design-first",
+        "team-sync",
+        "investigation-to-rca",
+        "quality"
+      ],
+      "tools": [
+        "context-strategy",
+        "mcp-policy"
+      ],
+      "playbooks": [
+        "architecture",
+        "qa",
+        "planning",
+        "docs",
+        "sdet"
+      ],
+      "scaffold": [
+        "docs/inputs",
+        "docs/design",
+        "docs/api",
+        "docs/database",
+        "docs/testing",
+        ".ai/maps/application-map.md",
+        ".ai/maps/service-map.md",
+        ".ai/maps/api-map.md",
+        ".ai/maps/data-map.md",
+        ".ai/maps/testing-map.md",
+        "qa"
+      ]
+    },
+    "large": {
+      "extends": "medium",
+      "description": "Large codebase or several teams: adds parallel spec builds, wayfinding for foggy efforts, architecture surveys, deployment docs and heavy context tools.",
+      "roles": [],
+      "skills": [
+        "implement-spec",
+        "wayfinder",
+        "improve-codebase-architecture"
+      ],
+      "workflows": [],
+      "tools": [
+        "aider",
+        "antigravity-adapter-note",
+        "caveman",
+        "graphify",
+        "repomix",
+        "understand-anything"
+      ],
+      "playbooks": [],
+      "scaffold": [
+        "docs/deployment",
+        ".ai/maps/deployment-map.md",
+        ".ai/index"
+      ]
+    }
+  },
+  "newProjectScaffold": [
+    "application",
+    "service",
+    "shared",
+    "tests"
+  ],
+  "contextRules": {
+    "requiredCore": [
+      {
+        "file": "AGENTS.md",
+        "checks": [
+          {
+            "pattern": "\\[State the project goal here\\.\\]",
+            "invert": true,
+            "message": "Project goal not set in AGENTS.md"
+          },
+          {
+            "pattern": "\\[Runtime or framework\\]",
+            "invert": true,
+            "message": "Tech stack not set in AGENTS.md"
+          }
+        ]
+      },
+      {
+        "file": "GLOSSARY.md",
+        "checks": []
+      },
+      {
+        "file": "docs/architecture.md",
+        "checks": [
+          {
+            "pattern": "> Status: NOT_STARTED",
+            "invert": true,
+            "message": "docs/architecture.md is NOT_STARTED"
+          }
+        ]
+      }
+    ],
+    "conditionalTasks": {
+      "api": {
+        "file": "docs/api/api-specification.md",
+        "name": "API specification"
+      },
+      "database": {
+        "file": "docs/database/data-model.md",
+        "name": "Data model"
+      },
+      "deployment": {
+        "file": "docs/deployment/deployment.md",
+        "name": "Deployment guide"
+      },
+      "testing": {
+        "file": "docs/testing/test-specification.md",
+        "name": "Test specification"
+      }
+    }
+  }
+}

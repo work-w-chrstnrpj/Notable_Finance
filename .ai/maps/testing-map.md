@@ -20,3 +20,10 @@ Use this map for test planning and implementation.
 ## Rule
 
 Do not claim checks passed unless they actually ran.
+
+## Code Index
+
+- Vitest main-process tests → `notable-finance-app/test`
+- Playwright e2e specs → `notable-finance-app/e2e`
+- Vitest config → `notable-finance-app/vitest.config.ts`
+- Playwright config → `notable-finance-app/playwright.config.ts`
