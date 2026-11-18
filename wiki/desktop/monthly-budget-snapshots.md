@@ -1,6 +1,6 @@
 # Monthly budget snapshots (saved budgets)
 
-Status: **draft specification, not implemented.** Desktop-only, local-only feature. It adds no Notion property, no Notion database change and no sync behavior.
+Status: **specification with decisions settled on 2026-11-16 (section 16), not implemented.** Desktop-only, local-only feature. Tickets: `tickets/monthly-budget/`. Decision record: [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md). It adds no Notion property, no Notion database change and no sync behavior.
 
 ## 1. Problem
 
@@ -16,14 +16,14 @@ Non-goals:
 - No stored income/expense totals. Totals and spending stay computed from records.
 - No free-form date ranges per saved budget. One saved set per calendar month.
 - No change to existing Monitoring behavior while the source is **Notion** (the default).
-- No change to the Need/Wants/Savings split, which is still read from the Notion "Total Monthly Monitoring" row.
+- No change to the Need/Wants/Savings split, which is still read from the Notion "Total Monthly Monitoring" row and applies the current values to every month. There is no per-month split.
 
 ## 3. Terms
 
 | Term | Meaning |
 | --- | --- |
 | Notion budget | `expense_categories.monthly_budget`, as pulled from Notion. Editable only in Notion. |
-| Saved budget | A row in `monthly_budget_snapshots` for one month and one category. Editable only in the app. |
+| Saved budget | A row in `monthly_budget_snapshots` for one month and one category. Editable only in the app. The UI says "Saved budgets"; `monthly_budget_snapshots` is only the internal table name. |
 | Saved set | All saved budget rows for one month. A month "has a saved set" when it has at least one row. |
 | Budget source | The Monitoring toggle: `notion` or `saved`. |
 
@@ -180,13 +180,14 @@ All results use the existing `ApiResult` envelope. DTOs live in `shared/finance.
 
 - **Backup**: the SQLite backup already copies the whole file, so the table is included. Add `monthly_budget_snapshots` to `COUNTED_TABLES` in `services/backup.ts`. An older backup without the table must restore cleanly (additive migration creates it).
 - **Activity log**: record save, edit, delete and import as activity entries (counts only, no row dumps).
-- **Chat**: phase 3, optional. The chat read tool that reports budgets (`chat/tools/read-tools.ts`) and `reports.monitoring` get an optional budget-source argument that defaults to `notion`, so existing answers do not change. Write tools for saved budgets are not added.
+- **Chat**: deferred to the last phase (decided 2026-11-16). The chat read tool that reports budgets (`chat/tools/read-tools.ts`) and `reports.monitoring` get an optional budget-source argument that defaults to `notion`, so existing answers do not change. Write tools for saved budgets are not added.
 
 ## 11. Edge cases
 
 - Month with a saved set where a new category was added later: the new category has budget 0 for that month (section 5).
 - Category deleted or renamed in Notion after saving: the saved row keeps its stored name and still counts.
 - All saved rows for a month deleted: the month goes back to "no saved set" and falls back to Notion budgets.
+- Deleting a saved set asks a normal confirm ("Delete saved budgets for <Month Year>?") for every month, including the current one. No extra warning.
 - Saved budget of 0: a valid explicit zero, distinct from "no row".
 - Month in the future: allowed to save.
 - Range crosses a year boundary: month list is built with calendar arithmetic, not string math.
@@ -204,7 +205,7 @@ All results use the existing `ApiResult` envelope. DTOs live in `shared/finance.
 
 1. With source = Notion, Monitoring numbers are identical to the current release in all four view modes.
 2. Saving budgets for January 2026 and then changing Food's Notion budget leaves January's Saved-mode remaining unchanged and Notion-mode remaining updated.
-3. In Saved mode, an Annually view with Food saved at 5,000 for 5 months and 8,000 for 7 months shows a Food budget of 61,000.
+3. In Saved mode, an Annually view with Food saved at 5,000 for 5 months and 8,000 for 7 months shows a Food budget of 81,000.
 4. In Saved mode, a range with a missing month shows the partial-coverage badge and uses Notion budgets for that month only.
 5. A category absent from a month's saved set shows budget 0 for that month.
 6. Edit budgets saves atomically; invalid input blocks save and shows error text.
@@ -231,9 +232,18 @@ All results use the existing `ApiResult` envelope. DTOs live in `shared/finance.
 
 Docs to update when implementing: `wiki/desktop/local-data-schema.md`, `wiki/desktop/ipc-contract.md`, `wiki/shared/product-specification.md`, `notable-finance-app/CHANGELOG.md`, and the repository map in `AGENTS.md` if structure changes.
 
-## 16. Open questions
+## 16. Decisions (resolved 2026-11-16)
 
-1. **Quarterly is 4 months today.** Keep it, or change to 3 months in a separate change? This spec keeps it.
-2. **Auxiliary expense categories** (such as Pasabuy): include them in Edit budgets and exports? This spec uses the same category list Monitoring already shows.
-3. **Delete confirmation wording and whether deleting the current month's set needs an extra warning.**
-4. **Import policy:** is "Overwrite matching rows" or "Skip months with saved budgets" enough, or is a whole-month replace needed?
+Settled while grilling the feature. No open questions remain.
+
+1. **UI name:** "Saved budgets". The table stays `monthly_budget_snapshots` internally.
+2. **Quarterly length:** stays 4 months (and Semi-Annually 6). Changing Quarterly to 3 months is a separate ticket, because it would alter Notion-mode numbers.
+3. **Categories:** Edit budgets and CSV use the same category list Monitoring shows, including auxiliary ones such as Pasabuy.
+4. **CSV import:** overwrite matching rows by default, with a "Skip months that already have saved budgets" option. No whole-month replace policy; use Delete in Edit budgets.
+5. **Saving a month:** allowed for the current and future months, with a replace confirmation.
+6. **Missing categories:** in a month that has a saved set, a category with no row has budget 0.
+7. **Delete:** a normal confirm for every month.
+8. **Chat:** deferred to the last phase; defaults to Notion budgets.
+9. **Split:** the Need/Wants/Savings split stays current-only for every month.
+10. **Tickets:** four tickets under `tickets/monthly-budget/`, one per rollout phase in section 15.
+11. **Storage:** local only, no Notion mirror ([ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md)).

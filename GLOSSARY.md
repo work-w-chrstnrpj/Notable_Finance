@@ -62,6 +62,10 @@ The per-expense-category monthly allowance from Notion. Remaining equals budget 
 The Monitoring page: income, expense and budget versus actual for a period (Monthly, Quarterly, Semi-Annually or Annually), computed locally. The Need/Wants/Savings split is the one value read from Notion.
 _Avoid_: report, summary
 
+**Money movement**:
+The sidebar group of record pages: Income, Expense, Transfer, CC Payment, Alkansya, Borrowings and Receivables. Dashboard, Accounts and Monitoring sit in Overview, not here.
+_Avoid_: "Money Movement tab" (it is a group, not one tab)
+
 **Soft delete**:
 Deleting an income or expense by rewriting its title to `[Deleted: Amount]` and clearing the amount.
 _Source_: docs/adr/0005-soft-delete-and-read-only-reference-data.md
@@ -76,9 +80,13 @@ The savings workflow; deposits are Savings-category income.
 Money Lent is a loan the user gave (negative gross income in an auxiliary category) and appears in Receivables. A Borrowing is money the user owes, tracked against Borrow (Auxiliary) accounts.
 _Source_: wiki/desktop/money-lent.md, wiki/desktop/borrowings.md
 
-**Saved budget** (proposed):
-A local-only, per-month copy of category budgets, not yet built.
-_Source_: wiki/desktop/monthly-budget-snapshots.md
+**Saved budget** (proposed, not built):
+A local-only, per-month copy of each expense category's budget, kept so a past month is judged against the budget that applied then. The UI says "Saved budgets"; the internal table is `monthly_budget_snapshots`. A month "has saved budgets" when it has at least one row.
+_Avoid_: snapshot (in the UI), budget history
+_Source_: wiki/desktop/monthly-budget-snapshots.md, docs/adr/0006-saved-budgets-local-only.md
+
+**Budget source** (proposed, not built):
+The Monitoring toggle choosing where budgets come from: **Notion** (today's category budgets) or **Saved** (the month's saved budgets, falling back to Notion budgets for months with none).
 
 More finance terms and exact Notion labels: `wiki/shared/finance-domain-glossary.md`.
 
