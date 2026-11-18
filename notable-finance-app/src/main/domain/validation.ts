@@ -6,6 +6,7 @@ import type {
   CreateIncomeInput,
   CreateSchedulerInput
 } from '../../shared/finance.types'
+import { isValidMonth } from '../../shared/saved-budgets'
 
 export class ValidationError extends Error {
   readonly code = 'E_VALIDATION'
@@ -33,6 +34,21 @@ export function assertMonth(value: unknown, field = 'month'): void {
   if (typeof value !== 'string' || !ISO_MONTH.test(value)) {
     throw new ValidationError(`${field} must be a month (YYYY-MM)`)
   }
+}
+
+/** Saved budgets: a real calendar month, so '2026-13' is rejected (assertMonth only checks the shape). */
+export function assertSavedBudgetMonth(value: unknown, field = 'month'): void {
+  if (!isValidMonth(value)) {
+    throw new ValidationError(`${field} must be a real month (YYYY-MM, month 01-12)`)
+  }
+}
+
+/** Saved budgets: a finite number of at least 0. */
+export function assertBudgetAmount(value: unknown, field = 'budget'): void {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new ValidationError(`${field} must be a finite number`)
+  }
+  if (value < 0) throw new ValidationError(`${field} cannot be negative`)
 }
 
 export function assertFiniteNumber(value: unknown, field: string): void {

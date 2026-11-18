@@ -86,7 +86,8 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
   incomeCategoryView: 'table',
   expenseCategoryView: 'simplified',
   hideZeroIncomeCategories: false,
-  zeroFilter: 'all'
+  zeroFilter: 'all',
+  budgetActionsOpen: false
 }
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {
@@ -105,7 +106,8 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   incomeFilters: { ...DEFAULT_INCOME },
   expenseFilters: { ...DEFAULT_EXPENSE },
   accountsFilters: { ...DEFAULT_ACCOUNTS },
-  monitoringFilters: { ...DEFAULT_MONITORING }
+  monitoringFilters: { ...DEFAULT_MONITORING },
+  monitoringBudgetSource: 'notion'
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -268,7 +270,8 @@ function mergeMonitoring(raw: unknown): UiMonitoringFilters {
         ? r.expenseCategoryView
         : DEFAULT_MONITORING.expenseCategoryView,
     hideZeroIncomeCategories: r.hideZeroIncomeCategories === true,
-    zeroFilter
+    zeroFilter,
+    budgetActionsOpen: r.budgetActionsOpen === true
   }
 }
 
@@ -295,7 +298,8 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
     incomeFilters: mergeIncome(r.incomeFilters),
     expenseFilters: mergeExpense(r.expenseFilters),
     accountsFilters: mergeAccounts(r.accountsFilters),
-    monitoringFilters: mergeMonitoring(r.monitoringFilters)
+    monitoringFilters: mergeMonitoring(r.monitoringFilters),
+    monitoringBudgetSource: r.monitoringBudgetSource === 'saved' ? 'saved' : 'notion'
   }
 }
 
@@ -328,6 +332,7 @@ export function setUiSettings(patch: Partial<{
   expenseFilters: Partial<UiExpenseFilters>
   accountsFilters: Partial<UiAccountsFilters>
   monitoringFilters: Partial<UiMonitoringFilters>
+  monitoringBudgetSource: 'notion' | 'saved'
 }>): UiSettings {
   const current = getUiSettings()
   const next = normalizeUiSettings({
@@ -360,7 +365,8 @@ export function setUiSettings(patch: Partial<{
       : current.accountsFilters,
     monitoringFilters: patch.monitoringFilters
       ? { ...current.monitoringFilters, ...patch.monitoringFilters }
-      : current.monitoringFilters
+      : current.monitoringFilters,
+    monitoringBudgetSource: patch.monitoringBudgetSource ?? current.monitoringBudgetSource
   })
   getSqlite()
     .prepare(

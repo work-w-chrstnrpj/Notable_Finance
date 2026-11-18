@@ -1,6 +1,13 @@
 import type { RepayMoneyLentInput } from '../shared/money-lent'
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
+  BudgetExportRequest,
+  BudgetExportResult,
+  BudgetImportPolicy,
+  BudgetImportPreview,
+  BudgetImportResult,
+  SavedBudgetInput,
+  SavedBudgetRow,
   UpdaterCheckResult,
   BackupExportResult,
   BackupImportResult,
@@ -141,6 +148,29 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.schedulerHardDelete, id),
     generate: (id: string): Promise<ApiResult<ExpenseRecordDto>> =>
       ipcRenderer.invoke(IPC_CHANNELS.schedulerGenerate, id)
+  },
+
+  budgets: {
+    list: (range?: { fromMonth?: string; toMonth?: string }): Promise<ApiResult<SavedBudgetRow[]>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsList, range),
+    saveFromNotion: (month: string, replace?: boolean): Promise<ApiResult<{ saved: number }>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsSaveFromNotion, month, replace),
+    saveSet: (month: string, rows: SavedBudgetInput[]): Promise<ApiResult<{ saved: number }>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsSaveSet, month, rows),
+    deleteSet: (month: string): Promise<ApiResult<{ deleted: number }>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsDeleteSet, month),
+    exportCsv: (req: BudgetExportRequest): Promise<ApiResult<BudgetExportResult>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsExportCsv, req),
+    /** Opens a file dialog (no previewId) or re-checks the same file under another policy. Null when canceled. */
+    importPreview: (opts: {
+      previewId?: string
+      policy: BudgetImportPolicy
+    }): Promise<ApiResult<BudgetImportPreview | null>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsImportPreview, opts),
+    importCommit: (opts: {
+      previewId: string
+      policy: BudgetImportPolicy
+    }): Promise<ApiResult<BudgetImportResult>> => ipcRenderer.invoke(IPC_CHANNELS.budgetsImportCommit, opts)
   },
 
   reports: {
