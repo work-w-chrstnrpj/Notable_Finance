@@ -201,7 +201,11 @@ dbDescribe('saved budgets in backups', () => {
     const conn = new Database(file)
     // Make it look like it predates the saved-budgets migration: no table, and the migration not yet applied.
     conn.exec('DROP TABLE monthly_budget_snapshots')
-    conn.exec('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT MAX(created_at) FROM __drizzle_migrations)')
+    // Later migrations (0016 loan terms) came after 0015: roll those back too, so the file looks like 0000..0014.
+    for (const column of ['interest', 'payment_frequency', 'period_count', 'linked_borrowing_id']) {
+      conn.exec(`ALTER TABLE incomes DROP COLUMN ${column}`)
+    }
+    conn.exec('DELETE FROM __drizzle_migrations WHERE created_at >= 1786600000000')
     conn.close()
 
     const restored = await importBackup(file)
