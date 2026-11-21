@@ -30,7 +30,9 @@ The filter bar separates **Borrow Account** and **Other Account** (plus Type). T
 
 A Borrowed row can carry optional **Loan terms**: **Interest** (flat total, not a rate), **Payment Frequency** and **Period count**. They are optional as a group: a loan with none behaves exactly as before, and Period count needs a Payment Frequency (and the reverse). Interest alone is allowed. Interest is never an expense: it creates no row and never reaches Expense totals, budgets or Monitoring. See `docs/adr/0007-loan-interest-inside-the-borrowing.md`.
 
-A repayment can be **linked** to its loan. The Repayment form has a **Loan** picker listing the loans with terms on the chosen Borrow account (or "Not linked to a loan"); **Record repayment** on a loan prefills the Suggested payment (the remaining balance when there is no Period count) and the link, and the amount stays editable. A repayment can be linked or unlinked later by editing it.
+A repayment can be **linked** to its loan, from either side, like a Notion relation. Any Borrowed row can be linked, with or without Loan terms. The Repayment form has a **Loan** picker listing every Borrowed row on the chosen Borrow account (or "Not linked to a loan"); an existing link stays selectable and is kept on unrelated edits. **Record repayment** on a loan prefills the smaller of the Suggested payment and the Remaining balance (the Remaining balance when there is no Period count; empty when paid off) and the link, and the amount stays editable. A Borrowed row's edit form has a **Payments** multi-select, the same pattern as Covered Expenses on a CC Payment: repayments on the same Borrow account (label name and date, sublabel amount) plus a computed **Total paid**. Saving links every selected repayment and unlinks the deselected ones; the read-only modal lists them. A payment links to one loan only, so repayments already linked to a different loan are not offered. Both entry points set the same single stored link (`Linked Borrowing` in Notion). Main validation accepts a link to any live Borrowed row and rejects itself, a repayment and a missing row.
+
+A Borrowed row **without** Loan terms but with linked repayments is read as a loan with Interest 0: it shows Paid amount, Payments made and Remaining balance (principal minus payments, never below 0) and no Suggested payment. A Borrowed row with neither terms nor links is unchanged.
 
 Computed per loan (never stored, ADR-0004), from `computeLoanSummary` in `shared/borrowings.ts`:
 
@@ -44,7 +46,7 @@ Computed per loan (never stored, ADR-0004), from `computeLoanSummary` in `shared
 
 Example: ₱150,000 with ₱5,000 interest, Monthly, 12 periods owes ₱155,000 with a Suggested payment of ₱12,916.67; after one linked ₱12,916.67 payment the Remaining balance is ₱142,083.33. The record modal shows all five figures and the table has a **Remaining balance** column (a dash for loans without terms and for repayments). Balances use every Borrowings record, not only the selected date range.
 
-The **Borrow Accounts** panel's still-owed per account is `stillOwedForBorrowAccount`: the Remaining balance of each loan with terms plus the old balance-based amount for borrowings without terms. Repayments with no link count against that old amount. The Borrow account's raw balance stays principal-based.
+The **Borrow Accounts** panel's still-owed per account is `stillOwedForBorrowAccount`: the Remaining balance of each loan (a Borrowed row with terms or with linked repayments) plus the old balance-based amount for the rest. Repayments with no link count against that old amount. The Borrow account's raw balance stays principal-based.
 
 ## Receivables types
 

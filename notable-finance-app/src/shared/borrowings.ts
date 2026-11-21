@@ -76,6 +76,18 @@ export function hasLoanTerms(loan: Pick<IncomeRecordDto, 'interest' | 'paymentFr
   return loan.interest != null || loan.paymentFrequency != null || loan.periodCount != null
 }
 
+/**
+ * A Borrowed row is treated as a loan (with Remaining balance etc.) when it has Loan terms or any live repayment
+ * linked to it. Without terms the Interest is 0 and there is no Suggested payment. A Borrowed row with neither is a plain
+ * borrowing, unchanged everywhere.
+ */
+export function isLoan(
+  loan: Pick<IncomeRecordDto, 'id' | 'interest' | 'paymentFrequency' | 'periodCount'>,
+  records: ReadonlyArray<Pick<IncomeRecordDto, 'deleted' | 'linkedBorrowingId'>>
+): boolean {
+  return hasLoanTerms(loan) || records.some((r) => !r.deleted && r.linkedBorrowingId === loan.id)
+}
+
 /** Total owed, Suggested payment, Paid amount, Payments made and Remaining balance for one loan. */
 export function computeLoanSummary(loan: LoanRecord, repayments: readonly RepaymentRecord[]): LoanSummary {
   const principal = Math.abs(loan.grossIncome)
@@ -100,11 +112,11 @@ export function computeLoanSummary(loan: LoanRecord, repayments: readonly Repaym
 }
 
 /**
- * What is still owed on one Borrow account: the Remaining balance of each loan with terms,
- * plus the existing balance-based amount for borrowings without terms.
+ * What is still owed on one Borrow account: the Remaining balance of each loan (a Borrowed row with terms or with
+ * linked repayments), plus the existing balance-based amount for the other borrowings.
  *
  * `balanceOwed` is the account's current balance-based amount (the negative of its balance). It still
- * counts every loan's principal and every repayment, so the part that belongs to loans with terms is
+ * counts every loan's principal and every repayment, so the part that belongs to loans is
  * taken out (principal added back, linked repayments removed) and replaced by their Remaining balance.
  * Unlinked repayments are never attributed to a loan, so they stay in the balance-based amount.
  */
@@ -113,7 +125,7 @@ export function stillOwedForBorrowAccount(
   balanceOwed: number,
   records: ReadonlyArray<LoanRecord & RepaymentRecord & Pick<IncomeRecordDto, 'accountId'>>
 ): number {
-  const loans = records.filter((r) => !r.deleted && r.accountId === accountId && hasLoanTerms(r))
+  const loans = records.filter((r) => !r.deleted && r.accountId === accountId && isLoan(r, records))
   let balanceBased = balanceOwed
   let remaining = 0
   for (const loan of loans) {

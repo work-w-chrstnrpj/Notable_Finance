@@ -169,4 +169,22 @@ describe('borrowing-terms/05 chat parity for loan terms', () => {
     // Interest alone was always allowed.
     expect(run('proposeCreateBorrowing', base).draft.missingRequired).toEqual([])
   })
+
+  it('borrowing-terms/07#AC6 a repayment can name a loan that has no terms and is linked to it', () => {
+    const plainLoan = { ...loanRow, id: 'plain-1', name: 'Borrow: Ben', grossIncome: -1000, interest: null, paymentFrequency: null, periodCount: null }
+    withRows([plainLoan])
+    const { draft } = run('proposeCreateBorrowing', {
+      type: 'repayment', name: 'Repayment: Ben', amount: 400, loan: 'Borrow: Ben',
+      otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money'
+    })
+    expect(draft.missingRequired).toEqual([])
+    expect(draft.payload).toMatchObject({ linkedBorrowingId: 'plain-1' })
+    const full = draft as unknown as { computedPreview: Record<string, number> }
+    expect(full.computedPreview).toMatchObject({ remainingBalanceBefore: 1000, remainingBalance: 600, suggestedPayment: null })
+    // Once it has a linked repayment it is read as a loan with Interest 0.
+    withRows([plainLoan, repayment('r1', 400, 'plain-1')])
+    expect(executeChatTool('getLoanSummary', JSON.stringify({ loan: 'Borrow: Ben' }), ctx)).toMatchObject({
+      found: true, loan: { id: 'plain-1', totalOwed: 1000, paidAmount: 400, paymentsMade: 1, remainingBalance: 600 }
+    })
+  })
 })

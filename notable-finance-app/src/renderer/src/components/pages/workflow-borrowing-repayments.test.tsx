@@ -19,14 +19,14 @@ async function openNewRepayment() {
 const lastCell = (name: string) => { const cells = Array.from(rowFor(name).querySelectorAll("td")); return cells[cells.length - 1].textContent; };
 
 describe("borrowing-terms/04 linked repayments and the Borrow Accounts panel", () => {
-  it("borrowing-terms/04#AC1 the repayment form's loan picker lists only loans with terms on the chosen Borrow account", async () => {
+  it("borrowing-terms/04#AC1 the repayment form's loan picker lists the Borrowed rows on the chosen Borrow account (terms or not, see 07)", async () => {
     renderBorrowings([termsLoan, plainLoan, otherAccountLoan]);
     const dialog = await openNewRepayment();
-    // On Debt/Loan its loan with terms is listed; its plain loan and the other account's loan are not.
+    // On Debt/Loan both its Borrowed rows are listed; the other account's is not.
     fireEvent.click(within(dialog).getByRole("combobox", { name: "Borrow Account" }));
     fireEvent.click(await screen.findByRole("option", { name: "Debt/Loan" }));
     const labels = Array.from(loanSelect(dialog).options).map((o) => o.textContent);
-    expect(labels).toEqual(["— Not linked to a loan —", "Borrow: Ana · ₱155,000.00 remaining"]);
+    expect(labels).toEqual(["— Not linked to a loan —", "Borrow: Ana · ₱155,000.00 remaining", "Borrow: Ben · ₱1,000.00 remaining"]);
     // Switching the Borrow account switches the list.
     fireEvent.click(within(dialog).getByRole("combobox", { name: /Borrow Account|Debt\/Loan/ }));
     fireEvent.click(await screen.findByRole("option", { name: "Borrowed Ana" }));

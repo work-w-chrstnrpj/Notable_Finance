@@ -2,7 +2,7 @@
 // working source of truth), marks the record sync_state='dirty', and journals into
 // mutation_queue so offline edits replay in order (wiki/desktop/sync-and-conflict-design.md).
 // Soft delete follows the shared rule: rewrite the title, clear amounts, set deleted=1.
-import { BORROWED_MONEY_CATEGORY, isBorrowedMoneyCategory } from '../../shared/borrowings'
+import { BORROWED_MONEY_CATEGORY, isBorrowedMoneyCategory, isPlaceholderAccount } from '../../shared/borrowings'
 import { isMoneyLentCategory, isOutstandingMoneyLent, MONEY_LENT_CATEGORY, type RepayMoneyLentInput } from '../../shared/money-lent'
 import { randomUUID } from 'node:crypto'
 import { getSqlite } from './index'
@@ -174,18 +174,19 @@ function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
   return { ...input, categoryId, isTransaction }
 }
 
-/** A repayment may only link to an existing, non-deleted Borrowed row that has loan terms. */
+/** A repayment may link to any existing, non-deleted Borrowed row (with or without loan terms), never itself or another repayment. */
 function assertLinkableLoan(linkedId: string, ownId?: string): void {
   if (ownId && linkedId === ownId) throw new ValidationError('A record cannot be linked to itself.')
   const target = getSqlite()
-    .prepare('SELECT deleted, interest, payment_frequency, period_count FROM incomes WHERE id = ?')
-    .get(linkedId) as
-    | { deleted: number; interest: number | null; payment_frequency: string | null; period_count: number | null }
-    | undefined
+    .prepare(
+      `SELECT i.deleted AS deleted, a.account_type AS type, a.account_name AS name
+       FROM incomes i LEFT JOIN accounts a ON a.id = i.account_id WHERE i.id = ?`
+    )
+    .get(linkedId) as { deleted: number; type: string | null; name: string | null } | undefined
   if (!target) throw new ValidationError('The linked loan does not exist.')
   if (target.deleted) throw new ValidationError('The linked loan was deleted.')
-  if (target.interest == null && target.payment_frequency == null && target.period_count == null) {
-    throw new ValidationError('The linked record is not a loan with loan terms.')
+  if (!isPlaceholderAccount({ type: target.type as never, name: target.name ?? '' })) {
+    throw new ValidationError('The linked record is a repayment, not a Borrowed row.')
   }
 }
 

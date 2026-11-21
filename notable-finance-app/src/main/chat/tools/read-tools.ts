@@ -2,7 +2,7 @@ import * as repo from '../../db/repositories'
 import * as reports from '../../services/reports'
 import {
   computeLoanSummary,
-  hasLoanTerms,
+  isLoan,
   isPlaceholderAccount,
   stillOwedForBorrowAccount
 } from '../../../shared/borrowings'
@@ -171,11 +171,11 @@ export function queryIncomes(args: unknown) {
 
 const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100
 
-/** Loans with terms (Borrowed rows on a Borrow account), each with its computed summary. Same math as the screen. */
+/** Loans (Borrowed rows with terms or linked repayments), each with its computed summary. Same math as the screen. */
 function loanRows() {
   const placeholderIds = new Set(repo.listAccounts(false).filter(isPlaceholderAccount).map((a) => a.id))
   const records = repo.listIncomes({ view: 'borrowings' })
-  const loans = records.filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId) && hasLoanTerms(r))
+  const loans = records.filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId) && isLoan(r, records))
   return { records, loans }
 }
 

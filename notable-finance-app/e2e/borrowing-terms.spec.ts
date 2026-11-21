@@ -76,3 +76,40 @@ test('a 150,000 loan with 5,000 interest over 12 months shows 142,083.33 remaini
   await expect(dialog).toContainText('₱142,083.33')
   await expect(dialog).toContainText('₱12,916.67')
 })
+
+test('repayments can be linked from the loan side with the Payments multi-select', async () => {
+  // The previous test leaves the loan's modal open.
+  if (await win.getByRole('dialog').count()) await win.getByRole('dialog').getByRole('button', { name: 'Close modal' }).click()
+  await win.evaluate(async (date) => {
+    const make = async (input: Record<string, unknown>) => {
+      const result = await window.api.incomes.create({ date, view: 'borrowings', ...input } as never)
+      if (!result.ok) throw new Error(result.error.message)
+    }
+    await make({ name: 'Borrow: Ben', grossIncome: -1000, accountId: 'borrow', transactedAccountId: 'bank' })
+    await make({ name: 'Repayment: Ben one', grossIncome: -400, accountId: 'bank', transactedAccountId: 'borrow' })
+    await make({ name: 'Repayment: Ben two', grossIncome: -100, accountId: 'bank', transactedAccountId: 'borrow' })
+    window.location.hash = '#/transfer'
+    window.location.hash = '#/borrowings'
+  }, date)
+
+  const loanRow = win.getByRole('row').filter({ hasText: 'Borrow: Ben' })
+  await expect(loanRow).toContainText('—')
+  await loanRow.click()
+  let dialog = win.getByRole('dialog')
+  await dialog.getByRole('button', { name: 'Edit', exact: true }).click()
+  const payments = dialog.getByPlaceholder('Search repayments to link...')
+  await payments.click()
+  await dialog.getByRole('button', { name: /Repayment: Ben one/ }).click()
+  await payments.click()
+  await dialog.getByRole('button', { name: /Repayment: Ben two/ }).click()
+  await expect(dialog).toContainText('Total paid')
+  await dialog.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+
+  await expect(win.getByRole('row').filter({ hasText: 'Borrow: Ben' })).toContainText('₱500.00')
+  await win.getByRole('row').filter({ hasText: 'Borrow: Ben' }).click()
+  dialog = win.getByRole('dialog')
+  await expect(dialog).toContainText('Repayment: Ben one')
+  await expect(dialog).toContainText('Repayment: Ben two')
+  await expect(dialog).toContainText('Payments made')
+})

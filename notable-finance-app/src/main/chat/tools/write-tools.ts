@@ -1,7 +1,6 @@
 import {
   BORROWED_MONEY_CATEGORY,
   computeLoanSummary,
-  hasLoanTerms,
   isPlaceholderAccount
 } from '../../../shared/borrowings'
 import { isMoneyLentCategory, MONEY_LENT_CATEGORY } from '../../../shared/money-lent'
@@ -478,17 +477,17 @@ function parsePaymentFrequency(v: unknown): PaymentFrequency | undefined {
 const peso = (n: number): string =>
   `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-/** Borrowed rows with Loan terms, with the Borrow account they sit on. Repayments are every other Borrowings row. */
-function listLoansWithTerms(): IncomeRecordDto[] {
+/** Every live Borrowed row (with or without Loan terms) and the Borrow account it sits on. Repayments are every other Borrowings row. */
+function listLoans(): IncomeRecordDto[] {
   const placeholderIds = new Set(repo.listAccounts(false).filter(isPlaceholderAccount).map((a) => a.id))
   return repo
     .listIncomes({ view: 'borrowings' })
-    .filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId) && hasLoanTerms(r))
+    .filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId))
 }
 
-/** Resolve the loan a repayment pays, by id or name. Only loans with terms on that Borrow account qualify. */
+/** Resolve the loan a repayment pays, by id or name. Any Borrowed row on that Borrow account qualifies, with or without Loan terms. */
 function findLoan(ref: string, borrowAccountId: string | undefined): { loan?: IncomeRecordDto; problem?: string } {
-  const loans = listLoansWithTerms().filter((l) => !borrowAccountId || l.accountId === borrowAccountId)
+  const loans = listLoans().filter((l) => !borrowAccountId || l.accountId === borrowAccountId)
   const byId = loans.find((l) => l.id === ref)
   if (byId) return { loan: byId }
   const byName = loans.filter((l) => l.name.toLowerCase() === ref.toLowerCase())
@@ -496,7 +495,7 @@ function findLoan(ref: string, borrowAccountId: string | undefined): { loan?: In
   if (byName.length > 1) {
     return { problem: `Loan (several loans are named "${ref}": ${byName.map((l) => `${l.date} ${peso(Math.abs(l.grossIncome))}`).join(', ')})` }
   }
-  return { problem: `Loan ("${ref}" is not a loan with terms on this Borrow account)` }
+  return { problem: `Loan ("${ref}" is not a Borrowed row on this Borrow account)` }
 }
 
 function parseBorrowKind(v: unknown): BorrowKind | undefined {
@@ -572,10 +571,10 @@ export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
       loan = found.loan
       if (found.problem) missing.push(found.problem)
     } else if (borrow) {
-      const loans = listLoansWithTerms().filter((l) => l.accountId === borrow.id)
+      const loans = listLoans().filter((l) => l.accountId === borrow.id)
       if (loans.length > 0) {
         warnings.push(
-          `Not linked to a loan. Loans with terms on ${borrow.name}: ${loans.map((l) => l.name).join(', ')}. Name the loan to link it.`
+          `Not linked to a loan. Borrowed rows on ${borrow.name}: ${loans.map((l) => l.name).join(', ')}. Name the loan to link it.`
         )
       }
     }

@@ -32,6 +32,7 @@ import { NotionApiError } from '../src/main/notion/client'
 import {
   computeLoanSummary,
   hasLoanTerms,
+  isLoan,
   stillOwedForBorrowAccount
 } from '../src/shared/borrowings'
 import { income } from './factories'
@@ -64,10 +65,14 @@ beforeEach(() => {
   api.createPage.mockReset().mockImplementation(async () => ({ id: 'created-page' }))
   api.queryDatabase.mockImplementation(async () => state.incomePages)
   state.incomePages = []
+  // A Borrow account (Auxiliary, name says debt/loan) and a bank, for links that must point at a Borrowed row.
+  for (const [id, name, type] of [['debt', 'Debt/Loan', 'Auxiliary'], ['bank', 'Bank', 'Cash']]) {
+    state.db.prepare('INSERT INTO accounts (id, notion_page_id, account_name, account_type, created_at) VALUES (?, ?, ?, ?, 0)').run(id, `n-${id}`, name, type)
+  }
 })
 afterAll(() => state.db.close())
 
-const loanInput = { name: 'Loan', date: '2026-11-01', grossIncome: -150000, categoryId: 'cat', interest: 5000, paymentFrequency: 'Monthly' as const, periodCount: 12 }
+const loanInput = { name: 'Loan', date: '2026-11-01', grossIncome: -150000, categoryId: 'cat', accountId: 'debt', transactedAccountId: 'bank', interest: 5000, paymentFrequency: 'Monthly' as const, periodCount: 12 }
 
 describe('borrowing-terms/02#AC1 migration', () => {
   it('borrowing-terms/02#AC1 adds four nullable columns and keeps existing rows', () => {
@@ -343,24 +348,59 @@ describe('borrowing-terms/02#validation main-process loan rules', () => {
     expect(createIncome(base).interest).toBeNull()
   })
 
-  it('borrowing-terms/02#validation a repayment link must point at an existing, live loan with terms', () => {
-    const l = loan()
-    const plain = createIncome(base)
-    const ok = createIncome({ ...base, name: 'Pay', grossIncome: -10, linkedBorrowingId: l.id })
-    expect(ok.linkedBorrowingId).toBe(l.id)
-    expect(() => createIncome({ ...base, linkedBorrowingId: 'missing' })).toThrow(/loan|borrowing/i)
-    expect(() => createIncome({ ...base, linkedBorrowingId: plain.id })).toThrow(/loan terms|terms/i)
-    expect(() => updateIncome(ok.id, { linkedBorrowingId: plain.id })).toThrow(/terms/i)
-    expect(() => updateIncome(l.id, { linkedBorrowingId: l.id })).toThrow(/itself/i)
-    const gone = loan()
-    softDeleteIncome(gone.id)
-    expect(() => createIncome({ ...base, linkedBorrowingId: gone.id })).toThrow(/deleted|loan/i)
-    expect(updateIncome(ok.id, { linkedBorrowingId: null }).linkedBorrowingId).toBeNull()
-  })
-
   it('borrowing-terms/02#validation rows without terms behave as before', () => {
     const plain = createIncome(base)
     expect(plain).toMatchObject({ interest: null, paymentFrequency: null, periodCount: null, linkedBorrowingId: null })
     expect(updateIncome(plain.id, { name: 'Renamed' }).name).toBe('Renamed')
+  })
+})
+
+describe('borrowing-terms/07 two-way loan links', () => {
+  const borrowed = (extra: Record<string, unknown> = {}) =>
+    createIncome({ name: 'Borrow', date: '2026-11-01', grossIncome: -1000, categoryId: 'cat', accountId: 'debt', transactedAccountId: 'bank', ...extra })
+  const repay = (extra: Record<string, unknown> = {}) =>
+    createIncome({ name: 'Repay', date: '2026-11-02', grossIncome: -100, categoryId: 'cat', accountId: 'bank', transactedAccountId: 'debt', ...extra })
+
+  it('borrowing-terms/07#AC5 a link may point at any live Borrowed row, with or without terms, and rejects self, a repayment, a deleted or a missing row', () => {
+    const plain = borrowed()
+    const withTerms = borrowed({ interest: 100, paymentFrequency: 'Monthly', periodCount: 4 })
+    expect(repay({ linkedBorrowingId: plain.id }).linkedBorrowingId).toBe(plain.id)
+    expect(repay({ linkedBorrowingId: withTerms.id }).linkedBorrowingId).toBe(withTerms.id)
+    const r = repay()
+    expect(updateIncome(r.id, { linkedBorrowingId: plain.id }).linkedBorrowingId).toBe(plain.id)
+    expect(updateIncome(r.id, { linkedBorrowingId: null }).linkedBorrowingId).toBeNull()
+    expect(() => updateIncome(plain.id, { linkedBorrowingId: plain.id })).toThrow(/itself/i)
+    expect(() => repay({ linkedBorrowingId: r.id })).toThrow(/repayment|borrowed/i)
+    expect(() => repay({ linkedBorrowingId: 'missing' })).toThrow(/exist/i)
+    const gone = borrowed()
+    softDeleteIncome(gone.id)
+    expect(() => repay({ linkedBorrowingId: gone.id })).toThrow(/deleted/i)
+  })
+
+  it('borrowing-terms/07#AC3 a Borrowed row without terms but with linked repayments is a loan with Interest 0', () => {
+    const plain = income({ id: 'P', accountId: 'B', grossIncome: -1000 })
+    const pay = (id: string, amount: number, linked: string | null, deleted = false) => income({ id, grossIncome: -amount, linkedBorrowingId: linked, deleted })
+    expect(isLoan(plain, [plain])).toBe(false)
+    expect(isLoan(plain, [plain, pay('a', 400, 'P', true)])).toBe(false) // a deleted link does not count
+    expect(isLoan(plain, [plain, pay('a', 400, 'P')])).toBe(true)
+    expect(isLoan(income({ id: 'T', interest: 1 }), [])).toBe(true)
+    expect(computeLoanSummary(plain, [pay('a', 400, 'P')])).toMatchObject({ interest: 0, totalOwed: 1000, suggestedPayment: null, paidAmount: 400, paymentsMade: 1, remainingBalance: 600 })
+    expect(computeLoanSummary(plain, [pay('a', 1500, 'P')]).remainingBalance).toBe(0)
+  })
+
+  it('borrowing-terms/07#AC4 still owed counts a terms-less loan with links once and equals loan balances plus the rest', () => {
+    const plain = income({ id: 'P', accountId: 'B', grossIncome: -1000 })
+    const other = income({ id: 'O', accountId: 'B', grossIncome: -2000 })
+    const linked = income({ id: 'r1', accountId: 'bank', transactedAccountId: 'B', grossIncome: -400, linkedBorrowingId: 'P' })
+    const loose = income({ id: 'r2', accountId: 'bank', transactedAccountId: 'B', grossIncome: -100 })
+    // Balance-based amount: 1,000 + 2,000 − 400 − 100 = 2,500. Loan P owes 600, O is untouched 2,000, the loose payment −100.
+    expect(stillOwedForBorrowAccount('B', 2500, [plain, other, linked, loose])).toBe(2500)
+    // Overpaying the linked loan clamps it at 0 instead of going negative.
+    const over = income({ id: 'r3', accountId: 'bank', transactedAccountId: 'B', grossIncome: -1500, linkedBorrowingId: 'P' })
+    expect(stillOwedForBorrowAccount('B', 1000 - 1500, [plain, over])).toBe(0)
+    // With a terms loan in the mix nothing is counted twice.
+    const terms = income({ id: 'T', accountId: 'B', grossIncome: -150000, interest: 5000, periodCount: 12 })
+    const tp = income({ id: 'r4', accountId: 'bank', transactedAccountId: 'B', grossIncome: -12916.67, linkedBorrowingId: 'T' })
+    expect(stillOwedForBorrowAccount('B', 150000 + 1000 - 400 - 12916.67, [terms, plain, linked, tp])).toBe(142083.33 + 600)
   })
 })

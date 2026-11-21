@@ -22,6 +22,8 @@ export function useWorkflowForm() {
   const [ccCoveredIds, setCcCoveredIds] = useState<string[]>([]);
   // Loan terms (Borrowings): optional as a group.
   // Repayment: the loan (Borrowed row) this payment is linked to; "" = unlinked.
+  // Borrowed row: ids of the repayments linked to it (the Payments multi-select).
+  const [paymentIds, setPaymentIds] = useState<string[]>([]);
   const [linkedBorrowingId, setLinkedBorrowingId] = useState("");
   const [interestInput, setInterestInput] = useState("");
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
@@ -50,6 +52,7 @@ export function useWorkflowForm() {
     setEditingId(record?.id ?? null);
     setCcCoveredIds(record?.ccPaymentCoveredIds ?? []);
     setLinkedBorrowingId(record?.linkedBorrowingId ?? "");
+    setPaymentIds([]);
     setInterestInput(record?.interest != null ? String(record.interest) : "");
     setPaymentFrequency(record?.paymentFrequency ?? "");
     setPeriodCountInput(record?.periodCount != null ? String(record.periodCount) : "");
@@ -65,6 +68,7 @@ export function useWorkflowForm() {
     workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput,
     editingId, setEditingId,
     ccCoveredIds, setCcCoveredIds,
+    paymentIds, setPaymentIds,
     linkedBorrowingId, setLinkedBorrowingId,
     interestInput, setInterestInput,
     paymentFrequency, setPaymentFrequency,

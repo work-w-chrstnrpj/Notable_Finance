@@ -38,6 +38,8 @@ export function WorkflowFormFields({
   invalidFields,
   loanSummary,
   loanOptions,
+  loanHasTerms,
+  payments,
 }: {
   form: ReturnType<typeof useWorkflowForm>;
   label: string;
@@ -66,6 +68,15 @@ export function WorkflowFormFields({
   loanSummary?: LoanSummary | null;
   /** Loans with terms on the chosen Borrow account, for a repayment's loan picker. */
   loanOptions?: { id: string; label: string }[];
+  /** Whether the viewed Borrowed row has Loan terms (a Suggested payment only makes sense then). */
+  loanHasTerms?: boolean;
+  /** Payments multi-select for a saved Borrowed row (same pattern as CC Payment's Covered Expenses). */
+  payments?: {
+    items: { id: string; label: string; sublabel: string }[];
+    selectedIds: string[];
+    totalPaid: number;
+    onChange: (ids: string[]) => void;
+  } | null;
 }) {
   const bad = (key: string) => invalidFields?.has(key) ?? false;
   const {
@@ -195,13 +206,34 @@ export function WorkflowFormFields({
               {loanSummary && (
                 <>
                   <ComputedField label="Total owed" value={formatMoney(loanSummary.totalOwed)} />
-                  <ComputedField
-                    label="Suggested payment"
-                    value={loanSummary.suggestedPayment != null ? formatMoney(loanSummary.suggestedPayment) : "—"}
-                  />
+                  {loanHasTerms !== false && (
+                    <ComputedField
+                      label="Suggested payment"
+                      value={loanSummary.suggestedPayment != null ? formatMoney(loanSummary.suggestedPayment) : "—"}
+                    />
+                  )}
                   <ComputedField label="Paid amount" value={formatMoney(loanSummary.paidAmount)} />
                   <ComputedField label="Payments made" value={String(loanSummary.paymentsMade)} />
-                  <ComputedField label="Remaining balance" value={formatMoney(loanSummary.remainingBalance)} />
+                  <ComputedField
+                    label="Remaining balance"
+                    value={formatMoney(loanSummary.remainingBalance)}
+                    valueTone={loanSummary.remainingBalance > 0.005 ? "rose" : "ink"}
+                  />
+                </>
+              )}
+              {payments && (
+                <>
+                  <Field label="Payments">
+                    <MultiSelect
+                      placeholder="Search repayments to link..."
+                      selectedIds={payments.selectedIds}
+                      onChange={payments.onChange}
+                      items={payments.items}
+                    />
+                  </Field>
+                  {payments.selectedIds.length > 0 && (
+                    <ComputedField label="Total paid" value={formatMoney(payments.totalPaid)} />
+                  )}
                 </>
               )}
             </>

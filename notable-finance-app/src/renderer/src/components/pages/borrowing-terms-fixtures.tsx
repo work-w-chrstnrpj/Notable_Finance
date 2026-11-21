@@ -48,7 +48,8 @@ export function renderBorrowings(initial: Row[], accounts = [wallet, borrowAccou
   return { ...view, create, update, store };
 }
 
-export const rowFor = (name: string) => screen.getByText(name).closest("tr") as HTMLElement;
+/** The table row for a record (scoped to the table, since an open modal repeats the name in its title). */
+export const rowFor = (name: string) => within(screen.getByRole("table")).getByText(name).closest("tr") as HTMLElement;
 /** The value shown next to a computed field label inside a dialog. */
 export const computed = (dialog: HTMLElement, label: string) => within(dialog).getByText(label).parentElement!.querySelector("strong")!.textContent;
 export async function openRecord(name: string) {
