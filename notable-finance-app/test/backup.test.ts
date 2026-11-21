@@ -164,3 +164,49 @@ dbDescribe('importBackup', () => {
     expect(out.reason).toContain('live database')
   })
 })
+
+// monthly-budget/05: saved budgets travel with the database backup.
+dbDescribe('saved budgets in backups', () => {
+  const seed = () => {
+    const sqlite = getSqlite()
+    sqlite.exec(`
+      DELETE FROM monthly_budget_snapshots;
+      INSERT INTO monthly_budget_snapshots (id, month, category_id, category_name, budget, created_at, updated_at)
+      VALUES ('s1', '2026-01', 'food', 'Food', 5000, 1, 1), ('s2', '2026-01', 'fun', 'Fun', 900, 1, 1);
+    `)
+  }
+
+  dbIt('monthly-budget/05#AC1 a backup counts saved budgets and restore brings them back', async () => {
+    seed()
+    const file = join(state.dir, 'with-budgets.sqlite')
+    const out = await exportBackup(file)
+    expect(out.meta.counts.monthly_budget_snapshots).toBe(2)
+
+    getSqlite().exec('DELETE FROM monthly_budget_snapshots')
+    const restored = await importBackup(file)
+    expect(restored.valid).toBe(true)
+    const rows = getSqlite()
+      .prepare('SELECT month, category_name, budget FROM monthly_budget_snapshots ORDER BY category_name')
+      .all()
+    expect(rows).toEqual([
+      { month: '2026-01', category_name: 'Food', budget: 5000 },
+      { month: '2026-01', category_name: 'Fun', budget: 900 }
+    ])
+  })
+
+  dbIt('monthly-budget/05#AC2 a backup made before this feature restores and shows no saved sets', async () => {
+    const file = join(state.dir, 'pre-feature.sqlite')
+    await exportBackup(file)
+    const Database = (await import('better-sqlite3')).default
+    const conn = new Database(file)
+    // Make it look like it predates the saved-budgets migration: no table, and the migration not yet applied.
+    conn.exec('DROP TABLE monthly_budget_snapshots')
+    conn.exec('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT MAX(created_at) FROM __drizzle_migrations)')
+    conn.close()
+
+    const restored = await importBackup(file)
+    expect(restored.valid).toBe(true)
+    const count = getSqlite().prepare('SELECT COUNT(*) AS c FROM monthly_budget_snapshots').get() as { c: number }
+    expect(count.c).toBe(0)
+  })
+})

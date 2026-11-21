@@ -167,7 +167,7 @@ describe('resolveBudgets, source = saved', () => {
     expect(find(notionMode, 'food')?.budget).toBe(9500)
   })
 
-  it('monthly-budget/03#AC8 flags a category whose saved period budget differs from the Notion figure', () => {
+  it('flags a category whose saved period budget differs from the Notion figure', () => {
     const months = monthsInRange('Monthly', '2026-01')
     const r = resolveBudgets({
       months,
@@ -184,8 +184,8 @@ describe('budgetSourceBadge', () => {
   it('monthly-budget/03#AC3 says which budgets are in use and how much is covered', () => {
     expect(budgetSourceBadge('notion', 0, 4)).toBe('Notion budgets')
     expect(budgetSourceBadge('saved', 4, 4)).toBe('Saved budgets')
-    expect(budgetSourceBadge('saved', 3, 4)).toBe('Saved budgets: 3 of 4 months (rest use Notion)')
-    expect(budgetSourceBadge('saved', 0, 4)).toBe('No saved budgets, using Notion budgets')
+    expect(budgetSourceBadge('saved', 3, 4)).toBe('Saved budgets: 3 of 4 months')
+    expect(budgetSourceBadge('saved', 0, 4)).toBe('No budget saved')
     // A Notion source never claims saved coverage, even if rows exist.
     expect(budgetSourceBadge('notion', 3, 4)).toBe('Notion budgets')
   })

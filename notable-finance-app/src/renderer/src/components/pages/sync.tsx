@@ -400,7 +400,7 @@ function DesktopSyncPanel() {
       {showResetConfirm && (
         <ConfirmModal
           title="Reset local database"
-          message="Are you sure you want to reset the local database? All local data will be deleted and re-downloaded from Notion. This action cannot be undone."
+          message="Are you sure you want to reset the local database? All local data will be deleted and re-downloaded from Notion. Saved budgets are kept, but they exist only on this computer and are not in Notion, so export them first as a safe copy (Settings → Saved budgets → Export all budgets). This action cannot be undone."
           confirmLabel="Reset"
           danger
           busy={busy}

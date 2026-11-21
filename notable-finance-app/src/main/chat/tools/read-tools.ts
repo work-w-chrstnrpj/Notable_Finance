@@ -87,10 +87,15 @@ export function getDashboardSummary(args: unknown) {
   }
 }
 
+/** Optional `budgetSource` argument: 'saved' or 'notion'. Anything else (or absent) is Notion, so answers do not change. */
+function budgetSourceArg(a: Record<string, unknown>): 'notion' | 'saved' {
+  return a.budgetSource === 'saved' ? 'saved' : 'notion'
+}
+
 export function getMonthlyMonitoringSnapshot(args: unknown) {
   const a = asRecord(args)
   const month = requireMonth(a.month ?? currentMonth())
-  return reports.monitoring(month)
+  return reports.monitoring(month, budgetSourceArg(a))
 }
 
 export function listAccountsTool(args: unknown) {
@@ -237,7 +242,7 @@ export function queryExpenses(args: unknown) {
 export function getCategoryBudgetStatus(args: unknown) {
   const a = asRecord(args)
   const month = requireMonth(a.month ?? currentMonth())
-  const snap = reports.monitoring(month)
+  const snap = reports.monitoring(month, budgetSourceArg(a))
   const categoryId = str(a.categoryId)
   const categoryName = str(a.categoryName)?.toLowerCase()
 

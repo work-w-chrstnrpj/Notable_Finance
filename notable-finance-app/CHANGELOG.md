@@ -5,6 +5,15 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Saved budgets** on Monthly Monitoring. A Notion | Saved toggle picks where budgets come from, in Monthly, Quarterly, Semi-Annually and Annually views; Notion stays the default so current numbers do not change. Save a month's budgets from today's Notion budgets, edit them as a form or as JSON (copy one month's JSON into another), or delete them. Months without a saved set use Notion budgets, and the badge says "No budget saved" or how many months are covered.
+- **Budgets CSV import and export.** Export saved budgets or a template, and import with a preview. **Settings → Saved budgets** exports and imports every month at once.
+- Saved budgets are local only and are included in database backups. The Reset local database confirmation tells you to export them first.
+- Chat can report budgets from either source (Notion by default). It cannot change saved budgets.
+
 ## [3.0.0] - 2026-11-14
 
 The desktop app is now the whole project: the earlier web app and its docs were removed.

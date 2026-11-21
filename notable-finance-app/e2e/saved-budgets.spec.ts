@@ -47,7 +47,7 @@ test('monthly-budget/03#AC11 switching the budget source changes the Monitoring 
 
   // Saved with nothing saved yet: same figures, and the badge says so.
   await source.getByRole('button', { name: 'Saved' }).click()
-  await expect(win.getByText('No saved budgets, using Notion budgets')).toBeVisible()
+  await expect(win.getByText('No budget saved')).toBeVisible()
   await expect(groceriesRow()).toContainText('8,000.00')
 
   // The budget action buttons start hidden and an icon button shows them, like Filters on Expense.
@@ -63,7 +63,7 @@ test('monthly-budget/03#AC11 switching the budget source changes the Monitoring 
   await expect(win.getByRole('dialog')).toHaveCount(0)
   await expect(win.getByText('Saved budgets', { exact: true })).toBeVisible()
   await expect(groceriesRow()).toContainText('5,000.00')
-  await expect(groceriesRow()).toContainText('Notion ₱8,000.00')
+  await expect(groceriesRow()).not.toContainText('Notion')
 
   // Back to Notion: the figure returns, and the saved set is still there for next time.
   await source.getByRole('button', { name: 'Notion' }).click()

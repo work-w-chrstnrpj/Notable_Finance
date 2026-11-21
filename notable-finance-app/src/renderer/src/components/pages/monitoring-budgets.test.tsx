@@ -70,16 +70,16 @@ describe("Monitoring budget source", () => {
 
   it("monthly-budget/03#AC3 Saved source with some months saved shows the partial-coverage badge and uses Notion for the rest", async () => {
     renderMonitoring({ mode: "Quarterly", source: "saved", rows: [savedRow("2026-01", "food", 5000), savedRow("2026-01", "transport", 1000)] });
-    expect(await screen.findByText("Saved budgets: 1 of 4 months (rest use Notion)")).toBeInTheDocument();
+    expect(await screen.findByText("Saved budgets: 1 of 4 months")).toBeInTheDocument();
     const row = await budgetRow("Food");
-    // Jan saved 5,000 + Feb to Apr Notion 3 x 8,000 = 29,000, with the Notion figure (32,000) shown muted.
+    // Jan saved 5,000 + Feb to Apr Notion 3 x 8,000 = 29,000. No muted Notion line under the figure.
     expect(row).toHaveTextContent("29,000.00");
-    expect(row).toHaveTextContent("Notion ₱32,000.00");
+    expect(row).not.toHaveTextContent("Notion");
   });
 
   it("monthly-budget/03#AC3 says so when no month has saved budgets, and keeps Notion figures", async () => {
     renderMonitoring({ source: "saved" });
-    expect(await screen.findByText("No saved budgets, using Notion budgets")).toBeInTheDocument();
+    expect(await screen.findByText("No budget saved")).toBeInTheDocument();
     expect(await budgetRow("Food")).toHaveTextContent("8,000.00");
   });
 
@@ -267,7 +267,7 @@ describe("review fixes", () => {
     expect(importPreview).toHaveBeenCalledTimes(1);
   });
 
-  it("monthly-budget/03#AC8 a differing saved budget still sorts as a number in the table", async () => {
+  it("a saved budget sorts as a number in the table", async () => {
     renderMonitoring({ mode: "Quarterly", source: "saved", rows: [savedRow("2026-01", "food", 5000), savedRow("2026-01", "transport", 1000)] });
     await budgetRow("Food");
     fireEvent.click(screen.getByRole("button", { name: /Quarterly Budget/ }));

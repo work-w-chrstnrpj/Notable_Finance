@@ -22,7 +22,6 @@ import { useUiSettings } from "@/lib/ui-settings-context";
 import { usePersistedFilters } from "@/features/records/use-persisted-filters";
 import {
   BudgetActions,
-  BudgetFigure,
   BudgetSourceBadge,
   EditBudgetsModal,
   ExportBudgetsModal,
@@ -314,8 +313,6 @@ function MonthlyMonitoringPage({
         spending: category.spending,
         budget,
         remaining: budget - category.spending,
-        notionBudget: resolved?.notionBudget ?? category.monthlyBudget * rangeMonths.length,
-        differs: budgetSource === "saved" && Boolean(resolved?.differs),
         overview:
           budgetSource === "notion"
             ? category.overview
@@ -333,8 +330,6 @@ function MonthlyMonitoringPage({
         spending: 0,
         budget: entry.budget,
         remaining: entry.budget,
-        notionBudget: 0,
-        differs: true,
         overview: `${formatPercent(0)} used`,
         totalOverview: 0,
       })),
@@ -357,14 +352,6 @@ function MonthlyMonitoringPage({
   const scaledMonthlyBudgetTotal = expenseBudgetRows.reduce((sum, row) => sum + row.budget, 0);
   const scaledBudgetSpendingTotal = budgetSpendingTotal; // spending is actual
   const scaledRemainingTotal = scaledMonthlyBudgetTotal - budgetSpendingTotal;
-
-  /** A budget figure; in saved mode a muted line shows the Notion figure when it differs. */
-  const budgetCell = (row: (typeof expenseBudgetRows)[number]) =>
-    row.differs ? (
-      <BudgetFigure key={`${row.id}-budget`} value={row.budget} notionValue={row.notionBudget} />
-    ) : (
-      formatMoney(row.budget)
-    );
 
   // Expose this view's DOM to the FAB so it can capture an Insight Shot.
   const { setInsight } = useFabRegister();
@@ -618,7 +605,7 @@ function MonthlyMonitoringPage({
       <Panel
         title={`${period} Budget`}
         action={
-          <div className={styles["panel-header-actions"]}>
+          <div className={styles["budget-header-actions"]}>
             <BudgetSourceBadge text={budgetBadgeText} muted={budgetSource === "saved" && resolvedBudgets.monthsCovered === 0} />
           <div className={cx(styles["panel-header-actions"], SHOT_HIDE_CLASS)}>
             {budgetSource === "saved" && (
@@ -671,7 +658,7 @@ function MonthlyMonitoringPage({
                 <CategoryIcon icon={row.icon} />
                 {row.name}
               </span>,
-              budgetCell(row),
+              formatMoney(row.budget),
               formatMoney(row.spending),
               formatMoney(row.remaining),
             ])}
@@ -695,7 +682,7 @@ function MonthlyMonitoringPage({
                 <CategoryIcon icon={row.icon} />
                 {row.name}
               </span>,
-              budgetCell(row),
+              formatMoney(row.budget),
               formatMoney(row.spending),
               formatMoney(row.remaining),
               row.overview,

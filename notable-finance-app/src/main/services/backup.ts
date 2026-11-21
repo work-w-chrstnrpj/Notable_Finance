@@ -68,6 +68,7 @@ const COUNTED_TABLES = [
   'accounts',
   'income_categories',
   'expense_categories',
+  'monthly_budget_snapshots',
   'conflicts',
   'mutation_queue',
   'activity_log',

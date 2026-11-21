@@ -1,6 +1,6 @@
 # Monthly budget snapshots (saved budgets)
 
-Status: **specification with decisions settled on 2026-11-16 (section 16), not implemented.** Desktop-only, local-only feature. Tickets: `tickets/monthly-budget/`. Decision record: [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md). It adds no Notion property, no Notion database change and no sync behavior.
+Status: **implemented (2026-11-18).** Decisions were settled on 2026-11-16 (section 16). Desktop-only, local-only feature. Tickets: `tickets/monthly-budget/`. Decision record: [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md). It adds no Notion property, no Notion database change and no sync behavior.
 
 ## 1. Problem
 

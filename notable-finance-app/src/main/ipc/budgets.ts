@@ -12,6 +12,7 @@ import {
   saveBudgetsFromNotion
 } from '../db/budgets'
 import { commitBudgetImport, exportBudgetsCsv, previewBudgetImport } from '../services/budget-files'
+import { logDevOperation } from '../dev-logs/store'
 import { handle } from './handle'
 import { result } from './shared'
 
@@ -24,12 +25,26 @@ export function registerBudgetsIpc(): void {
     result(() => listSavedBudgets(range?.fromMonth, range?.toMonth))
   )
   handle(IPC_CHANNELS.budgetsSaveFromNotion, (_e, month: string, replace?: boolean) =>
-    result(() => saveBudgetsFromNotion(month, replace === true))
+    result(() => {
+      const out = saveBudgetsFromNotion(month, replace === true)
+      logDevOperation('budgets:save', 'Saved budgets for a month from Notion', { month, saved: out.saved })
+      return out
+    })
   )
   handle(IPC_CHANNELS.budgetsSaveSet, (_e, month: string, rows: SavedBudgetInput[]) =>
-    result(() => replaceBudgetSet(month, rows))
+    result(() => {
+      const out = replaceBudgetSet(month, rows)
+      logDevOperation('budgets:save', 'Saved budgets for a month', { month, saved: out.saved })
+      return out
+    })
   )
-  handle(IPC_CHANNELS.budgetsDeleteSet, (_e, month: string) => result(() => deleteBudgetSet(month)))
+  handle(IPC_CHANNELS.budgetsDeleteSet, (_e, month: string) =>
+    result(() => {
+      const out = deleteBudgetSet(month)
+      logDevOperation('budgets:delete', 'Deleted saved budgets for a month', { month, deleted: out.deleted })
+      return out
+    })
+  )
   handle(IPC_CHANNELS.budgetsExportCsv, (event, req: BudgetExportRequest) =>
     result(() => exportBudgetsCsv(req, BrowserWindow.fromWebContents(event.sender)))
   )
@@ -39,6 +54,13 @@ export function registerBudgetsIpc(): void {
       result(() => previewBudgetImport(opts, BrowserWindow.fromWebContents(event.sender)))
   )
   handle(IPC_CHANNELS.budgetsImportCommit, (_e, opts: { previewId: string; policy: BudgetImportPolicy }) =>
-    result(() => commitBudgetImport(opts))
+    result(async () => {
+      const out = await commitBudgetImport(opts)
+      logDevOperation('budgets:import', 'Imported saved budgets from CSV', {
+        written: out.written,
+        months: out.months
+      })
+      return out
+    })
   )
 }

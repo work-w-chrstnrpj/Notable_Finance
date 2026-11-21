@@ -1,11 +1,18 @@
 // Saved budgets UI for Monitoring (ADR-0006, tickets monthly-budget/03 and /04).
 // Data lives in the main process (local SQLite); these components only call window.api.budgets.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, Pencil, Save, Upload, X } from "lucide-react";
+import { Copy, Download, Pencil, Save, Upload, X } from "lucide-react";
 import { Field, SegmentedControl } from "@/components/ui";
 import { cx, getMonthLabel } from "@/lib/finance-helpers";
 import { formatMoney } from "@/lib/format";
-import { isValidMonth, roundBudget, type SavedBudgetRow } from "@shared/saved-budgets";
+import {
+  budgetsToJson,
+  isValidMonth,
+  parseBudgetsJson,
+  parseBudgetText,
+  type BudgetJsonEntry,
+  type SavedBudgetRow,
+} from "@shared/saved-budgets";
 import type {
   BudgetImportPolicy,
   BudgetImportPreview,
@@ -42,10 +49,19 @@ export function useSavedBudgets(fromMonth: string | undefined, toMonth: string |
 }
 
 /** Parse a budget typed in an input. Null when it is not a non-negative number. */
-function parseBudgetInput(value: string): number | null {
-  const cleaned = value.replace(/[₱\s,]/g, "");
-  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
-  return roundBudget(Number(cleaned));
+const parseBudgetInput = parseBudgetText;
+
+/**
+ * A labelled group of buttons. Not a <label>: a label wrapped around buttons becomes the accessible
+ * name of the first button ("View Form JSON"), which would break screen readers and button lookups.
+ */
+function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="field">
+      <span>{label}</span>
+      {children}
+    </div>
+  );
 }
 
 function ModalShell({
@@ -92,19 +108,6 @@ function ModalShell({
         <div className="modal-panel__footer">{footer}</div>
       </section>
     </div>
-  );
-}
-
-/**
- * A budget figure in a table cell. Carries a numeric `value` so the table sorts it as a number,
- * and optionally a muted line with the Notion figure when a saved budget differs from it.
- */
-export function BudgetFigure({ value, notionValue }: { value: number; notionValue?: number }) {
-  return (
-    <span>
-      {formatMoney(value)}
-      {notionValue !== undefined && <span className={styles["budget-diff"]}>Notion {formatMoney(notionValue)}</span>}
-    </span>
   );
 }
 
@@ -206,6 +209,9 @@ export function EditBudgetsModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<ActionMessage>(null);
+  const [view, setView] = useState<"form" | "json">("form");
+  const [jsonText, setJsonText] = useState("");
+  const [jsonErrors, setJsonErrors] = useState<string[]>([]);
 
   // The parent rebuilds `categories` on every render. Reload the set only when its content changes,
   // so a re-render while the user is typing never wipes their input.
@@ -221,10 +227,20 @@ export function EditBudgetsModal({
     return saved.filter((r) => !currentIds.has(r.categoryId) && !currentNames.has(r.categoryName.trim().toLowerCase()));
   }, [saved, categories]);
 
+  // Every editable budget, in screen order: current categories, then removed ones that still have saved rows.
+  const entries: BudgetJsonEntry[] = useMemo(
+    () => [
+      ...categories.map((c) => ({ key: c.id, name: c.name })),
+      ...removed.map((r) => ({ key: `removed:${r.categoryId}`, name: r.categoryName })),
+    ],
+    [categories, removed],
+  );
+
   useEffect(() => {
     let cancelled = false;
     setSaved(null);
     setErrors({});
+    setJsonErrors([]);
     setMessage(null);
     const current = categoriesRef.current;
     void window.api?.budgets?.list({ fromMonth: month, toMonth: month }).then((res) => {
@@ -252,18 +268,68 @@ export function EditBudgetsModal({
 
   const hasSet = (saved?.length ?? 0) > 0;
 
+  // A different month was loaded: show it in the JSON view too (the pasted text belongs to the old month).
+  useEffect(() => {
+    if (saved !== null) setJsonText(budgetsToJson(entries, values));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when a month's set finishes loading
+  }, [saved]);
+
+  function showView(next: "form" | "json") {
+    if (next === view) return;
+    setMessage(null);
+    if (next === "json") {
+      setJsonText(budgetsToJson(entries, values));
+      setJsonErrors([]);
+      setView("json");
+      return;
+    }
+    // JSON to form: apply what was typed or pasted. Bad JSON stays on screen with its errors.
+    const parsed = parseBudgetsJson(jsonText, entries);
+    if ("errors" in parsed) {
+      setJsonErrors(parsed.errors);
+      return;
+    }
+    setValues((prev) => ({ ...prev, ...parsed.values }));
+    setErrors({});
+    setJsonErrors([]);
+    setView("form");
+  }
+
+  async function copyJson() {
+    try {
+      await navigator.clipboard.writeText(jsonText);
+      setMessage({ kind: "info", text: "Copied. Choose another month and paste it into its JSON view." });
+    } catch {
+      setMessage({ kind: "error", text: "Could not copy. Select the text and copy it by hand." });
+    }
+  }
+
   function fillFromNotion() {
     const next = { ...values };
     for (const c of categories) next[c.id] = String(c.monthlyBudget);
     setValues(next);
     setErrors({});
+    setJsonErrors([]);
+    if (view === "json") setJsonText(budgetsToJson(entries, next));
   }
 
   async function save() {
+    // In the JSON view, read the JSON first; invalid JSON blocks Save.
+    let current = values;
+    if (view === "json") {
+      const parsed = parseBudgetsJson(jsonText, entries);
+      if ("errors" in parsed) {
+        setJsonErrors(parsed.errors);
+        return;
+      }
+      current = { ...values, ...parsed.values };
+      setValues(current);
+      setJsonErrors([]);
+    }
     const nextErrors: Record<string, string> = {};
     const rows: SavedBudgetInput[] = [];
     const check = (key: string, categoryId: string, categoryName: string) => {
-      const parsed = parseBudgetInput(values[key] ?? "");
+      const parsed = parseBudgetInput(current[key] ?? "");
       if (parsed === null) nextErrors[key] = "Enter a number of 0 or more (up to 2 decimals).";
       else rows.push({ categoryId, categoryName, budget: parsed });
     };
@@ -362,6 +428,17 @@ export function EditBudgetsModal({
             ))}
           </select>
         </Field>
+        <FieldGroup label="View">
+          <SegmentedControl
+            label="Edit view"
+            options={[
+              { label: "Form", value: "form" },
+              { label: "JSON", value: "json" },
+            ]}
+            value={view}
+            onChange={(value) => showView(value as "form" | "json")}
+          />
+        </FieldGroup>
         {saved !== null && !hasSet && (
           <p className={styles["budget-hint"]}>
             No saved budgets for {getMonthLabel(month)} yet. The values below start from today&apos;s Notion budgets; nothing is
@@ -370,11 +447,42 @@ export function EditBudgetsModal({
         )}
         {message && <p className={message.kind === "error" ? "form-error" : undefined}>{message.text}</p>}
       </div>
-      <div className={styles["budget-edit-list"]}>
-        {saved === null && <p className={styles["budget-hint"]}>Loading…</p>}
-        {saved !== null && categories.map((c) => renderRow(c.id, c.name, c.monthlyBudget))}
-        {saved !== null && removed.map((r) => renderRow(`removed:${r.categoryId}`, r.categoryName, null))}
-      </div>
+      {view === "form" && (
+        <div className={styles["budget-edit-list"]}>
+          {saved === null && <p className={styles["budget-hint"]}>Loading…</p>}
+          {saved !== null && categories.map((c) => renderRow(c.id, c.name, c.monthlyBudget))}
+          {saved !== null && removed.map((r) => renderRow(`removed:${r.categoryId}`, r.categoryName, null))}
+        </div>
+      )}
+      {view === "json" && (
+        <div className={styles["budget-json"]}>
+          <p className={styles["budget-hint"]}>
+            Category name to budget, for {getMonthLabel(month)}. To copy a whole month: press Copy JSON, choose another month,
+            switch to JSON, paste over the text and press Save. A category you leave out keeps its current value.
+          </p>
+          <textarea
+            aria-label="Budgets as JSON"
+            className={styles["budget-json__text"]}
+            spellCheck={false}
+            value={jsonText}
+            onChange={(event) => {
+              setJsonText(event.target.value);
+              setJsonErrors([]);
+            }}
+          />
+          <div className={styles["budget-json__actions"]}>
+            <button type="button" className="button" onClick={() => void copyJson()}>
+              <Copy size={16} />
+              Copy JSON
+            </button>
+          </div>
+          {jsonErrors.map((error) => (
+            <p key={error} className="form-error">
+              {error}
+            </p>
+          ))}
+        </div>
+      )}
     </ModalShell>
   );
 }
@@ -445,7 +553,7 @@ export function ExportBudgetsModal({
       }
     >
       <div className="form-grid form-grid--single">
-        <Field label="What to export">
+        <FieldGroup label="What to export">
           <SegmentedControl
             label="Export kind"
             options={[
@@ -455,9 +563,9 @@ export function ExportBudgetsModal({
             value={kind}
             onChange={(value) => setKind(value as "saved" | "template")}
           />
-        </Field>
+        </FieldGroup>
         {kind === "saved" ? (
-          <Field label="Months">
+          <FieldGroup label="Months">
             <SegmentedControl
               label="Export months"
               options={[
@@ -467,7 +575,7 @@ export function ExportBudgetsModal({
               value={scope}
               onChange={(value) => setScope(value as "range" | "all")}
             />
-          </Field>
+          </FieldGroup>
         ) : (
           <>
             <Field label="From month">
@@ -574,7 +682,7 @@ export function ImportBudgetsModal({ onClose, onImported }: { onClose: () => voi
             {counts.new} new, {counts.changed} changed, {counts.unchanged} unchanged, {counts.skipped} skipped,{" "}
             {counts.invalid} invalid. Invalid rows are not imported.
           </p>
-          <Field label="When a month already has saved budgets">
+          <FieldGroup label="When a month already has saved budgets">
             <SegmentedControl
               label="Import policy"
               options={[
@@ -584,7 +692,7 @@ export function ImportBudgetsModal({ onClose, onImported }: { onClose: () => voi
               value={policy}
               onChange={(value) => void changePolicy(value as BudgetImportPolicy)}
             />
-          </Field>
+          </FieldGroup>
           <div className={styles["budget-import-table"]}>
             <table>
               <thead>

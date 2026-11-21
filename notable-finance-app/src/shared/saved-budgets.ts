@@ -206,7 +206,87 @@ export function resolveBudgets(args: {
 /** The badge text for the Budget source (spec section 6.2). */
 export function budgetSourceBadge(source: BudgetSource, monthsCovered: number, monthsInRange: number): string {
   if (source === 'notion') return 'Notion budgets'
-  if (monthsCovered === 0) return 'No saved budgets, using Notion budgets'
+  if (monthsCovered === 0) return 'No budget saved'
   if (monthsCovered >= monthsInRange) return 'Saved budgets'
-  return `Saved budgets: ${monthsCovered} of ${monthsInRange} months (rest use Notion)`
+  return `Saved budgets: ${monthsCovered} of ${monthsInRange} months`
+}
+
+// ── Typed budgets and JSON view (Edit budgets) ─────────────────────────────
+
+/** A budget typed in a field: a number of 0 or more with up to 2 decimals. `₱`, spaces and commas are tolerated. */
+export function parseBudgetText(value: string): number | null {
+  const cleaned = value.replace(/[₱\s,]/g, '')
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null
+  return roundBudget(Number(cleaned))
+}
+
+/** One editable budget in the Edit budgets screen: a stable key and the category name shown to the user. */
+export interface BudgetJsonEntry {
+  key: string
+  name: string
+}
+
+/** JSON names must be unique, so a repeated name gets " (2)", " (3)" and so on. */
+function jsonNames(entries: BudgetJsonEntry[]): Array<{ key: string; name: string }> {
+  const seen = new Map<string, number>()
+  return entries.map((entry) => {
+    const base = entry.name.trim()
+    const norm = base.toLowerCase()
+    const count = (seen.get(norm) ?? 0) + 1
+    seen.set(norm, count)
+    return { key: entry.key, name: count === 1 ? base : `${base} (${count})` }
+  })
+}
+
+/**
+ * A month's budgets as JSON: `{ "Food": 5000, "Transport": 2000 }`, category name to budget.
+ * It holds no month, so the same text can be pasted into any month. A value that is not a valid
+ * number yet (still being typed in the form) is kept as typed so nothing is lost.
+ */
+export function budgetsToJson(entries: BudgetJsonEntry[], values: Record<string, string>): string {
+  const out: Record<string, number | string> = {}
+  for (const { key, name } of jsonNames(entries)) {
+    const raw = values[key] ?? ''
+    out[name] = parseBudgetText(raw) ?? raw
+  }
+  return JSON.stringify(out, null, 2)
+}
+
+export type ParsedBudgetsJson = { values: Record<string, string> } | { errors: string[] }
+
+/**
+ * Read budgets back from JSON. Names match categories case-insensitively; a name that matches no
+ * category is an error; a category left out keeps its current value (so only the keys present are
+ * returned). Each budget must follow the same rule as the form.
+ */
+export function parseBudgetsJson(text: string, entries: BudgetJsonEntry[]): ParsedBudgetsJson {
+  let data: unknown
+  try {
+    data = JSON.parse(text)
+  } catch (error) {
+    return { errors: [`That is not valid JSON: ${error instanceof Error ? error.message : String(error)}`] }
+  }
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+    return { errors: ['Use an object of category name to budget, like { "Food": 5000 }.'] }
+  }
+  const byName = new Map(jsonNames(entries).map((e) => [e.name.toLowerCase(), e.key]))
+  const values: Record<string, string> = {}
+  const errors: string[] = []
+  const used = new Set<string>()
+  for (const [name, raw] of Object.entries(data as Record<string, unknown>)) {
+    const key = byName.get(name.trim().toLowerCase())
+    if (!key) {
+      errors.push(`Unknown category "${name}".`)
+      continue
+    }
+    if (used.has(key)) {
+      errors.push(`"${name}" appears more than once.`)
+      continue
+    }
+    used.add(key)
+    const amount = typeof raw === 'number' ? (Number.isFinite(raw) ? parseBudgetText(String(raw)) : null) : typeof raw === 'string' ? parseBudgetText(raw) : null
+    if (amount === null) errors.push(`The budget for "${name}" must be a number of 0 or more with up to 2 decimals.`)
+    else values[key] = String(amount)
+  }
+  return errors.length > 0 ? { errors: errors.slice(0, 6) } : { values }
 }
