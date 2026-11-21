@@ -1,6 +1,6 @@
 # Feature: Monthly budget snapshots (saved budgets)
 
-Status: Proposed (spec drafted, not started)
+Status: Superseded by `tickets/monthly-budget/` (spec and tickets 01 to 05). Kept for history only; do not work from this file.
 Requested: 2026-11-16
 Spec: [wiki/desktop/monthly-budget-snapshots.md](../../wiki/desktop/monthly-budget-snapshots.md)
 

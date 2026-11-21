@@ -32,3 +32,7 @@ The decisions made while grilling the saved-budgets feature are written into the
 - Decisions: UI name "Saved budgets" (table stays `monthly_budget_snapshots`); Quarterly stays 4 months, changing it is a separate ticket; Edit budgets and CSV use the category list Monitoring shows; CSV import overwrites matching rows with a skip-existing-months option; saving the current or a future month is allowed; a category missing from a saved month shows 0; delete asks a normal confirm for every month; chat parity deferred to the last phase and defaults to Notion budgets; the Need/Wants/Savings split stays current-only; work splits into four tickets under `tickets/monthly-budget/`, one per spec phase.
 - Did: Updated the spec (section 16 now lists the 11 decisions), the glossary and added ADR-0006. `validate` passes.
 - Next: `/to-spec` then `/to-tickets` to create the four implementation tickets; mark `tickets/features/monthly-budget-snapshots.md` as superseded then.
+
+### 2026-11-19 claude
+- Did: Re-checked every criterion against the repo. The spec status now reads implemented, section 16 holds the decisions, `GLOSSARY.md` no longer says "proposed, not built", ADR-0006 exists, and the old `tickets/features/monthly-budget-snapshots.md` is marked superseded. `validate` passes (55 checks).
+- Next: `[serve]` to commit; waiting for the user's acceptance.

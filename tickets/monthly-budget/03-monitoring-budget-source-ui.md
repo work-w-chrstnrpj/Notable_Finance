@@ -11,16 +11,17 @@ On Monitoring the user sees a Budget source control (Notion | Saved) beside the 
 ## Acceptance criteria
 - [x] AC1: With the source on Notion, Monitoring figures are identical to the previous release in Monthly, Quarterly, Semi-Annually and Annually.
 - [x] AC2: Saving budgets for January and then changing Food's Notion budget leaves January's Saved-mode remaining unchanged and Notion-mode remaining updated.
-- [x] AC3: The badge shows "Notion budgets", "Saved budgets", "Saved budgets: N of M months (rest use Notion)" or "No saved budgets, using Notion budgets" to match the source and coverage.
+- [x] AC3: The badge shows "Notion budgets", "Saved budgets", "Saved budgets: N of M months" or "No budget saved" to match the source and coverage, on one short line.
 - [x] AC4: Save budgets for this month works for any month, past, current or future, and asks "Replace the saved budgets for <Month Year>?" when that month already has a set.
 - [x] AC5: Edit budgets shows one row per category with its saved budget and the Notion budget as a muted reference, and offers Fill from Notion, Delete, Save and Cancel.
 - [x] AC6: Invalid input in Edit budgets blocks Save and shows error text; a valid Save writes the whole set at once.
 - [x] AC7: Deleting a month's saved budgets asks "Delete saved budgets for <Month Year>?" for every month, and afterwards the month uses Notion budgets.
-- [x] AC8: In Saved mode a category whose period budget differs from the Notion figure shows the Notion figure as a muted line.
+- [ ] ~~AC8: In Saved mode a category whose period budget differs from the Notion figure shows the Notion figure as a muted line.~~ dropped: the user asked to remove the muted "Notion" line under a saved budget in the table.
 - [x] AC9: The zero filters and the budget, spending and remaining totals use the resolved budgets; income cards and the Need/Wants/Savings split are unchanged.
 - [x] AC10: The chosen source persists across restarts.
 - [x] AC11: A Playwright check switches the source and sees the Monitoring figures change; any existing e2e that asserts Monitoring text is updated.
 - [ ] AC12: In Saved mode the budget action buttons sit on the right of the Budget panel and are hidden until the user turns them on with an icon button in the panel header, like the Filters button on Expense; the choice is remembered across restarts.
+- [ ] AC13: Edit budgets can show the month's budgets as JSON as well as the form, with a toggle between the two and a Copy button; pasting a month's JSON into another month's JSON view and saving copies the whole budget across, and invalid JSON blocks Save with error text.
 
 ## Inputs
 - `tickets/monthly-budget/spec.md`
@@ -59,3 +60,19 @@ On Monitoring the user sees a Budget source control (Notion | Saved) beside the 
 - Requirement change: the user tried the build and asked for the Save, Edit, Import and Export buttons to sit on the right and to be hidden or shown with an icon button like the Filters button on Expense ("make these buttons in the right, and make them hideable toggleable by a (i) button"). Added AC12; AC1 to AC11 are unchanged. The buttons start hidden, as the Expense filter row does, and the choice is stored with the other Monitoring filters.
 - Did: Moved the buttons to a right-aligned row toggled by an info (i) icon button in the Budget panel header; updated the existing Monitoring tests and the Playwright check to open the buttons first. AC12 is not ticked: no test names it yet.
 - Checked: `typecheck` clean, `eslint` 0 errors on the changed files, the existing unit tests (512 passed, 37 skipped under plain Node) and all 49 Playwright specs pass after the change. Not run: no test names AC12 yet, so it stays unticked; the gate will not pass until one does. Next: `/cook-a-ticket [test]` to add it. Not committed.
+
+### 2026-11-18 claude
+- Requirement change: the user asked that Edit budgets can also be viewed as JSON, with a toggle, so a whole month's budget can be copied to another month ("toggle to view in json, which I can copy easily whole budget of a certain month to another month"). Added AC13; AC1 to AC12 are unchanged.
+- Decisions: the JSON is a plain object of category name to budget (`{ "Food": 5000 }`), with no month inside, so it can be pasted into any month. Names match case-insensitively; a name that matches no category is an error; a category left out of the JSON keeps its current value; budgets follow the same rule as the form (0 or more, up to 2 decimals).
+
+### 2026-11-18 claude
+- Requirement change: the user asked to remove the "Notion ₱…" line shown under a budget figure in Saved mode ("remove the 'Notion: ...' when we are using the saved budget"). AC8 is dropped, not renumbered. The Notion reference beside each field in Edit budgets (AC5) is a different place and stays.
+- Did: Removed the muted line and its component from the Monitoring table; updated the tests that asserted it.
+- Did: Edit budgets now has a Form | JSON toggle. The JSON view shows `{ "Food": 5000, ... }` for the chosen month with a Copy JSON button; switching the month keeps you in the JSON view and loads that month's values, so pasting over them and pressing Save copies a whole month across. Invalid JSON, an unknown category name or a bad number blocks Save and the switch back to the form, with error text. The JSON helpers are in the shared module.
+- Did: Removed the muted "Notion ₱…" line under a saved budget in the Monitoring table (AC8 dropped). The Notion reference next to each field in Edit budgets stays.
+- Found and fixed along the way: the Form | JSON toggle, the Export choices and the Import policy buttons were wrapped in a label element, which made the first button's accessible name the whole group ("View Form JSON"). They now use a plain labelled group.
+- Checked: `typecheck` clean, `eslint` 0 errors, all 549 unit tests pass (Electron's Node), and all 49 Playwright specs pass after updating the one that asserted the removed line. A throwaway UI check of the JSON copy flow and the error cases passed and was deleted; no test names AC13 yet, so it stays unticked. Next: `/cook-a-ticket [test]` to add it. Not committed.
+
+### 2026-11-18 claude
+- Requirement change: the user found the Budget panel title wrapping onto two lines and the long badge "No saved budgets, using Notion budgets" ugly in the header ("Just say 'No budget saved.' automatically i know it is using Notion"). AC3 reworded: the none-saved badge is "No budget saved", and the partial badge drops "(rest use Notion)" for the same reason (my reading; say if you want it back). The panel title stays on one line and the header controls share one row.
+- Did: Changed the badge text, kept the panel title on one line, tidied the header layout, updated the tests and the Playwright check that asserted the old text.

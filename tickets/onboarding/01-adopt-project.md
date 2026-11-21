@@ -37,3 +37,8 @@ The repository is onboarded to the engr-toolbox workflow without losing any exis
 ### 2026-11-16 claude
 - Did: `update-docs` pass for the toolbox. `AGENTS.md`: added a Ticket Workflow section, corrected stale rules (Notion as source of truth, "backend", email/Google sign-in, server-side token storage), listed `docs/`, `GLOSSARY.md`, the 10 roles and the toolbox checks. `README.md`: version v3.0.0, real page layout, repository layout, a toolbox section and doc links. `.ai/context-routing.md` and `.ai/maps/agent-map.md`: toolbox routing and `cli sync`. `tests/README.md`, `scripts/README.md`, `tickets/README.md`: current coverage, a note that the PowerShell validator conflicts with the toolbox layout, and the pre-toolbox ticket folders. `validate` passes (54 checks), `drift` clean.
 - Next: Commit. Decide whether to retire or reconcile `scripts/validate-ai-template.ps1`, and run the toolbox `sync` for the generated adapters.
+
+### 2026-11-19 claude
+- Did: Ran the toolbox `cli sync`, which regenerated the adapter files for all tools; `.claude/agents` and the others now carry the current role headings. Ran `drift --mark` (sync point 7aa800f). `validate` passes (55 checks). Still open from earlier: `scripts/validate-ai-template.ps1`, `generate-ai-adapters.ps1` and `sync-ai-adapters.ps1` conflict with the toolbox layout; I left them in place because retiring scripts is the user's call.
+- Note: `drift` lists `docs/database/data-model.md` and `docs/testing/test-specification.md`, which do not exist in this repo; the real docs are under `wiki/` and were updated for saved budgets in monthly-budget/05.
+- Next: `[serve]` to commit; waiting for the user's acceptance.

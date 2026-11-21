@@ -80,12 +80,23 @@ The savings workflow; deposits are Savings-category income.
 Money Lent is a loan the user gave (negative gross income in an auxiliary category) and appears in Receivables. A Borrowing is money the user owes, tracked against Borrow (Auxiliary) accounts.
 _Source_: wiki/desktop/money-lent.md, wiki/desktop/borrowings.md
 
-**Saved budget** (proposed, not built):
+**Loan terms**:
+The optional Interest (flat total), Payment Frequency and Period count on a Borrowed row. A loan without terms behaves as a plain borrowing.
+_Source_: docs/adr/0007-loan-interest-inside-the-borrowing.md
+
+**Suggested payment**:
+Total owed divided by Period count; a minimum guide, never enforced. Repayments are manual and any amount.
+
+**Remaining balance**:
+For a loan with terms, `max(0, principal + interest − linked repayments)`, computed locally.
+_Source_: docs/adr/0007-loan-interest-inside-the-borrowing.md
+
+**Saved budget**:
 A local-only, per-month copy of each expense category's budget, kept so a past month is judged against the budget that applied then. The UI says "Saved budgets"; the internal table is `monthly_budget_snapshots`. A month "has saved budgets" when it has at least one row.
 _Avoid_: snapshot (in the UI), budget history
 _Source_: wiki/desktop/monthly-budget-snapshots.md, docs/adr/0006-saved-budgets-local-only.md
 
-**Budget source** (proposed, not built):
+**Budget source**:
 The Monitoring toggle choosing where budgets come from: **Notion** (today's category budgets) or **Saved** (the month's saved budgets, falling back to Notion budgets for months with none).
 
 More finance terms and exact Notion labels: `wiki/shared/finance-domain-glossary.md`.

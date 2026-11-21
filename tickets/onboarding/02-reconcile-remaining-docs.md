@@ -30,3 +30,8 @@ Docs outside the first adoption pass no longer mention the old PowerShell sync, 
 - Did: Claimed after the user's go-ahead: "yes, go ahead" to fix the stale docs listed in the audit.
 - Did: Replaced the PowerShell sync references with `node .ai/cli/bin/cli.mjs sync` in the READMEs, set the role count to 10 in `.agents/README.md`, added a toolbox pointer to `CONVENTIONS.md`, added an "Outside the wiki" section to `wiki/README.md`, and reworded the pages comment in `project-structure.md`.
 - Next: Commit. Not checked: the `wiki/desktop/` pages beyond `project-structure.md` were not compared line by line with the code, and the generated adapters still carry the old `Reusable Skills` heading until `cli sync` runs.
+
+### 2026-11-19 claude
+- Did: `cli sync` has now run, so the generated adapters match `.agents/` (the old `Reusable Skills` heading is gone). `grep` finds no `generate-ai-adapters` or `sync-ai-adapters.ps1` in the Markdown docs. `validate` passes.
+- Not checked: the `wiki/desktop/` pages other than `project-structure.md` were still not compared line by line with the code.
+- Next: `[serve]` to commit; waiting for the user's acceptance.
