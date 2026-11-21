@@ -855,6 +855,7 @@ function WorkflowPage({
         {workflowRows.length ? (
           <DataTable
             selectable
+            resizable
             recordIds={tableRecordIds}
             selectedIds={selectedIds}
             disabledIds={disabledIds}

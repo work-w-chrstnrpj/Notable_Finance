@@ -441,6 +441,7 @@ function IncomePage({
         ) : (
         <DataTable
           selectable
+          resizable
           recordIds={searchFilteredRecords.map((r) => r.id)}
           selectedIds={selectedIds}
           disabledIds={disabledIds}

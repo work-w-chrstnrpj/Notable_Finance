@@ -457,6 +457,12 @@
   margin-bottom: 14px;
 }
 
+/* A panel title stays on one line; the actions beside it wrap instead. */
+.panel__header h2 {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 
 
 .metric-card {

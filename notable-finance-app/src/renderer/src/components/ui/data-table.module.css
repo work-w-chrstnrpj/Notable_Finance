@@ -598,25 +598,38 @@ table.data-table--resizable th:nth-child(-n+2) {
   margin-left: 4px;
 }
 
+/* Column resize handle (table-resize/01): an invisible hit area at the column's right edge.
+   Nothing shows at rest; hover or keyboard focus reveals an accent line and the resize cursor. */
 .column-resize {
   position: absolute;
   inset: 0 0 0 auto;
-  width: 8px;
+  width: 10px;
   cursor: col-resize;
   touch-action: none;
   user-select: none;
+  background: transparent;
+  outline: none;
 }
 
 .column-resize::after {
   content: "";
   position: absolute;
-  inset: 20% 3px 20% auto;
-  width: 1px;
-  background: var(--line);
+  inset: 0 4px 0 auto;
+  width: 2px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background 120ms ease;
 }
 
-.column-resize:hover,
-.column-resize:focus-visible,
-.column-resize:active {
+.column-resize:hover::after,
+.column-resize:focus-visible::after,
+.column-resize:active::after {
   background: var(--accent);
+}
+
+/* Touch-only devices have no hover, so the handle stays out of the way. */
+@media (hover: none) {
+  .column-resize {
+    display: none;
+  }
 }

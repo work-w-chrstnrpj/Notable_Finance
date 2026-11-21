@@ -5,7 +5,7 @@
 // rolled back with a failure notice. Phase 3's use-optimistic-records extraction must keep this
 // exact sequence. Exercised against IncomePage as the representative implementation.
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
+import { fireEvent, screen, waitFor, waitForElementToBeRemoved, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPage } from "../../../../../test/render-page";
 import { deferred } from "../../../../../test/deferred";
@@ -24,8 +24,10 @@ async function openNewIncomeAndFill(name: string) {
   fireEvent.click(screen.getByRole("button", { name: /New Income/i }));
   // Field labels render a trailing, aria-hidden " *" for required fields — present in
   // textContent, so an exact-string label match fails. Match by prefix instead.
-  await user.type(screen.getByLabelText(/^Name/), name);
-  fireEvent.change(screen.getByLabelText(/^Date/), { target: { value: "2026-07-20" } });
+  // The table header is also labelled "Name" now that the Income table is resizable, so look inside the form.
+  const form = within(await screen.findByRole("dialog"));
+  await user.type(form.getByLabelText(/^Name/), name);
+  fireEvent.change(form.getByLabelText(/^Date/), { target: { value: "2026-07-20" } });
   return user;
 }
 
@@ -55,7 +57,7 @@ describe("Income optimistic save", () => {
 
     // Modal closes before the create request resolves. ("New Income" text alone isn't a safe
     // signal — it's also the always-present toolbar button's label.)
-    await waitFor(() => expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 
     // Optimistic row appears immediately, marked pending.
     const pendingCell = await screen.findByText("Freelance Gig");
