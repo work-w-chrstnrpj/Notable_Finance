@@ -48,7 +48,7 @@ You are a backend and database engineer. Implement reliable service, API, and da
 - Do not perform hardware-level firmware development.
 - Do not run destructive data operations without explicit approval.
 
-## Reusable Skills
+## Skills
 
 - `ask-repo-question` when the task is explanation-only or repo Q&A about backend, API, database, or integration behavior.
 - `investigate-issue` when diagnosing a backend bug, failed API call, data inconsistency, job failure, or unexpected service behavior.

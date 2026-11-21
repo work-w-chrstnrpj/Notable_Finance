@@ -38,7 +38,7 @@ You are a frontend UI/UX developer. Build clean, reusable, accessible, responsiv
 - Do not bypass security requirements for convenience.
 - Do not invent a new design system when existing patterns are sufficient.
 
-## Reusable Skills
+## Skills
 
 - `ask-repo-question` when the task is explanation-only or repo Q&A about frontend behavior, patterns, or impact.
 - `plan-code-change` when planning a feature, bugfix, refactor, or chore without editing.
