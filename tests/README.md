@@ -64,13 +64,13 @@ Run with: `npm --prefix notable-finance-app run test:e2e`
 
 ---
 
-## Planned Coverage
+## Current coverage
 
-- Unit tests for mappers, validators, field access rules, and sync state handling.
-- Integration tests for backend API behavior with mocked Notion responses.
-- Contract tests for API request and response shapes.
-- End-to-end tests for pull, create, edit, delete, and sync workflows.
+- Vitest unit and integration tests: `notable-finance-app/test/` (main process: domain, sync, db, chat) and beside renderer components.
+- Playwright + Electron end-to-end tests: `notable-finance-app/e2e/`.
 - Manual test cases for a non-production Notion workspace/page.
+- Strategy and the map: `wiki/desktop/desktop-testing-strategy.md`, `.ai/maps/testing-map.md`.
+- Acceptance criteria on tickets are numbered `AC1`, `AC2`; tests that cover one should name it as `<ticket>#AC<n>`.
 
 ## Rules
 
@@ -78,4 +78,4 @@ Run with: `npm --prefix notable-finance-app run test:e2e`
 - Verify that computed fields are hidden from forms and rejected in mutation payloads.
 - Verify that income and expense delete behavior follows the title/amount mutation policy.
 - Verify that sync pushes to Notion, pulls fresh data, and refreshes UI state.
-- Add concrete commands after the implementation stack is selected.
+- Commands (run in `notable-finance-app/`): `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:e2e`. Playwright is not part of `npm test`.

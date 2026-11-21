@@ -6,6 +6,7 @@ import type {
   CreateIncomeInput,
   CreateSchedulerInput
 } from '../../shared/finance.types'
+import { isValidMonth } from '../../shared/saved-budgets'
 
 export class ValidationError extends Error {
   readonly code = 'E_VALIDATION'
@@ -35,6 +36,21 @@ export function assertMonth(value: unknown, field = 'month'): void {
   }
 }
 
+/** Saved budgets: a real calendar month, so '2026-13' is rejected (assertMonth only checks the shape). */
+export function assertSavedBudgetMonth(value: unknown, field = 'month'): void {
+  if (!isValidMonth(value)) {
+    throw new ValidationError(`${field} must be a real month (YYYY-MM, month 01-12)`)
+  }
+}
+
+/** Saved budgets: a finite number of at least 0. */
+export function assertBudgetAmount(value: unknown, field = 'budget'): void {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new ValidationError(`${field} must be a finite number`)
+  }
+  if (value < 0) throw new ValidationError(`${field} cannot be negative`)
+}
+
 export function assertFiniteNumber(value: unknown, field: string): void {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     throw new ValidationError(`${field} must be a finite number`)
@@ -58,6 +74,29 @@ export function validateCreateIncome(input: CreateIncomeInput): void {
   assertFiniteNumber(input.grossIncome, 'grossIncome')
   assertOptionalFiniteNumber(input.capitalExpenditure, 'capitalExpenditure')
   assertNonEmptyString(input.categoryId, 'categoryId')
+  validateLoanTerms(input)
+  assertLoanTermsPair(input)
+}
+
+function validateLoanTerms(v: { interest?: unknown; periodCount?: unknown }): void {
+  if (v.interest !== undefined && v.interest !== null) {
+    assertFiniteNumber(v.interest, 'interest')
+    if ((v.interest as number) < 0) throw new ValidationError('interest cannot be negative')
+  }
+  if (v.periodCount !== undefined && v.periodCount !== null) {
+    assertFiniteNumber(v.periodCount, 'periodCount')
+    if (!Number.isInteger(v.periodCount) || (v.periodCount as number) < 1) {
+      throw new ValidationError('Period count must be a whole number of at least 1')
+    }
+  }
+}
+
+/** Period count and Payment Frequency are set together or not at all. */
+export function assertLoanTermsPair(v: { paymentFrequency?: unknown; periodCount?: unknown }): void {
+  const hasFrequency = v.paymentFrequency !== undefined && v.paymentFrequency !== null && v.paymentFrequency !== ''
+  const hasPeriods = v.periodCount !== undefined && v.periodCount !== null
+  if (hasPeriods && !hasFrequency) throw new ValidationError('Period count needs a Payment Frequency')
+  if (hasFrequency && !hasPeriods) throw new ValidationError('Payment Frequency needs a Period count')
 }
 
 export function validateUpdateIncome(patch: Record<string, unknown>): void {
@@ -66,6 +105,7 @@ export function validateUpdateIncome(patch: Record<string, unknown>): void {
   if ('grossIncome' in patch) assertFiniteNumber(patch.grossIncome, 'grossIncome')
   if ('capitalExpenditure' in patch)
     assertOptionalFiniteNumber(patch.capitalExpenditure, 'capitalExpenditure')
+  validateLoanTerms(patch)
 }
 
 export function validateCreateExpense(input: CreateExpenseInput): void {

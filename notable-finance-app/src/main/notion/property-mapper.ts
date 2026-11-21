@@ -38,7 +38,12 @@ export const NOTION_PROPERTY_NAMES = {
     accountId: 'Accounts',
     categoryId: 'Categories',
     transactedAccountId: 'Transacted Account',
-    ccPaymentCoveredId: 'CC Payment Covered'
+    ccPaymentCoveredId: 'CC Payment Covered',
+    // Loan terms (owner-created in Notion; absent properties must degrade, never fail sync).
+    interest: 'Interest',
+    paymentFrequency: 'Payment Frequency',
+    periodCount: 'Period count',
+    linkedBorrowing: 'Linked Borrowing'
   },
   expenseCategories: {
     name: 'Categories',
@@ -132,8 +137,24 @@ export function incomeDtoToProperties(dto: Record<string, unknown>): Record<stri
     properties[names.ccPaymentCoveredId] = buildRelationMulti(
       (dto.ccPaymentCoveredIds as string[]) ?? null
     )
+  if (dto.interest !== undefined)
+    properties[names.interest] = buildNumber(dto.interest === null ? null : Number(dto.interest))
+  if (dto.paymentFrequency !== undefined)
+    properties[names.paymentFrequency] = buildSelect((dto.paymentFrequency as string | null) ?? null)
+  if (dto.periodCount !== undefined)
+    properties[names.periodCount] = buildNumber(dto.periodCount === null ? null : Number(dto.periodCount))
+  if (dto.linkedBorrowingId !== undefined)
+    properties[names.linkedBorrowing] = buildRelation((dto.linkedBorrowingId as string | null) ?? null)
   return properties
 }
+
+/** Notion names of the loan-term properties on an income page (writable, owner-created). */
+export const INCOME_LOAN_PROPERTY_NAMES: string[] = [
+  NOTION_PROPERTY_NAMES.incomes.interest,
+  NOTION_PROPERTY_NAMES.incomes.paymentFrequency,
+  NOTION_PROPERTY_NAMES.incomes.periodCount,
+  NOTION_PROPERTY_NAMES.incomes.linkedBorrowing
+]
 
 /** Build Notion properties for an Expense record. Same emit-only-present contract. */
 export function expenseDtoToProperties(dto: Record<string, unknown>): Record<string, unknown> {

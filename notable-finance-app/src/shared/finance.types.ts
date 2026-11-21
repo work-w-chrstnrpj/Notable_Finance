@@ -1,3 +1,6 @@
+import type { BudgetSource } from './saved-budgets'
+export type { BudgetSource, SavedBudgetRow, BudgetViewMode } from './saved-budgets'
+
 // Finance DTOs — COPIED from the web app to keep the two apps contract-compatible.
 // Sources: web-service/src/common/finance.types.ts
 //          web-app/src/types/finance.ts
@@ -109,6 +112,12 @@ export interface IncomeRecordDto {
   categoryId: string
   transactedAccountId?: string | null
   ccPaymentCoveredIds?: string[]
+  /** Loan terms on a Borrowed row (flat total interest, frequency, period count). All optional. */
+  interest?: number | null
+  paymentFrequency?: PaymentFrequency | null
+  periodCount?: number | null
+  /** On a repayment: the Borrowed row (loan) it pays. */
+  linkedBorrowingId?: string | null
   deleted?: boolean
   /** Local sync state for record-level badges (desktop only; web omits it). */
   syncState?: 'clean' | 'dirty' | 'conflict'
@@ -280,6 +289,10 @@ export interface CreateIncomeInput {
   isTransaction?: boolean
   transactedAccountId?: string | null
   ccPaymentCoveredIds?: string[]
+  interest?: number | null
+  paymentFrequency?: PaymentFrequency | null
+  periodCount?: number | null
+  linkedBorrowingId?: string | null
   /** Workflow origin so the server can lock the fixed income category. */
   view?: IncomeView
 }
@@ -507,6 +520,8 @@ export interface UiMonitoringFilters {
   expenseCategoryView: string
   hideZeroIncomeCategories: boolean
   zeroFilter: 'all' | 'hide-both' | 'hide-spending' | 'hide-budget'
+  /** Saved mode: whether the budget action buttons (Save, Edit, Import, Export) are shown. */
+  budgetActionsOpen: boolean
 }
 
 /** Workflow sections the user may hide from the sidebar (Settings → Sections). */
@@ -540,6 +555,8 @@ export interface UiSettings {
   expenseFilters: UiExpenseFilters
   accountsFilters: UiAccountsFilters
   monitoringFilters: UiMonitoringFilters
+  /** Where Monitoring takes budgets from: Notion's current category budgets or the month's saved budgets. */
+  monitoringBudgetSource: BudgetSource
 }
 
 /** Dev Mode log kinds (in-memory ring buffer; never persisted). */
@@ -890,4 +907,64 @@ export interface UpdaterCheckResult {
   updateAvailable: boolean
   version?: string
   error?: string
+}
+
+
+// ── Saved budgets (ADR-0006, local only) ────────────────────────────────────
+
+/** One edited row when replacing a month's saved set. */
+export interface SavedBudgetInput {
+  categoryId: string
+  categoryName: string
+  budget: number
+}
+
+export type BudgetImportPolicy = 'overwrite' | 'skip-existing-months'
+
+export type BudgetImportRowStatus = 'new' | 'changed' | 'unchanged' | 'skipped' | 'invalid'
+
+export interface BudgetImportRowPreview {
+  /** 1-based line number in the file (header is line 1). */
+  line: number
+  month: string
+  category: string
+  budget: number | null
+  status: BudgetImportRowStatus
+  /** Why the row is invalid or skipped. */
+  reason?: string
+  /** The saved budget being replaced, for changed rows. */
+  previousBudget?: number
+}
+
+export interface BudgetImportPreview {
+  previewId: string
+  fileName: string
+  policy: BudgetImportPolicy
+  counts: Record<BudgetImportRowStatus, number>
+  /** Rows to show: every invalid row first, then others (capped; see `truncated`). */
+  rows: BudgetImportRowPreview[]
+  truncated: boolean
+  /** Rows that would be written on commit (new + changed). */
+  writable: number
+}
+
+export interface BudgetImportResult {
+  written: number
+  months: number
+}
+
+export type BudgetExportKind = 'saved' | 'template'
+
+export interface BudgetExportRequest {
+  kind: BudgetExportKind
+  /** Months to cover ('YYYY-MM'); omit both with kind 'saved' to export every saved month. */
+  fromMonth?: string
+  toMonth?: string
+}
+
+export interface BudgetExportResult {
+  /** True when the user closed the save dialog. */
+  canceled: boolean
+  path?: string
+  rows?: number
 }

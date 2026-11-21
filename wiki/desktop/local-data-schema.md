@@ -52,10 +52,12 @@ incomes(
   account_id, category_id, date, notes,
   is_transaction INTEGER,          -- transactions extend incomes
   transacted_account_id, cc_payment_covered_id,  -- transaction-only
-  page_content, page_content_dirty INTEGER       -- Markdown body sync
+  page_content, page_content_dirty INTEGER,      -- Markdown body sync
+  interest REAL, payment_frequency TEXT, period_count INTEGER,  -- loan terms on a Borrowed row (nullable)
+  linked_borrowing_id TEXT                        -- on a repayment: the loan it pays (nullable)
 )
 ```
-Computed (not stored): `net_income = gross_income - capital_expenditure`.
+Computed (not stored): `net_income = gross_income - capital_expenditure`. Loan terms and the link were added by migration `0016_loan_terms` (four nullable columns). They are writable fields included in the base snapshot for three-way merge. Total owed, Suggested payment, Paid amount, Payments made and Remaining balance are computed from them and the linked repayments, never stored. See [Borrowings](borrowings.md).
 
 ### `expenses` (writable)
 ```
@@ -104,6 +106,9 @@ Append-only journal of pending local mutations so offline edits replay in order 
 
 ### `activity_log` (history feed)
 Durable, newest-first journal of **completed** sync events that powers the History section. Each row records `run_id`, `resource`, `record_id`, `notion_page_id`, `title` (snapshot), `payload` (JSON snapshot of writable fields at event time), `action` (`create` | `update` | `delete`), `direction` (`pull` = Notion DB → App, `push` = App → Notion DB), and `at` (ms). Written by the pull engine (on insert/pull/automerge/conflict) and push engine (on create/update/delete/phantom-delete). The `run_id` groups all events from one sync pass — a single `syncNow` (pull + push) shares one id — so the History table can show just the **last two runs** (the current sync and the one before it). Unlike `mutation_queue`, it is **not** cleared on push and is capped to the newest 1000 rows. Unsynced items shown in History are derived live from `incomes`/`expenses` where `sync_state` is `dirty`/`conflict` (no separate store).
+
+### `monthly_budget_snapshots` (saved budgets)
+Local-only, per-month copies of each expense category's budget (migration `0015`; [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md)). One row per `month` (`YYYY-MM`) and `category_id`, with `category_name` kept as it was when saved and `budget` (2 decimals), plus `created_at` and `updated_at`. A unique index on `(month, category_id)` keeps one value per category per month. It is **not** a sync table: no `notion_page_id`, no `sync_state`, never pushed or pulled. A month "has saved budgets" when it has at least one row. The in-app Reset local database and the Notion re-pull leave it untouched (it is not in the reset wipe list), but it exists only on this computer, so the reset confirmation tells the user to export saved budgets first. Deleting the database file removes it. The database backup copies the file, so it includes this table and counts it (`monthly_budget_snapshots` in the backup metadata). Behavior: [monthly-budget-snapshots.md](monthly-budget-snapshots.md).
 
 ## Derived values are computed, not stored
 

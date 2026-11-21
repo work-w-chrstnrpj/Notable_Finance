@@ -62,6 +62,15 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
       hardDelete: vi.fn(async () => ok(true as const)),
       generate: vi.fn(async () => (err('E_UNMOCKED', 'expenseScheduler.generate not mocked')))
     },
+    budgets: {
+      list: vi.fn(async () => ok([])),
+      saveFromNotion: vi.fn(async () => ok({ saved: 0 })),
+      saveSet: vi.fn(async () => ok({ saved: 0 })),
+      deleteSet: vi.fn(async () => ok({ deleted: 0 })),
+      exportCsv: vi.fn(async () => ok({ canceled: true })),
+      importPreview: vi.fn(async () => ok(null)),
+      importCommit: vi.fn(async () => (err('E_UNMOCKED', 'budgets.importCommit not mocked')))
+    },
     reports: {
       dashboard: vi.fn(async () => (err('E_UNMOCKED', 'reports.dashboard not mocked'))),
       monthlyMonitoring: vi.fn(async () => (err('E_UNMOCKED', 'reports.monthlyMonitoring not mocked'))),

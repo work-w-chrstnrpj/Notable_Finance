@@ -35,7 +35,7 @@ notable-finance-app/
 │   │   └── src/
 │   │       ├── main.tsx
 │   │       ├── components/
-│   │       │   ├── pages/         # one directory per god-page, index.tsx = composition only
+│   │       │   ├── pages/         # larger pages are directories (index.tsx = composition only); small pages are single files
 │   │       │   │   ├── expense/   # index + tables/toolbar/form-fields/receipt/cover-modal + shared Pasabuy fields
 │   │       │   │   ├── income/    # index + toolbar/form-fields/mass-edit-fields
 │   │       │   │   ├── workflow/  # index + form hook/fields + money-lent-repayment (+ CSS module) + receivable-pasabuy single/bulk modals

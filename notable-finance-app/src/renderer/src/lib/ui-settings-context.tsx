@@ -62,7 +62,9 @@ export const DEFAULT_SETTINGS: UiSettings = {
     expenseCategoryView: "simplified",
     hideZeroIncomeCategories: false,
     zeroFilter: "all",
+    budgetActionsOpen: false,
   },
+  monitoringBudgetSource: "notion",
 };
 
 type UiSettingsPatch = {
@@ -82,6 +84,7 @@ type UiSettingsPatch = {
   expenseFilters?: Partial<UiSettings["expenseFilters"]>;
   accountsFilters?: Partial<UiSettings["accountsFilters"]>;
   monitoringFilters?: Partial<UiSettings["monitoringFilters"]>;
+  monitoringBudgetSource?: UiSettings["monitoringBudgetSource"];
 };
 
 type UiSettingsContextValue = {
@@ -192,6 +195,7 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
       monitoringFilters: patch.monitoringFilters
         ? { ...prev.monitoringFilters, ...patch.monitoringFilters }
         : prev.monitoringFilters,
+      monitoringBudgetSource: patch.monitoringBudgetSource ?? prev.monitoringBudgetSource,
     }));
 
     const api = window.api;

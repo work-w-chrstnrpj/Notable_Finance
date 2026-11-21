@@ -55,6 +55,10 @@ export interface IncomeRow {
   is_transaction: number
   transacted_account_id: string | null
   cc_payment_covered_id: string | null
+  interest?: number | null
+  payment_frequency?: string | null
+  period_count?: number | null
+  linked_borrowing_id?: string | null
   deleted: number
   sync_state?: string
 }
@@ -165,6 +169,10 @@ export function mapIncome(row: IncomeRow): IncomeRecordDto {
     categoryId: row.category_id ?? '',
     transactedAccountId: row.transacted_account_id,
     ccPaymentCoveredIds: parseCcPaymentCoveredIds(row.cc_payment_covered_id),
+    interest: row.interest ?? null,
+    paymentFrequency: (row.payment_frequency as PaymentFrequency | null | undefined) ?? null,
+    periodCount: row.period_count ?? null,
+    linkedBorrowingId: row.linked_borrowing_id ?? null,
     deleted: row.deleted === 1,
     syncState: row.sync_state as IncomeRecordDto['syncState']
   }

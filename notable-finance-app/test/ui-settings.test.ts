@@ -103,3 +103,16 @@ it('upgrades the old CC view without changing theme, fonts or other preferences'
   expect(next.theme).toEqual(input.theme)
   expect(next.fonts).toEqual(input.fonts)
 })
+
+describe('monitoringBudgetSource', () => {
+  it('monthly-budget/02#AC9 defaults to notion and accepts only notion or saved', () => {
+    expect(DEFAULT_UI_SETTINGS.monitoringBudgetSource).toBe('notion')
+    expect(normalizeUiSettings({}).monitoringBudgetSource).toBe('notion')
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'saved' }).monitoringBudgetSource).toBe('saved')
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'notion' }).monitoringBudgetSource).toBe('notion')
+    for (const bad of ['Saved', 'both', 1, null, undefined, {}]) {
+      expect(normalizeUiSettings({ monitoringBudgetSource: bad }).monitoringBudgetSource).toBe('notion')
+    }
+  })
+})
+

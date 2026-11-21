@@ -6,6 +6,8 @@ This document is the product intent for Notable Finance. The web app (and its fu
 
 Notable Finance is a personal finance application layered over a user's existing Notion workspace. It provides a clean UI for day-to-day encoding, viewing, validation, and synchronization of financial records across these Notion database groups: Accounts, Income Categories, Incomes, Expense Categories, Expenses, Transactions, Expense Scheduler, and Monthly Monitoring.
 
+Desktop only: Monthly Monitoring can use **Saved budgets**, local per-month copies of category budgets, chosen with a Notion | Saved toggle and imported or exported as CSV (see `wiki/desktop/monthly-budget-snapshots.md`). They never sync to Notion.
+
 Primary sections (identical in both apps): **Dashboard, Accounts, Income, Expense, Monthly Monitoring, Transfer, Credit Card Payment, Alkansya, and Receivables.**
 
 Core product rules that hold for **both** apps:

@@ -39,15 +39,18 @@ Update this map whenever the project structure changes.
 - `notable-finance-app/`: the local-first desktop app (Electron; local SQLite is source of truth, Notion is a bidirectional mirror). Implemented and shipping. Layout after the v2.0.0 refactor — see [`wiki/desktop/project-structure.md`](wiki/desktop/project-structure.md) for the full tree:
   - `src/main/`: owns all data and side effects (`db/`, `domain/`, `notion/`, `sync/`, `chat/`, `settings/`, `updater/`). `src/main/ipc/` is one registrar per domain behind a 22-line composition root, registering via the `handle()` primitive.
   - `src/preload/`: the sole contextBridge, exposing an allow-listed `window.api`.
-  - `src/renderer/src/`: React UI. `components/pages/` holds one directory per page with `index.tsx` as composition only; `features/records/` is the shared record-page engine (selection, persisted filters, search, optimistic writes, bulk actions, receipts) used by Income/Expense/Workflow.
+  - `src/renderer/src/`: React UI. `components/pages/` holds one file or directory per page (`income/`, `expense/`, `workflow/`, `chat/`, `dashboard.tsx`, `monitoring.tsx`, `sync.tsx`, `settings.tsx`, and others); `features/records/` is the shared record-page engine (selection, persisted filters, search, optimistic writes, bulk actions, receipts) used by Income/Expense/Workflow.
   - `src/shared/`: `finance.types.ts` (domain DTOs; the renderer re-exports, never redefines) and `ipc-channels.ts` (single source of truth for request/response channel strings), and `notion-formulas.ts` (pure formulas shared by local balances and Expense UI).
   - Styles: `assets/globals.css` is an `@import` list only; rules live in `assets/{base,layout,components,pages}/` and component-local `*.module.css`.
 - `wiki/`: documentation with two zones — `wiki/shared/` (product spec, finance glossary, Notion field mapping) and `wiki/desktop/` (desktop architecture, sync/conflict, local schema, IPC, offline, onboarding, security, packaging, testing, plan, Borrowings, Money Lent).
-- `shared/`: future shared contracts, DTOs, schemas, constants, and formatting helpers.
-- `tests/`: cross-cutting manual and automated tests.
-- `tickets/`: planning or task artifacts.
-- `.agents/`: canonical reusable AI roles, skills, overlays, workflows, and tool policies.
-- `.ai/`: context routing, maps, prompt recipes, and generated-index guidance.
+- `shared/`: reserved for future cross-layer contracts. The shared DTOs, IPC channels, and formulas currently live in `notable-finance-app/src/shared/`.
+- `tests/`: cross-cutting manual and automated test assets (see `tests/README.md`).
+- `tickets/`: engr-toolbox tickets: `tickets/<feature>/NN-slug.md` plus `spec.md`, and the generated `tickets/BOARD.md`. `tickets/investigations/` and `tickets/features/` hold earlier reports and ticket drafts written before the toolbox layout.
+- `docs/`: engr-toolbox project docs: `docs/architecture.md` (one-page map) and `docs/adr/` (Architecture Decision Records). They link to `wiki/` and do not replace it.
+- `GLOSSARY.md`: the project's shared language. Use these terms.
+- `engr-toolbox.json`: installer choices (size small, existing project, local ticket tracker).
+- `.agents/`: canonical reusable AI roles, skills, overlays, workflows, and tool policies (project roles plus the toolbox `builder` and `reviewer`).
+- `.ai/`: context routing, maps (each with a Code Index), prompt recipes, and the workflow CLI in `.ai/cli/`.
 - Tool adapters: `.claude/`, `.codex/`, `.cursor/`, `.github/`, `.opencode/`, and other generated folders expose canonical assets in each tool's expected format.
 
 ## Core Operating Rules
@@ -61,16 +64,29 @@ Update this map whenever the project structure changes.
 - Ask for approval before destructive, high-risk, production, secret, or migration operations.
 - Do not implement application code while the current task is documentation/planning only.
 
+## Ticket Workflow (engr-toolbox)
+
+All work happens on a ticket, and every ticket ends with evidence. The ticket format, states, and rules are in the `tickets` skill (`.agents/skills/tickets/SKILL.md`); the tracker is local (`docs/agents/issue-tracker.md`).
+
+- Tickets: `tickets/<feature>/NN-slug.md`, ID `<feature>/NN`. Read `tickets/BOARD.md` first; regenerate it with `node .ai/cli/bin/cli.mjs status --write` after any status change.
+- Number every acceptance criterion `AC1`, `AC2`, and never renumber. Tests and cases reference them as `<ticket>#AC<n>`.
+- Reference the ticket ID in every commit (`feat: add budget toggle [monitoring/02]`). Use `[no-ticket]` only for trivial housekeeping.
+- Flow: `grill-with-docs` → `to-spec` → `to-tickets` → `implement` (test-first, then `code-review`, `update-docs`, evidence). Lost? Run `/next`. Details: `.agents/workflows/main-flow.md`.
+- Roles: builder owns dev and bug tickets; reviewer is read-only; the project roles below still apply for domain checklists.
+- Decisions and language: record hard-to-reverse decisions as ADRs in `docs/adr/` (never rewrite one, supersede it) and keep `GLOSSARY.md` current (`domain-modeling` skill).
+- CLI: `node .ai/cli/bin/cli.mjs <status|gate|drift|validate|loop|sync>`. Run `validate` after changing `.agents/`, `docs/`, or tickets, and `drift` to find docs that fell behind the code.
+- Pre-toolbox feature specs stay in `wiki/desktop/` (for example `monthly-budget-snapshots.md`); `to-spec` and `to-tickets` link to them rather than duplicate them.
+
 ## Product Rules
 
-- Notion is the source of truth for finance records.
-- The app is an encoding, viewing, validation, and sync interface over Notion.
-- The frontend must never call Notion directly and must never contain Notion secrets.
+- Local SQLite is the working source of truth for finance records; Notion is a bidirectional mirror and backup.
+- The app is an encoding, viewing, validation, and sync interface over local data that is kept in step with Notion.
+- The renderer must never call Notion directly and must never contain Notion secrets.
 - Computed Notion fields, formulas, rollups, reverse relations, and system-managed values must not be editable in normal user forms.
-- Create, edit, and delete operations must write through the backend to Notion.
-- Sync starts by pulling from Notion, then app changes write through the backend to Notion, then the app pulls the latest Notion data again and refreshes UI state from that response.
+- Create, edit, and delete operations write to local SQLite in the main process first; they reach Notion on the next sync push.
+- Sync starts by pulling from Notion, then local changes are pushed to Notion from the main process, then the app pulls the latest Notion data again and refreshes UI state from local data.
 - Sync must support both direct-save form submissions and explicit queued changes through a Sync button.
-- Authentication must support email sign-in and Google sign-in so the app can be used by other people.
+- There is no sign-in. The desktop app is single-user and local; a profile name and avatar come from UI settings. Email and Google sign-in belonged to the removed web app.
 - The app should provide a schema verification button after the Notion integration key is configured.
 - Canonical mapping docs must preserve live Notion select labels exactly, even when labels are awkward. UI labels may be context-friendly when they remain obvious and close to the original Notion meaning.
 - Normal Income forms must not expose transaction-only fields such as `Transacted Account` or `CC Payment Covered`.
@@ -82,7 +98,8 @@ Update this map whenever the project structure changes.
 
 ## Documentation Rules
 
-- Keep `wiki/desktop/` canonical for the desktop app's technical design.
+- Keep `wiki/desktop/` canonical for the desktop app's technical design. `docs/architecture.md` and `docs/adr/` are the one-page map and the decision log; they link to the wiki and must agree with it.
+- When a ticket changes behavior, update the matching wiki page, the glossary or an ADR if a term or decision changed, and record the docs touched in the ticket's Evidence.
 - Keep `wiki/shared/product-specification.md` canonical for shared product behavior and acceptance criteria, including the desktop-only features. Shared finance domain terms live in `wiki/shared/finance-domain-glossary.md` and the canonical Notion field taxonomy in `wiki/shared/notion-field-mapping.md`.
 - Update API, data, diagram, testing, deployment, and project-structure wiki pages when behavior or architecture changes.
 - If work is tracked in `wiki/desktop/development-plan.md`, update the matching status.
@@ -94,7 +111,7 @@ Update this map whenever the project structure changes.
 - Do not log sensitive input, provider responses, credentials, Notion tokens, or private user data.
 - Validate input at trust boundaries.
 - Prefer least privilege for accounts, tokens, services, and automation.
-- Store Notion tokens only in backend environment variables or encrypted server-side storage.
+- Store the Notion token and AI keys only in the OS-encrypted `safeStorage` vault in the main process. Never put them in SQLite, exports, the renderer, or the repo.
 - Redact sensitive finance payloads from production logs.
 
 ## Git And PR Rules
@@ -102,19 +119,20 @@ Update this map whenever the project structure changes.
 - Check repository status before major edits when Git metadata is available.
 - Do not revert user changes unless explicitly asked.
 - Keep commits scoped and explain verification in PR notes.
+- Reference the ticket ID in each commit message (see Ticket Workflow).
 - Avoid force push, reset, clean, or destructive history operations without explicit approval.
 
 ## Canonical AI Structure
 
 Canonical reusable AI assets live in `.agents/`:
 
-- `.agents/roles/`: 8 role owners.
+- `.agents/roles/`: 10 role owners (the 8 project roles plus the toolbox `builder` and `reviewer`), and `playbooks/` of domain checklists.
 - `.agents/skills/`: reusable workflow skills only.
 - `.agents/overlays/`: Mentor and Coach overlays.
 - `.agents/workflows/`: multi-role workflows.
 - `.agents/tools/`: context, verification, adapter, and tool policies.
 
-Tool-specific folders are generated adapters, not source of truth. Update canonical files first, then run `scripts/sync-ai-adapters.ps1` when role, skill, overlay, workflow, or adapter content changes.
+Tool-specific folders are generated adapters, not source of truth. Update canonical files first, then run `node .ai/cli/bin/cli.mjs sync` when role, skill, overlay, workflow, or adapter content changes. The older `scripts/sync-ai-adapters.ps1` needs PowerShell and predates the toolbox; see `scripts/README.md`.
 
 ## Overlay Usage
 
@@ -139,6 +157,8 @@ Portable role prompts live in `.agents/roles/`. Tool-specific generated adapters
 - Security Engineer: secrets, auth, authorization, dependency risk, unsafe inputs, logging, and sensitive workflows.
 - SQA Engineer: test plans, manual cases, automated tests, regressions, acceptance verification, and bug reports.
 - Technical Documentation Specialist: README, API docs, setup, onboarding, operations notes, workflows, integration docs, and changelog docs.
+- Builder (toolbox): owns dev and bug tickets end to end, test-first, with evidence. Use the project roles above for domain checklists.
+- Reviewer (toolbox, read-only): reviews a diff against the spec, ADRs, and standards, and reports findings without editing.
 
 ## Skill Usage Guide
 
@@ -155,6 +175,8 @@ Desktop app verification commands (run from `notable-finance-app/`):
 - Lint: `npm run lint`.
 - Typecheck: `npm run typecheck`.
 - Unit/component tests: `npm test` (Vitest; Playwright e2e is separate and not part of `npm test`).
+- Build: `npm run build` (electron-vite build of main, preload and renderer).
 - E2E tests: `npm run test:e2e` (builds, then runs Playwright against the Electron app).
 - Package the macOS build locally: `CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac -- --publish never`.
-- Documentation-only verification: inspect updated Markdown, run draft cleanup search, and confirm no source code was created.
+- Toolbox checks (run from the repo root): `node .ai/cli/bin/cli.mjs validate` (docs, roles, skills, tickets), `status` (board), `drift` (docs behind code).
+- Documentation-only verification: inspect updated Markdown, run draft cleanup search, run `validate`, and confirm no source code was created.

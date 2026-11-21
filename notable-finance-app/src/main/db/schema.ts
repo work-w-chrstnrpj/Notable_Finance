@@ -1,6 +1,6 @@
 // SQLite schema (drizzle) for the local-first store.
 // Mirrors wiki/desktop/local-data-schema.md. DB columns are snake_case; TS keys camelCase.
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real, uniqueIndex, index } from 'drizzle-orm/sqlite-core'
 
 // --- common sync bookkeeping carried by every writable finance table ---
 const syncColumns = {
@@ -67,6 +67,11 @@ export const incomes = sqliteTable('incomes', {
   isTransaction: integer('is_transaction').notNull().default(0),
   transactedAccountId: text('transacted_account_id'),
   ccPaymentCoveredId: text('cc_payment_covered_id'),
+  // Loan terms on a Borrowed row (flat total interest) and a repayment's link to its loan.
+  interest: real('interest'),
+  paymentFrequency: text('payment_frequency'),
+  periodCount: integer('period_count'),
+  linkedBorrowingId: text('linked_borrowing_id'),
   // Page Content (Notion block children) as Markdown; dirty flag drives the content push.
   pageContent: text('page_content'),
   pageContentDirty: integer('page_content_dirty').notNull().default(0)
@@ -207,6 +212,25 @@ export const chatDrafts = sqliteTable('chat_drafts', {
   createdAt: integer('created_at').notNull()
 })
 
+// Saved budgets (ADR-0006): per-month copy of each expense category's budget.
+// Local only — not a sync table: no Notion ids, sync state or soft delete. Deleting a set is a hard delete.
+export const monthlyBudgetSnapshots = sqliteTable(
+  'monthly_budget_snapshots',
+  {
+    id: text('id').primaryKey(), // local UUID
+    month: text('month').notNull(), // 'YYYY-MM'
+    categoryId: text('category_id').notNull(), // expense_categories.id (no foreign key: reference caches are replaced on pull)
+    categoryName: text('category_name').notNull(), // name when saved
+    budget: real('budget').notNull(),
+    createdAt: integer('created_at').notNull(), // ms
+    updatedAt: integer('updated_at').notNull() // ms
+  },
+  (t) => [
+    uniqueIndex('monthly_budget_snapshots_month_category_uq').on(t.month, t.categoryId),
+    index('monthly_budget_snapshots_month_idx').on(t.month)
+  ]
+)
+
 export const schema = {
   accounts,
   incomeCategories,
@@ -222,5 +246,6 @@ export const schema = {
   chatCredentials,
   chatThreads,
   chatMessages,
-  chatDrafts
+  chatDrafts,
+  monthlyBudgetSnapshots
 }

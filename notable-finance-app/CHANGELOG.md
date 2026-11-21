@@ -5,6 +5,32 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [3.1.0] - 2026-11-21
+
+Loan terms for Borrowings, saved budgets for Monitoring, and resizable columns in every Money movement table.
+
+### Added
+
+- **Loan terms on Borrowings.** A Borrow can carry **Interest** (a flat total), **Payment Frequency** and **Period count**. Borrow ₱150,000 with ₱5,000 interest over 12 months and the loan shows ₱155,000 owed and a **Suggested payment** of ₱12,916.67. The Suggested payment is only a guide: every payment is recorded by hand, in any amount.
+- **Linked repayments, from either side.** A repayment links to one loan, and a loan can have many repayments, like a Notion relation. Link from the repayment form's **Loan** picker, or from the loan's edit form, where **Payments** is a multi-select like Covered Expenses on a CC Payment. **Record repayment** from a loan prefills the Suggested payment (never more than what is left) and the link.
+- **Remaining balance.** The loan's record modal shows Total owed, Suggested payment, Paid amount, Payments made and Remaining balance. The Borrowings table has a Remaining balance column, and amounts above zero show in red. The Borrow Accounts panel now counts unpaid interest in "still owed". Interest never counts as an expense and never appears in Expense totals, budgets or Monitoring. A Borrowed row with linked repayments but no terms is read as a loan with Interest 0, and loans without terms or links behave exactly as before.
+- **Chat knows loan terms.** It can create a loan with terms, link a repayment to a loan by name, and report a loan's Remaining balance. The confirm card shows the computed values read-only.
+- **Saved budgets** on Monthly Monitoring. A Notion | Saved toggle picks where budgets come from, in Monthly, Quarterly, Semi-Annually and Annually views; Notion stays the default so current numbers do not change. Save a month's budgets from today's Notion budgets, edit them as a form or as JSON (copy one month's JSON into another), or delete them. Months without a saved set use Notion budgets, and the badge says "No budget saved" or how many months are covered.
+- **Budgets CSV import and export.** Export saved budgets or a template, and import with a preview. **Settings → Saved budgets** exports and imports every month at once.
+- Saved budgets are local only and are included in database backups. The Reset local database confirmation tells you to export them first. Chat can report budgets from either source (Notion by default); it cannot change saved budgets.
+
+### Changed
+
+- **Column resizing** works in every Money movement table (Income, Expense, Transfer, CC Payment, Alkansya, Borrowings, Receivables). The resize handle is invisible until the pointer hovers over a column edge, then it shows an accent line and a resize cursor. It replaces Expense's always-visible line, so every page behaves alike. Widths still reset on reload.
+
+### Upgrade notes
+
+- **Notion (loan terms):** add these properties to the Income database, with exactly these names. `Interest` (number), `Payment Frequency` (select with Daily, Weekly, Monthly, Bi-monthly, Quarterly, Semi-annually, Annually), `Period count` (number) and `Linked Borrowing` (a two-way relation to Income itself, reverse property named `Payments`). `Payments Made`, `Paid Amount` and `Remaining Balance` are optional computed properties for viewing in Notion; the app neither reads nor writes them. A missing property is skipped, so syncing keeps working until you add them. See `wiki/desktop/borrowings.md`.
+- **Database:** two additive migrations run on first launch: 0015 (saved budgets table) and 0016 (four nullable Income columns). Nothing is removed or rewritten. The Backup action in Settings makes a copy first if you want one.
+- **macOS:** the build is unsigned, so right-click → Open the first time.
+
 ## [3.0.0] - 2026-11-14
 
 The desktop app is now the whole project: the earlier web app and its docs were removed.

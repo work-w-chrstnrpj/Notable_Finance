@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SavedBudgetsSettings } from "./monitoring-budgets";
 import { Bell, CalendarClock, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
@@ -321,6 +322,10 @@ function SettingsPage({
       </section>
 
       <BackupPanel />
+
+      <Panel title="Saved budgets">
+        <SavedBudgetsSettings />
+      </Panel>
 
       <Panel title="Notion Configuration">
         <div className="settings-row">

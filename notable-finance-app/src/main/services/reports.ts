@@ -3,6 +3,8 @@
 import type { DashboardSummary, MonthlyMonitoringDto } from '../../shared/finance.types'
 import { dashboardSummary, monthlyMonitoring } from '../domain/derivations'
 import { assertMonth } from '../domain/validation'
+import { resolveBudgets, type BudgetSource } from '../../shared/saved-budgets'
+import { listSavedBudgets } from '../db/budgets'
 import { balanceContext, financeSnapshot, listExpenseCategories, listIncomeCategories } from '../db/repositories'
 
 export function dashboard(month: string): DashboardSummary {
@@ -14,17 +16,32 @@ export function dashboard(month: string): DashboardSummary {
   return dashboardSummary(month, financeSnapshot(), balanceContext(), pasabuyCategoryIds, auxiliaryIncomeIds)
 }
 
-export function monitoring(month: string): MonthlyMonitoringDto {
+/**
+ * Monthly Monitoring for a month. `source` picks the budgets (ADR-0006): 'notion' (default, the
+ * category's current monthly budget) or 'saved' (that month's saved set, else Notion).
+ */
+export function monitoring(month: string, source: BudgetSource = 'notion'): MonthlyMonitoringDto {
   assertMonth(month)
   const snap = financeSnapshot()
+  const categories = listExpenseCategories()
+  const budgetById = new Map<string, number>()
+  if (source === 'saved') {
+    const resolved = resolveBudgets({
+      months: [month],
+      categories: categories.map((c) => ({ id: c.id, name: c.name, monthlyBudget: c.monthlyBudget })),
+      snapshots: listSavedBudgets(month, month),
+      source: 'saved'
+    })
+    for (const c of resolved.perCategory) if (!c.removed) budgetById.set(c.categoryId, c.budget)
+  }
   return monthlyMonitoring(month, {
     incomes: snap.incomes,
     expenses: snap.expenses,
     // Options → the DTO shape the derivation expects (only id/name/source/budget are read).
-    expenseCategories: listExpenseCategories().map((c) => ({
+    expenseCategories: categories.map((c) => ({
       id: c.id,
       name: c.name,
-      monthlyBudget: c.monthlyBudget,
+      monthlyBudget: budgetById.get(c.id) ?? c.monthlyBudget,
       upcomingBudget: 0,
       auxiliary: c.auxiliary ? ('Yes' as const) : ('No' as const),
       spending: 0,

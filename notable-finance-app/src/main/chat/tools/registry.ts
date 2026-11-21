@@ -38,7 +38,7 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
         'Full Monthly Monitoring snapshot for a month: income/expense/net and category budget vs spending.',
       parameters: {
         type: 'object',
-        properties: { month: monthProp },
+        properties: { month: monthProp, budgetSource: { type: 'string', enum: ['notion', 'saved'], description: 'Which budgets to report. Defaults to notion (the category budgets).' } },
         additionalProperties: false
       }
     }
@@ -118,6 +118,19 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
   {
     type: 'function',
     function: {
+      name: 'getLoanSummary',
+      description:
+        'One loan with terms (Borrowings): principal, interest, total owed, Suggested payment, Paid amount, Payments made and Remaining balance, computed exactly as on the Borrowings screen. Pass the loan name or id; omit when there is only one loan. Use for "how much is left on my loan".',
+      parameters: {
+        type: 'object',
+        properties: { loan: { type: 'string', description: 'Loan (Borrowed row) name or id.' } },
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'getReceivablesSummary',
       description:
         'Money owed TO the user, split by type: expectedIncome, moneyLent (outstanding loans, positive), pasabuy (paid Pasabuy awaiting payment), plus grandTotal.',
@@ -161,7 +174,8 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
         properties: {
           month: monthProp,
           categoryId: { type: 'string' },
-          categoryName: { type: 'string' }
+          categoryName: { type: 'string' },
+          budgetSource: { type: 'string', enum: ['notion', 'saved'], description: 'Which budgets to report. Defaults to notion (the category budgets).' }
         },
         additionalProperties: false
       }
@@ -386,7 +400,7 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
     function: {
       name: 'proposeCreateBorrowing',
       description:
-        'Propose a Borrowings record (money the user owes). type "borrowed": money received into otherAccount, debited on the Borrow account. type "repayment": paid from otherAccount back to the Borrow account. Name convention: "Borrow: <who>" / "Repayment: <who>". Borrow account = Auxiliary account whose name has "borrow", "debt" or "loan" (auto-picked if there is only one). otherAccount must be a regular non-credit account. Amount is positive.',
+        'Propose a Borrowings record (money the user owes). type "borrowed": money received into otherAccount, debited on the Borrow account; may carry Loan terms: interest (flat TOTAL interest in pesos, not a rate), paymentFrequency and periodCount (give both together, e.g. 12 months = Monthly + 12). type "repayment": paid from otherAccount back to the Borrow account; set loan (the Borrowed row name or id) to link it to the loan it pays. Total owed, Suggested payment and Remaining balance are computed by the app and shown read-only; never pass them. Name convention: "Borrow: <who>" / "Repayment: <who>". Borrow account = Auxiliary account whose name has "borrow", "debt" or "loan" (auto-picked if there is only one). otherAccount must be a regular non-credit account. Amount is positive.',
       parameters: {
         type: 'object',
         properties: {
@@ -398,6 +412,10 @@ export const WRITE_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           borrowAccountId: { type: 'string' },
           otherAccount: { type: 'string', description: 'Account the money was received into (borrowed) or paid from (repayment).' },
           otherAccountId: { type: 'string' },
+          interest: { type: 'number', description: 'Borrowed only: flat total interest in pesos (not a rate).' },
+          paymentFrequency: { type: 'string', enum: ['Daily', 'Weekly', 'Monthly', 'Bi-monthly', 'Quarterly', 'Semi-annually', 'Annually'], description: 'Borrowed only; needs periodCount.' },
+          periodCount: { type: 'number', description: 'Borrowed only: number of payments (whole number); needs paymentFrequency.' },
+          loan: { type: 'string', description: 'Repayment only: name or id of the loan (Borrowed row with terms) this pays.' },
           notes: { type: 'string' }
         },
         additionalProperties: false
@@ -590,6 +608,8 @@ export function executeChatTool(
       return read.queryExpenses(args)
     case 'getBorrowingsSummary':
       return read.getBorrowingsSummary(args)
+    case 'getLoanSummary':
+      return read.getLoanSummary(args)
     case 'getReceivablesSummary':
       return read.getReceivablesSummary(args)
     case 'getCategoryBudgetStatus':

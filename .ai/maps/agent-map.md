@@ -15,10 +15,19 @@ Use this file to route work to the smallest useful role and skill.
 | Test plans, manual cases, automated tests, regressions, and bug reports | SQA Engineer | Relevant implementation role |
 | Setup, API docs, operations docs, changelog, and onboarding | Technical Documentation Specialist | Relevant implementation role |
 
+Toolbox roles: `builder` owns dev and bug tickets (test-first, evidence); `reviewer` is read-only and reviews a diff against the spec and ADRs. Use the project roles above for domain checklists.
+
 ## Common Skill Routing
 
 | Work | Skill |
 | --- | --- |
+| Not sure what to do next | `next` |
+| Brainstorm or clarify a feature | `grill-with-docs` |
+| Turn a decision into a spec, then tickets | `to-spec`, then `to-tickets` |
+| Build a ticket test-first | `implement`, `tdd` |
+| File a bug | `report-bug` |
+| Record a term or decision | `domain-modeling` |
+| Run workflow commands (board, validate, drift) | `cli` |
 | Plan a change | `plan-code-change` |
 | Implement a change | `execute-code-change` |
 | Implement a feature | `execute-code-change` |
@@ -35,7 +44,7 @@ Use this file to route work to the smallest useful role and skill.
 
 ## Tool Adapter Routing
 
-Treat `.agents/roles/` and `.agents/skills/` as canonical. After changing either source, run `scripts/sync-ai-adapters.ps1 -Target all` to refresh generated adapters. `scripts/generate-ai-adapters.ps1` remains a compatibility wrapper.
+Treat `.agents/roles/` and `.agents/skills/` as canonical. After changing either source, run `node .ai/cli/bin/cli.mjs sync` to refresh generated adapters. The older `scripts/sync-ai-adapters.ps1` (PowerShell) predates the toolbox; see `scripts/README.md`.
 
 - Claude adapters in `.claude/`
 - Codex agents in `.codex/agents/`

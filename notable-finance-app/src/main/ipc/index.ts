@@ -5,6 +5,7 @@ import { registerChatIpc } from './chat'
 import { registerSettingsIpc } from './settings'
 import { registerNotificationsIpc } from './notifications'
 import { registerUpdaterIpc } from './updater'
+import { registerBudgetsIpc } from './budgets'
 
 // IPC surface per wiki/desktop/ipc-contract.md. Every response is the discriminated
 // ApiResult envelope; all validation happens here in main (renderer is untrusted).
@@ -21,4 +22,5 @@ export function registerIpc(): void {
   registerSettingsIpc()
   registerNotificationsIpc()
   registerUpdaterIpc()
+  registerBudgetsIpc()
 }
