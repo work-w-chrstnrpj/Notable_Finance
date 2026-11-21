@@ -35,6 +35,15 @@ describe("borrowing-terms/07 two-way loan links", () => {
     expect(create.mock.calls[0][0]).toMatchObject({ grossIncome: -400, linkedBorrowingId: "plain1" });
   });
 
+  it("borrowing-terms/07#AC2 a Borrowed row's record modal lists its linked repayments with a Total paid line", async () => {
+    renderBorrowings([plainLoan, plainPayment("pay1", 400, { name: "Repayment: pay1" })]);
+    const dialog = await openRecord("Borrow: Ben");
+    expect(within(dialog).getByText(/Repayment: pay1/)).toBeInTheDocument();
+    expect(computed(dialog, "Total paid")).toBe("₱400.00");
+    // Linking and unlinking happen in the edit form (AC9), not as separate controls in the read-only view.
+    expect(within(dialog).queryByRole("button", { name: /^Link$/ })).not.toBeInTheDocument();
+  });
+
   it("borrowing-terms/07#AC3 a Borrowed row without terms but with linked repayments shows its balances; without links it looks as before", async () => {
     renderBorrowings([plainLoan, plainPayment("pay1", 400), { ...plainLoan, id: "bare", name: "Borrow: Bare" }, plainPayment("gone", 300, { deleted: true })]);
     await screen.findByText("Borrow: Ben");
