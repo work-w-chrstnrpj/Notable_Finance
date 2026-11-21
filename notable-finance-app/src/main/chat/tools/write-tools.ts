@@ -1,4 +1,9 @@
-import { BORROWED_MONEY_CATEGORY, isPlaceholderAccount } from '../../../shared/borrowings'
+import {
+  BORROWED_MONEY_CATEGORY,
+  computeLoanSummary,
+  hasLoanTerms,
+  isPlaceholderAccount
+} from '../../../shared/borrowings'
 import { isMoneyLentCategory, MONEY_LENT_CATEGORY } from '../../../shared/money-lent'
 import * as repo from '../../db/repositories'
 import { isCreditLike } from '../../domain/resource-utils'
@@ -6,6 +11,7 @@ import type {
   ChatDraftDto,
   CreateExpenseInput,
   CreateIncomeInput,
+  IncomeRecordDto,
   PaymentFrequency,
   PaymentStatus,
   PasabuyStatus,
@@ -458,6 +464,41 @@ export function proposeCreateReceivable(args: unknown, ctx: WriteToolContext) {
 
 type BorrowKind = 'borrowed' | 'repayment'
 
+const PAYMENT_FREQUENCIES: PaymentFrequency[] = [
+  'Daily', 'Weekly', 'Monthly', 'Bi-monthly', 'Quarterly', 'Semi-annually', 'Annually'
+]
+
+/** Match a spoken or typed frequency ("monthly", "bimonthly", "semi annually") to the app's value set. */
+function parsePaymentFrequency(v: unknown): PaymentFrequency | undefined {
+  const t = str(v)?.toLowerCase().replace(/[\s_-]+/g, '')
+  if (!t) return undefined
+  return PAYMENT_FREQUENCIES.find((f) => f.toLowerCase().replace(/[\s_-]+/g, '') === t)
+}
+
+const peso = (n: number): string =>
+  `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+/** Borrowed rows with Loan terms, with the Borrow account they sit on. Repayments are every other Borrowings row. */
+function listLoansWithTerms(): IncomeRecordDto[] {
+  const placeholderIds = new Set(repo.listAccounts(false).filter(isPlaceholderAccount).map((a) => a.id))
+  return repo
+    .listIncomes({ view: 'borrowings' })
+    .filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId) && hasLoanTerms(r))
+}
+
+/** Resolve the loan a repayment pays, by id or name. Only loans with terms on that Borrow account qualify. */
+function findLoan(ref: string, borrowAccountId: string | undefined): { loan?: IncomeRecordDto; problem?: string } {
+  const loans = listLoansWithTerms().filter((l) => !borrowAccountId || l.accountId === borrowAccountId)
+  const byId = loans.find((l) => l.id === ref)
+  if (byId) return { loan: byId }
+  const byName = loans.filter((l) => l.name.toLowerCase() === ref.toLowerCase())
+  if (byName.length === 1) return { loan: byName[0] }
+  if (byName.length > 1) {
+    return { problem: `Loan (several loans are named "${ref}": ${byName.map((l) => `${l.date} ${peso(Math.abs(l.grossIncome))}`).join(', ')})` }
+  }
+  return { problem: `Loan ("${ref}" is not a loan with terms on this Borrow account)` }
+}
+
 function parseBorrowKind(v: unknown): BorrowKind | undefined {
   const t = str(v)?.toLowerCase()
   if (!t) return undefined
@@ -494,6 +535,15 @@ export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
   const borrow = findAccount(borrowRef) ?? (borrowAccounts.length === 1 ? borrowAccounts[0] : null)
   const other = findAccount(otherRef)
 
+  // Loan terms (Borrowed rows) and the loan a repayment pays. Card edits re-send the stored payload keys.
+  const interestRaw = num(a.interest)
+  const interest = interestRaw === undefined ? null : interestRaw
+  const periodRaw = num(a.periodCount)
+  const periodCount = periodRaw === undefined ? null : periodRaw
+  const freqRaw = str(a.paymentFrequency)
+  const paymentFrequency = parsePaymentFrequency(freqRaw) ?? null
+  const loanRef = str(a.linkedBorrowingId) ?? str(a.linkedBorrowing) ?? str(a.loan)
+
   if (!kind) missing.push('Type (Borrowed or Repayment)')
   if (!name) missing.push('Name')
   if (amount === undefined || amount === 0) missing.push('Amount')
@@ -513,6 +563,36 @@ export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
     missing.push(`${otherLabel} (regular non-credit account only)`)
   }
 
+  let loan: IncomeRecordDto | undefined
+  const termsGiven = interest !== null || periodCount !== null || freqRaw !== undefined
+  if (kind === 'repayment') {
+    if (termsGiven) warnings.push('Loan terms belong on the Borrowed row; they were ignored on this repayment.')
+    if (loanRef) {
+      const found = findLoan(loanRef, borrow?.id)
+      loan = found.loan
+      if (found.problem) missing.push(found.problem)
+    } else if (borrow) {
+      const loans = listLoansWithTerms().filter((l) => l.accountId === borrow.id)
+      if (loans.length > 0) {
+        warnings.push(
+          `Not linked to a loan. Loans with terms on ${borrow.name}: ${loans.map((l) => l.name).join(', ')}. Name the loan to link it.`
+        )
+      }
+    }
+  } else if (kind === 'borrowed') {
+    // Optional as a group: Period count needs Payment Frequency and vice versa (Interest may stand alone).
+    if (freqRaw !== undefined && !paymentFrequency) {
+      missing.push(`Payment Frequency (one of: ${PAYMENT_FREQUENCIES.join(', ')})`)
+    }
+    if (paymentFrequency && periodCount === null) missing.push('Period count (needed with Payment Frequency)')
+    if (periodCount !== null && freqRaw === undefined) missing.push('Payment Frequency (needed with Period count)')
+    if (periodCount !== null && (!Number.isInteger(periodCount) || periodCount <= 0)) {
+      missing.push('Period count (a whole number above 0)')
+    }
+    if (interest !== null && interest < 0) missing.push('Interest (cannot be negative)')
+    if (loanRef) warnings.push('A Borrowed row cannot be linked to another loan; the link was ignored.')
+  }
+
   const borrowedSide = kind !== 'repayment'
   const payload: Record<string, unknown> = {
     name: name ?? '',
@@ -525,12 +605,46 @@ export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
     isTransaction: true,
     ccPaymentCoveredIds: [],
     notes: str(a.notes) ?? null,
-    borrowKind: kind ?? null
+    borrowKind: kind ?? null,
+    interest: kind === 'borrowed' ? interest : null,
+    paymentFrequency: kind === 'borrowed' ? paymentFrequency : null,
+    periodCount: kind === 'borrowed' ? periodCount : null,
+    linkedBorrowingId: kind === 'repayment' ? loan?.id ?? null : null
   }
+
+  // Computed values are read-only: shown on the card, never written (ADR-0004).
+  const noteBits: string[] = [kind === 'repayment' ? 'Repayment' : 'Borrowed']
+  let computedPreview: Record<string, unknown> | null = null
+  if (kind === 'borrowed' && amount && (interest !== null || periodCount !== null || paymentFrequency)) {
+    const s = computeLoanSummary(
+      { id: 'draft', grossIncome: -amount, deleted: false, interest, paymentFrequency, periodCount },
+      []
+    )
+    computedPreview = { totalOwed: s.totalOwed, suggestedPayment: s.suggestedPayment, remainingBalance: s.remainingBalance }
+    noteBits.push(`Total owed ${peso(s.totalOwed)}`)
+    if (s.suggestedPayment !== null) {
+      noteBits.push(`Suggested payment ${peso(s.suggestedPayment)}${paymentFrequency ? ` ${paymentFrequency.toLowerCase()}` : ''}`)
+    }
+  } else if (kind === 'repayment' && loan && amount) {
+    const repayments = repo.listIncomes({ view: 'borrowings' }).filter((r) => r.linkedBorrowingId === loan.id)
+    const before = computeLoanSummary(loan, repayments)
+    const after = computeLoanSummary(loan, [...repayments, { grossIncome: -amount, deleted: false, linkedBorrowingId: loan.id }])
+    computedPreview = {
+      loan: loan.name,
+      totalOwed: after.totalOwed,
+      suggestedPayment: after.suggestedPayment,
+      remainingBalanceBefore: before.remainingBalance,
+      remainingBalance: after.remainingBalance
+    }
+    noteBits.push(`Pays ${loan.name}`, `Remaining balance ${peso(before.remainingBalance)} → ${peso(after.remainingBalance)}`)
+    if (after.suggestedPayment !== null) noteBits.push(`Suggested payment ${peso(after.suggestedPayment)}`)
+  }
+
   const draft = commitDraft(ctx, {
     resource: 'incomes',
     action: 'create',
     kind: 'proposeCreateBorrowing',
+    computedPreview,
     missingRequired: missing,
     warnings,
     payload,
@@ -543,7 +657,7 @@ export function proposeCreateBorrowing(args: unknown, ctx: WriteToolContext) {
       fromLabel: borrowedSide ? 'Borrow account' : 'Paid from',
       to: (borrowedSide ? other?.name : borrow?.name) ?? null,
       toLabel: borrowedSide ? 'Received into' : 'Borrow account',
-      note: kind === 'repayment' ? 'Repayment' : 'Borrowed'
+      note: noteBits.join(' · ')
     },
     summary: `${kind === 'repayment' ? 'Repayment' : 'Borrowed'}: ${name ?? '?'} · ₱${amount ?? '?'} · ${date} · ${borrow?.name ?? '?'} ↔ ${other?.name ?? '?'}`
   })
@@ -865,7 +979,11 @@ export function toCreateIncomeInput(payload: Record<string, unknown>): CreateInc
       ? payload.ccPaymentCoveredIds as string[]
       : payload.ccPaymentCoveredId
         ? [payload.ccPaymentCoveredId as string]
-        : []
+        : [],
+    interest: (payload.interest as number | null | undefined) ?? null,
+    paymentFrequency: (payload.paymentFrequency as PaymentFrequency | null | undefined) ?? null,
+    periodCount: (payload.periodCount as number | null | undefined) ?? null,
+    linkedBorrowingId: (payload.linkedBorrowingId as string | null | undefined) ?? null
   }
 }
 

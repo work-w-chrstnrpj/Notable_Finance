@@ -113,6 +113,12 @@ export type IncomeRecord = {
   /** Transaction-only fields returned from backend, not editable in normal income forms */
   transactedAccountId?: string | null;
   ccPaymentCoveredIds?: string[];
+  /** Loan terms on a Borrowed row (flat total interest). */
+  interest?: number | null;
+  paymentFrequency?: PaymentFrequency | null;
+  periodCount?: number | null;
+  /** On a repayment: the loan (Borrowed row) it pays. */
+  linkedBorrowingId?: string | null;
   deleted?: boolean;
 };
 

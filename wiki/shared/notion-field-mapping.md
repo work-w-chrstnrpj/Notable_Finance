@@ -30,6 +30,21 @@ Consequence for sync: because computed fields are never written, they can never 
 | Transactions | no | income inputs + `transactedAccount`, `ccPaymentCovered` | `netIncome`, `transactionAmount` (hidden) |
 | Expenses | no | expense inputs | (category-derived totals) |
 
+## Incomes: loan terms (Borrowings)
+
+The owner creates these properties by hand in the Incomes data source before enabling sync for them; a missing property degrades (the field is skipped), it does not fail sync. Property names match Expense's naming.
+
+| Property | Type | Category | Notes |
+| --- | --- | --- | --- |
+| `Interest` | number | writable | flat total interest on a Borrowed row |
+| `Payment Frequency` | select | writable | same options as Expense |
+| `Period count` | number | writable | |
+| `Linked Borrowing` | relation (Incomes, two-way) | writable | on a repayment, points at its loan; reverse property is `Payments` |
+| `Payments` | relation (reverse) | relation | read-only |
+| `Payments Made`, `Paid Amount`, `Remaining Balance` | rollup/formula | computed | Notion-only, for viewing. The app never writes or reads them; it computes the same figures locally (ADR-0004) |
+
+Notion's `Remaining Balance` formula is `abs(prop("Gross Income")) + prop("Interest") - abs(prop("Paid Amount"))`. Empty or missing values load as no terms. See [Borrowings](../desktop/borrowings.md).
+
 ## Accounts `'25` — verified schema (live)
 
 Data source: `collection://bd6f39b1-fae7-837d-a730-878f92946eee`.

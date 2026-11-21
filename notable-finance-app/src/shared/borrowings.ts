@@ -44,3 +44,82 @@ export function totalOutstanding(
   const total = records.reduce((sum, r) => sum + outstandingDelta(r, placeholderIds), 0)
   return Math.round((total + Number.EPSILON) * 100) / 100
 }
+
+// ── Loan terms (ADR-0007) ────────────────────────────────────────────────────
+// Derived values are computed here, never stored (ADR-0004).
+
+type LoanRecord = Pick<
+  IncomeRecordDto,
+  'id' | 'grossIncome' | 'deleted' | 'interest' | 'paymentFrequency' | 'periodCount'
+>
+type RepaymentRecord = Pick<IncomeRecordDto, 'grossIncome' | 'deleted' | 'linkedBorrowingId'>
+
+export interface LoanSummary {
+  principal: number
+  interest: number
+  /** Principal plus Interest. */
+  totalOwed: number
+  /** Total owed / Period count; null unless Period count is a positive whole number. A guide, never enforced. */
+  suggestedPayment: number | null
+  /** Sum of linked, non-deleted repayments. */
+  paidAmount: number
+  /** Count of linked, non-deleted repayments. */
+  paymentsMade: number
+  /** max(0, total owed − paid amount). */
+  remainingBalance: number
+}
+
+const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100
+
+/** A Borrowed row carries Loan terms when any of Interest, Payment Frequency or Period count is set. */
+export function hasLoanTerms(loan: Pick<IncomeRecordDto, 'interest' | 'paymentFrequency' | 'periodCount'>): boolean {
+  return loan.interest != null || loan.paymentFrequency != null || loan.periodCount != null
+}
+
+/** Total owed, Suggested payment, Paid amount, Payments made and Remaining balance for one loan. */
+export function computeLoanSummary(loan: LoanRecord, repayments: readonly RepaymentRecord[]): LoanSummary {
+  const principal = Math.abs(loan.grossIncome)
+  const interest = loan.interest ?? 0
+  const totalOwed = round2(principal + interest)
+  const linked = repayments.filter((r) => !r.deleted && r.linkedBorrowingId === loan.id)
+  const paidAmount = round2(linked.reduce((sum, r) => sum + Math.abs(r.grossIncome), 0))
+  const periods = loan.periodCount
+  const suggestedPayment =
+    hasLoanTerms(loan) && periods != null && Number.isInteger(periods) && periods > 0
+      ? round2(totalOwed / periods)
+      : null
+  return {
+    principal,
+    interest,
+    totalOwed,
+    suggestedPayment,
+    paidAmount,
+    paymentsMade: linked.length,
+    remainingBalance: Math.max(0, round2(totalOwed - paidAmount))
+  }
+}
+
+/**
+ * What is still owed on one Borrow account: the Remaining balance of each loan with terms,
+ * plus the existing balance-based amount for borrowings without terms.
+ *
+ * `balanceOwed` is the account's current balance-based amount (the negative of its balance). It still
+ * counts every loan's principal and every repayment, so the part that belongs to loans with terms is
+ * taken out (principal added back, linked repayments removed) and replaced by their Remaining balance.
+ * Unlinked repayments are never attributed to a loan, so they stay in the balance-based amount.
+ */
+export function stillOwedForBorrowAccount(
+  accountId: string,
+  balanceOwed: number,
+  records: ReadonlyArray<LoanRecord & RepaymentRecord & Pick<IncomeRecordDto, 'accountId'>>
+): number {
+  const loans = records.filter((r) => !r.deleted && r.accountId === accountId && hasLoanTerms(r))
+  let balanceBased = balanceOwed
+  let remaining = 0
+  for (const loan of loans) {
+    const summary = computeLoanSummary(loan, records)
+    balanceBased += summary.paidAmount - summary.principal
+    remaining += summary.remainingBalance
+  }
+  return round2(balanceBased + remaining)
+}

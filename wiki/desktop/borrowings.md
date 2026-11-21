@@ -1,6 +1,6 @@
 # Borrowings (money you owe)
 
-Desktop-only section. It uses the existing Income and Income Categories databases, with no new table or Notion property. It is separate from Receivables (money owed *to* you).
+Desktop-only section. It uses the existing Income and Income Categories databases. Loan terms (below) add four Income columns locally and four Notion Income properties. It is separate from Receivables (money owed *to* you).
 
 ## Setup
 
@@ -26,8 +26,28 @@ The form shows Type (Borrowed / Repayment), Borrow Account, and Received Into / 
 
 The filter bar separates **Borrow Account** and **Other Account** (plus Type). Transfer filters Source Account and Transfer Account (non-credit accounts only); CC Payment filters CC Account (credit accounts only) and Payer Account (non-credit accounts only).
 
+## Loan terms
+
+A Borrowed row can carry optional **Loan terms**: **Interest** (flat total, not a rate), **Payment Frequency** and **Period count**. They are optional as a group: a loan with none behaves exactly as before, and Period count needs a Payment Frequency (and the reverse). Interest alone is allowed. Interest is never an expense: it creates no row and never reaches Expense totals, budgets or Monitoring. See `docs/adr/0007-loan-interest-inside-the-borrowing.md`.
+
+A repayment can be **linked** to its loan. The Repayment form has a **Loan** picker listing the loans with terms on the chosen Borrow account (or "Not linked to a loan"); **Record repayment** on a loan prefills the Suggested payment (the remaining balance when there is no Period count) and the link, and the amount stays editable. A repayment can be linked or unlinked later by editing it.
+
+Computed per loan (never stored, ADR-0004), from `computeLoanSummary` in `shared/borrowings.ts`:
+
+| Figure | Rule |
+| --- | --- |
+| Total owed | principal + Interest |
+| Suggested payment | Total owed / Period count; shown only for a positive whole Period count; a guide, never enforced |
+| Paid amount | sum of linked, non-deleted repayments |
+| Payments made | count of those repayments |
+| Remaining balance | max(0, Total owed − Paid amount); an overpayment shows 0 |
+
+Example: ₱150,000 with ₱5,000 interest, Monthly, 12 periods owes ₱155,000 with a Suggested payment of ₱12,916.67; after one linked ₱12,916.67 payment the Remaining balance is ₱142,083.33. The record modal shows all five figures and the table has a **Remaining balance** column (a dash for loans without terms and for repayments). Balances use every Borrowings record, not only the selected date range.
+
+The **Borrow Accounts** panel's still-owed per account is `stillOwedForBorrowAccount`: the Remaining balance of each loan with terms plus the old balance-based amount for borrowings without terms. Repayments with no link count against that old amount. The Borrow account's raw balance stays principal-based.
+
 ## Receivables types
 
 Receivables is filtered by a **Type** dropdown in the filter bar (default All): **Expected Income** (no account needed), **Money Lent** (loans with a source account, repayment flow in [money-lent.md](money-lent.md)), and **Pasabuy** (paid credit-card Pasabuy expenses awaiting payment). Totals, selection and the receipt follow the selected type. **New Record** asks **Lend Money** or **Expected Income** first.
 
-Tests: `test/borrowings.test.ts`, `components/pages/workflow.test.tsx`.
+Tests: `test/borrowings.test.ts`, `components/pages/workflow.test.tsx`, `test/chat-borrowings.test.ts`; end-to-end: `e2e/borrowing-terms.spec.ts`.

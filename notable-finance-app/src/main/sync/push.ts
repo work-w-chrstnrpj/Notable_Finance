@@ -13,7 +13,7 @@ import { getSqlite } from '../db'
 import { client } from '../notion/service'
 import { getMapping } from '../notion/mapping-store'
 import { NotionApiError } from '../notion/client'
-import { expenseDtoToProperties, incomeDtoToProperties } from '../notion/property-mapper'
+import { expenseDtoToProperties, incomeDtoToProperties, INCOME_LOAN_PROPERTY_NAMES } from '../notion/property-mapper'
 import { iconForExpense, iconForIncome } from '../notion/page-icons'
 import { metaSet, META_KEYS } from './meta'
 import { emitStatus, isRunning, setRunning, syncStatus } from './status'
@@ -25,6 +25,22 @@ import { acceptNotionGone, isNotionGoneError } from './notion-gone'
 import type { PushResult } from '../../shared/finance.types'
 
 const THROTTLE_MS = 340
+
+/** Income DTO keys backed by the optional Notion loan-term properties. */
+const LOAN_DTO_KEYS = ['interest', 'paymentFrequency', 'periodCount', 'linkedBorrowingId'] as const
+
+/** Notion rejected the write because a loan-term property does not exist in the database. */
+function isMissingLoanPropertyError(err: unknown): boolean {
+  // Notion's message for an unknown property is "<name> is not a property that exists."
+  return err instanceof NotionApiError && err.status === 400 &&
+    INCOME_LOAN_PROPERTY_NAMES.some((name) => err.message.includes(`${name} is not a property that exists`))
+}
+
+function withoutLoanProperties(properties: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...properties }
+  for (const name of INCOME_LOAN_PROPERTY_NAMES) delete copy[name]
+  return copy
+}
 const MAX_RETRIES = 3
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
@@ -239,7 +255,10 @@ async function pushAllInner(): Promise<PushResult> {
         transactedAccountId: translate(relations.accounts, dto.transactedAccountId as string | null, 'transactedAccountId'),
         ccPaymentCoveredIds: (dto.ccPaymentCoveredIds as string[] | null | undefined)
           ?.map((id) => translate(relations.expenses, id, 'ccPaymentCoveredIds'))
-          ?? []
+          ?? [],
+        linkedBorrowingId: dto.linkedBorrowingId === undefined
+          ? undefined
+          : translate(relations.incomes, dto.linkedBorrowingId as string | null, 'linkedBorrowingId')
       })
     },
     {
@@ -292,16 +311,29 @@ async function pushAllInner(): Promise<PushResult> {
         }
 
         const localDto = t.writable(row)
+        let sendDto: Record<string, unknown> = localDto
+        let incomeBase: Record<string, unknown> = {}
+        let usedLoanFallback = false
         let translated: Record<string, unknown>
         try {
           const base = t.table === 'expenses'
             ? JSON.parse((row.base_snapshot as string | null) ?? '{}')
             : null
+          if (t.table === 'incomes') {
+            // Plain income rows never touch the loan-term properties, so a Notion database
+            // that does not have them yet keeps syncing. Only a set value, or a value that
+            // changed from the last-synced one, is sent.
+            incomeBase = JSON.parse((row.base_snapshot as string | null) ?? '{}') as Record<string, unknown>
+            sendDto = { ...localDto }
+            for (const key of LOAN_DTO_KEYS) {
+              if ((localDto[key] ?? null) === null && (incomeBase[key] ?? null) === null) delete sendDto[key]
+            }
+          }
           // This legacy single-ID projection would replace the full two-way relation
           // in Notion if we sent it with unrelated expense edits.
           const dto = base && localDto.ccLinkPaymentReceiptId === (base.ccLinkPaymentReceiptId ?? null)
             ? { ...localDto, ccLinkPaymentReceiptId: undefined }
-            : localDto
+            : sendDto
           translated = t.translateRelations(dto)
         } catch (error) {
           // Relation target not pushed/pulled yet — leave dirty for a later pass.
@@ -311,7 +343,19 @@ async function pushAllInner(): Promise<PushResult> {
         }
 
         try {
-          const properties = t.toProperties(translated)
+          let properties = t.toProperties(translated)
+          // The loan-term properties are created in Notion by hand; if one is missing, retry
+          // without them so the rest of the record still syncs.
+          const sendWithLoanFallback = async (fn: (p: Record<string, unknown>) => Promise<{ id: string }>): Promise<{ id: string }> => {
+            try {
+              return await sendWithBackoff(() => fn(properties))
+            } catch (err) {
+              if (!isMissingLoanPropertyError(err)) throw err
+              properties = withoutLoanProperties(properties)
+              usedLoanFallback = true
+              return sendWithBackoff(() => fn(properties))
+            }
+          }
           const icon =
             t.table === 'incomes'
               ? iconForIncome({
@@ -331,19 +375,19 @@ async function pushAllInner(): Promise<PushResult> {
             err instanceof NotionApiError && /icon/i.test(err.message)
           if (pageId) {
             try {
-              await sendWithBackoff(() => c.updatePage(pageId as string, properties, { icon }))
+              await sendWithLoanFallback((p) => c.updatePage(pageId as string, p, { icon }))
             } catch (iconErr) {
               if (!isIconError(iconErr)) throw iconErr
-              await sendWithBackoff(() => c.updatePage(pageId as string, properties))
+              await sendWithLoanFallback((p) => c.updatePage(pageId as string, p))
             }
             result.updated++
           } else {
             let page: { id: string }
             try {
-              page = await sendWithBackoff(() => c.createPage(t.databaseId, properties, { icon }))
+              page = await sendWithLoanFallback((p) => c.createPage(t.databaseId, p, { icon }))
             } catch (iconErr) {
               if (!isIconError(iconErr)) throw iconErr
-              page = await sendWithBackoff(() => c.createPage(t.databaseId, properties))
+              page = await sendWithLoanFallback((p) => c.createPage(t.databaseId, p))
             }
             pageId = page.id
             result.created++
@@ -352,9 +396,22 @@ async function pushAllInner(): Promise<PushResult> {
           }
           // Base snapshot stores the LOCAL view of the writable fields — the three-way
           // merge ancestor (sync-and-conflict-design.md).
+          // If the loan-term properties had to be left out, Notion never received those values:
+          // keep their previous base (so a later empty remote cannot look like a deliberate
+          // clear) and leave the row dirty while it still holds terms, so they are pushed
+          // once the properties exist.
+          let savedBase: Record<string, unknown> = localDto
+          let savedState: 'clean' | 'dirty' = 'clean'
+          if (usedLoanFallback) {
+            savedBase = { ...localDto }
+            for (const key of LOAN_DTO_KEYS) {
+              savedBase[key] = incomeBase[key] ?? null
+              if ((localDto[key] ?? null) !== savedBase[key]) savedState = 'dirty'
+            }
+          }
           db.prepare(
-            `UPDATE ${t.table} SET notion_page_id = ?, base_snapshot = ?, sync_state = 'clean' WHERE id = ?`
-          ).run(pageId, JSON.stringify(localDto), row.id)
+            `UPDATE ${t.table} SET notion_page_id = ?, base_snapshot = ?, sync_state = ? WHERE id = ?`
+          ).run(pageId, JSON.stringify(savedBase), savedState, row.id)
           db.prepare('DELETE FROM mutation_queue WHERE resource = ? AND record_id = ?').run(
             resourceName,
             row.id

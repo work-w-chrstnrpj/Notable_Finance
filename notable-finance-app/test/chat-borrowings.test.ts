@@ -3,6 +3,10 @@ import { routeChatSkill } from '../src/main/chat/skills/router'
 import { executeChatTool, isChatToolAllowed } from '../src/main/chat/tools/registry'
 import { editDraftFields } from '../src/main/chat/tools/write-tools'
 import { toCreateIncomeInput } from '../src/main/chat/tools/write-tools'
+import { computeLoanSummary } from '../src/shared/borrowings'
+
+// Rows the mocked repository returns for the Borrowings view (empty unless a test sets them).
+const store = vi.hoisted(() => ({ incomes: [] as Array<Record<string, unknown>> }))
 
 vi.mock('../src/main/db/repositories', async (importOriginal) => ({
   ...await importOriginal<typeof import('../src/main/db/repositories')>(),
@@ -13,6 +17,8 @@ vi.mock('../src/main/db/repositories', async (importOriginal) => ({
     { id: 'rewards', name: 'Auxiliary & Rewards', type: 'Auxiliary', currentBalance: 0 },
     { id: 'loan', name: 'Debt/Loan', type: 'Auxiliary', currentBalance: 0 }
   ],
+  // Loan lookups read the Borrowings rows; these tests run without a database.
+  listIncomes: () => store.incomes,
   listIncomeCategories: () => [
     { id: 'cat-borrow', source: 'Borrowed Money', auxiliary: true },
     { id: 'cat-lent', source: 'Money Lent', auxiliary: true }
@@ -78,5 +84,89 @@ describe('chat Borrowings and Money Lent tools', () => {
     expect(routeChatSkill('Receivable 5k utang sa akin')).toBe('workflow-receivables')
     expect(routeChatSkill('delete my borrowing record')).toBe('refuse-delete')
     expect(isChatToolAllowed('deleteBorrowing')).toBe(false)
+  })
+})
+
+describe('borrowing-terms/05 chat parity for loan terms', () => {
+  const loanRow = {
+    id: 'loan-1', name: 'Borrow: Ana', date: '2026-11-01', grossIncome: -150000, deleted: false,
+    accountId: 'borrow', transactedAccountId: 'wallet', categoryId: 'cat-borrow',
+    interest: 5000, paymentFrequency: 'Monthly', periodCount: 12, linkedBorrowingId: null
+  }
+  const repayment = (id: string, amount: number, linked: string | null, deleted = false) => ({
+    id, name: 'Repayment: Ana', date: '2026-11-10', grossIncome: -amount, deleted,
+    accountId: 'wallet', transactedAccountId: 'borrow', categoryId: 'cat-borrow', linkedBorrowingId: linked
+  })
+  const withRows = (rows: Array<Record<string, unknown>>) => { store.incomes = rows }
+
+  it('borrowing-terms/05#AC1 borrow 150,000 with 5,000 interest over 12 months drafts the terms and read-only totals', () => {
+    withRows([])
+    const { draft } = run('proposeCreateBorrowing', {
+      type: 'borrowed', name: 'Borrow: Ana', amount: 150000, interest: 5000, paymentFrequency: 'monthly', periodCount: 12,
+      otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money', date: '2026-11-14'
+    })
+    expect(draft.missingRequired).toEqual([])
+    expect(draft.payload).toMatchObject({ grossIncome: -150000, interest: 5000, paymentFrequency: 'Monthly', periodCount: 12, linkedBorrowingId: null })
+    // Computed values are on the card only, never in the saved payload (ADR-0004).
+    expect(draft.payload).not.toHaveProperty('totalOwed')
+    expect(draft.payload).not.toHaveProperty('suggestedPayment')
+    const full = draft as unknown as { computedPreview: Record<string, number>; display: { note: string } }
+    expect(full.computedPreview).toMatchObject({ totalOwed: 155000, suggestedPayment: 12916.67, remainingBalance: 155000 })
+    expect(full.display.note).toContain('Total owed ₱155,000.00')
+    expect(full.display.note).toContain('Suggested payment ₱12,916.67 monthly')
+    expect(toCreateIncomeInput(draft.payload)).toMatchObject({ interest: 5000, paymentFrequency: 'Monthly', periodCount: 12 })
+  })
+
+  it('borrowing-terms/05#AC2 a repayment naming the loan is drafted and saved linked', () => {
+    withRows([loanRow])
+    const { draft } = run('proposeCreateBorrowing', {
+      type: 'repayment', name: 'Repayment: Ana', amount: 12916.67, loan: 'Borrow: Ana',
+      otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money'
+    })
+    expect(draft.missingRequired).toEqual([])
+    expect(draft.payload).toMatchObject({ linkedBorrowingId: 'loan-1', accountId: 'wallet', transactedAccountId: 'borrow' })
+    expect(toCreateIncomeInput(draft.payload)).toMatchObject({ linkedBorrowingId: 'loan-1' })
+    const full = draft as unknown as { computedPreview: Record<string, number> }
+    expect(full.computedPreview).toMatchObject({ remainingBalanceBefore: 155000, remainingBalance: 142083.33 })
+    // Card edits keep the link; an unknown loan blocks the draft instead of saving unlinked.
+    expect(editDraftFields(draft.id, { amount: 5000 }).payload).toMatchObject({ linkedBorrowingId: 'loan-1' })
+    const bad = run('proposeCreateBorrowing', { type: 'repayment', name: 'x', amount: 5, loan: 'Nope', otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money' })
+    expect(bad.draft.missingRequired.join(' ')).toMatch(/Loan/)
+    // Without naming a loan the repayment stays valid but unlinked, with a warning.
+    const unlinked = run('proposeCreateBorrowing', { type: 'repayment', name: 'x', amount: 5, otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money' })
+    expect(unlinked.draft.missingRequired).toEqual([])
+    expect(unlinked.draft.payload.linkedBorrowingId).toBeNull()
+  })
+
+  it('borrowing-terms/05#AC3 the remaining balance read matches the shared math the screen uses', () => {
+    const rows = [loanRow, repayment('r1', 12916.67, 'loan-1'), repayment('r2', 5000, 'loan-1', true), repayment('r3', 700, null)]
+    withRows(rows)
+    const screen = computeLoanSummary(loanRow as never, rows as never)
+    expect(screen.remainingBalance).toBe(142083.33)
+    expect(executeChatTool('getLoanSummary', JSON.stringify({ loan: 'Borrow: Ana' }), ctx)).toMatchObject({
+      found: true,
+      loan: { id: 'loan-1', totalOwed: 155000, suggestedPayment: 12916.67, paidAmount: 12916.67, paymentsMade: 1, remainingBalance: screen.remainingBalance }
+    })
+    const summary = executeChatTool('getBorrowingsSummary', '{}', ctx) as { loans: Array<{ remainingBalance: number }> }
+    expect(summary.loans[0].remainingBalance).toBe(screen.remainingBalance)
+    // Account still-owed counts unpaid interest: mocked balance-owed 1000 → 1000 + 12,916.67 paid − 150,000 principal + 142,083.33 remaining = 6,000.
+    expect(executeChatTool('getBorrowingsSummary', '{}', ctx)).toMatchObject({ borrowAccounts: [{ id: 'borrow', stillOwed: 6000 }, { id: 'loan', stillOwed: 0 }] })
+  })
+
+  it('borrowing-terms/05#AC4 a draft with only part of the terms asks for the rest instead of saving', () => {
+    withRows([])
+    const base = { type: 'borrowed', name: 'Borrow: Ana', amount: 150000, interest: 5000, otherAccount: 'Home Wallet', borrowAccount: 'Borrowed Money' }
+    const noPeriod = run('proposeCreateBorrowing', { ...base, paymentFrequency: 'Monthly' })
+    expect(noPeriod.draft.status).toBe('needs_input')
+    expect(noPeriod.draft.missingRequired.join(' ')).toMatch(/Period count/)
+    // Completing the pair on the card unlocks the draft (a newer draft supersedes it, so edit first).
+    expect(editDraftFields(noPeriod.draft.id, { periodCount: 12 }).missingRequired).toEqual([])
+    const noFreq = run('proposeCreateBorrowing', { ...base, periodCount: 12 })
+    expect(noFreq.draft.status).toBe('needs_input')
+    expect(noFreq.draft.missingRequired.join(' ')).toMatch(/Payment Frequency/)
+    const badPeriod = run('proposeCreateBorrowing', { ...base, paymentFrequency: 'Monthly', periodCount: 0 })
+    expect(badPeriod.draft.missingRequired.join(' ')).toMatch(/Period count/)
+    // Interest alone was always allowed.
+    expect(run('proposeCreateBorrowing', base).draft.missingRequired).toEqual([])
   })
 })

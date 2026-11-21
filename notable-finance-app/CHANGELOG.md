@@ -5,6 +5,13 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Loan terms on Borrowings.** A Borrow can carry Interest (flat total), Payment Frequency and Period count. The record modal shows Total owed, Suggested payment, Paid amount, Payments made and Remaining balance, and the table has a Remaining balance column. Repayments can be linked to a loan through a Loan picker; **Record repayment** prefills the Suggested payment and the link, and any amount can still be paid. The Borrow Accounts panel now shows what is still owed including unpaid interest. Interest never counts as an expense. Balances are computed, never stored. The chat assistant can create a loan with terms and report its Remaining balance.
+- Four nullable Income columns (migration 0016) and four Notion Income properties: `Interest`, `Payment Frequency`, `Period count` and `Linked Borrowing` (reverse `Payments`). `Payments Made`, `Paid Amount` and `Remaining Balance` are Notion-only computed properties the app does not read or write. Create the properties in Notion before syncing them; a missing property is skipped. See `wiki/desktop/borrowings.md`.
+
 ## [3.0.0] - 2026-11-14
 
 The desktop app is now the whole project: the earlier web app and its docs were removed.

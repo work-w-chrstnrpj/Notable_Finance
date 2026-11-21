@@ -1,9 +1,9 @@
 import { Field, ComputedField, FilterDropdown, MultiSelect, FormSectionDivider } from "@/components/ui";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
-import { calculateCcCoveredExpenseAmount, getMoneyValueTone } from "@/lib/finance-rules";
+import { calculateCcCoveredExpenseAmount, getMoneyValueTone, paymentFrequencyLabels } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
-import type { Account, ExpenseRecord, IncomeCategory } from "@/types/finance";
-import type { BorrowingKind } from "@shared/borrowings";
+import type { Account, ExpenseRecord, IncomeCategory, PaymentFrequency } from "@/types/finance";
+import type { BorrowingKind, LoanSummary } from "@shared/borrowings";
 import type { useWorkflowForm } from "./use-workflow-form";
 
 /**
@@ -36,6 +36,8 @@ export function WorkflowFormFields({
   totalCovered,
   onCategoryChange,
   invalidFields,
+  loanSummary,
+  loanOptions,
 }: {
   form: ReturnType<typeof useWorkflowForm>;
   label: string;
@@ -60,6 +62,10 @@ export function WorkflowFormFields({
   totalCovered: number;
   onCategoryChange?: (id: string) => void;
   invalidFields?: ReadonlySet<string>;
+  /** Computed figures for the loan being viewed or edited (a saved Borrowed row with terms). */
+  loanSummary?: LoanSummary | null;
+  /** Loans with terms on the chosen Borrow account, for a repayment's loan picker. */
+  loanOptions?: { id: string; label: string }[];
 }) {
   const bad = (key: string) => invalidFields?.has(key) ?? false;
   const {
@@ -71,6 +77,10 @@ export function WorkflowFormFields({
     transactedAccountId, setTransactedAccountId,
     workflowCategoryIdInput, setWorkflowCategoryIdInput,
     ccCoveredIds, setCcCoveredIds,
+    linkedBorrowingId, setLinkedBorrowingId,
+    interestInput, setInterestInput,
+    paymentFrequency, setPaymentFrequency,
+    periodCountInput, setPeriodCountInput,
     workflowNetIncome,
   } = form;
 
@@ -139,6 +149,63 @@ export function WorkflowFormFields({
                 .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
             />
           </Field>
+          {borrowKind === "repayment" && (
+            <Field label="Loan">
+              <select value={linkedBorrowingId} onChange={(event) => setLinkedBorrowingId(event.target.value)}>
+                <option value="">— Not linked to a loan —</option>
+                {(loanOptions ?? []).map((loan) => (
+                  <option key={loan.id} value={loan.id}>{loan.label}</option>
+                ))}
+              </select>
+            </Field>
+          )}
+          {borrowKind === "borrowed" && (
+            <>
+              <FormSectionDivider title="Loan terms (optional)" />
+              <Field label="Interest" error={bad("interest")}>
+                <input
+                  className={bad("interest") ? "field__input--shake" : undefined}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={interestInput}
+                  onChange={(event) => setInterestInput(event.target.value)}
+                />
+              </Field>
+              <Field label="Payment Frequency" error={bad("frequency")}>
+                <select
+                  className={bad("frequency") ? "field__input--shake" : undefined}
+                  value={paymentFrequency}
+                  onChange={(event) => setPaymentFrequency(event.target.value as PaymentFrequency | "")}
+                >
+                  <option value="">— None —</option>
+                  {paymentFrequencyLabels.map((frequency) => (
+                    <option key={frequency} value={frequency}>{frequency}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Period count" error={bad("periodCount")}>
+                <input
+                  className={bad("periodCount") ? "field__input--shake" : undefined}
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={periodCountInput}
+                  onChange={(event) => setPeriodCountInput(event.target.value)}
+                />
+              </Field>
+              {loanSummary && (
+                <>
+                  <ComputedField label="Total owed" value={formatMoney(loanSummary.totalOwed)} />
+                  <ComputedField
+                    label="Suggested payment"
+                    value={loanSummary.suggestedPayment != null ? formatMoney(loanSummary.suggestedPayment) : "—"}
+                  />
+                  <ComputedField label="Paid amount" value={formatMoney(loanSummary.paidAmount)} />
+                  <ComputedField label="Payments made" value={String(loanSummary.paymentsMade)} />
+                  <ComputedField label="Remaining balance" value={formatMoney(loanSummary.remainingBalance)} />
+                </>
+              )}
+            </>
+          )}
         </>
       ) : (
       <Field label={sourceAccountLabel} required={isTransfer || isCreditCardPayment || sourceAccountRequired} error={bad("account")}>
