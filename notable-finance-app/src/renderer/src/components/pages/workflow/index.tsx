@@ -9,7 +9,7 @@ import { NewRecordTypeModal } from './new-record-type-modal';
 import { ReceivablePasabuyModal } from './receivable-pasabuy-modal';
 import { ReceivablePasabuyBulkModal } from './receivable-pasabuy-bulk-modal';
 import { MoneyLentRepayment } from './money-lent-repayment';
-import { borrowingKind, isPlaceholderAccount, type BorrowingKind } from '@shared/borrowings';
+import { borrowingKind, computeLoanSummary, hasLoanTerms, isLoan, stillOwedForBorrowAccount, isPlaceholderAccount, type BorrowingKind, type LoanSummary } from '@shared/borrowings';
 import { Plus } from "lucide-react";
 import amountStyles from "./receivable-amount.module.css";
 import { useLiveCollections } from "@/components/hooks";
@@ -143,8 +143,11 @@ function WorkflowPage({
     workflowCapitalExpenditureInput,
     editingId, setEditingId,
     ccCoveredIds, setCcCoveredIds,
+    linkedBorrowingId, paymentIds, setPaymentIds,
+    interestInput, paymentFrequency, periodCountInput,
     loadRecord,
   } = form;
+  const [paymentsTouched, setPaymentsTouched] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -206,6 +209,8 @@ function WorkflowPage({
     rangeStart: selectedRange?.start,
     rangeEnd: selectedRange?.end,
   });
+  // Loan balances need every repayment, not just the ones inside the selected date range.
+  const { state: allBorrowingState } = useWorkflowRecords("borrowings", {}, { enabled: section === "borrowings" });
   const { state: expenseState, applyLocal: applyExpenseLocal } = useExpenses();
   const selectedPeriodLabel = viewUnit ? rangeLabel(viewUnit, selectedDate) : "All Records";
   // Workflows are income-backed views, so they share the income invalidation.
@@ -335,12 +340,46 @@ function WorkflowPage({
   // computed "Transferred Amount" = Amount × -1); the other workflows share a
   // simpler Name/Date/Account/Category/Amount table.
   const workflowHeaders = isBorrowings
-    ? ["Date", "Name", "Type", "Borrow Account", "Borrowed Amount", "Other Account", "Other Amount"]
+    ? ["Date", "Name", "Type", "Borrow Account", "Borrowed Amount", "Other Account", "Other Amount", "Remaining balance"]
     : isTransfer
     ? ["Date", "Name", "Source Account", "Amount", "Transfer Account", "Transferred Amount"]
     : isCreditCardPayment
       ? ["Date", "Name", "CC Account", "Amount", "Payer Account"]
       : ["Name", "Date", isReceivables ? "Account" : sourceAccountLabel, "Category", "Amount"];
+  // Loan figures are computed from linked repayments, never stored (ADR-0004).
+  const everyBorrowing: IncomeRecord[] = useMemo(
+    () => (isBorrowings && allBorrowingState.status === "success" ? allBorrowingState.data : allWorkflowIncomes)
+      .filter((r) => !r.name?.includes("[Deleted:")),
+    [isBorrowings, allBorrowingState, allWorkflowIncomes],
+  );
+  const loanSummaryById = useMemo(() => {
+    const map = new Map<string, LoanSummary>();
+    if (!isBorrowings) return map;
+    for (const loan of everyBorrowing) {
+      if (!loan.deleted && borrowingKind(loan, placeholderIds) === "borrowed" && isLoan(loan, everyBorrowing)) {
+        map.set(loan.id, computeLoanSummary(loan, everyBorrowing));
+      }
+    }
+    return map;
+  }, [isBorrowings, everyBorrowing, placeholderIds]);
+  // Until the full list has loaded, the range-scoped fallback may miss loans or repayments: offer no loan choices from it.
+  const borrowingsReady = isBorrowings && allBorrowingState.status !== "loading";
+  /** Loans with terms on the Borrow account chosen in the repayment form. */
+  const loanOptions = borrowingsReady
+    ? everyBorrowing
+        .filter((r) => !r.deleted && borrowingKind(r, placeholderIds) === "borrowed" && r.accountId === receivingAccountId)
+        .map((r) => ({
+          id: r.id,
+          label: `${stripNotionTag(r.name)} · ${formatMoney(computeLoanSummary(r, everyBorrowing).remainingBalance)} remaining`,
+        }))
+    : [];
+  // A repayment's existing link stays selectable even when its loan is not offered (deleted, lost its terms, on another account, not loaded).
+  const loanPickerOptions = linkedBorrowingId && !loanOptions.some((l) => l.id === linkedBorrowingId)
+    ? [...loanOptions, { id: linkedBorrowingId, label: stripNotionTag(everyBorrowing.find((r) => r.id === linkedBorrowingId)?.name ?? "Linked loan") }]
+    : loanOptions;
+  /** Still owed on a Borrow account: Remaining balance of loans with terms plus the balance-based amount for the rest. */
+  const stillOwedFor = (account: { id: string; currentBalance: number }) =>
+    stillOwedForBorrowAccount(account.id, -account.currentBalance, everyBorrowing);
   const workflowRows = receivableRecords.map((item) => {
     if (item.kind === "expense") {
       const record = item.record;
@@ -369,6 +408,9 @@ function WorkflowPage({
         <MoneyValue key={`${record.id}-borrowed`} value={borrowAmount} />,
         accountNameById.get(otherSide ?? "") ?? "—",
         <MoneyValue key={`${record.id}-other`} value={-borrowAmount} />,
+        loanSummaryById.has(record.id)
+          ? <OwedValue key={`${record.id}-remaining`} amount={loanSummaryById.get(record.id)!.remainingBalance} />
+          : "—",
       ];
     }
     if (isTransfer) {
@@ -409,7 +451,7 @@ function WorkflowPage({
     .filter((r) => !disabledIds.has(r.id))
     .reduce((sum, r) => sum + (borrowingKind(r, placeholderIds) === "borrowed" ? -Math.abs(r.grossIncome) : Math.abs(r.grossIncome)), 0);
   const workflowFooterRows = isBorrowings
-    ? [["Net", "", "", "", <MoneyValue key="borrow-net" value={borrowNet} />, "", <MoneyValue key="other-net" value={-borrowNet} />]]
+    ? [["Net", "", "", "", <MoneyValue key="borrow-net" value={borrowNet} />, "", <MoneyValue key="other-net" value={-borrowNet} />, ""]]
     : isTransfer
     ? []
     : isCreditCardPayment
@@ -464,6 +506,10 @@ function WorkflowPage({
       form.setWorkflowAmountInput(record ? String(Math.abs(record.grossIncome)) : "");
       form.setReceivingAccountId((kind === "borrowed" ? record?.accountId : record?.transactedAccountId) ?? placeholderAccounts[0]?.id ?? "");
       form.setTransactedAccountId((kind === "borrowed" ? record?.transactedAccountId : record?.accountId) ?? "");
+      setPaymentsTouched(false);
+      form.setPaymentIds(record && kind === "borrowed"
+        ? everyBorrowing.filter((r) => !r.deleted && r.linkedBorrowingId === record.id).map((r) => r.id)
+        : []);
     }
     const loan = newMoneyLent || Boolean(record && isMoneyLentCategory(incomeCategoryNameById.get(record.categoryId)));
     setMoneyLentMode(loan);
@@ -485,7 +531,14 @@ function WorkflowPage({
     setBorrowKind(kind);
     form.setWorkflowNameInput(kind === "borrowed" ? "Borrow: " : `Repayment: ${source ? stripNotionTag(source.name).replace(/^Borrow:\s*/, "") : ""}`);
     form.setWorkflowDateInput(today);
-    form.setWorkflowAmountInput(source ? String(Math.abs(source.grossIncome)) : "");
+    // Record repayment from a loan with terms prefills the Suggested payment (or what is left) and the link; the amount stays editable.
+    // Never more than is still owed, and never 0 or less (a paid-off loan leaves the amount empty).
+    const loanSummary = source && borrowingsReady ? computeLoanSummary(source, everyBorrowing) : undefined;
+    const prefill = loanSummary
+      ? Math.min(loanSummary.suggestedPayment ?? loanSummary.remainingBalance, loanSummary.remainingBalance)
+      : null;
+    form.setWorkflowAmountInput(prefill != null && prefill > 0 ? String(prefill) : "");
+    form.setLinkedBorrowingId(source?.id ?? "");
     form.setReceivingAccountId(source?.accountId ?? placeholderAccounts[0]?.id ?? "");
     form.setTransactedAccountId("");
     setEditing(true);
@@ -548,6 +601,17 @@ function WorkflowPage({
       if (!receivingAccountId) { flagInvalid("Borrow Account is required. Create an Auxiliary account whose name has 'borrow', 'debt' or 'loan' in it.", "account"); return; }
       if (!transactedAccountId) { flagInvalid(borrowKind === "borrowed" ? "Choose the account that received the money." : "Choose the account you paid from.", "secondary"); return; }
       if (!(parseNumberInput(workflowAmountInput) > 0)) { flagInvalid("Enter an amount greater than zero.", "amount"); return; }
+      if (borrowKind === "borrowed") {
+        const hasInterest = interestInput.trim() !== "";
+        const hasPeriods = periodCountInput.trim() !== "";
+        if (hasInterest && !(parseNumberInput(interestInput) >= 0)) { flagInvalid("Interest cannot be negative.", "interest"); return; }
+        if (hasPeriods && !paymentFrequency) { flagInvalid("Choose a Payment Frequency for the Period count.", "frequency"); return; }
+        if (paymentFrequency && !hasPeriods) { flagInvalid("Enter a Period count for the Payment Frequency.", "periodCount"); return; }
+        if (hasPeriods) {
+          const periods = parseNumberInput(periodCountInput);
+          if (!Number.isInteger(periods) || periods < 1) { flagInvalid("Period count must be a whole number of 1 or more.", "periodCount"); return; }
+        }
+      }
     }
     if (isCreditCardPayment && !receivingAccountId) {
       flagInvalid("CC Account is required.", "account");
@@ -574,6 +638,13 @@ function WorkflowPage({
       // Borrowed: debit the placeholder, credit where the cash landed. Repayment: the reverse.
       payload.accountId = borrowKind === "borrowed" ? receivingAccountId : transactedAccountId;
       payload.transactedAccountId = borrowKind === "borrowed" ? transactedAccountId : receivingAccountId;
+      // Loan terms live on the Borrowed row only; null clears them when editing.
+      const borrowedTerms = borrowKind === "borrowed";
+      // A repayment keeps its link unless the user picks "Not linked" (null).
+      payload.linkedBorrowingId = !borrowedTerms && linkedBorrowingId ? linkedBorrowingId : null;
+      payload.interest = borrowedTerms && interestInput.trim() !== "" ? parseNumberInput(interestInput) : null;
+      payload.paymentFrequency = borrowedTerms && paymentFrequency ? paymentFrequency : null;
+      payload.periodCount = borrowedTerms && periodCountInput.trim() !== "" ? parseNumberInput(periodCountInput) : null;
     }
     // Only Receivables chooses a category. Other workflows resolve their fixed
     // category in main, including Savings for Alkansya.
@@ -600,6 +671,10 @@ function WorkflowPage({
       if (!res.success) {
         setSaveError(res.error.message || "Couldn't save this record. Please try again.");
         return;
+      }
+      if (isBorrowings && borrowKind === "borrowed" && modal?.mode === "edit" && editingId) {
+        const problem = await savePaymentLinks(editingId);
+        if (problem) { setSaveError(problem); invalidateIncomeFamily(); return; }
       }
       setModal(null);
       setCcCoveredIds([]);
@@ -660,6 +735,9 @@ function WorkflowPage({
         accountId: record.accountId,
         ...(categoryEditable ? { categoryId: record.categoryId } : {}),
         ...(record.transactedAccountId ? { transactedAccountId: record.transactedAccountId } : {}),
+        ...(isBorrowings && hasLoanTerms(record)
+          ? { interest: record.interest ?? null, paymentFrequency: record.paymentFrequency ?? null, periodCount: record.periodCount ?? null }
+          : {}),
       }));
 
       // NOTE: unlike Income/Expense this path is not optimistic — no temp rows, no pending
@@ -733,6 +811,38 @@ function WorkflowPage({
   }, [allWorkflowIncomes.length]);
 
   const currentRecord = allWorkflowIncomes.find((r) => r.id === editingId);
+  const currentLoanSummary = isBorrowings && currentRecord ? loanSummaryById.get(currentRecord.id) ?? null : null;
+  // Payments multi-select of a saved Borrowed row: repayments on its Borrow account that are linked to it or to no loan.
+  // A repayment linked to a different loan is left out: a payment links to one loan only.
+  const viewedLoan = isBorrowings && currentRecord && !currentRecord.deleted && borrowingKind(currentRecord, placeholderIds) === "borrowed" ? currentRecord : null;
+  const paymentCandidates = viewedLoan
+    ? everyBorrowing.filter((r) => !r.deleted && borrowingKind(r, placeholderIds) === "repayment" && r.transactedAccountId === viewedLoan.accountId
+        && (!r.linkedBorrowingId || r.linkedBorrowingId === viewedLoan.id))
+    : [];
+  const paymentsSection = viewedLoan && borrowingsReady
+    ? {
+        items: paymentCandidates.map((r) => ({ id: r.id, label: `${stripNotionTag(r.name)} · ${r.date}`, sublabel: formatMoney(Math.abs(r.grossIncome)) })),
+        selectedIds: paymentIds,
+        totalPaid: paymentCandidates.filter((r) => paymentIds.includes(r.id)).reduce((sum, r) => sum + Math.abs(r.grossIncome), 0),
+        onChange: (ids: string[]) => { setPaymentIds(ids); setPaymentsTouched(true); },
+      }
+    : null;
+  /** Save the Payments selection: link newly selected repayments and unlink deselected ones (the same stored link the repayment form sets). */
+  async function savePaymentLinks(loanId: string): Promise<string | null> {
+    if (!paymentsTouched) return null;
+    const linkedNow = new Set(everyBorrowing.filter((r) => !r.deleted && r.linkedBorrowingId === loanId).map((r) => r.id));
+    const changes = [
+      ...paymentIds.filter((id) => !linkedNow.has(id)).map((id) => ({ id, link: loanId })),
+      ...[...linkedNow].filter((id) => !paymentIds.includes(id)).map((id) => ({ id, link: null as string | null })),
+    ];
+    for (const change of changes) {
+      const res = await workflowApi.update(change.id, { linkedBorrowingId: change.link });
+      if (!res.success) return res.error.message || "Couldn't update the payment links.";
+      const saved = res.data;
+      applyLocal((rows) => rows.map((r) => (r.id === saved.id ? saved : r)));
+    }
+    return null;
+  }
   const canRepay = currentRecord && isOutstandingMoneyLent(currentRecord, incomeCategoryNameById.get(currentRecord.categoryId));
   const canReclassify = isAlkansya && currentRecord && currentRecord.grossIncome < 0 &&
     currentRecord.capitalExpenditure === 0 && !currentRecord.transactedAccountId && !currentRecord.ccPaymentCoveredIds?.length;
@@ -841,9 +951,9 @@ function WorkflowPage({
               headers={["Borrow Account", "Still owed"]}
               rows={placeholderAccounts.map((account) => [
                 account.name,
-                <OwedValue key={`${account.id}-owed`} amount={-account.currentBalance} />,
+                <OwedValue key={`${account.id}-owed`} amount={stillOwedFor(account)} />,
               ])}
-              footerRows={[["Total owed", <OwedValue key="owed-total" amount={-placeholderAccounts.reduce((sum, a) => sum + a.currentBalance, 0)} />]]}
+              footerRows={[["Total owed", <OwedValue key="owed-total" amount={placeholderAccounts.reduce((sum, a) => sum + stillOwedFor(a), 0)} />]]}
             />
           ) : (
             <EmptyState title="No Borrow accounts" detail={'Create an Auxiliary account whose name has "borrow", "debt" or "loan" in it, in Notion, then sync.'} />
@@ -945,6 +1055,10 @@ function WorkflowPage({
           fixedCategory={moneyLentMode ? 'Money Lent' : fixedCategory}
           eligibleCcExpenses={eligibleCcExpenses}
           totalCovered={totalCovered}
+          loanSummary={currentLoanSummary}
+          loanOptions={loanPickerOptions}
+          loanHasTerms={Boolean(currentRecord && hasLoanTerms(currentRecord))}
+          payments={paymentsSection}
         />
       </FormModal>
       {typePicker && isBorrowings && (

@@ -17,7 +17,12 @@ export const INCOME_WRITABLE_COLS: Record<string, string> = {
   accountId: 'account_id',
   categoryId: 'category_id',
   transactedAccountId: 'transacted_account_id',
-  ccPaymentCoveredIds: 'cc_payment_covered_id'
+  ccPaymentCoveredIds: 'cc_payment_covered_id',
+  // Loan terms + repayment link (borrowing-terms/02); nullable, absent on plain income rows.
+  interest: 'interest',
+  paymentFrequency: 'payment_frequency',
+  periodCount: 'period_count',
+  linkedBorrowingId: 'linked_borrowing_id'
 }
 
 export const EXPENSE_WRITABLE_COLS: Record<string, string> = {

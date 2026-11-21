@@ -2,7 +2,7 @@
 // working source of truth), marks the record sync_state='dirty', and journals into
 // mutation_queue so offline edits replay in order (wiki/desktop/sync-and-conflict-design.md).
 // Soft delete follows the shared rule: rewrite the title, clear amounts, set deleted=1.
-import { BORROWED_MONEY_CATEGORY, isBorrowedMoneyCategory } from '../../shared/borrowings'
+import { BORROWED_MONEY_CATEGORY, isBorrowedMoneyCategory, isPlaceholderAccount } from '../../shared/borrowings'
 import { isMoneyLentCategory, isOutstandingMoneyLent, MONEY_LENT_CATEGORY, type RepayMoneyLentInput } from '../../shared/money-lent'
 import { randomUUID } from 'node:crypto'
 import { getSqlite } from './index'
@@ -47,6 +47,7 @@ import {
   assertFiniteNumber,
   assertNonEmptyString,
   validateCreateExpense,
+  assertLoanTermsPair,
   validateCreateIncome,
   validateCreateScheduler,
   validateUpdateExpense,
@@ -102,7 +103,8 @@ function auxiliaryIncomeCategoryIds(): Set<string> {
 // ── incomes (and income-backed views) ───────────────────────────────────────
 
 const INCOME_COLS = `id, title, date, gross_income, capital_expenditure, account_id,
-  category_id, notes, is_transaction, transacted_account_id, cc_payment_covered_id, deleted, sync_state`
+  category_id, notes, is_transaction, transacted_account_id, cc_payment_covered_id,
+  interest, payment_frequency, period_count, linked_borrowing_id, deleted, sync_state`
 
 function allIncomeRows(includeDeleted = false): IncomeRow[] {
   const where = includeDeleted ? '' : 'WHERE deleted = 0'
@@ -172,17 +174,35 @@ function resolveWorkflowIncome(input: CreateIncomeInput): CreateIncomeInput {
   return { ...input, categoryId, isTransaction }
 }
 
+/** A repayment may link to any existing, non-deleted Borrowed row (with or without loan terms), never itself or another repayment. */
+function assertLinkableLoan(linkedId: string, ownId?: string): void {
+  if (ownId && linkedId === ownId) throw new ValidationError('A record cannot be linked to itself.')
+  const target = getSqlite()
+    .prepare(
+      `SELECT i.deleted AS deleted, a.account_type AS type, a.account_name AS name
+       FROM incomes i LEFT JOIN accounts a ON a.id = i.account_id WHERE i.id = ?`
+    )
+    .get(linkedId) as { deleted: number; type: string | null; name: string | null } | undefined
+  if (!target) throw new ValidationError('The linked loan does not exist.')
+  if (target.deleted) throw new ValidationError('The linked loan was deleted.')
+  if (!isPlaceholderAccount({ type: target.type as never, name: target.name ?? '' })) {
+    throw new ValidationError('The linked record is a repayment, not a Borrowed row.')
+  }
+}
+
 export function createIncome(rawInput: CreateIncomeInput): IncomeRecordDto {
   const input = normalizeMoneyLent(resolveWorkflowIncome(rawInput))
   validateCreateIncome(input)
+  if (input.linkedBorrowingId) assertLinkableLoan(input.linkedBorrowingId)
   const id = randomUUID()
   const t = now()
   getSqlite()
     .prepare(
       `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
          notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,
-         account_id, category_id, date, notes, is_transaction, transacted_account_id, cc_payment_covered_id)
-       VALUES (?, NULL, NULL, 'dirty', ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         account_id, category_id, date, notes, is_transaction, transacted_account_id, cc_payment_covered_id,
+         interest, payment_frequency, period_count, linked_borrowing_id)
+       VALUES (?, NULL, NULL, 'dirty', ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       id, t, t,
@@ -195,7 +215,11 @@ export function createIncome(rawInput: CreateIncomeInput): IncomeRecordDto {
       input.notes ?? null,
       input.isTransaction ? 1 : 0,
       input.transactedAccountId ?? null,
-      input.ccPaymentCoveredIds ? JSON.stringify(input.ccPaymentCoveredIds) : null
+      input.ccPaymentCoveredIds ? JSON.stringify(input.ccPaymentCoveredIds) : null,
+      input.interest ?? null,
+      input.paymentFrequency ?? null,
+      input.periodCount ?? null,
+      input.linkedBorrowingId ?? null
     )
   journal('incomes', 'create', id, input)
   return getIncome(id)
@@ -210,13 +234,24 @@ const INCOME_PATCH_COLS: Record<string, string> = {
   categoryId: 'category_id',
   notes: 'notes',
   transactedAccountId: 'transacted_account_id',
-  isTransaction: 'is_transaction'
+  isTransaction: 'is_transaction',
+  interest: 'interest',
+  paymentFrequency: 'payment_frequency',
+  periodCount: 'period_count',
+  linkedBorrowingId: 'linked_borrowing_id'
 }
 
 export function updateIncome(id: string, patch: UpdateIncomeInput): IncomeRecordDto {
   validateUpdateIncome(patch as Record<string, unknown>)
   const current = getIncome(id)
   if (current.deleted) throw new ValidationError('Deleted income cannot be edited.')
+  if ('paymentFrequency' in patch || 'periodCount' in patch) {
+    assertLoanTermsPair({
+      paymentFrequency: 'paymentFrequency' in patch ? patch.paymentFrequency : current.paymentFrequency,
+      periodCount: 'periodCount' in patch ? patch.periodCount : current.periodCount
+    })
+  }
+  if (patch.linkedBorrowingId) assertLinkableLoan(patch.linkedBorrowingId, id)
   const { addCcPaymentCoveredIds, ...changes } = patch
   if (addCcPaymentCoveredIds !== undefined) {
     if (!Array.isArray(addCcPaymentCoveredIds) || addCcPaymentCoveredIds.length === 0 ||

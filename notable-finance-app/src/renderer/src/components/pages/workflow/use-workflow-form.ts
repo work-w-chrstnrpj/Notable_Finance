@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { calculateNetIncome } from "@/lib/finance-rules";
 import { parseNumberInput } from "@/lib/finance-helpers";
-import type { IncomeRecord } from "@/types/finance";
+import type { IncomeRecord, PaymentFrequency } from "@/types/finance";
 
 /**
  * All state and derived figures for the Workflow record form
@@ -20,6 +20,14 @@ export function useWorkflowForm() {
   const [workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [ccCoveredIds, setCcCoveredIds] = useState<string[]>([]);
+  // Loan terms (Borrowings): optional as a group.
+  // Repayment: the loan (Borrowed row) this payment is linked to; "" = unlinked.
+  // Borrowed row: ids of the repayments linked to it (the Payments multi-select).
+  const [paymentIds, setPaymentIds] = useState<string[]>([]);
+  const [linkedBorrowingId, setLinkedBorrowingId] = useState("");
+  const [interestInput, setInterestInput] = useState("");
+  const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency | "">("");
+  const [periodCountInput, setPeriodCountInput] = useState("");
 
   const workflowNetIncome = calculateNetIncome(
     parseNumberInput(workflowAmountInput),
@@ -43,6 +51,11 @@ export function useWorkflowForm() {
     setWorkflowCapitalExpenditureInput(record?.capitalExpenditure?.toString() ?? "");
     setEditingId(record?.id ?? null);
     setCcCoveredIds(record?.ccPaymentCoveredIds ?? []);
+    setLinkedBorrowingId(record?.linkedBorrowingId ?? "");
+    setPaymentIds([]);
+    setInterestInput(record?.interest != null ? String(record.interest) : "");
+    setPaymentFrequency(record?.paymentFrequency ?? "");
+    setPeriodCountInput(record?.periodCount != null ? String(record.periodCount) : "");
   }
 
   return {
@@ -55,6 +68,11 @@ export function useWorkflowForm() {
     workflowCapitalExpenditureInput, setWorkflowCapitalExpenditureInput,
     editingId, setEditingId,
     ccCoveredIds, setCcCoveredIds,
+    paymentIds, setPaymentIds,
+    linkedBorrowingId, setLinkedBorrowingId,
+    interestInput, setInterestInput,
+    paymentFrequency, setPaymentFrequency,
+    periodCountInput, setPeriodCountInput,
     workflowNetIncome,
     loadRecord,
   };
