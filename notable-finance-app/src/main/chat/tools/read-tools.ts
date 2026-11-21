@@ -1,6 +1,11 @@
 import * as repo from '../../db/repositories'
 import * as reports from '../../services/reports'
-import { isPlaceholderAccount } from '../../../shared/borrowings'
+import {
+  computeLoanSummary,
+  isLoan,
+  isPlaceholderAccount,
+  stillOwedForBorrowAccount
+} from '../../../shared/borrowings'
 import { isMoneyLentCategory, receivableAmount } from '../../../shared/money-lent'
 import { requireMonth, resolveMonth, currentMonth } from '../dates'
 
@@ -54,7 +59,12 @@ function slimIncome(r: ReturnType<typeof repo.listIncomes>[number]) {
     grossIncome: r.grossIncome,
     capitalExpenditure: r.capitalExpenditure,
     accountId: r.accountId,
-    categoryId: r.categoryId
+    categoryId: r.categoryId,
+    // Loan terms / link only when present, so ordinary income rows stay small.
+    ...(r.interest != null ? { interest: r.interest } : {}),
+    ...(r.paymentFrequency ? { paymentFrequency: r.paymentFrequency } : {}),
+    ...(r.periodCount != null ? { periodCount: r.periodCount } : {}),
+    ...(r.linkedBorrowingId ? { linkedBorrowingId: r.linkedBorrowingId } : {})
   }
 }
 
@@ -164,21 +174,72 @@ export function queryIncomes(args: unknown) {
   }
 }
 
-/** Borrow accounts (Auxiliary accounts whose name has "borrow", "debt" or "loan") and what is still owed on each. */
+const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100
+
+/** Loans (Borrowed rows with terms or linked repayments), each with its computed summary. Same math as the screen. */
+function loanRows() {
+  const placeholderIds = new Set(repo.listAccounts(false).filter(isPlaceholderAccount).map((a) => a.id))
+  const records = repo.listIncomes({ view: 'borrowings' })
+  const loans = records.filter((r) => !r.deleted && r.accountId && placeholderIds.has(r.accountId) && isLoan(r, records))
+  return { records, loans }
+}
+
+function loanDescription(loan: ReturnType<typeof repo.listIncomes>[number], records: ReturnType<typeof repo.listIncomes>) {
+  const s = computeLoanSummary(loan, records)
+  return {
+    id: loan.id,
+    name: loan.name,
+    date: loan.date,
+    borrowAccountId: loan.accountId,
+    principal: s.principal,
+    interest: s.interest,
+    paymentFrequency: loan.paymentFrequency ?? null,
+    periodCount: loan.periodCount ?? null,
+    totalOwed: s.totalOwed,
+    suggestedPayment: s.suggestedPayment,
+    paidAmount: s.paidAmount,
+    paymentsMade: s.paymentsMade,
+    remainingBalance: s.remainingBalance
+  }
+}
+
+/** Borrow accounts (Auxiliary accounts whose name has "borrow", "debt" or "loan"), what is still owed on each, and loans with terms. */
 export function getBorrowingsSummary(_args: unknown) {
   const accounts = repo.listAccounts(false).filter(isPlaceholderAccount)
+  const { records, loans } = loanRows()
   const rows = accounts.map((a) => ({
     id: a.id,
     name: a.name,
-    // A Borrow account's balance is the negative of what is still owed.
-    stillOwed: Math.round((-a.currentBalance + Number.EPSILON) * 100) / 100
+    // A Borrow account's balance is the negative of what is still owed; loans with terms count at their Remaining balance.
+    stillOwed: stillOwedForBorrowAccount(a.id, round2(-a.currentBalance), records)
   }))
   return {
     borrowAccounts: rows,
-    totalStillOwed: Math.round((rows.reduce((s, r) => s + r.stillOwed, 0) + Number.EPSILON) * 100) / 100,
+    totalStillOwed: round2(rows.reduce((s, r) => s + r.stillOwed, 0)),
+    loans: loans.map((l) => loanDescription(l, records)),
     note: rows.length
-      ? 'Use queryIncomes with view="borrowings" for the Borrowed/Repayment rows.'
+      ? 'Use queryIncomes with view="borrowings" for the Borrowed/Repayment rows; getLoanSummary for one loan.'
       : 'No Borrow account yet: create an Auxiliary-type account whose name has "borrow", "debt" or "loan" in Notion, then sync.'
+  }
+}
+
+/** One loan with terms: total owed, Suggested payment, Paid amount, Payments made and Remaining balance. */
+export function getLoanSummary(args: unknown) {
+  const a = (args && typeof args === 'object' ? args : {}) as Record<string, unknown>
+  const ref = typeof a.loan === 'string' && a.loan.trim() ? a.loan.trim() : typeof a.id === 'string' ? a.id.trim() : ''
+  const { records, loans } = loanRows()
+  if (loans.length === 0) return { found: false, message: 'No loan with terms (Interest, Payment Frequency or Period count) exists yet.' }
+  if (!ref) {
+    if (loans.length === 1) return { found: true, loan: loanDescription(loans[0], records) }
+    return { found: false, message: 'Several loans have terms; ask which one.', loans: loans.map((l) => ({ id: l.id, name: l.name, date: l.date })) }
+  }
+  const byId = loans.find((l) => l.id === ref)
+  const matches = byId ? [byId] : loans.filter((l) => l.name.toLowerCase() === ref.toLowerCase() || l.name.toLowerCase().includes(ref.toLowerCase()))
+  if (matches.length === 1) return { found: true, loan: loanDescription(matches[0], records) }
+  return {
+    found: false,
+    message: matches.length ? `Several loans match "${ref}"; ask which one.` : `No loan with terms matches "${ref}".`,
+    loans: (matches.length ? matches : loans).map((l) => ({ id: l.id, name: l.name, date: l.date }))
   }
 }
 
@@ -268,7 +329,7 @@ export function getCategoryBudgetStatus(args: unknown) {
 
 const APP_TOPICS: Record<string, string> = {
   borrowings:
-    'Borrowings (money you owe) is its own section, separate from Receivables. Each event is one Income row in the auxiliary "Borrowed Money" category, stored like a Transfer. Borrowed: Borrow account −X, receiving account +X. Repayment: paying account −X, Borrow account +X. A Borrow account is an Auxiliary-type account whose name has "borrow", "debt" or "loan"; its balance is the negative of what is still owed, and you can have several. The page columns are Date, Name, Type, Borrow Account, Borrowed Amount, Other Account, Other Amount; the Net footer is negative when money is still owed. Borrowings stay out of Income totals and Monthly Monitoring. New Record asks Borrow or Repayment first. Chat can draft Borrowed and Repayment records; it cannot delete.',
+    'Borrowings (money you owe) is its own section, separate from Receivables. Each event is one Income row in the auxiliary "Borrowed Money" category, stored like a Transfer. Borrowed: Borrow account −X, receiving account +X. Repayment: paying account −X, Borrow account +X. A Borrow account is an Auxiliary-type account whose name has "borrow", "debt" or "loan"; its balance is the negative of what is still owed, and you can have several. The page columns are Date, Name, Type, Borrow Account, Borrowed Amount, Other Account, Other Amount; the Net footer is negative when money is still owed. Borrowings stay out of Income totals and Monthly Monitoring. New Record asks Borrow or Repayment first. A Borrowed row can carry Loan terms: Interest (flat total, never an expense), Payment Frequency and Period count (these two go together). The app computes total owed (principal + interest), Suggested payment (total owed / Period count, a minimum guide only) and, from the repayments linked to the loan, Paid amount, Payments made and Remaining balance (never below 0). Repayments are manual, any amount, and can be linked to a loan. Chat can draft Borrowed (with terms) and Repayment (linked) records and report a loan\'s Remaining balance; it cannot delete.',
   'money lent':
     'Money Lent is money you lent someone, in the Receivables section. New Record → Lend Money (title "Lend Money: …", category Money Lent). It is stored as a negative amount on the source account but shown as a positive amount owed to you. Chat can draft a Lend Money record. Recording a repayment (same account soft-deletes the loan; another account converts it to a Transfer) must be done on the Receivables page.',
   hidden:

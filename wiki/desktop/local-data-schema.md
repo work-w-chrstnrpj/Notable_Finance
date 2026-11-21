@@ -52,10 +52,12 @@ incomes(
   account_id, category_id, date, notes,
   is_transaction INTEGER,          -- transactions extend incomes
   transacted_account_id, cc_payment_covered_id,  -- transaction-only
-  page_content, page_content_dirty INTEGER       -- Markdown body sync
+  page_content, page_content_dirty INTEGER,      -- Markdown body sync
+  interest REAL, payment_frequency TEXT, period_count INTEGER,  -- loan terms on a Borrowed row (nullable)
+  linked_borrowing_id TEXT                        -- on a repayment: the loan it pays (nullable)
 )
 ```
-Computed (not stored): `net_income = gross_income - capital_expenditure`.
+Computed (not stored): `net_income = gross_income - capital_expenditure`. Loan terms and the link were added by migration `0016_loan_terms` (four nullable columns). They are writable fields included in the base snapshot for three-way merge. Total owed, Suggested payment, Paid amount, Payments made and Remaining balance are computed from them and the linked repayments, never stored. See [Borrowings](borrowings.md).
 
 ### `expenses` (writable)
 ```

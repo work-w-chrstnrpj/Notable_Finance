@@ -9,6 +9,8 @@ export interface ExpectedProperty {
   property: string
   type: string
   kind: 'writable' | 'computed'
+  /** A missing property is only a warning (owner creates it by hand); a wrong type is still an error. */
+  optional?: boolean
 }
 
 const A = NOTION_PROPERTY_NAMES.accounts
@@ -48,7 +50,12 @@ export const EXPECTED_SCHEMA: Record<MappableResource, ExpectedProperty[]> = {
     { property: I.accountId, type: 'relation', kind: 'writable' },
     { property: I.categoryId, type: 'relation', kind: 'writable' },
     { property: I.transactedAccountId, type: 'relation', kind: 'writable' },
-    { property: I.ccPaymentCoveredId, type: 'relation', kind: 'writable' }
+    { property: I.ccPaymentCoveredId, type: 'relation', kind: 'writable' },
+    // Loan terms are owner-created and optional: a database without them still syncs.
+    { property: I.interest, type: 'number', kind: 'writable', optional: true },
+    { property: I.paymentFrequency, type: 'select', kind: 'writable', optional: true },
+    { property: I.periodCount, type: 'number', kind: 'writable', optional: true },
+    { property: I.linkedBorrowing, type: 'relation', kind: 'writable', optional: true }
   ],
   expenseCategories: [
     { property: EC.name, type: 'title', kind: 'writable' },
@@ -103,7 +110,7 @@ export function compareSchema(
         ? { property: spec.property, expectedType: spec.type, actualType: actual.type }
         : null
     if (!issue) continue
-    if (spec.kind === 'writable') errors.push(issue)
+    if (spec.kind === 'writable' && !(spec.optional && !actual)) errors.push(issue)
     else warnings.push(issue)
   }
   return { errors, warnings }

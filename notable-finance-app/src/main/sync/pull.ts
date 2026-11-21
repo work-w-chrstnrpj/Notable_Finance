@@ -342,6 +342,9 @@ async function pullIncomes(
   const db = getSqlite()
   const pages = await client().queryDatabase(dbId, { since })
   const outcome = emptyOutcome()
+  const incomeMap = notionToLocal('incomes')
+  // Repayments whose loan page had not been seen yet when the repayment was read.
+  const unresolvedLoanLinks: Array<{ localId: string; notionLoanId: string }> = []
 
   for (const page of pages) {
     const f = pageToIncomeFields(page)
@@ -355,29 +358,49 @@ async function pullIncomes(
       accountId: localRelation(accountMap, f.account_id),
       categoryId: localRelation(categoryMap, f.category_id),
       transactedAccountId: localRelation(accountMap, f.transacted_account_id),
-      ccPaymentCoveredIds: coveredLocalIds
+      ccPaymentCoveredIds: coveredLocalIds,
+      interest: f.interest,
+      paymentFrequency: f.payment_frequency,
+      periodCount: f.period_count,
+      linkedBorrowingId: localRelation(incomeMap, f.linked_borrowing_id)
     }
     const lastEdited = pageLastEditedTime(page)
     const npid = pageId(page)
     const existing = db.prepare('SELECT * FROM incomes WHERE notion_page_id = ?').get(npid) as
       | Record<string, unknown>
       | undefined
+    // A loan-term property that does not exist in Notion is "unknown", not "cleared":
+    // keep the local value so the merge sees no change instead of wiping the terms.
+    const present = f.loan_props_present
+    const keepLocal = (key: string, col: string, has: boolean): void => {
+      if (!has) remote[key] = existing ? ((existing[col] as unknown) ?? null) : null
+    }
+    keepLocal('interest', 'interest', present.interest)
+    keepLocal('paymentFrequency', 'payment_frequency', present.paymentFrequency)
+    keepLocal('periodCount', 'period_count', present.periodCount)
+    keepLocal('linkedBorrowingId', 'linked_borrowing_id', present.linkedBorrowing)
 
     if (!existing) {
       const newId = randomUUID()
       db.prepare(
         `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
            notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,
-           account_id, category_id, date, is_transaction, transacted_account_id, cc_payment_covered_id)
-         VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           account_id, category_id, date, is_transaction, transacted_account_id, cc_payment_covered_id,
+           interest, payment_frequency, period_count, linked_borrowing_id)
+         VALUES (?, ?, ?, 'clean', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         newId, npid, JSON.stringify(remote), now(), lastEdited, isDeletedTitle(f.title) ? 1 : 0, now(),
         remote.name, remote.grossIncome, remote.capitalExpenditure, remote.accountId, remote.categoryId,
         remote.date, f.is_transaction || coveredLocalIds.length > 0 ? 1 : 0, remote.transactedAccountId,
         (Array.isArray(remote.ccPaymentCoveredIds) && remote.ccPaymentCoveredIds.length > 0)
           ? JSON.stringify(remote.ccPaymentCoveredIds)
-          : null
+          : null,
+        remote.interest, remote.paymentFrequency, remote.periodCount, remote.linkedBorrowingId
       )
+      indexNotionId(incomeMap, npid, newId)
+      if (f.linked_borrowing_id && !remote.linkedBorrowingId) {
+        unresolvedLoanLinks.push({ localId: newId, notionLoanId: f.linked_borrowing_id })
+      }
       recordActivity({
         resource: 'incomes',
         recordId: newId,
@@ -393,8 +416,38 @@ async function pullIncomes(
     const base = JSON.parse((existing.base_snapshot as string | null) ?? '{}') as FieldMap
     const local = incomeWritableFromRow(existing)
     applyMerge('incomes', existing.id as string, npid, base, local, remote, 'name', lastEdited, outcome)
+    if (f.linked_borrowing_id && !remote.linkedBorrowingId) {
+      unresolvedLoanLinks.push({ localId: existing.id as string, notionLoanId: f.linked_borrowing_id })
+    }
   }
+  resolveLoanLinks(unresolvedLoanLinks)
   return outcome
+}
+
+/**
+ * A repayment can be read before its loan page. Once the pass has seen every income page,
+ * fill the link in (column and base snapshot together, so it does not look like a local edit).
+ * Only a link that is still empty locally and in the base is filled; anything else is left to merge.
+ */
+function resolveLoanLinks(items: Array<{ localId: string; notionLoanId: string }>): void {
+  if (items.length === 0) return
+  const db = getSqlite()
+  const incomeMap = notionToLocal('incomes')
+  for (const item of items) {
+    const loanLocalId = lookupLocalId(incomeMap, item.notionLoanId)
+    if (!loanLocalId) continue
+    const row = db.prepare('SELECT linked_borrowing_id, base_snapshot FROM incomes WHERE id = ?').get(item.localId) as
+      | { linked_borrowing_id: string | null; base_snapshot: string | null }
+      | undefined
+    if (!row || row.linked_borrowing_id) continue
+    const base = JSON.parse(row.base_snapshot ?? '{}') as FieldMap
+    if (base.linkedBorrowingId) continue
+    db.prepare('UPDATE incomes SET linked_borrowing_id = ?, base_snapshot = ? WHERE id = ?').run(
+      loanLocalId,
+      JSON.stringify({ ...base, linkedBorrowingId: loanLocalId }),
+      item.localId
+    )
+  }
 }
 
 async function pullExpenses(

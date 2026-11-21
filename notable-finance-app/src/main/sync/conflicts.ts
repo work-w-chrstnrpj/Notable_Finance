@@ -52,6 +52,10 @@ function resolveFieldValue(table: Table, field: string, value: unknown): unknown
     const row = db.prepare('SELECT account_name FROM accounts WHERE id = ?').get(strVal) as { account_name?: string } | undefined
     return row?.account_name ?? strVal
   }
+  if (field === 'linkedBorrowingId') {
+    const row = db.prepare('SELECT title FROM incomes WHERE id = ?').get(strVal) as { title?: string } | undefined
+    return row?.title ?? strVal
+  }
   if (field === 'categoryId') {
     if (table === 'incomes') {
       const row = db.prepare('SELECT source FROM income_categories WHERE id = ?').get(strVal) as { source?: string } | undefined

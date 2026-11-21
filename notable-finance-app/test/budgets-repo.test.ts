@@ -103,9 +103,11 @@ dbDescribe('monthly-budget/02 migration', () => {
     mkdirSync(older, { recursive: true })
     cpSync(source, older, { recursive: true })
     rmSync(join(older, '0015_monthly_budget_snapshots.sql'))
+    // Later migrations (0016 loan terms) sort after 0015; leave them out too so the old database is truly 0000..0014.
+    rmSync(join(older, '0016_loan_terms.sql'))
     const journalPath = join(older, 'meta/_journal.json')
     const journal = JSON.parse(readFileSync(journalPath, 'utf8')) as { entries: Array<{ tag: string }> }
-    journal.entries = journal.entries.filter((e) => e.tag !== '0015_monthly_budget_snapshots')
+    journal.entries = journal.entries.filter((e) => e.tag !== '0015_monthly_budget_snapshots' && e.tag !== '0016_loan_terms')
     writeFileSync(journalPath, JSON.stringify(journal))
 
     const file = join(state.dir, 'upgrade.sqlite')

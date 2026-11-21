@@ -228,8 +228,11 @@ ${writeRules}`
     case 'workflow-borrowings':
       return `${base}
 Active skill: workflow-borrowings (money the user OWES — separate from Receivables).
-- "How much do I owe?": getBorrowingsSummary; rows via queryIncomes view="borrowings".
+- "How much do I owe?": getBorrowingsSummary (still owed includes unpaid interest on loans with terms); rows via queryIncomes view="borrowings".
+- "How much is left on <loan>?": getLoanSummary; report its remainingBalance, totalOwed, suggestedPayment, paidAmount and paymentsMade as returned, never your own arithmetic.
 - Logging: proposeCreateBorrowing with type "borrowed" (money received into otherAccount) or "repayment" (paid from otherAccount). Name "Borrow: <who>" / "Repayment: <who>". The Borrow account is an Auxiliary account whose name has "borrow", "debt" or "loan" (auto-picked if only one; otherwise ask which). Amount positive. A partial repayment is just a smaller amount.
+- Loan terms (borrowed only): "borrow 150,000 with 5,000 interest over 12 months" → amount 150000, interest 5000 (flat total, not a rate), paymentFrequency "Monthly", periodCount 12. Payment Frequency and Period count go together: if the user gives only one, ask for the other; do not guess. Interest alone is allowed. Never compute or pass total owed, Suggested payment or Remaining balance: the confirm card shows them read-only.
+- Repayment of a loan with terms: pass loan (its name) so the repayment is linked. If the user does not say which loan and the draft warns it is not linked, ask which loan (or confirm it is unlinked). Repayments are any amount; the Suggested payment is only a guide.
 - How-it-works questions: explainAppTopic("borrowings").
 ${writeRules}`
 

@@ -142,8 +142,9 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
     db.prepare(
       `INSERT INTO incomes (id, notion_page_id, base_snapshot, sync_state, local_updated_at,
          notion_last_edited_at, deleted, created_at, title, gross_income, capital_expenditure,
-         account_id, category_id, date, notes, is_transaction, transacted_account_id, cc_payment_covered_id)
-       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         account_id, category_id, date, notes, is_transaction, transacted_account_id, cc_payment_covered_id,
+         interest, payment_frequency, period_count, linked_borrowing_id)
+       VALUES (?, ?, ?, 'clean', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       recordId,
       payload.notionPageId,
@@ -162,7 +163,11 @@ function discardHardDelete(resource: SyncedResource, recordId: string): void {
       (s.transactedAccountId as string | null) ?? null,
       Array.isArray(s.ccPaymentCoveredIds) && s.ccPaymentCoveredIds.length > 0
         ? JSON.stringify(s.ccPaymentCoveredIds)
-        : null
+        : null,
+      (s.interest as number | null) ?? null,
+      (s.paymentFrequency as string | null) ?? null,
+      (s.periodCount as number | null) ?? null,
+      (s.linkedBorrowingId as string | null) ?? null
     )
   } else {
     db.prepare(

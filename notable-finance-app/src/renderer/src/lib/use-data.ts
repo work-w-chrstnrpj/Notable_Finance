@@ -250,10 +250,12 @@ const workflowApiBySection = {
 export function useWorkflowRecords(
   section: WorkflowSection,
   params?: WorkflowListParams,
+  options?: { enabled?: boolean },
 ) {
   const api = workflowApiBySection[section];
   return useApiQuery<IncomeRecord[]>(["workflow", section, params ?? {}], () =>
     api.list(params),
+    { enabled: options?.enabled },
   );
 }
 

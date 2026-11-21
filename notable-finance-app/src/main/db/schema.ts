@@ -67,6 +67,11 @@ export const incomes = sqliteTable('incomes', {
   isTransaction: integer('is_transaction').notNull().default(0),
   transactedAccountId: text('transacted_account_id'),
   ccPaymentCoveredId: text('cc_payment_covered_id'),
+  // Loan terms on a Borrowed row (flat total interest) and a repayment's link to its loan.
+  interest: real('interest'),
+  paymentFrequency: text('payment_frequency'),
+  periodCount: integer('period_count'),
+  linkedBorrowingId: text('linked_borrowing_id'),
   // Page Content (Notion block children) as Markdown; dirty flag drives the content push.
   pageContent: text('page_content'),
   pageContentDirty: integer('page_content_dirty').notNull().default(0)

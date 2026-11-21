@@ -112,6 +112,12 @@ export interface IncomeRecordDto {
   categoryId: string
   transactedAccountId?: string | null
   ccPaymentCoveredIds?: string[]
+  /** Loan terms on a Borrowed row (flat total interest, frequency, period count). All optional. */
+  interest?: number | null
+  paymentFrequency?: PaymentFrequency | null
+  periodCount?: number | null
+  /** On a repayment: the Borrowed row (loan) it pays. */
+  linkedBorrowingId?: string | null
   deleted?: boolean
   /** Local sync state for record-level badges (desktop only; web omits it). */
   syncState?: 'clean' | 'dirty' | 'conflict'
@@ -283,6 +289,10 @@ export interface CreateIncomeInput {
   isTransaction?: boolean
   transactedAccountId?: string | null
   ccPaymentCoveredIds?: string[]
+  interest?: number | null
+  paymentFrequency?: PaymentFrequency | null
+  periodCount?: number | null
+  linkedBorrowingId?: string | null
   /** Workflow origin so the server can lock the fixed income category. */
   view?: IncomeView
 }

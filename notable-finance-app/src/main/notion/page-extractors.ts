@@ -130,6 +130,12 @@ export interface IncomeFields {
   transacted_account_id: string | null // NOTION id
   cc_payment_covered_ids: string[] // NOTION ids (multi-relation)
   is_transaction: number
+  interest: number | null
+  payment_frequency: string | null
+  period_count: number | null
+  linked_borrowing_id: string | null // NOTION id
+  /** Which loan-term properties exist on the page at all (a missing property is "unknown", not "cleared"). */
+  loan_props_present: { interest: boolean; paymentFrequency: boolean; periodCount: boolean; linkedBorrowing: boolean }
 }
 
 export interface ExpenseFields {
@@ -204,7 +210,17 @@ export function pageToIncomeFields(page: Record<string, unknown>): IncomeFields 
     category_id: extractRelationFirst(props, n.categoryId),
     transacted_account_id: transacted,
     cc_payment_covered_ids: ccCoveredIds,
-    is_transaction: transacted || ccCoveredIds.length > 0 ? 1 : 0
+    is_transaction: transacted || ccCoveredIds.length > 0 ? 1 : 0,
+    interest: extractNumber(props, n.interest),
+    payment_frequency: extractSelect(props, n.paymentFrequency),
+    period_count: extractNumber(props, n.periodCount),
+    linked_borrowing_id: extractRelationFirst(props, n.linkedBorrowing),
+    loan_props_present: {
+      interest: n.interest in props,
+      paymentFrequency: n.paymentFrequency in props,
+      periodCount: n.periodCount in props,
+      linkedBorrowing: n.linkedBorrowing in props
+    }
   }
 }
 
