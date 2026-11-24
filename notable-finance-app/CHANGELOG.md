@@ -5,16 +5,38 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.2.0] - 2026-11-24
+
+Accounts shown as real payment cards, fixed calendar periods on every page, budgets that live in Notion, and a tidier Settings and set of tables.
 
 ### Added
 
+- **Accounts as cards.** Every account is drawn like a real payment card, with its network logo (Visa, Mastercard and so on), chip, name, type and a masked number such as `•••• •••• •••• 4056`. Credit cards show the amount owed on their face, with a usage bar, the available amount, the limit and a due-date pill beneath. Cards tilt and catch a glare on hover and flip to show the limit, payments, purchases, billing and due days and points. The new look replaces the old Cards view.
+- **Cards, Wallet and Table views.** The Accounts switch is now Table | Cards | Wallet. Cards groups accounts as Credit, Debit and savings, and Wallets and cash, under a summary strip (total cash flow, total owed on credit, overall usage, next payment due). Wallet is a picker list on the left and one large card on the right. Table is unchanged.
+- **Card finish and account colors** in Settings → Appearance → Accounts. Pick Glass, Metal or Matte for every card, and give each account a color from 18 named swatches (hover a swatch to see its name). Accounts start on an automatic color that never changes when you recolor another card, and Cash is Graphite. These are local preferences and never written to Notion.
+- **Payment Network and card numbers from Notion.** The app reads the Accounts database's **Payment Network** select and **Card Numbers & Last 4 Digit** text (for example `16, 4056`). Only the digit count and the last four digits are kept, the rest is drawn as dots, and nothing is written back to Notion.
 - **Every period picker has the same seven options:** Daily, Weekly, Monthly, Quarterly, Semi-Annually, Annually and All Records. This covers Income, Expense (which keeps CC Transactions, Pasabuy, To Pay, To Buy and Installments after them), Transfer, CC Payment, Alkansya, Borrowings and Receivables. The date selector reads "Q4 2026 · Oct – Dec" or "H2 2026 · Jul – Dec" and its arrows step one whole quarter or half.
-- **Hide the period picker and the view switches on every page.** Two new header icons sit before the Filters icon: Period hides the period picker (Daily to All Records, the Accounts tabs, Monitoring's Monthly to Annually bar) and Views hides the other switches (Table | Cards | Wallet, Default | Custom, Annual Table | Chart). With the Filters icon off too, only the page title and the table remain. Hidden controls keep applying, each page remembers what you hid, and everything is shown by default.
+- **Page titles follow the period.** Record pages read "Daily Income", "Weekly Expense", "Quarterly Alkansya", or "All Income Records" for All Records. Expense's special views name themselves: "Pasabuy Expenses", "Credit Card Expenses", "Installments", "To Pay" and "To Buy".
+- **Hide the period picker and the view switches on every page.** Two new header icons sit before the Filters icon: Period hides the period picker (Daily to All Records, the Accounts tabs, Monitoring's Monthly to Annually bar) and Views hides the other switches (Table | Cards | Wallet, Default | Custom, Annual Table | Chart). With the Filters icon off too, only the page title and the table remain. Hidden controls keep applying, each page remembers what you hid, and everything is shown by default. Accounts also gets the Filters icon.
+- **Hide Expense views.** Settings has an Expense views panel with a switch for each of CC Transactions, Pasabuy, To Pay, To Buy and Installments to hide it from the Expense view picker.
+- **New filter options.** Transfer has **Exclude Empty Transfer Account**. CC Payment has **Exclude Non Credit Account** and **Exclude Empty Payer Account**. Expense payment status has **All non-paid statuses** (Unpaid or Installment), and the Pasabuy payment status has **All non-payment fully received**.
+- **Custom monthly budget database.** Monitoring's budget switch is now **Default | Custom**. Default uses each expense category's own monthly budget. Custom reads your Custom monthly budget database in Notion and is available once its ID is saved in Notion Configuration. A `Q4 2026`, `H2 2026` or `2026` row is used directly when Monitoring is on that period, a month with no row falls back to its Default budget, and the badge says which rows were used. The app keeps a read-only copy so Monitoring works offline, and Settings shows the database status and an **Add missing columns** button.
+- **Remaining is colored by sign.** In Monitoring's budget table, negative Remaining shows red and positive shows green, including the Total row.
 
 ### Changed
 
-- **Monitoring's Quarterly and Semi-Annually figures changed.** They now cover whole calendar periods: Q1 is Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep and Q4 Oct to Dec; H1 is Jan to Jun and H2 is Jul to Dec. Before, they started at the month you had picked and ran forward, and Quarterly spanned 4 months, so income, expense, savings and budget totals for those two views will differ from earlier releases. Monthly and Annually are unchanged. A `Q4 2026` or `H2 2026` row in your Custom monthly budget database now matches the period on screen exactly.
+- **Monitoring's Quarterly and Semi-Annually figures changed.** They now cover whole calendar periods: Q1 is Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep and Q4 Oct to Dec; H1 is Jan to Jun and H2 is Jul to Dec. Before, they started at the month you had picked and ran forward, and Quarterly spanned 4 months, so income, expense, savings and budget totals for those two views will differ from earlier releases. Monthly and Annually are unchanged.
+- **Budgets are edited in Notion, not in the app.** Saving, editing, replacing and deleting a month's budgets and CSV import are gone. CSV export stays in Settings as a read-only copy, and database backups still include the copy. The one-time step that sent local budgets to Notion has been removed.
+- **Settings is a two-pane page.** A list of groups on the left (Account, Appearance, Notifications and more) and one group's settings on the right. Every setting shows a title, a short hint and one control, and the "Click here to…" sentences are gone. Each setting does what it did before.
+- **Tables look alike everywhere.** One body shade with a clearly different header row, in light and dark, across the data tables, the Monitoring budget table, Accounts, Dashboard and Receivables panels.
+- **Columns fit their content.** Money movement tables size each column to its text, share spare width so the table fills its card, and only truncate text that is very long (with a tooltip). A column you dragged keeps its width. CC Payment no longer shows a narrow table with cut-off names.
+- **Monitoring's header stays on one row** when the window narrows: the title and Add Forecast on top, the period picker below, then the Default | Custom switch, in the same order as Expense.
+
+### Upgrade notes
+
+- **Notion (optional, for the cards):** add `Payment Network` (select) and `Card Numbers & Last 4 Digit` (text, for example `16, 4056`) to the Accounts database, with exactly these names. A missing property is skipped and the card is drawn plain, so syncing keeps working until you add them.
+- **Notion (Custom budgets):** save your Custom monthly budget database's ID in Notion Configuration to turn on **Custom**. Budgets you saved in the app under 3.1.0 are no longer editable here, so make sure the ones you want are in that database.
+- **Database:** three additive migrations run on first launch: 0017 and 0018 (two nullable Accounts columns) and 0019 (a table for quarter, half and year budget rows). Nothing is removed or rewritten. The Backup action in Settings makes a copy first if you want one.
 
 ## [3.1.0] - 2026-11-21
 
