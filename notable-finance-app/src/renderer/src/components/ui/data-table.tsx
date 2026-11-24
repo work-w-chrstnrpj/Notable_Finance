@@ -67,6 +67,22 @@ function cellSortKey(node: ReactNode): { num: number | null; text: string } {
   return { num: null, text: text.toLowerCase() };
 }
 
+const COLUMN_WIDTHS_KEY = "nf_column_widths:";
+
+/** Column widths the owner set for one table, kept across restarts until they change them again. */
+function readColumnWidths(tableId: string | undefined): Record<string, number> {
+  if (!tableId) return {};
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(COLUMN_WIDTHS_KEY + tableId) ?? "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1])),
+    );
+  } catch {
+    return {};
+  }
+}
+
 function DataTable({
   headers,
   rows,
@@ -75,6 +91,7 @@ function DataTable({
   unsortableColumns = [],
   wide = true,
   resizable = false,
+  tableId,
   pageSize = 0,
   pageSizeOptions = [10, 25, 50, 100],
   pageSummary,
@@ -104,6 +121,8 @@ function DataTable({
   /** Size the table to its content and let the wrapper scroll horizontally. */
   wide?: boolean;
   resizable?: boolean;
+  /** Names this table (and view) so the column widths the owner sets are remembered across restarts. */
+  tableId?: string;
   /** Rows per page. 0 = no pagination (default, backward-compatible). */
   pageSize?: number;
   /** Available page-size options when pagination is active. */
@@ -143,7 +162,7 @@ function DataTable({
   const [sort, setSort] = useState<{ col: number; dir: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [activePageSize, setActivePageSize] = useState(pageSize);
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => readColumnWidths(tableId));
   const drag = useRef<{ x: number; width: number } | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -159,8 +178,25 @@ function DataTable({
   const widths = fitColumnWidths(autoWidths, headers, columnWidths, containerWidth);
   const minColumnWidth = MIN_COLUMN_WIDTH;
   function resizeColumn(header: string, width: number) {
-    setColumnWidths((previous) => ({ ...previous, [header]: Math.max(minColumnWidth, width) }));
+    setColumnWidths((previous) => {
+      const next = { ...previous, [header]: Math.max(minColumnWidth, width) };
+      if (tableId) {
+        try {
+          window.localStorage.setItem(COLUMN_WIDTHS_KEY + tableId, JSON.stringify(next));
+        } catch {
+          // Storage full or blocked: the width still applies for this session.
+        }
+      }
+      return next;
+    });
   }
+  // A different table or view brings its own saved widths.
+  const lastTableId = useRef(tableId);
+  useEffect(() => {
+    if (lastTableId.current === tableId) return;
+    lastTableId.current = tableId;
+    setColumnWidths(readColumnWidths(tableId));
+  }, [tableId]);
   const skip = new Set(unsortableColumns);
 
   function toggleSort(col: number) {

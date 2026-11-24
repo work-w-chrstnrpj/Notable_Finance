@@ -64,6 +64,14 @@
   border-top: 1px solid var(--line);
 }
 
+/* A panel description that sits above a list of rows: a rule separates it from the first row. */
+.settings-toggle__hint--divided {
+  max-width: none;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
 .settings-row__text {
   flex: 1;
   min-width: 240px;

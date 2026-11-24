@@ -1,7 +1,8 @@
+import { periodPageTitle } from "@/lib/view-title";
 import { useEffect, useState, type ReactNode } from "react";
 import { SavedBudgetsSettings } from "./monitoring-budgets";
 import { SavedBudgetsMirrorSettings } from "./saved-budgets-mirror";
-import { Bell, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
+import { Bell, CreditCard, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
@@ -11,7 +12,7 @@ import { cx } from "@/lib/finance-helpers";
 import { Panel, Field, ComputedField, Badge } from "@/components/ui";
 import { ConfirmModal } from "@/components/ui/form-modals";
 import { StatusPill } from "@/components/ui/date-range";
-import { HIDEABLE_SECTIONS, type BackupMeta } from "@shared/finance.types";
+import { HIDEABLE_EXPENSE_VIEWS, HIDEABLE_SECTIONS, type BackupMeta } from "@shared/finance.types";
 import { getSectionById } from "@/lib/finance-data";
 import {
   SettingsModalKind,
@@ -20,6 +21,7 @@ import {
   InterfaceManageModal,
   ProfileManageModal,
   AiChatConfigModal,
+  AccountCardsModal,
 } from "@/components/pages/settings-modals";
 import type { SchemaHealth } from "@/types/finance";
 
@@ -168,8 +170,20 @@ function SettingsPage({
                 }
               />
             </Panel>
+            <Panel title="Accounts">
+              <SettingRow
+                title="Account cards"
+                hint="Card finish for every card, and a color for each account."
+                control={
+                  <button type="button" className="button" onClick={() => setModal("accounts")}>
+                    <CreditCard size={16} />
+                    Customize
+                  </button>
+                }
+              />
+            </Panel>
             <Panel title="Sections">
-              <p className="settings-toggle__hint">
+              <p className="settings-toggle__hint settings-toggle__hint--divided">
                 Choose which sections appear in the sidebar. Hiding a section keeps its records and sync; it only removes it from navigation.
               </p>
               {HIDEABLE_SECTIONS.map((id) => {
@@ -188,6 +202,34 @@ function SettingsPage({
                             hiddenSections: checked
                               ? settings.hiddenSections.filter((x) => x !== id)
                               : [...settings.hiddenSections, id],
+                          })
+                        }
+                      />
+                    }
+                  />
+                );
+              })}
+            </Panel>
+            <Panel title="Expense views">
+              <p className="settings-toggle__hint settings-toggle__hint--divided">
+                Choose which views appear in the Expense view picker. Hiding a view keeps its records; it only removes the tab.
+              </p>
+              {HIDEABLE_EXPENSE_VIEWS.map((id) => {
+                const visible = !settings.hiddenExpenseViews.includes(id);
+                const label = periodPageTitle("Expense", id);
+                return (
+                  <SettingRow
+                    key={id}
+                    title={label}
+                    control={
+                      <SettingSwitch
+                        checked={visible}
+                        label={`Show ${label}`}
+                        onChange={(checked) =>
+                          void updateSettings({
+                            hiddenExpenseViews: checked
+                              ? settings.hiddenExpenseViews.filter((x) => x !== id)
+                              : [...settings.hiddenExpenseViews, id],
                           })
                         }
                       />
@@ -336,6 +378,7 @@ function SettingsPage({
       )}
       {modal === "profile" && <ProfileManageModal onClose={() => setModal(null)} />}
       {modal === "ai" && <AiChatConfigModal onClose={() => setModal(null)} />}
+      {modal === "accounts" && <AccountCardsModal onClose={() => setModal(null)} />}
     </div>
   );
 }
