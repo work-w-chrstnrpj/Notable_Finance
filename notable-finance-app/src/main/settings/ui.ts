@@ -1,8 +1,10 @@
 // UI preferences stored in app_settings (profile, theme, workspace views, page filters).
 import { getSqlite } from '../db'
-import { HIDEABLE_SECTIONS } from '../../shared/finance.types'
+import { HIDEABLE_EXPENSE_VIEWS, HIDEABLE_SECTIONS } from '../../shared/finance.types'
+import { DEFAULT_CARD_FINISH, coerceAccountColors, isCardColorName, isCardFinish } from '../../shared/card-colors'
 import type {
   UiAccountsFilters,
+  UiPageControls,
   UiExpenseFilters,
   UiFontSettings,
   UiIncomeFilters,
@@ -79,7 +81,8 @@ const DEFAULT_ACCOUNTS: UiAccountsFilters = {
   viewMode: 'cards',
   accountScope: 'standard',
   hideZeroBalance: false,
-  cardTypeFilter: ''
+  cardTypeFilter: '',
+  filterActive: true
 }
 
 const DEFAULT_MONITORING: UiMonitoringFilters = {
@@ -87,11 +90,11 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
   expenseCategoryView: 'simplified',
   hideZeroIncomeCategories: false,
   zeroFilter: 'all',
-  budgetActionsOpen: false
 }
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {
   hiddenSections: [],
+  hiddenExpenseViews: [],
   hardDeleteEnabled: false,
   chatEnabled: false,
   notificationsEnabled: true,
@@ -107,7 +110,11 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   expenseFilters: { ...DEFAULT_EXPENSE },
   accountsFilters: { ...DEFAULT_ACCOUNTS },
   monitoringFilters: { ...DEFAULT_MONITORING },
-  monitoringBudgetSource: 'notion'
+  monitoringBudgetSource: 'default',
+  cardFinish: DEFAULT_CARD_FINISH,
+  accountColors: {},
+  customAccountColors: [],
+  pageControls: {}
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -156,12 +163,23 @@ function mergeFonts(raw: unknown): UiFontSettings {
   }
 }
 
-const INCOME_MODES = new Set(['Daily', 'Weekly', 'Monthly', 'Annually', 'All Records'])
+const INCOME_MODES = new Set([
+  'Daily',
+  'Weekly',
+  'Monthly',
+  'Quarterly',
+  'Semi-Annually',
+  'Annually',
+  'All Records'
+])
 const EXPENSE_MODES = new Set([
   'Daily',
   'Weekly',
   'Monthly',
+  'Quarterly',
+  'Semi-Annually',
   'Annually',
+  'All Records',
   'To pay',
   'To buy',
   'Installments',
@@ -247,10 +265,11 @@ function mergeAccounts(raw: unknown): UiAccountsFilters {
       ? (r.accountScope as UiAccountsFilters['accountScope'])
       : DEFAULT_ACCOUNTS.accountScope
   return {
-    viewMode: r.viewMode === 'table' ? 'table' : 'cards',
+    viewMode: r.viewMode === 'table' || r.viewMode === 'wallet' ? r.viewMode : 'cards',
     accountScope,
     hideZeroBalance: r.hideZeroBalance === true,
-    cardTypeFilter: typeof r.cardTypeFilter === 'string' ? r.cardTypeFilter : ''
+    cardTypeFilter: typeof r.cardTypeFilter === 'string' ? r.cardTypeFilter : '',
+    filterActive: r.filterActive !== false
   }
 }
 
@@ -271,7 +290,6 @@ function mergeMonitoring(raw: unknown): UiMonitoringFilters {
         : DEFAULT_MONITORING.expenseCategoryView,
     hideZeroIncomeCategories: r.hideZeroIncomeCategories === true,
     zeroFilter,
-    budgetActionsOpen: r.budgetActionsOpen === true
   }
 }
 
@@ -280,6 +298,9 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
   return {
     hiddenSections: Array.isArray(r.hiddenSections)
       ? HIDEABLE_SECTIONS.filter((id) => (r.hiddenSections as unknown[]).includes(id))
+      : [],
+    hiddenExpenseViews: Array.isArray(r.hiddenExpenseViews)
+      ? HIDEABLE_EXPENSE_VIEWS.filter((id) => (r.hiddenExpenseViews as unknown[]).includes(id))
       : [],
     hardDeleteEnabled: r.hardDeleteEnabled === true,
     chatEnabled: r.chatEnabled === true,
@@ -299,8 +320,79 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
     expenseFilters: mergeExpense(r.expenseFilters),
     accountsFilters: mergeAccounts(r.accountsFilters),
     monitoringFilters: mergeMonitoring(r.monitoringFilters),
-    monitoringBudgetSource: r.monitoringBudgetSource === 'saved' ? 'saved' : 'notion'
+    monitoringBudgetSource: r.monitoringBudgetSource === 'custom' || r.monitoringBudgetSource === 'saved' ? 'custom' : 'default',
+    cardFinish: isCardFinish(r.cardFinish) ? r.cardFinish : DEFAULT_CARD_FINISH,
+    accountColors: coerceAccountColors(r.accountColors),
+    customAccountColors: coerceCustomAccountColors(r.customAccountColors, coerceAccountColors(r.accountColors)),
+    pageControls: coercePageControls(r.pageControls)
   }
+}
+
+/** Apply a per-page patch field by field (a page's other field keeps its value). */
+function mergePageControlsPatch(
+  current: Record<string, UiPageControls>,
+  patch: Record<string, Partial<UiPageControls>>
+): Record<string, UiPageControls> {
+  const next: Record<string, UiPageControls> = { ...current }
+  for (const [page, change] of Object.entries(patch)) {
+    const base = next[page] ?? { periodHidden: false, viewsHidden: false }
+    next[page] = {
+      periodHidden: change.periodHidden === undefined ? base.periodHidden : change.periodHidden === true,
+      viewsHidden: change.viewsHidden === undefined ? base.viewsHidden : change.viewsHidden === true
+    }
+  }
+  return next
+}
+
+/** Hidden-controls state per page. Anything that is not exactly `true` means shown; a page with nothing hidden is dropped. */
+function coercePageControls(raw: unknown): Record<string, UiPageControls> {
+  const out: Record<string, UiPageControls> = {}
+  for (const [page, value] of Object.entries(asRecord(raw))) {
+    if (!page || page.length > 64) continue
+    const v = asRecord(value)
+    const entry = { periodHidden: v.periodHidden === true, viewsHidden: v.viewsHidden === true }
+    if (entry.periodHidden || entry.viewsHidden) out[page] = entry
+  }
+  return out
+}
+
+/** Keep only ids that really have a saved color: those are the hand-picked (Custom) ones. */
+function coerceCustomAccountColors(raw: unknown, colors: Record<string, string>): string[] {
+  if (!Array.isArray(raw)) return []
+  return [...new Set(raw.filter((id): id is string => typeof id === 'string' && id in colors))].sort()
+}
+
+/** Ids the owner chose by hand after a patch: a valid name marks one Custom, `null` clears it. */
+function mergeCustomPatch(current: string[], patch: Record<string, string | null>): string[] {
+  const next = new Set(current)
+  for (const [id, value] of Object.entries(patch)) {
+    if (value === null) next.delete(id)
+    else if (isCardColorName(value)) next.add(id)
+  }
+  return [...next].sort()
+}
+
+/** Add automatic picks only for accounts that have no saved color yet. */
+function mergeAutoColors(colors: Record<string, string>, auto?: Record<string, string>): Record<string, string> {
+  if (!auto) return colors
+  const next = { ...colors }
+  for (const [id, value] of Object.entries(auto)) {
+    if (!(id in next) && isCardColorName(value)) next[id] = value
+  }
+  return next
+}
+
+/** Apply a color patch: a valid name sets the choice, `null` clears it, anything else is ignored. */
+function mergeAccountColorPatch(
+  current: Record<string, string>,
+  patch: Record<string, string | null>
+): Record<string, string> {
+  const next = { ...current }
+  for (const [id, value] of Object.entries(patch)) {
+    if (value === null) delete next[id]
+    else if (isCardColorName(value)) next[id] = value
+  }
+  return next
 }
 
 export function getUiSettings(): UiSettings {
@@ -317,6 +409,7 @@ export function getUiSettings(): UiSettings {
 
 export function setUiSettings(patch: Partial<{
   hiddenSections: string[]
+  hiddenExpenseViews: string[]
   hardDeleteEnabled: boolean
   chatEnabled: boolean
   notificationsEnabled: boolean
@@ -332,11 +425,19 @@ export function setUiSettings(patch: Partial<{
   expenseFilters: Partial<UiExpenseFilters>
   accountsFilters: Partial<UiAccountsFilters>
   monitoringFilters: Partial<UiMonitoringFilters>
-  monitoringBudgetSource: 'notion' | 'saved'
+  monitoringBudgetSource: 'default' | 'custom'
+  cardFinish: UiSettings['cardFinish']
+  /** Account id to color name; `null` clears the choice (the account goes back to Auto). */
+  accountColors: Record<string, string | null>
+  /** Automatic first picks: saved for accounts with no color yet, and never marked Custom. */
+  autoAccountColors: Record<string, string>
+  /** Per page, merged field by field into what is saved. */
+  pageControls: Record<string, Partial<UiPageControls>>
 }>): UiSettings {
   const current = getUiSettings()
   const next = normalizeUiSettings({
     hiddenSections: patch.hiddenSections ?? current.hiddenSections,
+    hiddenExpenseViews: patch.hiddenExpenseViews ?? current.hiddenExpenseViews,
     hardDeleteEnabled:
       patch.hardDeleteEnabled === undefined ? current.hardDeleteEnabled : patch.hardDeleteEnabled,
     chatEnabled: patch.chatEnabled === undefined ? current.chatEnabled : patch.chatEnabled,
@@ -366,7 +467,20 @@ export function setUiSettings(patch: Partial<{
     monitoringFilters: patch.monitoringFilters
       ? { ...current.monitoringFilters, ...patch.monitoringFilters }
       : current.monitoringFilters,
-    monitoringBudgetSource: patch.monitoringBudgetSource ?? current.monitoringBudgetSource
+    monitoringBudgetSource: patch.monitoringBudgetSource ?? current.monitoringBudgetSource,
+    cardFinish: patch.cardFinish ?? current.cardFinish,
+    accountColors: mergeAutoColors(
+      patch.accountColors
+        ? mergeAccountColorPatch(current.accountColors, patch.accountColors)
+        : current.accountColors,
+      patch.autoAccountColors
+    ),
+    customAccountColors: patch.accountColors
+      ? mergeCustomPatch(current.customAccountColors, patch.accountColors)
+      : current.customAccountColors,
+    pageControls: patch.pageControls
+      ? mergePageControlsPatch(current.pageControls, patch.pageControls)
+      : current.pageControls
   })
   getSqlite()
     .prepare(

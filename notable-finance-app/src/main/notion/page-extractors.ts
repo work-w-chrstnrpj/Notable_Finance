@@ -106,6 +106,8 @@ export interface AccountFields {
   due_day: number | null
   annual_fee: number | null
   credit_points: number | null
+  payment_network: string | null
+  card_numbers: string | null
   qr_code: string | null
 }
 
@@ -172,6 +174,8 @@ export function pageToAccountFields(page: Record<string, unknown>): AccountField
     due_day: extractNumber(props, n.dueDay),
     annual_fee: extractNumber(props, n.annualFee),
     credit_points: extractNumber(props, n.creditPoints),
+    payment_network: extractSelect(props, n.paymentNetwork)?.trim() || null,
+    card_numbers: extractRichText(props, n.cardNumbers).trim() || null,
     qr_code: extractFileUrl(props, n.qrCode)
   }
 }

@@ -97,9 +97,9 @@ export function getDashboardSummary(args: unknown) {
   }
 }
 
-/** Optional `budgetSource` argument: 'saved' or 'notion'. Anything else (or absent) is Notion, so answers do not change. */
-function budgetSourceArg(a: Record<string, unknown>): 'notion' | 'saved' {
-  return a.budgetSource === 'saved' ? 'saved' : 'notion'
+/** Optional `budgetSource` argument: 'custom' (or the old 'saved') or 'default'. Anything else (or absent) is default, so answers do not change. */
+function budgetSourceArg(a: Record<string, unknown>): 'default' | 'custom' {
+  return a.budgetSource === 'custom' || a.budgetSource === 'saved' ? 'custom' : 'default'
 }
 
 export function getMonthlyMonitoringSnapshot(args: unknown) {
@@ -351,9 +351,9 @@ const APP_TOPICS: Record<string, string> = {
   sync: 'Sync pulls from Notion, pushes dirty local changes, then refreshes from Notion. Notion remains the finance source of truth for the web path; this desktop app is local-first with Notion as a bidirectional mirror.',
   chat: 'Chat is an opt-in Finance Copilot. It can read local SQLite via tools and later propose creates/edits with confirm. It never deletes finance records. You can delete chat history only.',
   monitoring:
-    'Monthly Monitoring shows income/expense/net and category budget vs spending for a YYYY-MM month. Budgets are maintained on categories / Monitoring UI — Chat rebudget plans do not write.',
+    'Monthly Monitoring shows income/expense/net and category budget vs spending for a YYYY-MM month. Default budgets live on each expense category; Custom budgets are edited only in the Custom monthly budget database in Notion. Chat rebudget plans do not write.',
   budget:
-    'Category monthly budgets live on expense categories. Spending is derived from expenses in the month. Rebudget in Chat is advice only — apply changes in Monthly Monitoring / Notion as product allows.'
+    'Category monthly budgets live on expense categories. Spending is derived from expenses in the month. Custom monthly budgets are edited in the Custom monthly budget database in Notion. Rebudget in Chat is advice only — change budgets in Notion yourself.'
 }
 
 export function explainAppTopic(args: unknown) {
@@ -514,7 +514,7 @@ export function planRebudget(args: unknown) {
     unknownCategories: unknown,
     plan,
     reminder:
-      'This is a plan only. Apply budget changes yourself in Monthly Monitoring. Chat will not write budgets.'
+      'This is a plan only. Change budgets yourself in Notion (category budgets, or the Custom monthly budget database). Chat will not write budgets.'
   }
 }
 

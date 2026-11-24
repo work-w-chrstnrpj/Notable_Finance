@@ -505,6 +505,16 @@
   justify-self: center;
 }
 
+/* The sidebar brand row and the topbar are the same height, so the rule under the
+   brand continues straight across under the topbar. */
+@media (min-width: 761px) {
+  .topbar {
+    box-sizing: border-box;
+    height: 64px;
+    padding-block: 0;
+  }
+}
+
 @media (max-width: 760px) {
   .topbar { grid-template-columns: minmax(0, 1fr) auto; }
   .topbar__date { grid-row: 2; grid-column: 1 / -1; }

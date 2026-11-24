@@ -1,4 +1,5 @@
 import { useLiveCollections } from "@/components/hooks";
+import { periodPageTitle } from "@/lib/view-title";
 import styles from "@/components/ui/filter-row.module.css";
 import { Plus } from "lucide-react";
 import {
@@ -7,13 +8,14 @@ import {
   SegmentedControl,
   PageToolbar,
 } from "@/components/ui";
-import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { NON_FULLY_RECEIVED_FILTER, NON_PAID_STATUSES_FILTER } from "@shared/filter-options";
+import { SearchToggle, SearchInput, FilterToggle, PeriodToggle, ViewsToggle } from "@/components/ui/search-bar";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
 import { isPasabuyCategoryName, pasabuyStatusLabels, paymentStatusLabels } from "@/lib/finance-rules";
 import { expenseCategoryFilterWithoutPasabuy, type AnnualGroupBy } from "@/components/constants";
-import type { Account, ExpenseCategory, ExpenseViewMode } from "@/types/finance";
+import type { Account, ExpenseCategory, ExpenseViewMode, IncomeViewMode } from "@/types/finance";
 
 /**
  * Expense page header: title + New/Search/Filter actions, the filter row, the view-mode
@@ -57,11 +59,15 @@ export function ExpenseToolbar({
   setGroupBy,
   onNewExpense,
   onViewModeChange,
+  periodHidden,
+  viewsHidden,
+  onTogglePeriod,
+  onToggleViews,
 }: {
   pasabuyColorFilter: string;
   onPasabuyColorChange: (value: string) => void;
-  purchasePeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
-  onPurchasePeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
+  purchasePeriod: IncomeViewMode;
+  onPurchasePeriodChange?: (period: IncomeViewMode) => void;
   viewMode: ExpenseViewMode;
   expenseViewModes: ExpenseViewMode[];
   isAnnual: boolean;
@@ -94,6 +100,10 @@ export function ExpenseToolbar({
   setGroupBy: (value: AnnualGroupBy) => void;
   onNewExpense: () => void;
   onViewModeChange: (mode: ExpenseViewMode) => void;
+  periodHidden: boolean;
+  viewsHidden: boolean;
+  onTogglePeriod: () => void;
+  onToggleViews: () => void;
 }) {
   const { pasabuyerOptions } = useLiveCollections();
   const isPasabuyView = viewMode === "Pasabuy";
@@ -103,9 +113,11 @@ export function ExpenseToolbar({
   return (
     <>
       <PageToolbar
-        title="Expense"
+        title={periodPageTitle("Expense", viewMode)}
         actions={
           <>
+            <PeriodToggle hidden={periodHidden} onToggle={onTogglePeriod} />
+            {isAnnual && <ViewsToggle hidden={viewsHidden} onToggle={onToggleViews} />}
             <FilterToggle
               active={filterActive}
               onToggle={() => {
@@ -132,6 +144,7 @@ export function ExpenseToolbar({
         }
       />
 
+      {!periodHidden && (
       <SegmentedControl
           label="Expense view"
           options={expenseViewModes.map(mode => ({
@@ -142,6 +155,7 @@ export function ExpenseToolbar({
           onChange={value => onViewModeChange(value as ExpenseViewMode)}
           shortcutId="view.filterTab"
         />
+      )}
       {(searchActive || filterActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
           {filterActive && (isPasabuyView || viewMode === "CC Transaction") && (
@@ -151,7 +165,7 @@ export function ExpenseToolbar({
                 value={purchasePeriod}
                 onChange={(event) => onPurchasePeriodChange?.(event.target.value as typeof purchasePeriod)}
               >
-                {["Daily", "Weekly", "Monthly", "Annually", "All Records"].map(period => <option key={period}>{period}</option>)}
+                {["Daily", "Weekly", "Monthly", "Quarterly", "Semi-Annually", "Annually", "All Records"].map(period => <option key={period}>{period}</option>)}
               </select>
             </label>
           )}
@@ -211,6 +225,7 @@ export function ExpenseToolbar({
                   value={paymentStatusFilter}
                   onChange={setPaymentStatusFilter}
                 >
+                  <option value={NON_PAID_STATUSES_FILTER}>All non-paid statuses</option>
                   {paymentStatusLabels.map((status) => (
                     <option key={status} value={status}>{status}</option>
                   ))}
@@ -223,6 +238,7 @@ export function ExpenseToolbar({
                     value={pasabuyStatusFilter}
                     onChange={setPasabuyStatusFilter}
                   >
+                    <option value={NON_FULLY_RECEIVED_FILTER}>All non-payment fully received</option>
                     {pasabuyStatusLabels.map((status) => (
                       <option key={status} value={status}>{status}</option>
                     ))}
@@ -273,7 +289,7 @@ export function ExpenseToolbar({
         </div>
       )}
 
-      {isAnnual && (
+      {isAnnual && !viewsHidden && (
         <div className="annual-controls">
           <SegmentedControl
             label="Annual display"

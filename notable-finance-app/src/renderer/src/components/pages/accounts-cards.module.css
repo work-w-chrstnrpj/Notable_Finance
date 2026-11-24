@@ -1,0 +1,142 @@
+/* Accounts "Cards" view: summary strip, group headings, card grid and the line under each card.
+   Ported from the approved prototype (prototypes/account-cards/index.html); values match it. */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 18px 0 26px;
+}
+.stat {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  min-width: 0;
+}
+.lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+.value {
+  font-size: 22px;
+  font-weight: 500;
+  margin-top: 4px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.sub {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c, var(--green));
+}
+.statBar {
+  margin-top: 9px;
+}
+
+.sec {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.sec small {
+  font-weight: 500;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.sec::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 26px 24px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.meta {
+  padding: 0 4px;
+  display: grid;
+  gap: 8px;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+.line b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+}
+.warn {
+  background: rgba(217, 119, 6, 0.14);
+  color: var(--amber);
+}
+.bad {
+  background: rgba(225, 29, 72, 0.13);
+  color: var(--rose);
+}
+.ghost {
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  color: var(--ink-muted);
+}
+
+.empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--ink-muted);
+}
+@media (max-width: 980px) {
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}

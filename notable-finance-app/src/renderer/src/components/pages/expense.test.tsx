@@ -7,7 +7,7 @@ import { ExpensePage } from "./expense";
 import type { ExpenseViewMode } from "@/types/finance";
 import type { IncomeRecordDto, UpdateIncomeInput } from "@shared/finance.types";
 
-const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const category = { id: "cat1", name: "Groceries", monthlyBudget: 0, auxiliary: false, icon: null };
 const pasabuyCategory = { id: "cat-pasabuy", name: "Pasabuy", monthlyBudget: 0, auxiliary: false, icon: null };
 // One record with every optional field populated so it renders sensibly under every view mode
@@ -109,6 +109,8 @@ describe("ExpensePage", () => {
     Daily: DEFAULT_HEADERS,
     Weekly: DEFAULT_HEADERS,
     Monthly: DEFAULT_HEADERS,
+    Quarterly: DEFAULT_HEADERS,
+    "Semi-Annually": DEFAULT_HEADERS,
     Annually: DEFAULT_HEADERS,
     "All Records": DEFAULT_HEADERS,
     "To pay": DEFAULT_HEADERS,
@@ -256,6 +258,8 @@ it.each([
   ["Daily", "2026-07-15", "2026-07-15"],
   ["Weekly", "2026-07-13", "2026-07-19"],
   ["Monthly", "2026-07-01", "2026-07-31"],
+  ["Quarterly", "2026-07-01", "2026-09-30"],
+  ["Semi-Annually", "2026-07-01", "2026-12-31"],
   ["Annually", "2026-01-01", "2026-12-31"],
   ["All Records", undefined, undefined],
 ] as const)("CC Transaction %s passes matching purchase-date bounds", async (ccPeriod, rangeStart, rangeEnd) => {
@@ -266,7 +270,7 @@ it.each([
   fireEvent.click(screen.getByRole("button", { name: "Filters" }));
   expect(screen.getByRole("combobox", { name: "CC Transaction period" })).toHaveValue(ccPeriod);
   const view = screen.getByLabelText("Expense view");
-  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Annually", "All Records", "CC Transactions", "Pasabuy", "To Pay", "To Buy", "Installments"]);
+  expect(within(view).getAllByRole("button").map(button => button.textContent)).toEqual(["Daily", "Weekly", "Monthly", "Quarterly", "Semi-Annually", "Annually", "All Records", "CC Transactions", "Pasabuy", "To Pay", "To Buy", "Installments"]);
   expect(within(view).queryByText("Unpaid CC")).not.toBeInTheDocument();
   expect(within(view).queryByText("Unpaid Pasabuy")).not.toBeInTheDocument();
 });
@@ -275,6 +279,8 @@ it.each([
   ["Daily", "2026-07-15", "2026-07-15"],
   ["Weekly", "2026-07-13", "2026-07-19"],
   ["Monthly", "2026-07-01", "2026-07-31"],
+  ["Quarterly", "2026-07-01", "2026-09-30"],
+  ["Semi-Annually", "2026-07-01", "2026-12-31"],
   ["Annually", "2026-01-01", "2026-12-31"],
   ["All Records", undefined, undefined],
 ] as const)("Pasabuy %s applies purchase-date bounds", async (pasabuyPeriod, rangeStart, rangeEnd) => {

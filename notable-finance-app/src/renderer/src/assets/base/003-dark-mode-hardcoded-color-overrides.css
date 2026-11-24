@@ -41,8 +41,7 @@
   color: var(--ink);
 }[data-theme="dark"] table.data-table tr:hover td {
   background: var(--surface-muted);
-}[data-theme="dark"] .card,
-[data-theme="dark"] .account-card {
+}[data-theme="dark"] .card {
   background: var(--surface);
   border-color: var(--line-strong);
   color: var(--ink);

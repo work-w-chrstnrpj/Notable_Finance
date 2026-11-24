@@ -30,6 +30,11 @@ export const EXPECTED_SCHEMA: Record<MappableResource, ExpectedProperty[]> = {
     { property: A.dueDay, type: 'number', kind: 'writable' },
     { property: A.creditPoints, type: 'number', kind: 'writable' },
     { property: A.inactive, type: 'checkbox', kind: 'writable' },
+    // Owner-created Select, read-only reference data (ADR-0011): drift is only a warning and
+    // must never block push, so it is listed as 'computed' (informational) and optional.
+    { property: A.paymentNetwork, type: 'select', kind: 'computed', optional: true },
+    // Owner-created text ("16, 4056"), read-only reference data: same warning-only treatment.
+    { property: A.cardNumbers, type: 'rich_text', kind: 'computed', optional: true },
     { property: A.currentBalance, type: 'formula', kind: 'computed' },
     { property: A.availableLimit, type: 'formula', kind: 'computed' },
     { property: A.totalIncomes, type: 'rollup', kind: 'computed' },

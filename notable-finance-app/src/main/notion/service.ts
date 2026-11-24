@@ -1,5 +1,6 @@
 // Notion onboarding operations (Phase 2.1/2.2): connect, discover, verify.
 // All run in main; the token never crosses the IPC boundary outward.
+import { checkSavedBudgetsDatabase } from './saved-budgets-mirror'
 import { NotionClient } from './client'
 import { deleteToken, hasToken, readToken, storeToken } from './token-store'
 import { getMapping } from './mapping-store'
@@ -100,6 +101,19 @@ export async function verifySchema(): Promise<SchemaReport> {
         warnings: []
       })
     }
+  }
+
+  // Optional Saved Budgets database (ADR-0009): checked only when the user saved an ID.
+  const savedBudgetsId = (mapping as Record<string, string | undefined>).savedBudgets?.trim()
+  if (savedBudgetsId) {
+    const check = await checkSavedBudgetsDatabase(savedBudgetsId)
+    resources.push({
+      resource: 'savedBudgets' as MappableResource,
+      databaseId: savedBudgetsId,
+      ok: check.ok,
+      errors: check.ok ? [] : [{ property: '(database)', expectedType: 'accessible with a title column', actualType: check.message }],
+      warnings: []
+    })
   }
 
   return { ok: resources.every((r) => r.ok), resources }

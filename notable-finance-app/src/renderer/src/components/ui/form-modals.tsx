@@ -134,12 +134,15 @@ function SettingsModal({
   onClose,
   children,
   footer,
+  panelClassName,
 }: {
   title: string;
   subtitle?: string;
   onClose: () => void;
   children: ReactNode;
   footer: ReactNode;
+  /** Extra class on the dialog panel (e.g. to make it wider). */
+  panelClassName?: string;
 }) {
   return (
     <div
@@ -149,7 +152,7 @@ function SettingsModal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section className="modal-panel" role="dialog" aria-modal="true" aria-label={title}>
+      <section className={panelClassName ? `modal-panel ${panelClassName}` : "modal-panel"} role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-panel__header">
           <div>
             <h2>{title}</h2>

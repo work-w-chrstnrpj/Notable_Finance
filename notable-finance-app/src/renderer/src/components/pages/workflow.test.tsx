@@ -7,7 +7,7 @@ import { WorkflowPage } from "./workflow";
 import type { ExpenseRecord, WorkflowSectionId } from "@/types/finance";
 import { useFabExport } from '@/lib/fab-export-context';
 
-const sourceAccount = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const sourceAccount = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const destAccount = { ...sourceAccount, id: "acc2", name: "Savings Jar" };
 const category = { id: "cat1", source: "Transfer", auxiliary: true, icon: null, monthlyEarnings: 0, monthlyExpenditure: 0, monthlyGross: 0, earningPercentage: 0 };
 const pasabuyExpenseCategory = { id: "pasabuy", name: "Pasabuy", auxiliary: true, icon: null, monthlyBudget: 0, upcomingBudget: 0, spending: 0, remaining: 0, overview: "", totalOverview: 0 };
@@ -128,7 +128,8 @@ describe("WorkflowPage", () => {
       alkansya: "alkansya",
       receivables: "receivables",
     } as const;
-    await screen.findByText(section === "receivables" ? "Groceries for Ana" : "Weekly Transfer");
+    // The transfer page title is now "Weekly Transfer" too, so wait for the row's own text instead.
+    await screen.findByRole("cell", { name: section === "receivables" ? "Groceries for Ana" : "Weekly Transfer" });
     expect(list).toHaveBeenCalledWith(expect.objectContaining({
       view: viewBySection[section],
       rangeStart: "2026-07-06",

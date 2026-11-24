@@ -1,7 +1,7 @@
 # 06: End-to-end check and docs for loan terms
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** 01, 03, 04, 05
 **Owner:** unassigned
 
@@ -12,7 +12,7 @@ A Playwright check proves the whole flow, and the docs describe loan terms. Play
 - [x] AC1: A Playwright test creates a 150,000 loan with 5,000 interest over 12 months, records one 12,916.67 linked repayment, and sees 142,083.33 remaining.
 - [x] AC2: The Playwright test is run and its result recorded as evidence, separately from the unit test run.
 - [x] AC3: The borrowings, Notion field-mapping and local-schema pages and the CHANGELOG describe loan terms, the Notion properties and the computed balances.
-- [ ] AC4: The drift check reports no doc drift for these changes.
+- [x] AC4: The drift check reports no doc drift for these changes.
 
 ## Inputs
 - `tickets/borrowing-terms/spec.md`
@@ -21,12 +21,12 @@ A Playwright check proves the whole flow, and the docs describe loan terms. Play
 - `GLOSSARY.md` (Loan terms, Suggested payment, Remaining balance)
 
 ## Evidence
-- Commits: c6f53aa
-- PR: not merged (local commit c6f53aa on branch claude/borrowing-terms-02-662ac8)
-- Tests (Playwright, run separately from unit tests, from `notable-finance-app/`): `npx electron-vite build && npx playwright test e2e/borrowing-terms.spec.ts` → 1 passed (creates 150,000 / 5,000 / Monthly / 12, records one prefilled linked 12,916.67 repayment, sees 142,083.33 remaining in table and modal). Re-run after the final fix: 1 passed. The spec passed on its first run with no change.
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
+- Tests: (Playwright, run separately from unit tests, from `notable-finance-app/`): `npx electron-vite build && npx playwright test e2e/borrowing-terms.spec.ts` → 1 passed (creates 150,000 / 5,000 / Monthly / 12, records one prefilled linked 12,916.67 repayment, sees 142,083.33 remaining in table and modal). Re-run after the final fix: 1 passed. The spec passed on its first run with no change.
 - Tests (unit): `npx vitest run` (plain Node) → 50 files passed, 1 skipped; 451 tests passed, 7 skipped (SQLite-backed, binding targets Electron). `ELECTRON_RUN_AS_NODE=1 ./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron node_modules/vitest/vitest.mjs run` → 51 files, 458 tests, all passed, none skipped. First run had 3 failures in `test/chat-borrowings.test.ts` (ticket 05's test): its repositories mock lacked `listIncomes`, which 05's loan lookups call ("Database not initialised"). Fixed by adding `listIncomes: () => []` to the mock; no source change.
 - Typecheck: `npm run typecheck` clean. Lint: `npm run lint` 0 errors, 114 warnings (max-lines etc.).
-- Drift: AC4 NOT proven. `node .ai/cli/bin/cli.mjs drift` does not exist in this worktree (the CLI is only in the main checkout) and drift only reads committed diffs. Run in a throwaway clone with the working changes committed there (`drift --since f340e6c`): it listed all 31 changed files as "no map covers" and suggested `docs/testing/test-specification.md`, `docs/api/api-specification.md`, `docs/database/data-model.md`, which do not exist in this repo. So it reports nothing it can mark clean; a human needs to decide if that output counts. Nothing was marked (`--mark` not run).
+- Drift: (superseded 2026-11-21: after the merge into development, `drift` was run, the maps and wiki docs were reviewed and `drift --mark` saved sync point 7bf9d4c, so it reports nothing changed.) Earlier note: AC4 not proven. `node .ai/cli/bin/cli.mjs drift` does not exist in this worktree (the CLI is only in the main checkout) and drift only reads committed diffs. Run in a throwaway clone with the working changes committed there (`drift --since f340e6c`): it listed all 31 changed files as "no map covers" and suggested `docs/testing/test-specification.md`, `docs/api/api-specification.md`, `docs/database/data-model.md`, which do not exist in this repo. So it reports nothing it can mark clean; a human needs to decide if that output counts. Nothing was marked (`--mark` not run).
 - Review: `code-review` against HEAD (uncommitted) of tickets 02-06 together. Fixed: (1) push fallback left loan terms marked synced, so a later pull could wipe them (02); (2) main-process validation for Period count, the Period count/Frequency pair and the loan link (02); (3) editing a repayment silently unlinked it when its loan was not in the picker (03/04); (4) Record repayment prefilled more than the remaining balance (04). Noted, not changed: a link made in Notion to a loan on a different Borrow account is counted twice in the panel; the missing-property fallback match was tightened rather than removed.
 - Docs updated:
 
@@ -46,3 +46,6 @@ A Playwright check proves the whole flow, and the docs describe loan terms. Play
 ### 2026-11-21 claude
 - Did: Code, tests and docs for 02-06 committed as c6f53aa. NOT closed: AC4 (drift check) is not proven, see Evidence. Playwright re-run after review fixes: 1 passed.
 - Next: decide whether the drift output counts, or run drift in the main checkout after the branch is merged.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

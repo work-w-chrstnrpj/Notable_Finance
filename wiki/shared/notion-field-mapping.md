@@ -51,6 +51,10 @@ Data source: `collection://bd6f39b1-fae7-837d-a730-878f92946eee`.
 
 **Writable inputs:** `Account Name` (title), `Account Type` (select), `Starting Balance` (₱ number), `Credit Limit` (₱ number), `Annual Fee`, `Billing Day`, `Due Day`, `Credit Points`, `Inactive` (checkbox), label/text fields.
 
+**Read-only inputs:** `Payment Network` (select: Visa, Mastercard, Amex, JCB, UnionPay, ...). Pulled on every sync into the account, shown on the account card, never written back (ADR-0011). Optional: a database without it still syncs, an empty value stays empty and an unknown value is kept as plain text.
+
+**Read-only input:** `Card Numbers & Last 4 Digit` (text, created by the owner). The value is the digit count, a comma and the last four digits, for example `16, 4056` for a 16-digit card ending 4056. Pulled on every sync into the account; the card shows it masked (`•••• •••• •••• 4056`; 15 digits group 4-6-5, 14 digits 4-6-4, other lengths in fours). Only the count and the last four digits are ever kept or shown. An empty or invalid value (count outside 12 to 19, last part not exactly four digits) shows no number on the card. Never written back (ADR-0011); a database without it still syncs.
+
 **Computed (formula):** `Current Balance`, `Available Limit`.
 
 **Computed (rollup, sums over related records):** `Total Incomes`, `Total Expenses`, `Total Credit Interest`, `Total CC, Debt & Transfer`, `Total Pasabuy`.
@@ -70,6 +74,17 @@ Because `Starting Balance` and `Credit Limit` are stored **inputs** and every de
 The exact credit arithmetic is finalized from the Notion formula during implementation; the **inputs are entirely local**, so the value is always derivable offline. This reuses the reduce logic already in the web app's `notion-reporting.service.ts`.
 
 > Note: the web app *reads* `Current Balance` from Notion's formula. The desktop app *recomputes* it locally so it is correct offline and in real time. Same inputs → same number.
+
+## Saved Budgets database (optional mirror)
+
+A database you create yourself in Notion, share with the integration and save by ID in Notion Configuration (key `savedBudgets`); the app never creates it ([ADR-0009](../../docs/adr/0009-saved-budgets-database-is-user-created.md), changing [ADR-0008](../../docs/adr/0008-saved-budgets-optional-notion-mirror.md)). It is not part of the record sync and is optional.
+
+| Notion | Type | App |
+|---|---|---|
+| Any title property | Title | Budget period: `Jan 2025` (pushed), or `Q1 2024`, `H1 2025`, `2026` (read; split across months) |
+| One column per non-auxiliary expense category, named exactly like the category | Number | That category's saved budget for the period. Missing columns are listed in Settings and added only when you press Add missing columns; never deleted or renamed |
+
+Columns that match no category are ignored.
 
 ## Related data sources referenced
 

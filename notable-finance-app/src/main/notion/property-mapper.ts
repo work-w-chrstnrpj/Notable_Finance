@@ -14,6 +14,10 @@ export const NOTION_PROPERTY_NAMES = {
     availableLimit: 'Available Limit',
     creditPoints: 'Credit Points',
     annualFee: 'Annual Fee',
+    // Select on the Accounts database (Visa, Mastercard, ...). Read-only here; never written.
+    paymentNetwork: 'Payment Network',
+    // Text on the Accounts database, e.g. "16, 4056" (digit count, last four). Read-only here; never written.
+    cardNumbers: 'Card Numbers & Last 4 Digit',
     billingDay: 'Billing Day',
     dueDay: 'Due Day',
     inactive: 'Inactive',

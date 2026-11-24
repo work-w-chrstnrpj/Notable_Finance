@@ -103,8 +103,11 @@ test('accounts page shows the seeded reference accounts (web card filters intact
 test('settings section exists with Interface/Theme/Notion panels (no account management)', async () => {
   await win.locator(mod('nav__item'), { hasText: 'Settings' }).click()
   await win.waitForFunction(() => window.location.hash === '#/settings')
+  // Settings is grouped (settings-ui/01): one group's settings are shown at a time.
+  await win.getByRole('button', { name: 'Appearance', exact: true }).click()
   await expect(win.getByText('Quick-action button')).toBeVisible()
   await expect(win.getByText('Appearance & Colors')).toBeVisible()
+  await win.getByRole('button', { name: 'Notion and data', exact: true }).click()
   await expect(win.getByText('Notion Configuration', { exact: true })).toBeVisible()
   // dropped by design: no login/account management on desktop
   await expect(win.getByText('Change Password')).toHaveCount(0)

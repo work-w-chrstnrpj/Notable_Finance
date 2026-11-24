@@ -35,3 +35,8 @@
   border: 1px dashed color-mix(in srgb, var(--line-strong) 28%, transparent);
   color: var(--ink-muted);
 }
+
+/* The glass preset draws panels at 54% surface over the page, so pinned table columns use the same mix. */
+[data-preset="hig"] {
+  --table-pinned-bg: color-mix(in srgb, var(--surface) 54%, var(--bg));
+}

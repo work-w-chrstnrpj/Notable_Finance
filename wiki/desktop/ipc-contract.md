@@ -137,20 +137,17 @@ safeStorage vault files and are **never** exported.
 | `inspect(opts?: { path? })` | `BackupInspectResult` | Open dialog when no path; validates SQLite header + required tables; reads meta. Never touches the live DB. |
 | `import(path)` | `BackupImportResult` | Closes the live connection, swaps the file, clears stale WAL/SHM, re-inits (additive migrations). Refuses files from a newer app version and the live file itself. Renderer reloads the window after success. |
 
-### `window.api.budgets` (saved budgets, local only)
-No handler calls Notion or touches the sync tables. File dialogs and paths stay in main; the renderer only receives a preview id.
+### `window.api.budgets` (custom budgets, ADR-0010; the `mirror*` calls reach Notion, the rest are local only)
+The local table is a read-only cache, so no handler edits budgets in the app. Only the `mirror*` calls reach Notion and none touches the sync tables. File dialogs and paths stay in main.
 
 | Method | Returns | Notes |
 |---|---|---|
 | `list(range?: { fromMonth?, toMonth? })` | `SavedBudgetRow[]` | Sorted by month, then category. |
-| `saveFromNotion(month, replace?)` | `{ saved }` | Copies today's category budgets; refuses to replace unless `replace`. |
-| `saveSet(month, rows)` | `{ saved }` | Replaces the month's set. |
-| `deleteSet(month)` | `{ deleted }` | The month goes back to Notion budgets. |
-| `exportCsv(req)` | `BudgetExportResult` | Save dialog in main (saved rows or template). |
-| `importPreview(opts)` | `BudgetImportPreview` | Open dialog in main; parses and classifies, writes nothing. |
-| `importCommit({ previewId, policy })` | `BudgetImportResult` | One transaction; all rows or none. |
+| `exportCsv(req)` | `BudgetExportResult` | Save dialog in main; writes the cached budgets (all months or a range) as CSV. |
+| `mirrorStatus()` / `mirrorRefresh()` / `mirrorRun()` | status / status / run result | Database ID, missing columns, last sync; a manual sync replaces the cache from Notion. |
+| `mirrorCheckDatabase(id)` / `mirrorAddColumns()` | check / `{ added, status }` | Check a saved ID; add missing category columns (the only budget write to Notion). |
 
-Save, delete and import each write an operation-log entry (`budgets:save`, `budgets:delete`, `budgets:import`) with counts only. The settings key `monitoringBudgetSource` (`notion` | `saved`) lives in `window.api.settings`. `reports.monitoring` takes an optional budget source that defaults to Notion.
+Save, edit, delete and import were removed in `custom-budget/03`. The settings key `monitoringBudgetSource` (`notion` | `saved`) lives in `window.api.settings`. `reports.monitoring` takes an optional budget source that defaults to Notion.
 
 ### `window.api.updater` (Auto-Updates)
 GitHub Releases integration via `electron-updater`.

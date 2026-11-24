@@ -5,7 +5,10 @@ import type {
   MonitoringViewMode,
 } from "@/types/finance";
 
-export type ViewUnit = "day" | "week" | "month" | "year";
+export type ViewUnit = "day" | "week" | "month" | "quarter" | "half" | "year";
+
+/** Months per fixed calendar period: a quarter is 3 months (Q1 Jan to Mar), a half is 6 (H1 Jan to Jun). */
+const PERIOD_MONTHS: Partial<Record<ViewUnit, number>> = { quarter: 3, half: 6 };
 
 /** ISO YYYY-MM-DD for today (local). */
 export function todayIso(): string {
@@ -41,6 +44,10 @@ export function incomeModeToUnit(mode: IncomeViewMode): ViewUnit | null {
       return "day";
     case "Weekly":
       return "week";
+    case "Quarterly":
+      return "quarter";
+    case "Semi-Annually":
+      return "half";
     case "Annually":
       return "year";
     case "Monthly":
@@ -62,6 +69,10 @@ export function expenseModeToUnit(mode: ExpenseViewMode | IncomeViewMode): ViewU
       return "week";
     case "Monthly":
       return "month";
+    case "Quarterly":
+      return "quarter";
+    case "Semi-Annually":
+      return "half";
     case "Annually":
       return "year";
     default:
@@ -74,7 +85,9 @@ export function monitoringModeToUnit(mode: MonitoringViewMode): ViewUnit {
     case "Annually":
       return "year";
     case "Semi-Annually":
+      return "half";
     case "Quarterly":
+      return "quarter";
     case "Monthly":
     default:
       return "month";
@@ -100,6 +113,13 @@ export function computeRange(
     const end = new Date(Date.UTC(y, m + 1, 0, 12)); // last day of month
     return { start: isoDate(y, m + 1, 1), end: fmt(end) };
   }
+  const periodMonths = PERIOD_MONTHS[unit];
+  if (periodMonths) {
+    // Fixed calendar quarter / half containing the anchor (ADR-0012).
+    const firstMonth = Math.floor(m / periodMonths) * periodMonths; // 0-indexed
+    const end = new Date(Date.UTC(y, firstMonth + periodMonths, 0, 12)); // last day of the period
+    return { start: isoDate(y, firstMonth + 1, 1), end: fmt(end) };
+  }
   // week: Monday → Sunday containing the anchor
   const day = d.getUTCDay(); // 0=Sun … 6=Sat
   const mondayOffset = (day + 6) % 7;
@@ -120,8 +140,36 @@ export function stepAnchor(
   if (unit === "day") d.setUTCDate(d.getUTCDate() + delta);
   else if (unit === "week") d.setUTCDate(d.getUTCDate() + delta * 7);
   else if (unit === "month") d.setUTCMonth(d.getUTCMonth() + delta);
-  else d.setUTCFullYear(d.getUTCFullYear() + delta);
+  else if (PERIOD_MONTHS[unit]) {
+    // Whole quarters / halves: land on the first day of the target period so it always lies inside it.
+    const size = PERIOD_MONTHS[unit]!;
+    const firstMonth = Math.floor(d.getUTCMonth() / size) * size + delta * size;
+    return fmt(new Date(Date.UTC(d.getUTCFullYear(), firstMonth, 1, 12)));
+  } else d.setUTCFullYear(d.getUTCFullYear() + delta);
   return fmt(d);
+}
+
+/** The fixed calendar quarter (1 to 4) containing the anchor. */
+export function quarterOf(anchorIso: string): 1 | 2 | 3 | 4 {
+  return (Math.floor(parse(anchorIso).getUTCMonth() / 3) + 1) as 1 | 2 | 3 | 4;
+}
+
+/** The fixed calendar half (1 = Jan to Jun, 2 = Jul to Dec) containing the anchor. */
+export function halfOf(anchorIso: string): 1 | 2 {
+  return parse(anchorIso).getUTCMonth() < 6 ? 1 : 2;
+}
+
+/** Inclusive [start, end] bounds of the period the anchor belongs to (an alias of computeRange, named for pages). */
+export function periodContaining(unit: ViewUnit, anchorIso: string): { start: string; end: string } {
+  return computeRange(unit, anchorIso);
+}
+
+/** 0-indexed months (0 = Jan) of the quarter or half containing the anchor; empty for other units. */
+export function periodMonthIndexes(unit: ViewUnit, anchorIso: string): number[] {
+  const size = PERIOD_MONTHS[unit];
+  if (!size) return [];
+  const first = Math.floor(parse(anchorIso).getUTCMonth() / size) * size;
+  return Array.from({ length: size }, (_, i) => first + i);
 }
 
 const MONTH_NAMES = [
@@ -142,6 +190,13 @@ export function rangeLabel(unit: ViewUnit, anchorIso: string): string {
   }
   if (unit === "month") {
     return `${monthName} ${y}`;
+  }
+  if (unit === "quarter" || unit === "half") {
+    const months = periodMonthIndexes(unit, anchorIso);
+    const first = MONTH_NAMES[months[0]].slice(0, 3);
+    const last = MONTH_NAMES[months[months.length - 1]].slice(0, 3);
+    const tag = unit === "quarter" ? `Q${quarterOf(anchorIso)}` : `H${halfOf(anchorIso)}`;
+    return `${tag} ${y} · ${first} – ${last}`;
   }
   const { start, end } = computeRange("week", anchorIso);
   const s = parse(start);

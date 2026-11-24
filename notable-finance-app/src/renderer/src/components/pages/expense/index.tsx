@@ -19,6 +19,7 @@ import { MassEditModal, type MassEditFieldOption } from "@/components/ui/mass-ed
 import { Toast } from "@/components/ui/toast";
 import { ReceiptModal } from "@/components/fab";
 import { useShortcutAction } from "@/lib/shortcuts/context";
+import { usePageControls } from "@/lib/use-page-controls";
 import { useExpenses, useFinanceInvalidation } from "@/lib/use-data";
 import { useRecordSelection } from "@/features/records/use-record-selection";
 import { useOptimisticRecords } from "@/features/records/use-optimistic-records";
@@ -38,12 +39,14 @@ import {
   expenseCategoryFilterWithoutPasabuy,
   type AnnualGroupBy,
 } from "@/components/constants";
-import type { ExpenseViewMode, ExpenseRecord } from "@/types/finance";
+import type { ExpenseViewMode, ExpenseRecord, IncomeViewMode } from "@/types/finance";
 
 const expenseViewModes: ExpenseViewMode[] = [
   "Daily",
   "Weekly",
   "Monthly",
+  "Quarterly",
+  "Semi-Annually",
   "Annually",
   "All Records",
   "CC Transaction",
@@ -65,10 +68,10 @@ function ExpensePage({
   viewMode: ExpenseViewMode;
   onViewModeChange: (viewMode: ExpenseViewMode) => void;
   selectedDate: string;
-  ccPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
-  onCcPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
-  pasabuyPeriod?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
-  onPasabuyPeriodChange?: (period: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
+  ccPeriod?: IncomeViewMode;
+  onCcPeriodChange?: (period: IncomeViewMode) => void;
+  pasabuyPeriod?: IncomeViewMode;
+  onPasabuyPeriodChange?: (period: IncomeViewMode) => void;
 }) {
   const {
     activeAccounts,
@@ -154,6 +157,11 @@ function ExpensePage({
   } = useRecordSelection();
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled, settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const visibleViewModes = useMemo(
+    () => expenseViewModes.filter((mode) => !(settings.hiddenExpenseViews as string[]).includes(mode)),
+    [settings.hiddenExpenseViews],
+  );
+  const pageControls = usePageControls("expense");
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const [massEditOpen, setMassEditOpen] = useState(false);
@@ -204,13 +212,17 @@ function ExpensePage({
   });
   useEffect(() => {
     if (!settingsReady) return;
+    if ((settings.hiddenExpenseViews as string[]).includes(viewMode)) {
+      onViewModeChange("Monthly");
+      return;
+    }
     if (viewMode === "Unpaid CC") onViewModeChange("CC Transaction");
     if (viewMode === "Unpaid Pasabuy" && pasabuyCategory) {
       setExpenseCategoryFilter(pasabuyCategory.id);
       setFilterActive(true);
       onViewModeChange("Monthly");
     }
-  }, [settingsReady, viewMode, pasabuyCategory, onViewModeChange]);
+  }, [settingsReady, viewMode, pasabuyCategory, onViewModeChange, settings.hiddenExpenseViews]);
   const expenseParams = useMemo(
     () => ({
       rangeStart: expenseRange?.start,
@@ -605,7 +617,7 @@ function ExpensePage({
   const modalOpen = modal !== null;
   useShortcutAction("view.filterTab", (arg) => {
     const index = Number(arg) - 1;
-    if (expenseViewModes[index]) handleExpenseViewModeChange(expenseViewModes[index]);
+    if (visibleViewModes[index]) handleExpenseViewModeChange(visibleViewModes[index]);
   }, !modalOpen);
   useShortcutAction("view.newRecord", () => openExpenseModal("new", "New Expense"), !modalOpen);
   useShortcutAction("view.search", toggleSearch, !modalOpen);
@@ -661,7 +673,7 @@ function ExpensePage({
         }}
         onPurchasePeriodChange={isPasabuyView ? onPasabuyPeriodChange : onCcPeriodChange}
         viewMode={viewMode}
-        expenseViewModes={expenseViewModes}
+        expenseViewModes={visibleViewModes}
         isAnnual={isAnnual}
         activeAccounts={activeAccounts}
         expenseCategories={expenseCategories}
@@ -692,6 +704,10 @@ function ExpensePage({
         setGroupBy={setGroupBy}
         onNewExpense={() => openExpenseModal("new", "New Expense")}
         onViewModeChange={handleExpenseViewModeChange}
+        periodHidden={pageControls.periodHidden}
+        viewsHidden={pageControls.viewsHidden}
+        onTogglePeriod={pageControls.togglePeriod}
+        onToggleViews={pageControls.toggleViews}
       />
       <Panel>
         {isLoading && <LoadingBlock label="Querying Notion…" />}
@@ -701,6 +717,7 @@ function ExpensePage({
           <DataTable
             selectable
             resizable
+            tableId={`expense:${viewMode}`}
             recordIds={searchFilteredRecords.map((r) => r.id)}
             selectedIds={selectedIds}
             disabledIds={disabledIds}

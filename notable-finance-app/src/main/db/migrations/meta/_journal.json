@@ -120,6 +120,27 @@
       "when": 1786700000000,
       "tag": "0016_loan_terms",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1786800000000,
+      "tag": "0017_account_payment_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1786900000000,
+      "tag": "0018_account_card_numbers",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1787000000000,
+      "tag": "0019_period_budget_snapshots",
+      "breakpoints": true
     }
   ]
 }

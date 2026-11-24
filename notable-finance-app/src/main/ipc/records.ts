@@ -24,6 +24,7 @@ import { fetchMonitoringSplit } from '../notion/monitoring-split'
 import { createWindow } from '../windows'
 import { appendDevLog, clearDevLogs, listDevLogs, summarizeForDevLog } from '../dev-logs/store'
 import { handle } from './handle'
+import { ensureAccountColors } from '../settings/card-colors'
 import { changed, result } from './shared'
 
 /**
@@ -73,7 +74,11 @@ export function registerRecordsIpc(): void {
 
   // accounts (read-only reference; balances computed in main)
   handle(IPC_CHANNELS.accountsList, (_e, params?: { includeInactive?: boolean }) =>
-    result(() => repo.listAccounts(params?.includeInactive ?? false))
+    result(() => {
+      // A new account from Notion gets its automatic card color saved the first time it shows up.
+      ensureAccountColors()
+      return repo.listAccounts(params?.includeInactive ?? false)
+    })
   )
 
   // categories (read-only selectors)

@@ -28,11 +28,12 @@ import { usePersistedFilters } from "@/features/records/use-persisted-filters";
 import { useIncomeForm } from "./use-income-form";
 import { IncomeFormFields } from "./income-form-fields";
 import { IncomeToolbar } from "./income-toolbar";
+import { usePageControls } from "@/lib/use-page-controls";
 import { buildIncomeMassEditFields } from "./income-mass-edit-fields";
 import type { AnnualGroupBy } from "@/components/constants";
 import type { IncomeViewMode, IncomeRecord } from "@/types/finance";
 
-const incomeViewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Annually", "All Records"];
+const incomeViewModes: IncomeViewMode[] = ["Daily", "Weekly", "Monthly", "Quarterly", "Semi-Annually", "Annually", "All Records"];
 
 function IncomePage({
   viewMode,
@@ -128,6 +129,7 @@ function IncomePage({
     },
   });
   const isAnnual = viewMode === "Annually";
+  const pageControls = usePageControls("income");
   const { state: incomesState, refetch, applyLocal } = useIncomes({
     rangeStart: range?.start,
     rangeEnd: range?.end,
@@ -417,6 +419,10 @@ function IncomePage({
         normalIncomeCategories={normalIncomeCategories}
         filterActive={filterActive}
         setFilterActive={setFilterActive}
+        periodHidden={pageControls.periodHidden}
+        viewsHidden={pageControls.viewsHidden}
+        onTogglePeriod={pageControls.togglePeriod}
+        onToggleViews={pageControls.toggleViews}
         searchActive={searchActive}
         toggleSearch={toggleSearch}
         searchQuery={searchQuery}
@@ -442,6 +448,7 @@ function IncomePage({
         <DataTable
           selectable
           resizable
+          tableId={`income:${viewMode}`}
           recordIds={searchFilteredRecords.map((r) => r.id)}
           selectedIds={selectedIds}
           disabledIds={disabledIds}

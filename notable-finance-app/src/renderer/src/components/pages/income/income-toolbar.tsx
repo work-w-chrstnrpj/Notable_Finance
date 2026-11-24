@@ -1,7 +1,8 @@
 import styles from "@/components/ui/filter-row.module.css";
+import { periodPageTitle } from "@/lib/view-title";
 import { Plus } from "lucide-react";
 import { FilterDropdown, SegmentedControl, PageToolbar } from "@/components/ui";
-import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { SearchToggle, SearchInput, FilterToggle, PeriodToggle, ViewsToggle } from "@/components/ui/search-bar";
 import { AccountIcon, CategoryIcon } from "@/components/ui/accounts";
 import { ShortcutHint } from "@/components/shortcuts";
 import { GroupBySelect } from "@/components/charts";
@@ -36,6 +37,10 @@ export function IncomeToolbar({
   setGroupBy,
   onNewIncome,
   onViewModeChange,
+  periodHidden,
+  viewsHidden,
+  onTogglePeriod,
+  onToggleViews,
 }: {
   viewMode: IncomeViewMode;
   incomeViewModes: IncomeViewMode[];
@@ -58,13 +63,19 @@ export function IncomeToolbar({
   setGroupBy: (value: AnnualGroupBy) => void;
   onNewIncome: () => void;
   onViewModeChange: (mode: IncomeViewMode) => void;
+  periodHidden: boolean;
+  viewsHidden: boolean;
+  onTogglePeriod: () => void;
+  onToggleViews: () => void;
 }) {
   return (
     <>
       <PageToolbar
-        title="Income"
+        title={periodPageTitle("Income", viewMode)}
         actions={
           <>
+            <PeriodToggle hidden={periodHidden} onToggle={onTogglePeriod} />
+            {isAnnual && <ViewsToggle hidden={viewsHidden} onToggle={onToggleViews} />}
             <FilterToggle
               active={filterActive}
               onToggle={() => setFilterActive((prev) => !prev)}
@@ -87,6 +98,16 @@ export function IncomeToolbar({
           </>
         }
       />
+
+      {!periodHidden && (
+        <SegmentedControl
+          label="Income view"
+          options={incomeViewModes.map((mode) => ({ label: mode, value: mode }))}
+          value={viewMode}
+          onChange={(value) => onViewModeChange(value as IncomeViewMode)}
+          shortcutId="view.filterTab"
+        />
+      )}
 
       {(searchActive || filterActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
@@ -124,15 +145,7 @@ export function IncomeToolbar({
         </div>
       )}
 
-      <SegmentedControl
-        label="Income view"
-        options={incomeViewModes.map((mode) => ({ label: mode, value: mode }))}
-        value={viewMode}
-        onChange={(value) => onViewModeChange(value as IncomeViewMode)}
-        shortcutId="view.filterTab"
-      />
-
-      {isAnnual && (
+      {isAnnual && !viewsHidden && (
         <div className="annual-controls">
           <SegmentedControl
             label="Annual display"

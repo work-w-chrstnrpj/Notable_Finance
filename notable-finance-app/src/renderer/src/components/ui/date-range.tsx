@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, FileWarning, Gauge, RefreshCw } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
-import { rangeLabel, stepAnchor, type ViewUnit } from "@/lib/date-range";
+import { periodMonthIndexes, rangeLabel, stepAnchor, type ViewUnit } from "@/lib/date-range";
 import type { SchemaHealth, SyncState } from "@/types/finance";
 
 const PICKER_MONTHS = [
@@ -36,7 +36,9 @@ function DateRangeSelector({
 
   const label = rangeLabel(unit, anchorDate);
   const showDayPicker = unit === "day" || unit === "week";
-  const showMonthGrid = unit === "month";
+  const showMonthGrid = unit === "month" || unit === "quarter" || unit === "half";
+  // Quarters and halves highlight every month of the period containing the anchor.
+  const periodMonths = periodMonthIndexes(unit, anchorDate);
 
   function pickMonth(m: number) {
     // Keep the day when possible; clamp to the 1st for month/year scopes.
@@ -141,7 +143,7 @@ function DateRangeSelector({
                         key={mName}
                         className={cx(
                           "date-picker__cell",
-                          draftYear === year && (m + 1 === month || activeMonths?.includes(m)) && "is-active",
+                          draftYear === year && (m + 1 === month || activeMonths?.includes(m) || periodMonths.includes(m)) && "is-active",
                         )}
                         onClick={() => pickMonth(m)}
                       >

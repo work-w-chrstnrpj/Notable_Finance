@@ -1,7 +1,9 @@
 
+import { periodPageTitle } from "@/lib/view-title";
 import { useEffect, useMemo, useState } from "react";
 import styles from "@/components/ui/filter-row.module.css";
-import { SearchToggle, SearchInput, FilterToggle } from "@/components/ui/search-bar";
+import { EXCLUDE_EMPTY_PAYER_ACCOUNT, EXCLUDE_EMPTY_TRANSFER_ACCOUNT, EXCLUDE_NON_CREDIT_ACCOUNT } from "@shared/filter-options";
+import { SearchToggle, SearchInput, FilterToggle, PeriodToggle } from "@/components/ui/search-bar";
 import { AccountIcon } from "@/components/ui/accounts";
 import { useRecordSearch } from "@/features/records/use-record-search";
 import { isMoneyLentCategory, isOutstandingMoneyLent, receivableAmount } from '@shared/money-lent';
@@ -24,6 +26,7 @@ import { useRecordSelection } from "@/features/records/use-record-selection";
 import { buildReceipt } from "@/features/records/receipt";
 import { useBulkActions } from "@/features/records/use-bulk-actions";
 import { useShortcutAction } from "@/lib/shortcuts/context";
+import { usePageControls } from "@/lib/use-page-controls";
 import {
   applyIncomeTag,
   stripNotionTag,
@@ -31,13 +34,13 @@ import {
 } from "@/lib/finance-helpers";
 import { consumePendingEdit, type PendingEditResource } from "@/lib/pending-edit";
 import { getActiveSectionLabel } from "@/lib/finance-data";
-import { calculateCcCoveredExpenseAmount, getWorkflowFixedCategory } from "@/lib/finance-rules";
+import { calculateCcCoveredExpenseAmount, getWorkflowFixedCategory, isCreditLikeAccountType } from "@/lib/finance-rules";
 import { formatMoney, formatDate, toYYMMDD } from "@/lib/format";
 import { incomesApi, alkansyaApi, borrowingsApi, creditCardPaymentsApi, receivablesApi, transfersApi } from "@/lib/api-client";
 import { deleteActionLabel, deleteConfirmCopy, useUiSettings } from "@/lib/ui-settings-context";
 import { useFabRegister, type ReceiptContext } from "@/lib/fab-export-context";
 import { computeRange, incomeModeToUnit, rangeLabel } from "@/lib/date-range";
-import type { IncomeRecord, WorkflowSectionId } from "@/types/finance";
+import type { IncomeRecord, WorkflowSectionId, IncomeViewMode } from "@/types/finance";
 import type { ExpenseRecord } from "@/types/finance";
 
 /** Money still owed: red when something is owed (shown without a minus sign), neutral at zero. */
@@ -61,8 +64,8 @@ function WorkflowPage({
   section: WorkflowSectionId;
   selectedMonth: string;
   selectedDate?: string;
-  viewMode?: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
-  onViewModeChange?: (mode: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records") => void;
+  viewMode?: IncomeViewMode;
+  onViewModeChange?: (mode: IncomeViewMode) => void;
 }) {
   const {
     activeAccounts,
@@ -168,6 +171,7 @@ function WorkflowPage({
   } = useRecordSelection();
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<string[] | null>(null);
   const { hardDeleteEnabled } = useUiSettings();
+  const pageControls = usePageControls(section);
   const deleteMode = hardDeleteEnabled ? "hard" : "soft";
   const deleteLabel = deleteActionLabel(hardDeleteEnabled);
   const { state: ccCoverageState } = useExpensesForCCCoverage();
@@ -201,8 +205,8 @@ function WorkflowPage({
   // Each workflow is the Incomes data source filtered server-side by its fixed
   // category (transfer→Transfer, credit-card-payment→Credit Card Payment,
   // alkansya→Savings) or, for receivables, by an empty receiving account.
-  // Every workflow view is scoped by the shared Daily/Weekly/Monthly/Annually/
-  // All Records selector, matching Income and Expense.
+  // Every workflow view is scoped by the shared Daily/Weekly/Monthly/Quarterly/
+  // Semi-Annually/Annually/All Records selector (fixed calendar quarters and halves, ADR-0012).
   const viewUnit = incomeModeToUnit(viewMode);
   const selectedRange = viewUnit ? computeRange(viewUnit, selectedDate) : undefined;
   const { state: workflowState, refetch, applyLocal } = useWorkflowRecords(section, {
@@ -228,12 +232,22 @@ function WorkflowPage({
         (!selectedRange || (expense.datePaid! >= selectedRange.start && expense.datePaid! <= selectedRange.end))
       )
     : [];
+  const creditAccountIds = new Set(allAccounts.filter((account) => isCreditLikeAccountType(account.type)).map((account) => account.id));
   const accountFiltered = allWorkflowIncomes.filter((record) => {
     if (!filterActive) return true;
     if (isTransfer || isCreditCardPayment) {
       // Two sides: Source/CC account (accountId) and Transfer/Payer account (transactedAccountId).
-      return (!accountFilterId || record.accountId === accountFilterId) &&
-        (!secondAccountFilterId || record.transactedAccountId === secondAccountFilterId);
+      const firstOk = !accountFilterId
+        ? true
+        : accountFilterId === EXCLUDE_NON_CREDIT_ACCOUNT
+          ? !!record.accountId && creditAccountIds.has(record.accountId)
+          : record.accountId === accountFilterId;
+      const secondOk = !secondAccountFilterId
+        ? true
+        : secondAccountFilterId === EXCLUDE_EMPTY_TRANSFER_ACCOUNT || secondAccountFilterId === EXCLUDE_EMPTY_PAYER_ACCOUNT
+          ? !!record.transactedAccountId
+          : record.transactedAccountId === secondAccountFilterId;
+      return firstOk && secondOk;
     }
     if (isBorrowings) {
       const kind = borrowingKind(record, placeholderIds);
@@ -866,9 +880,10 @@ function WorkflowPage({
     <div className="page-stack">
       {saveError && !modal && <p role="alert">{saveError}</p>}
       <PageToolbar
-        title={label}
+        title={isBorrowings && showBorrowAccounts ? label : periodPageTitle(label, viewMode)}
         actions={
           <>
+          <PeriodToggle hidden={pageControls.periodHidden} onToggle={pageControls.togglePeriod} />
           <FilterToggle active={filterActive} onToggle={() => setFilterActive((prev) => !prev)} shortcutId="view.filters" />
           <SearchToggle active={searchActive} onToggle={toggleSearch} shortcutId="view.search" />
           <button
@@ -883,9 +898,10 @@ function WorkflowPage({
           </>
         }
       />
+      {!pageControls.periodHidden && (
       <SegmentedControl
         label={`${label} view`}
-        options={[...["Daily", "Weekly", "Monthly", "Annually", "All Records"], ...(isBorrowings ? ["Borrowed Accounts"] : [])].map((mode) => ({ label: mode, value: mode }))}
+        options={[...["Daily", "Weekly", "Monthly", "Quarterly", "Semi-Annually", "Annually", "All Records"], ...(isBorrowings ? ["Borrowed Accounts"] : [])].map((mode) => ({ label: mode, value: mode }))}
         value={isBorrowings && showBorrowAccounts ? "Borrowed Accounts" : viewMode}
         onChange={(mode) => {
           if (mode === "Borrowed Accounts") { setShowBorrowAccounts(true); return; }
@@ -894,6 +910,7 @@ function WorkflowPage({
         }}
         shortcutId="view.filterTab"
       />
+      )}
       {!showBorrowAccounts && (filterActive || searchActive) && (
         <div className={`toolbar-row ${styles.filters}`}>
           {filterActive && isBorrowings && (
@@ -918,15 +935,22 @@ function WorkflowPage({
                 placeholder={isTransfer ? "All Source Accounts" : isCreditCardPayment ? "All CC Accounts" : "All Borrow Accounts"}
                 value={accountFilterId}
                 onChange={setAccountFilterId}
-                items={(isTransfer ? nonCreditActiveAccounts : isCreditCardPayment ? creditActiveAccounts : placeholderAccounts)
-                  .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+                items={[
+                  ...(isCreditCardPayment ? [{ id: EXCLUDE_NON_CREDIT_ACCOUNT, label: "Exclude Non Credit Account" }] : []),
+                  ...(isTransfer ? nonCreditActiveAccounts : isCreditCardPayment ? creditActiveAccounts : placeholderAccounts)
+                    .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> })),
+                ]}
               />
               <FilterDropdown
                 placeholder={isTransfer ? "All Transfer Accounts" : isCreditCardPayment ? "All Payer Accounts" : "All Other Accounts"}
                 value={secondAccountFilterId}
                 onChange={setSecondAccountFilterId}
-                items={nonCreditActiveAccounts
-                  .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> }))}
+                items={[
+                  ...(isTransfer ? [{ id: EXCLUDE_EMPTY_TRANSFER_ACCOUNT, label: "Exclude Empty Transfer Account" }] : []),
+                  ...(isCreditCardPayment ? [{ id: EXCLUDE_EMPTY_PAYER_ACCOUNT, label: "Exclude Empty Payer Account" }] : []),
+                  ...nonCreditActiveAccounts
+                    .map((account) => ({ id: account.id, label: account.name, icon: <AccountIcon account={account} /> })),
+                ]}
               />
             </>
           ) : filterActive && (
@@ -966,6 +990,7 @@ function WorkflowPage({
           <DataTable
             selectable
             resizable
+            tableId={`${section}:${viewMode}`}
             recordIds={tableRecordIds}
             selectedIds={selectedIds}
             disabledIds={disabledIds}

@@ -1,7 +1,6 @@
 /* Surface cards - medium glass */
 [data-preset="hig"] .record-card,
 [data-preset="hig"] .dashboard-card,
-[data-preset="hig"] .account-card,
 [data-preset="hig"] .preset-card {
   background: var(--surface);
   backdrop-filter: none;

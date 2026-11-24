@@ -156,6 +156,15 @@ export class NotionClient {
     return results
   }
 
+  /** Add (or update) properties on a database's primary data source. Existing properties are untouched. */
+  async addDataSourceProperties(
+    databaseId: string,
+    properties: Record<string, unknown>
+  ): Promise<void> {
+    const dataSourceId = await this.resolveDataSourceId(databaseId)
+    await this.request('PATCH', `/v1/data_sources/${dataSourceId}`, { properties })
+  }
+
   async createPage(
     databaseId: string,
     properties: Record<string, unknown>,

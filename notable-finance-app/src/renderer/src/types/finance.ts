@@ -39,7 +39,7 @@ export type FinanceSectionId =
   | "dev-logs"
   | "settings";
 
-export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+export type IncomeViewMode = "Daily" | "Weekly" | "Monthly" | "Quarterly" | "Semi-Annually" | "Annually" | "All Records";
 
 export type MonitoringViewMode = "Monthly" | "Quarterly" | "Semi-Annually" | "Annually";
 
@@ -47,6 +47,8 @@ export type ExpenseViewMode =
   | "Daily"
   | "Weekly"
   | "Monthly"
+  | "Quarterly"
+  | "Semi-Annually"
   | "Annually"
   | "All Records"
   | "Unpaid Pasabuy"
@@ -80,6 +82,8 @@ export type Account = {
   availableLimit: number | null;
   creditPoints: number | null;
   annualFee: number | null;
+  paymentNetwork: string | null;
+  cardNumbers: string | null;
   billingDay: number | null;
   dueDay: number | null;
   totalIncomes: number | null;

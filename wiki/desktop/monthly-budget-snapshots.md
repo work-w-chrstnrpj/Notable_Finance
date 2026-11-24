@@ -1,6 +1,6 @@
 # Monthly budget snapshots (saved budgets)
 
-Status: **implemented (2026-11-18).** Decisions were settled on 2026-11-16 (section 16). Desktop-only, local-only feature. Tickets: `tickets/monthly-budget/`. Decision record: [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md). It adds no Notion property, no Notion database change and no sync behavior.
+Status: **sections 1–16 describe the original local feature; local editing, saving from Notion, CSV import and template export were removed on 2026-11-24 (`tickets/custom-budget/03`). Read section 17 first: it is current.** Originally implemented 2026-11-18. Decisions were settled on 2026-11-16 (section 16). Desktop-only feature, local source of truth. Tickets: `tickets/monthly-budget/` and, for the optional Notion mirror, `tickets/saved-budgets-notion/`. Decision records: [ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md) (superseded) and [ADR-0008](../../docs/adr/0008-saved-budgets-optional-notion-mirror.md). With the mirror off (the default) it adds no Notion property, no Notion database change and no sync behavior; see section 17 for the mirror.
 
 ## 1. Problem
 
@@ -12,7 +12,7 @@ Goal: let the user keep a per-month copy of category budgets in the local databa
 
 Non-goals:
 
-- No Notion schema changes, no new Notion database, no push or pull of saved budgets.
+- No change to the user's existing Notion databases. The optional mirror (section 17, off by default) uses its own separate database.
 - No stored income/expense totals. Totals and spending stay computed from records.
 - No free-form date ranges per saved budget. One saved set per calendar month.
 - No change to existing Monitoring behavior while the source is **Notion** (the default).
@@ -113,16 +113,18 @@ The existing zero filters (`hide-both`, `hide-budget`, `hide-spending`) and the 
 
 ## 7. View modes
 
-The existing range logic in `monitoring.tsx` (`computeMonitoringRange`) is kept as is. Only the budget calculation changes.
+> **Superseded by ADR-0012 (calendar-periods).** Quarterly and Semi-Annually are now fixed calendar periods, not windows that start at the selected month. The table below is the current rule; the original floating-window rule (4 and 6 months from the selected month) is gone.
 
-| View mode | Months in range (from the selected month) |
+Monitoring takes its range from the shared period module (`lib/date-range.ts`). Only the budget calculation is described here.
+
+| View mode | Months in range (the period containing the selected month) |
 | --- | --- |
 | Monthly | The selected month (1) |
-| Quarterly | The selected month plus the next 3 (4 months, existing behavior) |
-| Semi-Annually | The selected month plus the next 5 (6 months) |
+| Quarterly | The calendar quarter: Q1 Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep, Q4 Oct to Dec (3 months) |
+| Semi-Annually | The calendar half: H1 Jan to Jun, H2 Jul to Dec (6 months) |
 | Annually | January to December of the selected year (12) |
 
-`periodMultiplier` is replaced by the month list. In Notion mode the result is identical to today. Note: "Quarterly" is currently 4 months, not 3. That is existing behavior and out of scope here; see Open questions.
+`periodMultiplier` is replaced by the month list. Because Quarterly was 4 months and Semi-Annually started at the selected month before ADR-0012, those two views' figures changed when the fixed periods shipped; Monthly and Annually did not.
 
 ## 8. CSV import and export
 
@@ -214,7 +216,7 @@ All results use the existing `ApiResult` envelope. DTOs live in `shared/finance.
 9. Sync, Notion re-pull and discard-unsynced never change or delete saved rows.
 10. A database backup then restore preserves saved rows; restoring a pre-feature backup works and shows no saved sets.
 11. The budget-source choice persists across restarts.
-12. No Notion API call is made by any budget-snapshot action.
+12. No Notion API call is made by any budget-snapshot action. Only the optional mirror (section 17) calls Notion, and only when switched on.
 
 ## 14. Test plan
 
@@ -237,7 +239,7 @@ Docs to update when implementing: `wiki/desktop/local-data-schema.md`, `wiki/des
 Settled while grilling the feature. No open questions remain.
 
 1. **UI name:** "Saved budgets". The table stays `monthly_budget_snapshots` internally.
-2. **Quarterly length:** stays 4 months (and Semi-Annually 6). Changing Quarterly to 3 months is a separate ticket, because it would alter Notion-mode numbers.
+2. **Quarterly length:** resolved by ADR-0012: Quarterly is a fixed 3-month calendar quarter and Semi-Annually a fixed 6-month half. The old 4-month window is gone.
 3. **Categories:** Edit budgets and CSV use the same category list Monitoring shows, including auxiliary ones such as Pasabuy.
 4. **CSV import:** overwrite matching rows by default, with a "Skip months that already have saved budgets" option. No whole-month replace policy; use Delete in Edit budgets.
 5. **Saving a month:** allowed for the current and future months, with a replace confirmation.
@@ -246,4 +248,15 @@ Settled while grilling the feature. No open questions remain.
 8. **Chat:** deferred to the last phase; defaults to Notion budgets.
 9. **Split:** the Need/Wants/Savings split stays current-only for every month.
 10. **Tickets:** four tickets under `tickets/monthly-budget/`, one per rollout phase in section 15.
-11. **Storage:** local only, no Notion mirror ([ADR-0006](../../docs/adr/0006-saved-budgets-local-only.md)).
+11. **Storage:** local source of truth; optional Notion mirror, off by default ([ADR-0008](../../docs/adr/0008-saved-budgets-optional-notion-mirror.md), which supersedes ADR-0006).
+
+## 17. Custom monthly budget database in Notion (ADR-0010)
+
+Notion is now the source of truth for these budgets (ADR-0010 supersedes the local-first mirror of ADR-0008/0009; the user-created database and saved ID from ADR-0009 stay). The earlier sections of this page describe the original local feature; the local editing they describe (Save budgets for this month, Edit budgets, CSV import, template export) has been removed (`tickets/custom-budget/03`). **CSV export stays only in Settings** (Export all budgets) as a read-only copy of the cache; Monitoring has no info or export button. Chat describes custom budgets as edited in Notion and never writes them. The reset confirmation says custom budgets stay in Notion and are refilled on the next sync.
+
+- **Monitoring toggle:** **Default** (each category's own monthly budget) or **Custom** (the Custom monthly budget database). Custom is disabled until a database ID is saved in Notion Configuration. Stored values are `default` and `custom`; an older stored `notion` becomes `default` and `saved` becomes `custom`. A month with no Custom row uses the Default budget.
+- **Database:** you create it in Notion, share it with your integration and save its ID in Notion Configuration ("Saved Budgets (optional)"). The app never creates a database. Saving the ID checks it; Verify Schema includes it. If it is removed or unshared, Settings says so and nothing is recreated.
+- **Shape:** one row per budget period (`Jan 2025`, `Q1 2024`, `H1 2025`, `2026`) and one Number column per non-auxiliary expense category, named like the category. Missing columns are listed in Settings and added only with the **Add missing columns** button; categories without a column are skipped. Columns are never deleted or renamed.
+- **Cache:** each sync replaces the local table `monthly_budget_snapshots` from Notion, so Monitoring works offline. It is a read-only cache: Notion always wins, there is no newest-edit-wins rule and no mirror switch. The most specific row wins for a month (month, then quarter, half, year); quarter, half and year rows are split evenly across their months.
+- **One-time send (done and removed):** budgets that were saved locally were sent to Notion once, from Settings, as `Jan 2025` rows for months no Notion row covered; a Notion row was never changed. That code is deleted (`tickets/custom-budget/04`). The only Notion write left for budgets is the **Add missing columns** button.
+- Reset local database, discard-unsynced and the Notion re-pull never wipe the cache table; the next sync refills it from Notion.

@@ -106,13 +106,26 @@ it('upgrades the old CC view without changing theme, fonts or other preferences'
 
 describe('monitoringBudgetSource', () => {
   it('monthly-budget/02#AC9 defaults to notion and accepts only notion or saved', () => {
-    expect(DEFAULT_UI_SETTINGS.monitoringBudgetSource).toBe('notion')
-    expect(normalizeUiSettings({}).monitoringBudgetSource).toBe('notion')
-    expect(normalizeUiSettings({ monitoringBudgetSource: 'saved' }).monitoringBudgetSource).toBe('saved')
-    expect(normalizeUiSettings({ monitoringBudgetSource: 'notion' }).monitoringBudgetSource).toBe('notion')
+    expect(DEFAULT_UI_SETTINGS.monitoringBudgetSource).toBe('default')
+    expect(normalizeUiSettings({}).monitoringBudgetSource).toBe('default')
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'custom' }).monitoringBudgetSource).toBe('custom')
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'default' }).monitoringBudgetSource).toBe('default')
+    // Old stored values carry over (custom-budget/01#AC3): notion -> default, saved -> custom.
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'saved' }).monitoringBudgetSource).toBe('custom')
+    expect(normalizeUiSettings({ monitoringBudgetSource: 'notion' }).monitoringBudgetSource).toBe('default')
     for (const bad of ['Saved', 'both', 1, null, undefined, {}]) {
-      expect(normalizeUiSettings({ monitoringBudgetSource: bad }).monitoringBudgetSource).toBe('notion')
+      expect(normalizeUiSettings({ monitoringBudgetSource: bad }).monitoringBudgetSource).toBe('default')
     }
   })
 })
 
+
+describe('filter-options saved combined status options', () => {
+  it('filter-options/02#AC5 and 03#AC4 keep the combined status ids across a restart', () => {
+    const next = normalizeUiSettings({
+      expenseFilters: { paymentStatusFilter: '__non-paid__', pasabuyStatusFilter: '__non-fully-received__', filterActive: true }
+    })
+    expect(next.expenseFilters.paymentStatusFilter).toBe('__non-paid__')
+    expect(next.expenseFilters.pasabuyStatusFilter).toBe('__non-fully-received__')
+  })
+})

@@ -1,7 +1,7 @@
 # 01: Hover-only column resizing across Money movement
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** None
 **Owner:** claude
 
@@ -23,8 +23,8 @@ In every Money movement table the user can drag a column edge to change its widt
 - Existing Expense resize behaviour in the shared data table
 
 ## Evidence
-- Commits:
-- PR:
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron node_modules/vitest/vitest.mjs run` → 563/563 pass (tests named `table-resize/01#AC1`..`AC7` in `pages/table-resize.test.tsx`); `npx playwright test` → 49/49 pass; eslint 0 errors; typecheck clean. AC2, AC3 cursor and AC7 are checked by reading the stylesheet rules, since jsdom does not apply CSS; the hover look was not checked in a real window.
 - Review:
 - Docs updated:
@@ -39,3 +39,6 @@ In every Money movement table the user can drag a column edge to change its widt
 - Did: Claimed. The shared data table already had the resize handle for Expense, so the work was small. `ui/data-table.module.css`: the handle line is now transparent at rest and turns accent on hover, keyboard focus or drag, with the resize cursor; the handle is hidden under `@media (hover: none)`. Turned `resizable` on in `pages/income/index.tsx` and for the records table in `pages/workflow/index.tsx` (Transfer, CC Payment, Alkansya, Borrowings, Receivables). The Borrow Account table is untouched. Added `pages/table-resize.test.tsx`.
 - Side effect: resizable header cells carry an `aria-label`, so `optimistic-save.test.tsx` found two "Name" and "Date" labels once Income became resizable; I scoped its queries to the dialog.
 - Next: look at it in the app (hover a column edge on Income and Transfer), then `[serve]`. Not reinstalled on this Mac yet.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

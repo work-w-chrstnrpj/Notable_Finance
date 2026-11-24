@@ -4,6 +4,7 @@
 // (credit accounts, Pasabuy categories) are passed in.
 import type { ExpenseRecordDto, IncomeRecordDto } from '../../shared/finance.types'
 import { filterByMonth, filterByRange } from './resource-utils'
+import { matchesPasabuyStatusFilter, matchesPaymentStatusFilter } from '../../shared/filter-options'
 
 export interface RangeQuery {
   month?: string
@@ -144,8 +145,8 @@ export function filterExpensesByQuery(
     }
   }
   if (query.pasabuyer) filtered = filtered.filter((r) => r.pasabuyer === query.pasabuyer)
-  if (query.paymentStatus) filtered = filtered.filter((r) => r.paymentStatus === query.paymentStatus)
-  if (query.pasabuyStatus) filtered = filtered.filter((r) => r.pasabuyStatus === query.pasabuyStatus)
+  if (query.paymentStatus) filtered = filtered.filter((r) => matchesPaymentStatusFilter(r.paymentStatus, query.paymentStatus!))
+  if (query.pasabuyStatus) filtered = filtered.filter((r) => matchesPasabuyStatusFilter(r.pasabuyStatus, query.pasabuyStatus!))
   if (query.pasabuyDateOfPayment) {
     filtered = filterByRange(filtered, 'pasabuyDateOfPayment', query.pasabuyDateOfPayment, query.pasabuyDateOfPayment)
   }

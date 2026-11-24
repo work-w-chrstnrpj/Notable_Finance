@@ -1,7 +1,7 @@
 # 04: CSV export and import of saved budgets
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** 02
 **Owner:** claude
 
@@ -20,7 +20,7 @@ The user can export saved budgets to a CSV file (all of them, or only the months
 - [x] AC9: The commit is atomic: if any write fails, no row from the file is saved.
 - [x] AC10: The parsed rows stay in the main process between preview and commit; the renderer never sends raw rows back.
 - [x] AC11: Export and import make no Notion API call.
-- [ ] AC12: Settings has a Saved budgets section with Export and Import buttons that cover every saved month at once, with no month or range to choose; import still shows the preview and the overwrite or skip choice.
+- [x] AC12: Settings has a Saved budgets section with Export and Import buttons that cover every saved month at once, with no month or range to choose; import still shows the preview and the overwrite or skip choice.
 
 ## Inputs
 - `tickets/monthly-budget/spec.md`
@@ -29,9 +29,9 @@ The user can export saved budgets to a CSV file (all of them, or only the months
 - `test/backup.test.ts` (prior art for a temporary database and the Electron mock)
 
 ## Evidence
-- Commits: pending (uncommitted)
-- PR:
-- Tests: `test/budget-csv.test.ts` (pure, 18 tests), `test/budget-files.test.ts` (15 tests, SQLite and mocked dialogs; run under Electron's Node, skipped under plain `npm test`), and the Import screen tests in `monitoring-budgets.test.tsx`. All 549 tests pass under Electron's Node. `npm run typecheck` clean, `eslint` 0 errors.
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
+- Tests: `monthly-budget/04#AC12` added 2026-11-21 in `monitoring-budgets.test.tsx`. `test/budget-csv.test.ts` (pure, 18 tests), `test/budget-files.test.ts` (15 tests, SQLite and mocked dialogs; run under Electron's Node, skipped under plain `npm test`), and the Import screen tests in `monitoring-budgets.test.tsx`. All 549 tests pass under Electron's Node. `npm run typecheck` clean, `eslint` 0 errors.
 - Review: `code-review` against `HEAD` (uncommitted). Fixed: (1) the Edit budgets modal reloaded its saved set whenever Monitoring re-rendered, which would have wiped what the user was typing; it now reloads only when the category list changes. (2) the Import modal would open two file dialogs under React StrictMode in development; it now opens one. (3) a budget cell with a muted Notion line sorted as text; it now carries a numeric value and sorts as a number. Each has a regression test. Noted, not changed: export does not escape cells that start with `=`, `+`, `-` or `@` (spreadsheet formula injection), low risk because category names come from the user's own Notion; row and name lengths in `budgets:saveSet` are not capped; the resolution function's complexity warning (19 against a limit of 15).
 - Docs updated: `wiki/desktop/monthly-budget-snapshots.md` (corrected the 81,000 example); the schema, IPC and product docs are for ticket monthly-budget/05
 
@@ -59,3 +59,6 @@ The user can export saved budgets to a CSV file (all of them, or only the months
 - Requirement change: the user asked for Settings to export and import the monthly budgets all at once, not by month ("In settings, give the ability to Export and Import the monthly budgets, all at once"). Added AC12; AC1 to AC11 are unchanged, and the Monitoring Export and Import keep working.
 - Did: Added a Saved budgets panel to Settings. Export writes every saved month straight to the file chosen in the save dialog. Import reuses the existing preview, policy choice and atomic commit. AC12 is not ticked: no test names it yet.
 - Checked: `typecheck` clean, `eslint` 0 errors on the changed files, the existing unit tests (512 passed, 37 skipped under plain Node) and all 49 Playwright specs pass after the change. Not run: no test names AC12 yet, so it stays unticked; the gate will not pass until one does. Next: `/cook-a-ticket [test]` to add it. Not committed.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

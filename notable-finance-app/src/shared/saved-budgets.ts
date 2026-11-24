@@ -2,9 +2,9 @@
 // Pure functions shared by the renderer and the main process so both compute identical numbers.
 // Spec: wiki/desktop/monthly-budget-snapshots.md (sections 5 and 7).
 
-export type BudgetSource = 'notion' | 'saved'
+export type BudgetSource = 'default' | 'custom'
 
-export const BUDGET_SOURCES: readonly BudgetSource[] = ['notion', 'saved']
+export const BUDGET_SOURCES: readonly BudgetSource[] = ['default', 'custom']
 
 /** Same four modes as the Monitoring view-mode control. */
 export type BudgetViewMode = 'Monthly' | 'Quarterly' | 'Semi-Annually' | 'Annually'
@@ -20,6 +20,15 @@ export interface SavedBudgetRow {
   budget: number
   createdAt: number
   updatedAt: number
+}
+
+/** A quarter, half or year row of the Custom database, as written in Notion. */
+export interface PeriodBudgetRow {
+  /** 'Q1 2026' | 'H1 2026' | '2026' */
+  period: string
+  categoryId: string
+  categoryName: string
+  budget: number
 }
 
 /** The slice of an expense category that budget resolution needs. */
@@ -50,6 +59,10 @@ export interface ResolvedBudgets {
   monthsCovered: number
   monthsInRange: number
   months: string[]
+  /** The period row the view looked for (`H1 2026`), or null for Monthly and for the Notion source. */
+  periodKey: string | null
+  /** True when that row exists in the Custom database and its figures were used. */
+  usedPeriodRow: boolean
 }
 
 const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/
@@ -83,18 +96,18 @@ export function monthsBetween(from: string, to: string): string[] {
 }
 
 /**
- * Months covered by a Monitoring view from the selected month: Monthly 1, Quarterly 4,
- * Semi-Annually 6 (all starting at the selected month) and Annually Jan–Dec of that year.
+ * Months covered by a Monitoring view for the selected month, as fixed calendar periods
+ * (ADR-0012): Monthly is the month itself, Quarterly its calendar quarter (Q1 Jan–Mar … Q4 Oct–Dec),
+ * Semi-Annually its calendar half (H1 Jan–Jun, H2 Jul–Dec) and Annually Jan–Dec of that year.
  * Matches the Monitoring date range, so budgets and spending always cover the same months.
  */
 export function monthsInRange(mode: BudgetViewMode, anchorMonth: string): string[] {
   if (!isValidMonth(anchorMonth)) return []
-  if (mode === 'Annually') {
-    const year = anchorMonth.slice(0, 4)
-    return Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
-  }
-  const length = mode === 'Semi-Annually' ? 6 : mode === 'Quarterly' ? 4 : 1
-  return Array.from({ length }, (_, i) => addMonths(anchorMonth, i))
+  const year = anchorMonth.slice(0, 4)
+  const month = Number(anchorMonth.slice(5, 7))
+  const size = mode === 'Annually' ? 12 : mode === 'Semi-Annually' ? 6 : mode === 'Quarterly' ? 3 : 1
+  const first = Math.floor((month - 1) / size) * size
+  return Array.from({ length: size }, (_, i) => `${year}-${String(first + i + 1).padStart(2, '0')}`)
 }
 
 const normalizeName = (name: string) => name.trim().toLowerCase()
@@ -102,8 +115,8 @@ const normalizeName = (name: string) => name.trim().toLowerCase()
 /**
  * Decide each category's budget for a range of months.
  *
- * - notion: the category's current monthly budget × months in range (today's behaviour).
- * - saved: per month, a month with a saved set uses it (a category missing from the set is 0);
+ * - default: the category's current monthly budget × months in range (today's behaviour).
+ * - custom: per month, a month with a saved set uses it (a category missing from the set is 0);
  *   a month without one falls back to the category's Notion budget.
  *
  * A saved row belongs to a current category by id, or by name when the id is gone (a full
@@ -115,8 +128,15 @@ export function resolveBudgets(args: {
   categories: BudgetCategoryInput[]
   snapshots: SavedBudgetRow[]
   source: BudgetSource
+  /** Quarter, half and year rows from the Custom database. */
+  periodRows?: PeriodBudgetRow[]
+  /** The row this view looks for first (`H1 2026`); null for Monthly. */
+  periodKey?: string | null
 }): ResolvedBudgets {
   const { months, categories, snapshots, source } = args
+  const periodKey = source === 'custom' ? (args.periodKey ?? null) : null
+  const periodForKey = periodKey ? (args.periodRows ?? []).filter((r) => r.period === periodKey) : []
+  const usedPeriodRow = periodForKey.length > 0
   const monthCount = months.length
 
   const byId = new Map(categories.map((c) => [c.id, c]))
@@ -131,7 +151,7 @@ export function resolveBudgets(args: {
   const add = (key: string, amount: number) => periodBudget.set(key, (periodBudget.get(key) ?? 0) + amount)
 
   let monthsCovered = 0
-  if (source === 'notion') {
+  if (source === 'default') {
     for (const c of categories) add(c.id, c.monthlyBudget * monthCount)
   } else {
     const setsByMonth = new Map<string, SavedBudgetRow[]>()
@@ -140,10 +160,20 @@ export function resolveBudgets(args: {
       if (list) list.push(row)
       else setsByMonth.set(row.month, [row])
     }
+    // A period row for this view wins for the categories it names; the rest add up their months.
+    const fromPeriod = new Map<string, number>()
+    for (const row of periodForKey) {
+      const current = byId.get(row.categoryId) ?? byName.get(normalizeName(row.categoryName))
+      if (current) fromPeriod.set(current.id, row.budget)
+    }
+    for (const [id, value] of fromPeriod) add(id, value)
+    const addMonth = (key: string, amount: number) => {
+      if (!fromPeriod.has(key)) add(key, amount)
+    }
     for (const month of months) {
       const set = setsByMonth.get(month)
       if (!set || set.length === 0) {
-        for (const c of categories) add(c.id, c.monthlyBudget)
+        for (const c of categories) addMonth(c.id, c.monthlyBudget)
         continue
       }
       monthsCovered += 1
@@ -165,7 +195,7 @@ export function resolveBudgets(args: {
         }
       }
       for (const { key, row } of nameMatched) if (!monthValues.has(key)) monthValues.set(key, row.budget)
-      for (const [key, value] of monthValues) add(key, value)
+      for (const [key, value] of monthValues) addMonth(key, value)
     }
   }
 
@@ -177,7 +207,7 @@ export function resolveBudgets(args: {
       name: c.name,
       budget,
       notionBudget,
-      differs: source === 'saved' && budget !== notionBudget,
+      differs: source === 'custom' && budget !== notionBudget,
       removed: false
     }
   })
@@ -199,94 +229,30 @@ export function resolveBudgets(args: {
     total: roundBudget(all.reduce((sum, c) => sum + c.budget, 0)),
     monthsCovered,
     monthsInRange: monthCount,
-    months
+    months,
+    periodKey,
+    usedPeriodRow
   }
 }
 
 /** The badge text for the Budget source (spec section 6.2). */
-export function budgetSourceBadge(source: BudgetSource, monthsCovered: number, monthsInRange: number): string {
-  if (source === 'notion') return 'Notion budgets'
-  if (monthsCovered === 0) return 'No budget saved'
-  if (monthsCovered >= monthsInRange) return 'Saved budgets'
-  return `Saved budgets: ${monthsCovered} of ${monthsInRange} months`
-}
-
-// ── Typed budgets and JSON view (Edit budgets) ─────────────────────────────
-
-/** A budget typed in a field: a number of 0 or more with up to 2 decimals. `₱`, spaces and commas are tolerated. */
-export function parseBudgetText(value: string): number | null {
-  const cleaned = value.replace(/[₱\s,]/g, '')
-  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null
-  return roundBudget(Number(cleaned))
-}
-
-/** One editable budget in the Edit budgets screen: a stable key and the category name shown to the user. */
-export interface BudgetJsonEntry {
-  key: string
-  name: string
-}
-
-/** JSON names must be unique, so a repeated name gets " (2)", " (3)" and so on. */
-function jsonNames(entries: BudgetJsonEntry[]): Array<{ key: string; name: string }> {
-  const seen = new Map<string, number>()
-  return entries.map((entry) => {
-    const base = entry.name.trim()
-    const norm = base.toLowerCase()
-    const count = (seen.get(norm) ?? 0) + 1
-    seen.set(norm, count)
-    return { key: entry.key, name: count === 1 ? base : `${base} (${count})` }
-  })
-}
-
-/**
- * A month's budgets as JSON: `{ "Food": 5000, "Transport": 2000 }`, category name to budget.
- * It holds no month, so the same text can be pasted into any month. A value that is not a valid
- * number yet (still being typed in the form) is kept as typed so nothing is lost.
- */
-export function budgetsToJson(entries: BudgetJsonEntry[], values: Record<string, string>): string {
-  const out: Record<string, number | string> = {}
-  for (const { key, name } of jsonNames(entries)) {
-    const raw = values[key] ?? ''
-    out[name] = parseBudgetText(raw) ?? raw
+export function budgetSourceBadge(
+  source: BudgetSource,
+  monthsCovered: number,
+  monthsInRange: number,
+  period?: { periodKey: string | null; usedPeriodRow: boolean; months: string[] }
+): string {
+  if (source === 'default') return 'Default budgets'
+  if (period?.periodKey) {
+    if (period.usedPeriodRow) return `Custom budgets: ${period.periodKey}`
+    // No quarter, half or year row: the figure is the monthly budgets added up.
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const name = (m: string) => names[Number(m.slice(5, 7)) - 1]
+    const span = period.months.length > 1 ? `${name(period.months[0])}–${name(period.months[period.months.length - 1])}` : name(period.months[0])
+    const custom = monthsCovered === 0 || monthsCovered >= monthsInRange ? '' : ` (custom for ${monthsCovered} of ${monthsInRange} months)`
+    return `${period.periodKey} not found: adding ${span} monthly budgets${custom}`
   }
-  return JSON.stringify(out, null, 2)
-}
-
-export type ParsedBudgetsJson = { values: Record<string, string> } | { errors: string[] }
-
-/**
- * Read budgets back from JSON. Names match categories case-insensitively; a name that matches no
- * category is an error; a category left out keeps its current value (so only the keys present are
- * returned). Each budget must follow the same rule as the form.
- */
-export function parseBudgetsJson(text: string, entries: BudgetJsonEntry[]): ParsedBudgetsJson {
-  let data: unknown
-  try {
-    data = JSON.parse(text)
-  } catch (error) {
-    return { errors: [`That is not valid JSON: ${error instanceof Error ? error.message : String(error)}`] }
-  }
-  if (data === null || typeof data !== 'object' || Array.isArray(data)) {
-    return { errors: ['Use an object of category name to budget, like { "Food": 5000 }.'] }
-  }
-  const byName = new Map(jsonNames(entries).map((e) => [e.name.toLowerCase(), e.key]))
-  const values: Record<string, string> = {}
-  const errors: string[] = []
-  const used = new Set<string>()
-  for (const [name, raw] of Object.entries(data as Record<string, unknown>)) {
-    const key = byName.get(name.trim().toLowerCase())
-    if (!key) {
-      errors.push(`Unknown category "${name}".`)
-      continue
-    }
-    if (used.has(key)) {
-      errors.push(`"${name}" appears more than once.`)
-      continue
-    }
-    used.add(key)
-    const amount = typeof raw === 'number' ? (Number.isFinite(raw) ? parseBudgetText(String(raw)) : null) : typeof raw === 'string' ? parseBudgetText(raw) : null
-    if (amount === null) errors.push(`The budget for "${name}" must be a number of 0 or more with up to 2 decimals.`)
-    else values[key] = String(amount)
-  }
-  return errors.length > 0 ? { errors: errors.slice(0, 6) } : { values }
+  if (monthsCovered === 0) return 'No custom budget'
+  if (monthsCovered >= monthsInRange) return 'Custom budgets'
+  return `Custom budgets: ${monthsCovered} of ${monthsInRange} months`
 }

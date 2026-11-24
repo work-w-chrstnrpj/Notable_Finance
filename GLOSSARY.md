@@ -47,6 +47,23 @@ _Source_: wiki/shared/notion-field-mapping.md
 
 **Account**:
 A place money lives or is owed. Read-only reference data maintained in Notion; balances are computed.
+_Source_: docs/adr/0011-reference-data-is-created-in-notion-only.md
+
+**Reference data**:
+Accounts, expense categories, income categories and the Custom monthly budget database. Created, edited and removed in Notion only; the app reads it, never writes it, and hides (never hard-deletes) a row Notion has removed.
+_Avoid_: master data, setup data
+_Source_: docs/adr/0011-reference-data-is-created-in-notion-only.md
+
+**Payment network**:
+The Notion Select on an account naming its card network (Visa, Mastercard, Amex, JCB, UnionPay). Read from Notion; drives the logo on the account card.
+
+**Card number**:
+The optional Notion text property `Card Numbers & Last 4 Digit` on an account, written as the digit count and the last four digits (`16, 4056`). The card shows it masked (`•••• •••• •••• 4056`); only the count and the last four digits are ever stored or shown, and an empty or invalid value shows no number at all. Read-only, like the rest of the account (ADR-0011).
+_Avoid_: card number field, PAN
+
+**Card color / Card finish**:
+Local display preferences chosen in Settings, never written to Notion. Card color is per account (a fixed palette; Auto picks one no other card uses). Card finish (Glass, Metal, Matte) applies to every account card.
+_Source_: docs/adr/0011-reference-data-is-created-in-notion-only.md
 
 **Expense Category / Income Category**:
 Read-only reference data from Notion. An expense category carries a Monthly Budget.
@@ -59,7 +76,7 @@ A category or account used for workflows (Transfer, Money Lent, Borrowed) and ex
 The per-expense-category monthly allowance from Notion. Remaining equals budget minus spending.
 
 **Monthly Monitoring**:
-The Monitoring page: income, expense and budget versus actual for a period (Monthly, Quarterly, Semi-Annually or Annually), computed locally. The Need/Wants/Savings split is the one value read from Notion.
+The Monitoring page: income, expense and budget versus actual for a calendar period (Monthly, Quarterly, Semi-Annually or Annually), computed locally. The Need/Wants/Savings split is the one value read from Notion.
 _Avoid_: report, summary
 
 **Money movement**:
@@ -91,13 +108,27 @@ Total owed divided by Period count; a minimum guide, never enforced. Repayments 
 For a loan with terms, `max(0, principal + interest − linked repayments)`, computed locally.
 _Source_: docs/adr/0007-loan-interest-inside-the-borrowing.md
 
-**Saved budget**:
-A local-only, per-month copy of each expense category's budget, kept so a past month is judged against the budget that applied then. The UI says "Saved budgets"; the internal table is `monthly_budget_snapshots`. A month "has saved budgets" when it has at least one row.
-_Avoid_: snapshot (in the UI), budget history
-_Source_: wiki/desktop/monthly-budget-snapshots.md, docs/adr/0006-saved-budgets-local-only.md
+**Custom monthly budget**:
+A month's budget per expense category, kept in the user's Custom monthly budget database in Notion so a past month is judged against the budget that applied then. Edited only in Notion. The app keeps a read-only local cache (internal table `monthly_budget_snapshots`, formerly "saved budgets"). A month "has a custom budget" when a row covers it.
+_Avoid_: saved budget (old name), snapshot, budget history
+_Source_: docs/adr/0010-custom-monthly-budget-database-is-source-of-truth.md (supersedes 0006, 0008)
+
+**Calendar period**:
+One of Daily, Weekly (Monday to Sunday), Monthly, Quarterly, Semi-Annually or Annually, chosen in a page's period picker; **All Records** is the same picker with no date limit. Quarterly and Semi-Annually are fixed to the calendar year: Q1 Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep, Q4 Oct to Dec; H1 Jan to Jun, H2 Jul to Dec. Choosing a period shows the one containing the date the user is on.
+_Avoid_: view mode (for the period alone), rolling window, floating quarter
+_Source_: docs/adr/0012-fixed-calendar-quarters-and-halves.md
+
+**Budget period**:
+The label of one row in the Custom monthly budget database: a month (`Jan 2025`), quarter (`Q1 2024`), half (`H1 2025`) or year (`2026`). Quarter, half and year rows are split evenly across their months, and the most specific row wins for a month (month, quarter, half, year).
+
+**Custom monthly budget database**:
+A database the user creates in Notion and whose ID they save in Notion Configuration (key `savedBudgets`): one per user, one row per budget period, one Number column per expense category. It is the only place custom budgets are edited.
+_Avoid_: Saved Budgets database (old name), snapshot database
+_Source_: docs/adr/0009-saved-budgets-database-is-user-created.md, docs/adr/0010-custom-monthly-budget-database-is-source-of-truth.md
 
 **Budget source**:
-The Monitoring toggle choosing where budgets come from: **Notion** (today's category budgets) or **Saved** (the month's saved budgets, falling back to Notion budgets for months with none).
+The Monitoring toggle choosing where budgets come from: **Default** (each expense category's own monthly budget from the Expense Categories database) or **Custom** (the Custom monthly budget database, falling back to Default for months with no row). Custom is available only when a database ID is saved.
+_Avoid_: "Notion" and "Saved" as the two options (old labels)
 
 More finance terms and exact Notion labels: `wiki/shared/finance-domain-glossary.md`.
 

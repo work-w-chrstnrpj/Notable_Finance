@@ -1,7 +1,7 @@
 # 01: Record the saved-budgets decisions
 
 **Type:** doc-drift
-**Status:** in-review
+**Status:** done
 **Blocked by:** None
 **Owner:** claude
 
@@ -20,8 +20,8 @@ The decisions made while grilling the saved-budgets feature are written into the
 - `docs/adr/0004-derived-values-computed-not-stored.md`
 
 ## Evidence
-- Commits: pending (changes are uncommitted)
-- PR:
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `node .ai/cli/bin/cli.mjs validate`
 - Review:
 - Docs updated: `wiki/desktop/monthly-budget-snapshots.md` (status, terms, non-goals, chat, edge cases, section 16 Decisions), `GLOSSARY.md` (Saved budget, Budget source), `docs/adr/0006-saved-budgets-local-only.md`
@@ -36,3 +36,6 @@ The decisions made while grilling the saved-budgets feature are written into the
 ### 2026-11-19 claude
 - Did: Re-checked every criterion against the repo. The spec status now reads implemented, section 16 holds the decisions, `GLOSSARY.md` no longer says "proposed, not built", ADR-0006 exists, and the old `tickets/features/monthly-budget-snapshots.md` is marked superseded. `validate` passes (55 checks).
 - Next: `[serve]` to commit; waiting for the user's acceptance.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

@@ -19,7 +19,6 @@
   grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
 }.panel,
 .dashboard-card,
-.account-card,
 .record-card {
   border: 1px solid var(--line);
   border-radius: var(--radius);
