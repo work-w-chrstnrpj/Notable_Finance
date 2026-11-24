@@ -22,6 +22,15 @@ export interface SavedBudgetRow {
   updatedAt: number
 }
 
+/** A quarter, half or year row of the Custom database, as written in Notion. */
+export interface PeriodBudgetRow {
+  /** 'Q1 2026' | 'H1 2026' | '2026' */
+  period: string
+  categoryId: string
+  categoryName: string
+  budget: number
+}
+
 /** The slice of an expense category that budget resolution needs. */
 export interface BudgetCategoryInput {
   id: string
@@ -50,6 +59,10 @@ export interface ResolvedBudgets {
   monthsCovered: number
   monthsInRange: number
   months: string[]
+  /** The period row the view looked for (`H1 2026`), or null for Monthly and for the Notion source. */
+  periodKey: string | null
+  /** True when that row exists in the Custom database and its figures were used. */
+  usedPeriodRow: boolean
 }
 
 const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/
@@ -83,18 +96,18 @@ export function monthsBetween(from: string, to: string): string[] {
 }
 
 /**
- * Months covered by a Monitoring view from the selected month: Monthly 1, Quarterly 4,
- * Semi-Annually 6 (all starting at the selected month) and Annually Jan–Dec of that year.
+ * Months covered by a Monitoring view for the selected month, as fixed calendar periods
+ * (ADR-0012): Monthly is the month itself, Quarterly its calendar quarter (Q1 Jan–Mar … Q4 Oct–Dec),
+ * Semi-Annually its calendar half (H1 Jan–Jun, H2 Jul–Dec) and Annually Jan–Dec of that year.
  * Matches the Monitoring date range, so budgets and spending always cover the same months.
  */
 export function monthsInRange(mode: BudgetViewMode, anchorMonth: string): string[] {
   if (!isValidMonth(anchorMonth)) return []
-  if (mode === 'Annually') {
-    const year = anchorMonth.slice(0, 4)
-    return Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
-  }
-  const length = mode === 'Semi-Annually' ? 6 : mode === 'Quarterly' ? 4 : 1
-  return Array.from({ length }, (_, i) => addMonths(anchorMonth, i))
+  const year = anchorMonth.slice(0, 4)
+  const month = Number(anchorMonth.slice(5, 7))
+  const size = mode === 'Annually' ? 12 : mode === 'Semi-Annually' ? 6 : mode === 'Quarterly' ? 3 : 1
+  const first = Math.floor((month - 1) / size) * size
+  return Array.from({ length: size }, (_, i) => `${year}-${String(first + i + 1).padStart(2, '0')}`)
 }
 
 const normalizeName = (name: string) => name.trim().toLowerCase()
@@ -115,8 +128,15 @@ export function resolveBudgets(args: {
   categories: BudgetCategoryInput[]
   snapshots: SavedBudgetRow[]
   source: BudgetSource
+  /** Quarter, half and year rows from the Custom database. */
+  periodRows?: PeriodBudgetRow[]
+  /** The row this view looks for first (`H1 2026`); null for Monthly. */
+  periodKey?: string | null
 }): ResolvedBudgets {
   const { months, categories, snapshots, source } = args
+  const periodKey = source === 'custom' ? (args.periodKey ?? null) : null
+  const periodForKey = periodKey ? (args.periodRows ?? []).filter((r) => r.period === periodKey) : []
+  const usedPeriodRow = periodForKey.length > 0
   const monthCount = months.length
 
   const byId = new Map(categories.map((c) => [c.id, c]))
@@ -140,10 +160,20 @@ export function resolveBudgets(args: {
       if (list) list.push(row)
       else setsByMonth.set(row.month, [row])
     }
+    // A period row for this view wins for the categories it names; the rest add up their months.
+    const fromPeriod = new Map<string, number>()
+    for (const row of periodForKey) {
+      const current = byId.get(row.categoryId) ?? byName.get(normalizeName(row.categoryName))
+      if (current) fromPeriod.set(current.id, row.budget)
+    }
+    for (const [id, value] of fromPeriod) add(id, value)
+    const addMonth = (key: string, amount: number) => {
+      if (!fromPeriod.has(key)) add(key, amount)
+    }
     for (const month of months) {
       const set = setsByMonth.get(month)
       if (!set || set.length === 0) {
-        for (const c of categories) add(c.id, c.monthlyBudget)
+        for (const c of categories) addMonth(c.id, c.monthlyBudget)
         continue
       }
       monthsCovered += 1
@@ -165,7 +195,7 @@ export function resolveBudgets(args: {
         }
       }
       for (const { key, row } of nameMatched) if (!monthValues.has(key)) monthValues.set(key, row.budget)
-      for (const [key, value] of monthValues) add(key, value)
+      for (const [key, value] of monthValues) addMonth(key, value)
     }
   }
 
@@ -199,13 +229,29 @@ export function resolveBudgets(args: {
     total: roundBudget(all.reduce((sum, c) => sum + c.budget, 0)),
     monthsCovered,
     monthsInRange: monthCount,
-    months
+    months,
+    periodKey,
+    usedPeriodRow
   }
 }
 
 /** The badge text for the Budget source (spec section 6.2). */
-export function budgetSourceBadge(source: BudgetSource, monthsCovered: number, monthsInRange: number): string {
+export function budgetSourceBadge(
+  source: BudgetSource,
+  monthsCovered: number,
+  monthsInRange: number,
+  period?: { periodKey: string | null; usedPeriodRow: boolean; months: string[] }
+): string {
   if (source === 'default') return 'Default budgets'
+  if (period?.periodKey) {
+    if (period.usedPeriodRow) return `Custom budgets: ${period.periodKey}`
+    // No quarter, half or year row: the figure is the monthly budgets added up.
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const name = (m: string) => names[Number(m.slice(5, 7)) - 1]
+    const span = period.months.length > 1 ? `${name(period.months[0])}–${name(period.months[period.months.length - 1])}` : name(period.months[0])
+    const custom = monthsCovered === 0 || monthsCovered >= monthsInRange ? '' : ` (custom for ${monthsCovered} of ${monthsInRange} months)`
+    return `${period.periodKey} not found: adding ${span} monthly budgets${custom}`
+  }
   if (monthsCovered === 0) return 'No custom budget'
   if (monthsCovered >= monthsInRange) return 'Custom budgets'
   return `Custom budgets: ${monthsCovered} of ${monthsInRange} months`

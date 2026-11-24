@@ -39,6 +39,21 @@ function monthsFrom(year: number, firstMonth: number, count: number): string[] {
   return Array.from({ length: count }, (_, i) => addMonths(start, i))
 }
 
+/** The title a quarter, half or year row is cached under: `Q1 2026`, `H1 2026`, `2026`. Months have none. */
+export function budgetPeriodKey(kind: BudgetPeriodKind, months: string[]): string | null {
+  if (kind === 'month' || months.length === 0) return null
+  const year = months[0].slice(0, 4)
+  const first = Number(months[0].slice(5, 7))
+  if (kind === 'year') return year
+  return kind === 'quarter' ? `Q${Math.ceil(first / 3)} ${year}` : `H${Math.ceil(first / 6)} ${year}`
+}
+
+/** The row a Monitoring view looks for: its calendar quarter, half or year. Monthly has none. */
+export function viewPeriodKey(mode: 'Monthly' | 'Quarterly' | 'Semi-Annually' | 'Annually', months: string[]): string | null {
+  const kind = mode === 'Quarterly' ? 'quarter' : mode === 'Semi-Annually' ? 'half' : mode === 'Annually' ? 'year' : 'month'
+  return budgetPeriodKey(kind, months)
+}
+
 /** Read a row title. Unrecognized titles are rejected with a reason, never guessed. */
 export function parseBudgetPeriod(title: string): BudgetPeriodParse {
   const text = title.trim().replace(/\s+/g, ' ')

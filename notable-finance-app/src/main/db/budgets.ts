@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto'
 import { getSqlite } from './index'
 import { listExpenseCategories } from './repositories'
 import { assertBudgetAmount, assertSavedBudgetMonth } from '../domain/validation'
-import { roundBudget, type SavedBudgetRow } from '../../shared/saved-budgets'
+import { roundBudget, type PeriodBudgetRow, type SavedBudgetRow } from '../../shared/saved-budgets'
 
 interface SnapshotDbRow {
   id: string
@@ -44,6 +44,17 @@ export function listSavedBudgets(fromMonth?: string, toMonth?: string): SavedBud
   return rows.map(mapRow)
 }
 
+/** Quarter, half and year rows as written in Notion (`Q1 2026`, `H1 2026`, `2026`). */
+export function listPeriodBudgets(): PeriodBudgetRow[] {
+  const rows = getSqlite()
+    .prepare(
+      `SELECT period, category_id, category_name, budget FROM period_budget_snapshots
+       ORDER BY period, category_name COLLATE NOCASE`
+    )
+    .all() as Array<{ period: string; category_id: string; category_name: string; budget: number }>
+  return rows.map((r) => ({ period: r.period, categoryId: r.category_id, categoryName: r.category_name, budget: r.budget }))
+}
+
 /** The categories Monitoring lists: current expense categories that are not auxiliary. */
 export function budgetCategories(): Array<{ id: string; name: string; monthlyBudget: number }> {
   return listExpenseCategories()
@@ -56,7 +67,8 @@ export function budgetCategories(): Array<{ id: string; name: string; monthlyBud
  * (ADR-0010). Either every row is written or none; an empty list empties the cache.
  */
 export function replaceAllSavedBudgets(
-  rows: Array<{ month: string; categoryId: string; categoryName: string; budget: number }>
+  rows: Array<{ month: string; categoryId: string; categoryName: string; budget: number }>,
+  periodRows: PeriodBudgetRow[] = []
 ): { written: number; months: number } {
   const clean = rows.map((row) => {
     assertSavedBudgetMonth(row.month)
@@ -67,6 +79,15 @@ export function replaceAllSavedBudgets(
   const now = Date.now()
   sqlite.transaction(() => {
     sqlite.prepare('DELETE FROM monthly_budget_snapshots').run()
+    sqlite.prepare('DELETE FROM period_budget_snapshots').run()
+    const insertPeriod = sqlite.prepare(
+      `INSERT INTO period_budget_snapshots (id, period, category_id, category_name, budget, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    for (const row of periodRows) {
+      assertBudgetAmount(row.budget, `Budget for ${row.categoryName}`)
+      insertPeriod.run(randomUUID(), row.period, row.categoryId, row.categoryName, roundBudget(row.budget), now, now)
+    }
     const insert = sqlite.prepare(
       `INSERT INTO monthly_budget_snapshots
          (id, month, category_id, category_name, budget, created_at, updated_at)

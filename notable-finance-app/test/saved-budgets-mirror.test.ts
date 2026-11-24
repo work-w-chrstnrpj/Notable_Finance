@@ -31,7 +31,7 @@ const dbBeforeAll = sqliteUsable ? beforeAll : () => {}
 const dbBeforeEach = sqliteUsable ? beforeEach : () => {}
 
 import { closeDatabase, getSqlite, initDatabase } from '../src/main/db'
-import { listSavedBudgets, replaceAllSavedBudgets } from '../src/main/db/budgets'
+import { listPeriodBudgets, listSavedBudgets, replaceAllSavedBudgets } from '../src/main/db/budgets'
 import {
   addMissingColumns,
   checkSavedBudgetsDatabase,
@@ -107,7 +107,7 @@ dbDescribe('Custom monthly budget sync (custom-budget/02)', () => {
   })
   dbBeforeEach(() => {
     const sqlite = getSqlite()
-    sqlite.exec('DELETE FROM monthly_budget_snapshots; DELETE FROM expense_categories; DELETE FROM app_settings')
+    sqlite.exec('DELETE FROM monthly_budget_snapshots; DELETE FROM period_budget_snapshots; DELETE FROM expense_categories; DELETE FROM app_settings')
     const insert = sqlite.prepare(
       'INSERT INTO expense_categories (id, notion_page_id, name, monthly_budget, auxiliary, created_at) VALUES (?, ?, ?, ?, ?, 1)'
     )
@@ -129,6 +129,22 @@ dbDescribe('Custom monthly budget sync (custom-budget/02)', () => {
     saveMapping({ savedBudgets: 'db-1' })
     return fake
   }
+
+  it('expense-views/02 a sync keeps the Q1, H1 and year rows as written next to the split months', async () => {
+    const fake = readyDatabase()
+    fake.addHandmade('H1 2026', { Food: 600, Transport: 120 })
+    fake.addHandmade('Q1 2026', { Food: 300, Transport: 90 })
+    fake.addHandmade('2026', { Food: 1200 })
+    fake.addHandmade('Jan 2026', { Food: 50, Transport: 10 })
+    await syncCustomBudgets({ client: fake.asClient() })
+    const periods = listPeriodBudgets()
+    const get = (period: string, id: string) => periods.find((r) => r.period === period && r.categoryId === id)?.budget
+    expect(get('H1 2026', 'food')).toBe(600)
+    expect(get('Q1 2026', 'transport')).toBe(90)
+    expect(get('2026', 'food')).toBe(1200)
+    expect(periods.some((r) => r.period.startsWith('Jan'))).toBe(false)
+    expect(budget('2026-01', 'food')).toBe(50)
+  })
 
   it('custom-budget/02#AC1 with an ID saved, a sync replaces the local cache with the Notion rows', async () => {
     const fake = readyDatabase()

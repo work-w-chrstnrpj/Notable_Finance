@@ -26,15 +26,16 @@ const expense = (id: string, categoryId: string, amount: number, purchaseDate = 
 });
 
 type Mode = "Monthly" | "Quarterly" | "Semi-Annually" | "Annually";
-function renderMonitoring({ mode = "Monthly" as Mode, source = "default", rows = [] as SavedBudgetRow[] } = {}) {
+function renderMonitoring({ mode = "Monthly" as Mode, source = "default", rows = [] as SavedBudgetRow[], selectedDate = "2026-01-15" } = {}) {
   const update = vi.fn(async (patch: object) => ok({ ...DEFAULT_SETTINGS, monitoringBudgetSource: source, ...patch }));
   const list = vi.fn(async () => ok(rows));
-  const utils = renderPage(<MonthlyMonitoringPage viewMode={mode} onViewModeChange={vi.fn()} selectedDate="2026-01-15" />, {
+  const expensesList = vi.fn(async (_params?: unknown) => ok([expense("lunch", "food", 1000), expense("bus", "transport", 300)]));
+  const utils = renderPage(<MonthlyMonitoringPage viewMode={mode} onViewModeChange={vi.fn()} selectedDate={selectedDate} />, {
     apiOverrides: {
       accounts: { list: vi.fn(async () => ok([])) },
       categories: { income: vi.fn(async () => ok([])), expense: vi.fn(async () => ok([food, transport, aux])), pasabuyers: vi.fn(async () => ok([])) },
       incomes: { list: vi.fn(async () => ok([])) },
-      expenses: { list: vi.fn(async () => ok([expense("lunch", "food", 1000), expense("bus", "transport", 300)])) },
+      expenses: { list: expensesList },
       settings: {
         get: vi.fn(async () => ok({ ...DEFAULT_SETTINGS, monitoringBudgetSource: source })),
         update,
@@ -48,7 +49,7 @@ function renderMonitoring({ mode = "Monthly" as Mode, source = "default", rows =
       },
     } as never,
   });
-  return { ...utils, update, list };
+  return { ...utils, update, list, expensesList };
 }
 
 /** The Budget panel's table row for a category. */
@@ -60,7 +61,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("Monitoring budget source", () => {
   it("monthly-budget/03#AC1 Notion source shows the monthly budget times the months in each view mode", async () => {
-    for (const [mode, months] of [["Monthly", 1], ["Quarterly", 4], ["Semi-Annually", 6], ["Annually", 12]] as const) {
+    for (const [mode, months] of [["Monthly", 1], ["Quarterly", 3], ["Semi-Annually", 6], ["Annually", 12]] as const) {
       const { unmount } = renderMonitoring({ mode });
       const row = await budgetRow("Food");
       // ₱8,000 per month x months; remaining = budget - 1,000 spent.
@@ -74,10 +75,10 @@ describe("Monitoring budget source", () => {
 
   it("monthly-budget/03#AC3 monthly-budget/03#AC8 Saved source with some months saved shows the partial-coverage badge and uses Notion for the rest", async () => {
     renderMonitoring({ mode: "Quarterly", source: "custom", rows: [savedRow("2026-01", "food", 5000), savedRow("2026-01", "transport", 1000)] });
-    expect(await screen.findByText("Custom budgets: 1 of 4 months")).toBeInTheDocument();
+    expect(await screen.findByText("Q1 2026 not found: adding Jan–Mar monthly budgets (custom for 1 of 3 months)")).toBeInTheDocument();
     const row = await budgetRow("Food");
-    // Jan saved 5,000 + Feb to Apr Notion 3 x 8,000 = 29,000. No muted Notion line under the figure.
-    expect(row).toHaveTextContent("29,000.00");
+    // Jan saved 5,000 + Feb and Mar (the rest of Q1) Notion 2 x 8,000 = 21,000. No muted Notion line under the figure.
+    expect(row).toHaveTextContent("21,000.00");
     expect(row).not.toHaveTextContent("Notion");
   });
 
@@ -138,7 +139,7 @@ describe("review fixes", () => {
     await budgetRow("Food");
     fireEvent.click(screen.getByRole("button", { name: /Quarterly Budget/ }));
     const names = () => screen.getAllByRole("row").map((r) => r.textContent ?? "").filter((t) => /^(Food|Transport)/.test(t)).map((t) => t.slice(0, 4));
-    // Food 29,000 vs Transport 7,000: ascending puts Transport first, which a text sort of "₱29…" / "₱7…" would reverse.
+    // Food 21,000 vs Transport 5,000: ascending puts Transport first, which a text sort of "₱21…" / "₱5…" would reverse.
     await waitFor(() => expect(names()[0]).toBe("Tran"));
   });
 });
@@ -153,5 +154,74 @@ describe("Saved budgets in Settings", () => {
     await waitFor(() => expect(exportCsv).toHaveBeenCalledWith({ kind: "saved" }));
     expect(await screen.findByText(/Exported 7 custom budgets/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Import/ })).not.toBeInTheDocument();
+  });
+});
+
+describe("Monitoring fixed calendar periods (ADR-0012)", () => {
+  const rangeOf = (list: ReturnType<typeof vi.fn>) => {
+    const call = list.mock.calls.map((c) => c[0] as { rangeStart?: string; rangeEnd?: string } | undefined).find((p) => p?.rangeStart);
+    return [call?.rangeStart, call?.rangeEnd];
+  };
+
+  it("calendar-periods/05#AC1 with November 2026 selected, Quarterly covers Oct 1 to Dec 31 and Semi-Annually Jul 1 to Dec 31", async () => {
+    const q = renderMonitoring({ mode: "Quarterly", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(rangeOf(q.expensesList)).toEqual(["2026-10-01", "2026-12-31"]);
+    q.unmount();
+    const h = renderMonitoring({ mode: "Semi-Annually", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(rangeOf(h.expensesList)).toEqual(["2026-07-01", "2026-12-31"]);
+  });
+
+  it("calendar-periods/05#AC2 any month of a quarter or half gives the same period and the same budget", async () => {
+    for (const [mode, dates] of [["Quarterly", ["2026-04-02", "2026-05-20", "2026-06-30"]], ["Semi-Annually", ["2026-01-05", "2026-04-15", "2026-06-30"]]] as const) {
+      const ranges = new Set<string>();
+      for (const date of dates) {
+        const { expensesList, unmount } = renderMonitoring({ mode, selectedDate: date });
+        await budgetRow("Food");
+        ranges.add(rangeOf(expensesList).join("→"));
+        unmount();
+      }
+      expect(ranges.size).toBe(1);
+    }
+  });
+
+  it("calendar-periods/05#AC3 the budget covers exactly the period's months: Quarterly is 3 months, not 4", async () => {
+    renderMonitoring({ mode: "Quarterly", selectedDate: "2026-11-15" });
+    // Q4: 3 x 8,000 = 24,000 (the old floating window gave 4 x 8,000).
+    expect(await budgetRow("Food")).toHaveTextContent("24,000.00");
+  });
+
+  it("calendar-periods/05#AC4 the period label reads Q4 2026 · Oct – Dec and H2 2026 · Jul – Dec", async () => {
+    const q = renderMonitoring({ mode: "Quarterly", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(screen.getAllByText("Q4 2026 · Oct – Dec").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Quarterly Monitoring" })).toBeInTheDocument();
+    q.unmount();
+    renderMonitoring({ mode: "Semi-Annually", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(screen.getAllByText("H2 2026 · Jul – Dec").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Semi-Annual Monitoring" })).toBeInTheDocument();
+  });
+
+  it("calendar-periods/05#AC5 with Custom budgets the shown quarter's months use their rows, and months without one use the Default budget", async () => {
+    // Q4 2026: Oct and Nov have rows (the cache already split any Q4 row into months), Dec falls back to Default 8,000.
+    renderMonitoring({
+      mode: "Quarterly", source: "custom", selectedDate: "2026-11-15",
+      rows: [savedRow("2026-10", "food", 5000), savedRow("2026-11", "food", 6000), savedRow("2026-09", "food", 99999)],
+    });
+    expect(await screen.findByText("Q4 2026 not found: adding Oct–Dec monthly budgets (custom for 2 of 3 months)")).toBeInTheDocument();
+    // 5,000 + 6,000 + 8,000 = 19,000; the September row is outside Q4 and ignored.
+    expect(await budgetRow("Food")).toHaveTextContent("19,000.00");
+  });
+
+  it("calendar-periods/05#AC6 Monthly and Annually keep their periods", async () => {
+    const m = renderMonitoring({ mode: "Monthly", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(rangeOf(m.expensesList)).toEqual(["2026-11-01", "2026-11-30"]);
+    m.unmount();
+    const y = renderMonitoring({ mode: "Annually", selectedDate: "2026-11-15" });
+    await budgetRow("Food");
+    expect(rangeOf(y.expensesList)).toEqual(["2026-01-01", "2026-12-31"]);
   });
 });

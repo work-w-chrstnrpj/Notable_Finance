@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { IPC_CHANNELS } from '../../shared/ipc-channels'
 import type { BudgetExportRequest } from '../../shared/finance.types'
-import { listSavedBudgets } from '../db/budgets'
+import { listPeriodBudgets, listSavedBudgets } from '../db/budgets'
 import { exportBudgetsCsv } from '../services/budget-files'
 import {
   addMissingColumns,
@@ -21,6 +21,7 @@ export function registerBudgetsIpc(): void {
   handle(IPC_CHANNELS.budgetsList, (_e, range?: { fromMonth?: string; toMonth?: string }) =>
     result(() => listSavedBudgets(range?.fromMonth, range?.toMonth))
   )
+  handle(IPC_CHANNELS.budgetsListPeriods, () => result(() => listPeriodBudgets()))
   handle(IPC_CHANNELS.budgetsExportCsv, (event, req: BudgetExportRequest) =>
     result(() => exportBudgetsCsv(req, BrowserWindow.fromWebContents(event.sender)))
   )

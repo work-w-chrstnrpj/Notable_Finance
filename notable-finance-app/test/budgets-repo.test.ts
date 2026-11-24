@@ -99,9 +99,12 @@ dbDescribe('monthly-budget/02 migration', () => {
     rmSync(join(older, '0015_monthly_budget_snapshots.sql'))
     // Later migrations (0016 loan terms) sort after 0015; leave them out too so the old database is truly 0000..0014.
     rmSync(join(older, '0016_loan_terms.sql'))
+    rmSync(join(older, '0017_account_payment_network.sql'))
+    rmSync(join(older, '0018_account_card_numbers.sql'))
+    rmSync(join(older, '0019_period_budget_snapshots.sql'))
     const journalPath = join(older, 'meta/_journal.json')
     const journal = JSON.parse(readFileSync(journalPath, 'utf8')) as { entries: Array<{ tag: string }> }
-    journal.entries = journal.entries.filter((e) => e.tag !== '0015_monthly_budget_snapshots' && e.tag !== '0016_loan_terms')
+    journal.entries = journal.entries.filter((e) => e.tag !== '0015_monthly_budget_snapshots' && e.tag !== '0016_loan_terms' && e.tag !== '0017_account_payment_network' && e.tag !== '0018_account_card_numbers' && e.tag !== '0019_period_budget_snapshots')
     writeFileSync(journalPath, JSON.stringify(journal))
 
     const file = join(state.dir, 'upgrade.sqlite')

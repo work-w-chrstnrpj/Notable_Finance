@@ -5,7 +5,10 @@ import { useLiveCollections, getIncomeCategorySummaries, getExpenseCategorySumma
 import { CategoryDonutChart } from "@/components/charts";
 import { categoryPalette, type ForecastIncome, type ForecastKind } from "@/components/constants";
 import type { MonitoringSplitDto } from "@shared/finance.types";
+import { viewPeriodKey } from "@shared/budget-periods";
 import { budgetSourceBadge, monthsInRange, resolveBudgets, type BudgetSource } from "@shared/saved-budgets";
+import { PeriodToggle, ViewsToggle } from "@/components/ui/search-bar";
+import { usePageControls } from "@/lib/use-page-controls";
 import { Panel, MetricCard, Field, FilterSelect, FilterToggle, SegmentedControl, BudgetRow, CategoryCard, MoneyValue } from "@/components/ui";
 import { PageToolbar } from "@/components/ui";
 import { CategoryIcon } from "@/components/ui/accounts";
@@ -14,8 +17,8 @@ import { DataTable } from "@/components/ui/data-table";
 import { useAlkansya, useExpenses, useIncomes } from "@/lib/use-data";
 import { useFabRegister } from "@/lib/fab-export-context";
 import { SHOT_HIDE_CLASS } from "@/lib/export-node";
-import { cx, getExpenseTotal, getIncomeCapitalExpenditureTotal, getIncomeGrossTotal, getIncomeNetTotal, getMonthLabel, parseNumberInput } from "@/lib/finance-helpers";
-import { anchorMonth } from "@/lib/date-range";
+import { cx, getExpenseTotal, getIncomeCapitalExpenditureTotal, getIncomeGrossTotal, getIncomeNetTotal, parseNumberInput } from "@/lib/finance-helpers";
+import { anchorMonth, computeRange, monitoringModeToUnit, rangeLabel } from "@/lib/date-range";
 import { calculateCategoryTotalOverview, getSavingsKeptAsideTotal } from "@/lib/finance-rules";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { useUiSettings } from "@/lib/ui-settings-context";
@@ -23,39 +26,16 @@ import { usePersistedFilters } from "@/features/records/use-persisted-filters";
 import {
   BudgetSourceBadge,
   useSavedBudgets,
+  usePeriodBudgets,
 } from "./monitoring-budgets";
 import styles from "./monitoring.module.css";
 import type { ExpenseRecord, IncomeRecord, MonitoringViewMode } from "@/types/finance";
 
 const monitoringViewModes: MonitoringViewMode[] = ["Monthly", "Quarterly", "Semi-Annually", "Annually"];
 
+/** The fixed calendar period (ADR-0012) containing the selected month: the month, its quarter, its half or its year. */
 function computeMonitoringRange(mode: MonitoringViewMode, anchor: string): { start: string; end: string } {
-  const d = new Date(anchor + "-15"); // mid-month to avoid edge cases
-  const y = d.getFullYear();
-  const m = d.getMonth(); // 0-indexed
-
-  if (mode === "Annually") {
-    return { start: `${y}-01-01`, end: `${y}-12-31` };
-  }
-  if (mode === "Semi-Annually") {
-    // Start from selected month, span 6 months
-    const endD = new Date(y, m + 6, 0); // last day of month 5 after anchor (day 0 of m+6 = last day of m+5)
-    return {
-      start: `${y}-${String(m + 1).padStart(2, "0")}-01`,
-      end: `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}-${String(endD.getDate()).padStart(2, "0")}`,
-    };
-  }
-  if (mode === "Quarterly") {
-    // Start from selected month, span 4 months
-    const endD = new Date(y, m + 4, 0); // last day of month 3 after anchor (day 0 of m+4 = last day of m+3)
-    return {
-      start: `${y}-${String(m + 1).padStart(2, "0")}-01`,
-      end: `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}-${String(endD.getDate()).padStart(2, "0")}`,
-    };
-  }
-  // Monthly - single month
-  const endDate = new Date(y, m + 1, 0);
-  return { start: `${y}-${String(m + 1).padStart(2, "0")}-01`, end: `${y}-${String(m + 1).padStart(2, "0")}-${endDate.getDate()}` };
+  return computeRange(monitoringModeToUnit(mode), `${anchor}-15`);
 }
 
 function periodLabel(mode: MonitoringViewMode): string {
@@ -65,22 +45,9 @@ function periodLabel(mode: MonitoringViewMode): string {
   return "Monthly";
 }
 
+/** "November 2026", "Q4 2026 · Oct – Dec", "H2 2026 · Jul – Dec" or "2026". */
 function monitoringRangeLabel(mode: MonitoringViewMode, anchor: string): string {
-  const d = new Date(anchor + "-15");
-  if (mode === "Annually") return anchor.slice(0, 4);
-  if (mode === "Semi-Annually") {
-    const startLabel = getMonthLabel(anchor).slice(0, 3);
-    const endD = new Date(d.getFullYear(), d.getMonth() + 6, 0);
-    const endLabel = getMonthLabel(`${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}`).slice(0, 3);
-    return `${startLabel} – ${endLabel} ${anchor.slice(0, 4)}`;
-  }
-  if (mode === "Quarterly") {
-    const startLabel = getMonthLabel(anchor).slice(0, 3);
-    const endD = new Date(d.getFullYear(), d.getMonth() + 4, 0);
-    const endLabel = getMonthLabel(`${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, "0")}`).slice(0, 3);
-    return `${startLabel} – ${endLabel} ${anchor.slice(0, 4)}`;
-  }
-  return getMonthLabel(anchor);
+  return rangeLabel(monitoringModeToUnit(mode), `${anchor}-15`);
 }
 
 function MonthlyMonitoringPage({
@@ -94,6 +61,7 @@ function MonthlyMonitoringPage({
 }) {
   type ZeroFilter = "all" | "hide-both" | "hide-spending" | "hide-budget";
   const { settings, ready: settingsReady, updateSettings } = useUiSettings();
+  const { periodHidden, viewsHidden, togglePeriod, toggleViews } = usePageControls("monitoring");
   const [incomeCategoryView, setIncomeCategoryView] = useState("table");
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
   const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
@@ -123,6 +91,8 @@ function MonthlyMonitoringPage({
     rangeMonths[0],
     rangeMonths[rangeMonths.length - 1],
   );
+
+  const periodBudgetRows = usePeriodBudgets(rangeMonths[0]);
 
   const period = periodLabel(viewMode);
   const rangeLbl = monitoringRangeLabel(viewMode, selectedMonth);
@@ -299,9 +269,11 @@ function MonthlyMonitoringPage({
     categories: budgetCategories,
     snapshots: savedBudgetRows,
     source: budgetSource,
+    periodRows: periodBudgetRows,
+    periodKey: viewPeriodKey(viewMode, rangeMonths),
   });
   const resolvedById = new Map(resolvedBudgets.perCategory.map((entry) => [entry.categoryId, entry]));
-  const budgetBadgeText = budgetSourceBadge(budgetSource, resolvedBudgets.monthsCovered, resolvedBudgets.monthsInRange);
+  const budgetBadgeText = budgetSourceBadge(budgetSource, resolvedBudgets.monthsCovered, resolvedBudgets.monthsInRange, resolvedBudgets);
   const expenseBudgetRows = [
     ...expenseCategorySummaries.map((category) => {
       const resolved = resolvedById.get(category.id);
@@ -387,28 +359,8 @@ function MonthlyMonitoringPage({
         title={`${period} Monitoring`}
         actions={
           <>
-            <SegmentedControl
-              label="Monitoring view"
-              options={monitoringViewModes.map((mode) => ({ label: mode, value: mode }))}
-              value={viewMode}
-              onChange={(value) => onViewModeChange(value as MonitoringViewMode)}
-            />
-            <SegmentedControl
-              label="Budget source"
-              options={[
-                { label: "Default", value: "default" },
-                {
-                  label: "Custom",
-                  value: "custom",
-                  disabled: !hasCustomDatabase && budgetSource !== "custom",
-                  title: hasCustomDatabase
-                    ? "Use the Custom monthly budget database"
-                    : "Save the Custom monthly budget database ID in Notion Configuration first",
-                },
-              ]}
-              value={budgetSource}
-              onChange={(value) => void updateSettings({ monitoringBudgetSource: value as BudgetSource })}
-            />
+            <PeriodToggle hidden={periodHidden} onToggle={togglePeriod} />
+            <ViewsToggle hidden={viewsHidden} onToggle={toggleViews} />
             <button
               type="button"
               className={cx("button button--primary", SHOT_HIDE_CLASS)}
@@ -420,6 +372,36 @@ function MonthlyMonitoringPage({
           </>
         }
       />
+
+      {/* Same order as Expense and the workflow pages: the period picker first, then the filter-like switch. */}
+      {!periodHidden && (
+        <SegmentedControl
+          label="Monitoring view"
+          options={monitoringViewModes.map((mode) => ({ label: mode, value: mode }))}
+          value={viewMode}
+          onChange={(value) => onViewModeChange(value as MonitoringViewMode)}
+        />
+      )}
+      {!viewsHidden && (
+      <div className="toolbar-row">
+        <SegmentedControl
+          label="Budget source"
+          options={[
+            { label: "Default", value: "default" },
+            {
+              label: "Custom",
+              value: "custom",
+              disabled: !hasCustomDatabase && budgetSource !== "custom",
+              title: hasCustomDatabase
+                ? "Use the Custom monthly budget database"
+                : "Save the Custom monthly budget database ID in Notion Configuration first",
+            },
+          ]}
+          value={budgetSource}
+          onChange={(value) => void updateSettings({ monitoringBudgetSource: value as BudgetSource })}
+        />
+      </div>
+      )}
       {forecasts.length > 0 && (
         <div className={styles["forecast-banner"]}>
           <span className={styles["forecast-banner__icon"]}>
@@ -614,7 +596,6 @@ function MonthlyMonitoringPage({
         title={`${period} Budget`}
         action={
           <div className={styles["budget-header-actions"]}>
-            <BudgetSourceBadge text={budgetBadgeText} muted={budgetSource === "custom" && resolvedBudgets.monthsCovered === 0} />
           <div className={cx(styles["panel-header-actions"], SHOT_HIDE_CLASS)}>
             <SegmentedControl
               label="Expense category view"
@@ -638,6 +619,7 @@ function MonthlyMonitoringPage({
               <option value="hide-budget">Hide Zero Budget</option>
             </FilterSelect>
           </div>
+            <BudgetSourceBadge text={budgetBadgeText} muted={budgetSource === "custom" && resolvedBudgets.monthsCovered === 0} />
           </div>
         }
       >

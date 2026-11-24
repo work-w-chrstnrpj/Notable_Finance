@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
-import type { SavedBudgetRow } from "@shared/saved-budgets";
+import type { PeriodBudgetRow, SavedBudgetRow } from "@shared/saved-budgets";
 import styles from "./monitoring.module.css";
 
 export interface BudgetCategory {
@@ -31,6 +31,21 @@ export function useSavedBudgets(fromMonth: string | undefined, toMonth: string |
   }, [fromMonth, toMonth, version]);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   return { rows, reload };
+}
+
+/** Quarter, half and year rows of the Custom database (read once; they only change on a sync). */
+export function usePeriodBudgets(reloadKey?: string) {
+  const [rows, setRows] = useState<PeriodBudgetRow[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void window.api?.budgets?.listPeriods?.().then((res) => {
+      if (!cancelled && res?.ok) setRows(res.data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+  return rows;
 }
 
 /** Budget source coverage badge (spec section 6.2). */

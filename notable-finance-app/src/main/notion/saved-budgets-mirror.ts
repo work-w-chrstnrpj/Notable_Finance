@@ -6,12 +6,13 @@
 // adding missing category columns.
 import { getSqlite } from '../db'
 import { budgetCategories, replaceAllSavedBudgets } from '../db/budgets'
+import type { PeriodBudgetRow } from '../../shared/saved-budgets'
 import { appendDevLog } from '../dev-logs/store'
 import { NotionApiError, NotionClient } from './client'
 import { hasToken, readToken } from './token-store'
 import { getMapping } from './mapping-store'
 import { extractNumberOrFormula, extractTitle } from './page-extractors'
-import { parseBudgetPeriod, splitAmountEvenly } from '../../shared/budget-periods'
+import { budgetPeriodKey, parseBudgetPeriod, splitAmountEvenly } from '../../shared/budget-periods'
 import type {
   SavedBudgetsDatabaseCheck,
   SavedBudgetsMirrorRunResult,
@@ -249,6 +250,32 @@ export function budgetRowsFromPages(
   return rows
 }
 
+/**
+ * The quarter, half and year rows as written (`Q1 2026`, `H1 2026`, `2026`), not split: Monitoring uses
+ * one directly when its view is that period. If two rows name the same period, the first one wins.
+ */
+export function periodRowsFromPages(pages: Page[], titleProp: string, columns: Map<string, string>): PeriodBudgetRow[] {
+  const byKey = new Map(budgetCategories().map((c) => [norm(c.name), c]))
+  const seen = new Set<string>()
+  const rows: PeriodBudgetRow[] = []
+  for (const page of pages) {
+    if (page.in_trash === true || page.archived === true) continue
+    const title = extractTitle((page.properties as Props) ?? {}, titleProp).trim()
+    const parsed = title ? parseBudgetPeriod(title) : null
+    if (!parsed || !parsed.ok) continue
+    const key = budgetPeriodKey(parsed.period.kind, parsed.period.months)
+    if (!key || seen.has(key)) continue
+    const values = readRowValues(page, columns)
+    if (values.size === 0) continue
+    seen.add(key)
+    for (const [name, budget] of values) {
+      const category = byKey.get(name)
+      if (category) rows.push({ period: key, categoryId: category.id, categoryName: category.name, budget })
+    }
+  }
+  return rows
+}
+
 // ── Orchestration ─────────────────────────────────────────────────────────────
 
 const SKIPPED = (reason: string, missingColumns: string[] = []): SavedBudgetsMirrorRunResult => ({
@@ -295,7 +322,10 @@ export async function syncCustomBudgets(opts: { client?: MirrorClient } = {}): P
     const client = opts.client ?? new NotionClient(readToken())
     const opened = await openDatabase(client, state, databaseId)
     if (typeof opened === 'string') return SKIPPED(opened)
-    const out = replaceAllSavedBudgets(budgetRowsFromPages(opened.pages, opened.titleProp, opened.columns))
+    const out = replaceAllSavedBudgets(
+      budgetRowsFromPages(opened.pages, opened.titleProp, opened.columns),
+      periodRowsFromPages(opened.pages, opened.titleProp, opened.columns)
+    )
     state.lastRunAt = Date.now()
     state.lastError = null
     writeMirrorState(state)
