@@ -214,8 +214,8 @@ async function pullAccounts(dbId: string, since?: string): Promise<number> {
 
     n += upsertReference(
       'accounts',
-      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'qr_code', 'icon'],
-      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, qrCode, icon],
+      ['account_name', 'account_type', 'starting_balance', 'credit_limit', 'inactive', 'billing_day', 'due_day', 'annual_fee', 'credit_points', 'payment_network', 'card_numbers', 'qr_code', 'icon'],
+      [f.account_name, f.account_type, f.starting_balance, f.credit_limit, f.inactive, f.billing_day, f.due_day, f.annual_fee, f.credit_points, f.payment_network, f.card_numbers, qrCode, icon],
       npid,
       pageLastEditedTime(page)
     )

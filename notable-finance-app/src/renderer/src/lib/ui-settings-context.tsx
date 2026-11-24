@@ -12,6 +12,7 @@ import type { UiSettings } from "../../../shared/finance.types";
 
 export const DEFAULT_SETTINGS: UiSettings = {
   hiddenSections: [],
+  hiddenExpenseViews: [],
   hardDeleteEnabled: false,
   chatEnabled: false,
   notificationsEnabled: true,
@@ -56,6 +57,7 @@ export const DEFAULT_SETTINGS: UiSettings = {
     accountScope: "standard",
     hideZeroBalance: false,
     cardTypeFilter: "",
+    filterActive: true,
   },
   monitoringFilters: {
     incomeCategoryView: "table",
@@ -64,10 +66,51 @@ export const DEFAULT_SETTINGS: UiSettings = {
     zeroFilter: "all",
   },
   monitoringBudgetSource: "default",
+  cardFinish: "glass",
+  accountColors: {},
+  pageControls: {},
+  customAccountColors: [],
 };
+
+function applyColorPatch(
+  current: Record<string, string>,
+  patch: Record<string, string | null>,
+): Record<string, string> {
+  const next = { ...current };
+  for (const [id, value] of Object.entries(patch)) {
+    if (value === null) delete next[id];
+    else next[id] = value;
+  }
+  return next;
+}
+
+function applyPageControlsPatch(
+  current: UiSettings["pageControls"],
+  patch: NonNullable<UiSettingsPatch["pageControls"]>,
+): UiSettings["pageControls"] {
+  const next = { ...current };
+  for (const [page, change] of Object.entries(patch)) {
+    const base = next[page] ?? { periodHidden: false, viewsHidden: false };
+    next[page] = {
+      periodHidden: change.periodHidden ?? base.periodHidden,
+      viewsHidden: change.viewsHidden ?? base.viewsHidden,
+    };
+  }
+  return next;
+}
+
+function applyCustomPatch(current: string[], patch: Record<string, string | null>): string[] {
+  const next = new Set(current);
+  for (const [id, value] of Object.entries(patch)) {
+    if (value === null) next.delete(id);
+    else next.add(id);
+  }
+  return [...next].sort();
+}
 
 type UiSettingsPatch = {
   hiddenSections?: UiSettings["hiddenSections"];
+  hiddenExpenseViews?: UiSettings["hiddenExpenseViews"];
   hardDeleteEnabled?: boolean;
   chatEnabled?: boolean;
   notificationsEnabled?: boolean;
@@ -84,6 +127,11 @@ type UiSettingsPatch = {
   accountsFilters?: Partial<UiSettings["accountsFilters"]>;
   monitoringFilters?: Partial<UiSettings["monitoringFilters"]>;
   monitoringBudgetSource?: UiSettings["monitoringBudgetSource"];
+  cardFinish?: UiSettings["cardFinish"];
+  /** Account id to color name; null clears the choice (back to Auto). */
+  accountColors?: Record<string, string | null>;
+  /** Per page, merged field by field: which header controls are hidden. */
+  pageControls?: Record<string, Partial<UiSettings["pageControls"][string]>>;
 };
 
 type UiSettingsContextValue = {
@@ -140,6 +188,9 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
           expenseFilters: { ...DEFAULT_SETTINGS.expenseFilters, ...res.data.expenseFilters },
           accountsFilters: { ...DEFAULT_SETTINGS.accountsFilters, ...res.data.accountsFilters },
           monitoringFilters: { ...DEFAULT_SETTINGS.monitoringFilters, ...res.data.monitoringFilters },
+          accountColors: { ...DEFAULT_SETTINGS.accountColors, ...res.data.accountColors },
+          customAccountColors: res.data.customAccountColors ?? DEFAULT_SETTINGS.customAccountColors,
+          pageControls: { ...DEFAULT_SETTINGS.pageControls, ...res.data.pageControls },
         });
       })
       .finally(() => {
@@ -154,6 +205,7 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({
       ...prev,
       hiddenSections: patch.hiddenSections ?? prev.hiddenSections,
+      hiddenExpenseViews: patch.hiddenExpenseViews ?? prev.hiddenExpenseViews,
       hardDeleteEnabled:
         patch.hardDeleteEnabled === undefined
           ? prev.hardDeleteEnabled
@@ -195,6 +247,10 @@ export function UiSettingsProvider({ children }: { children: ReactNode }) {
         ? { ...prev.monitoringFilters, ...patch.monitoringFilters }
         : prev.monitoringFilters,
       monitoringBudgetSource: patch.monitoringBudgetSource ?? prev.monitoringBudgetSource,
+      cardFinish: patch.cardFinish ?? prev.cardFinish,
+      accountColors: patch.accountColors ? applyColorPatch(prev.accountColors, patch.accountColors) : prev.accountColors,
+      customAccountColors: patch.accountColors ? applyCustomPatch(prev.customAccountColors, patch.accountColors) : prev.customAccountColors,
+      pageControls: patch.pageControls ? applyPageControlsPatch(prev.pageControls, patch.pageControls) : prev.pageControls,
     }));
 
     const api = window.api;

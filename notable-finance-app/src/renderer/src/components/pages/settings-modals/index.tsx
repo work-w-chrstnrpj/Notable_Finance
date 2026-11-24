@@ -8,7 +8,8 @@ export { InterfaceManageModal } from "./interface-manage-modal";
 export { ThemeCustomizeModal } from "./theme-customize-modal";
 export { NotionConfigModal, KNOWN_DB_ID_KEYS } from "./notion-config-modal";
 export { AiChatConfigModal } from "./ai-chat-config-modal";
+export { AccountCardsModal } from "./account-cards-modal";
 
-type SettingsModalKind = "notion" | "theme" | "interface" | "profile" | "ai" | null;
+type SettingsModalKind = "notion" | "theme" | "interface" | "profile" | "ai" | "accounts" | null;
 
 export type { SettingsModalKind };

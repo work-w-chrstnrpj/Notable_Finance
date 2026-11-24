@@ -64,6 +64,7 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
     },
     budgets: {
       list: vi.fn(async () => ok([])),
+      listPeriods: vi.fn(async () => ok([])),
       exportCsv: vi.fn(async () => ok({ canceled: true })),
       mirrorStatus: vi.fn(async () =>
         ok({

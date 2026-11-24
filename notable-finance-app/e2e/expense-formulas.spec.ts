@@ -147,7 +147,7 @@ test('Pasabuy shows its own filters and keeps expense columns resizable', async 
   await account.click()
   // Click the page title to dismiss the dropdown from outside it. (The panel
   // heading above the table was removed as redundant with this one.)
-  await win.getByRole('heading', { name: 'Expense', exact: true }).click()
+  await win.getByRole('heading', { name: /Expense$/ }).click()
   await expect(account).toHaveAttribute('aria-expanded', 'false')
   await win.locator('input[type=date]').and(win.getByLabel('Pasabuy Date of Payment', { exact: true })).fill('2000-01-01')
   await expect(win.getByRole('row').filter({ hasText: 'Monthly installment BNPL' })).toHaveCount(0)

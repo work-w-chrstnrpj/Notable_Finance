@@ -1,5 +1,5 @@
 import type { BudgetSource } from './saved-budgets'
-export type { BudgetSource, SavedBudgetRow, BudgetViewMode } from './saved-budgets'
+export type { BudgetSource, SavedBudgetRow, PeriodBudgetRow, BudgetViewMode } from './saved-budgets'
 
 // Finance DTOs — COPIED from the web app to keep the two apps contract-compatible.
 // Sources: web-service/src/common/finance.types.ts
@@ -77,6 +77,10 @@ export interface AccountDto {
   availableLimit: number | null
   creditPoints: number | null
   annualFee: number | null
+  /** Notion "Payment Network" select (Visa, Mastercard, ...); null when unset. Read-only. Unknown values are kept as text. */
+  paymentNetwork: string | null
+  /** Notion "Card Numbers & Last 4 Digit" text such as "16, 4056" (digit count, last four); null when unset. Read-only. Parsed by `parseCardNumber`. */
+  cardNumbers: string | null
   billingDay: number | null
   dueDay: number | null
   totalIncomes: number | null
@@ -464,12 +468,14 @@ export interface UiProfileSettings {
 export interface UiWorkspaceSettings {
   /** ISO date anchor for period selectors; null means “today” on next launch. */
   selectedDate: string | null
-  incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
-  workflowViewMode?: 'Daily' | 'Weekly' | 'Monthly' | 'Annually' | 'All Records'
+  incomeViewMode: 'Daily' | 'Weekly' | 'Monthly' | 'Quarterly' | 'Semi-Annually' | 'Annually' | 'All Records'
+  workflowViewMode?: 'Daily' | 'Weekly' | 'Monthly' | 'Quarterly' | 'Semi-Annually' | 'Annually' | 'All Records'
   expenseViewMode:
     | 'Daily'
     | 'Weekly'
     | 'Monthly'
+    | 'Quarterly'
+    | 'Semi-Annually'
     | 'Annually'
     | 'All Records'
     | 'To pay'
@@ -511,11 +517,19 @@ export interface UiExpenseFilters {
   groupBy: 'month' | 'account' | 'category'
 }
 
+/** Which of a page's header controls are hidden: the period picker, and the other view switches (Table/Cards, Default/Custom, Annual Table/Chart). */
+export interface UiPageControls {
+  periodHidden: boolean
+  viewsHidden: boolean
+}
+
 export interface UiAccountsFilters {
-  viewMode: 'cards' | 'table'
+  viewMode: 'table' | 'cards' | 'wallet'
   accountScope: 'standard' | 'credit' | 'all'
   hideZeroBalance: boolean
   cardTypeFilter: string
+  /** Whether the filter row (card type, hide zero balance) is shown. Defaults to shown. */
+  filterActive: boolean
 }
 
 export interface UiMonitoringFilters {
@@ -530,9 +544,15 @@ export interface UiMonitoringFilters {
 export const HIDEABLE_SECTIONS = ['credit-card-payment', 'alkansya', 'borrowings', 'receivables'] as const
 export type HideableSection = (typeof HIDEABLE_SECTIONS)[number]
 
+/** Expense page views the owner may hide from the view picker (Settings → Expense views). */
+export const HIDEABLE_EXPENSE_VIEWS = ['CC Transaction', 'Pasabuy', 'To pay', 'To buy', 'Installments'] as const
+export type HideableExpenseView = (typeof HIDEABLE_EXPENSE_VIEWS)[number]
+
 export interface UiSettings {
   /** Sections hidden from the sidebar. Data is untouched; showing them again restores them. */
   hiddenSections: HideableSection[]
+  /** Expense views hidden from the view picker. Data is untouched; showing them again restores them. */
+  hiddenExpenseViews: HideableExpenseView[]
   /** When true, delete actions permanently remove local rows and archive Notion pages to trash. */
   hardDeleteEnabled: boolean
   /** When true, Chat appears in Main UI and Chat mode can open. Default false. */
@@ -559,6 +579,14 @@ export interface UiSettings {
   monitoringFilters: UiMonitoringFilters
   /** Where Monitoring takes budgets from: Notion's current category budgets or the month's saved budgets. */
   monitoringBudgetSource: BudgetSource
+  /** Finish of every account card (local display preference, never written to Notion). */
+  cardFinish: 'glass' | 'metal' | 'matte'
+  /** Account id to palette color name. An account with no entry gets an automatic color (src/shared/card-colors.ts). */
+  accountColors: Record<string, string>
+  /** Ids of accounts whose color the owner chose by hand (Custom). Any other id in `accountColors` is an automatic pick (Auto). */
+  customAccountColors: string[]
+  /** Per page (keyed by page id, e.g. 'income'): which header controls the owner hid. A page with no entry shows everything. */
+  pageControls: Record<string, UiPageControls>
 }
 
 /** Dev Mode log kinds (in-memory ring buffer; never persisted). */

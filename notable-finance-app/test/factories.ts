@@ -20,6 +20,8 @@ export function account(over: Partial<AccountDto> = {}): AccountDto {
     availableLimit: null,
     creditPoints: null,
     annualFee: null,
+    paymentNetwork: null,
+    cardNumbers: null,
     billingDay: null,
     dueDay: null,
     totalIncomes: null,

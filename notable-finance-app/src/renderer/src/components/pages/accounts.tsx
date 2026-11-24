@@ -1,7 +1,10 @@
 import filterStyles from "./accounts-filters.module.css";
 
-import { useState } from "react";
-import { Panel, PageToolbar, FilterDropdown, FilterToggle, SegmentedControl, Badge, MoneyLine } from "@/components/ui";
+import { useMemo, useState } from "react";
+import { assignAutoCardColors } from "@shared/card-colors";
+import { Panel, PageToolbar, FilterDropdown, FilterToggle, SegmentedControl } from "@/components/ui";
+import { FilterToggle as FilterIconToggle, PeriodToggle, ViewsToggle } from "@/components/ui/search-bar";
+import { usePageControls } from "@/lib/use-page-controls";
 import { MetricCardGridSkeleton, PanelSkeleton } from "@/components/ui";
 import { DataTable } from "@/components/ui/data-table";
 import { AccountIcon, AccountDetailModal } from "@/components/ui/accounts";
@@ -9,6 +12,8 @@ import { useFinanceData } from "@/lib/finance-data-context";
 import { isCreditLikeAccountType } from "@/lib/finance-rules";
 import { formatMoney } from "@/lib/format";
 import { cx } from "@/lib/finance-helpers";
+import { AccountsCardsView } from "./accounts-cards-view";
+import { AccountsWalletView } from "./accounts-wallet-view";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { useShortcutAction } from "@/lib/shortcuts/context";
 import { usePersistedFilters } from "@/features/records/use-persisted-filters";
@@ -27,15 +32,32 @@ function money(value: number | null, opts?: { compact?: boolean }) {
   return <span className="num">{formatMoney(value, opts)}</span>;
 }
 
+/** The views the switch offers, in the order the layout shortcut cycles them. */
+type AccountView = "table" | "cards" | "wallet";
+const VIEW_CYCLE: AccountView[] = ["table", "cards", "wallet"];
+
 function AccountsPage() {
   const { settings, ready: settingsReady, updateSettings } = useUiSettings();
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [viewMode, setViewMode] = useState<AccountView>("cards");
   const [accountScope, setAccountScope] = useState<AccountScope>("standard");
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [cardTypeFilter, setCardTypeFilter] = useState("");
+  const [filterActive, setFilterActive] = useState(true);
+  const { periodHidden, viewsHidden, togglePeriod, toggleViews } = usePageControls("accounts");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  // The account chosen in Wallet; the view falls back to the first one listed when it is filtered out.
+  const [walletAccountId, setWalletAccountId] = useState<string | null>(null);
   const { allAccounts: allRawAccounts, referenceLoading } = useFinanceData();
   const sourceAccounts = allRawAccounts.filter((a) => a.notionSynced);
+  // One resolved color per account: the saved choice, else an automatic one no other card uses.
+  const cardColors = useMemo(
+    () =>
+      assignAutoCardColors(
+        allRawAccounts.filter((a) => a.notionSynced && !a.inactive && a.type !== "Auxiliary"),
+        settings.accountColors,
+      ).colors,
+    [allRawAccounts, settings.accountColors],
+  );
 
   usePersistedFilters({
     ready: settingsReady,
@@ -45,18 +67,22 @@ function AccountsPage() {
       setAccountScope(f.accountScope);
       setHideZeroBalance(f.hideZeroBalance);
       setCardTypeFilter(f.cardTypeFilter);
+      setFilterActive(f.filterActive);
     },
-    values: [viewMode, accountScope, hideZeroBalance, cardTypeFilter],
+    values: [viewMode, accountScope, hideZeroBalance, cardTypeFilter, filterActive],
     persist: () => {
       void updateSettings({
-        accountsFilters: { viewMode, accountScope, hideZeroBalance, cardTypeFilter },
+        accountsFilters: { viewMode, accountScope, hideZeroBalance, cardTypeFilter, filterActive },
       });
     },
   });
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
+  useShortcutAction("view.filters", () => setFilterActive((f) => !f));
   useShortcutAction("view.toggleHideZero", () => setHideZeroBalance((h) => !h));
-  useShortcutAction("view.toggleAccountLayout", () => setViewMode((v) => (v === "cards" ? "table" : "cards")));
+  useShortcutAction("view.toggleAccountLayout", () =>
+    setViewMode((v) => VIEW_CYCLE[(VIEW_CYCLE.indexOf(v) + 1) % VIEW_CYCLE.length]),
+  );
   useShortcutAction("view.filterTab", (arg) => {
     const scopes: AccountScope[] = ["all", "standard", "credit"];
     if (arg != null && arg >= 1 && arg <= scopes.length) setAccountScope(scopes[arg - 1]);
@@ -152,92 +178,80 @@ function AccountsPage() {
 
   return (
     <div className="page-stack">
-      <PageToolbar title="Accounts" />
-
-      {/* Scope tabs on their own row (like Daily/Weekly on other views), then a
-          wrapping filter row with card-type, hide-zero, and the Cards/Table
-          toggle — nothing lives in the header, so nothing overflows. */}
-      <SegmentedControl
-        label="Account mode"
-        options={[
-          { label: "All Accounts", value: "all" },
-          { label: "Accounts", value: "standard" },
-          { label: "Credit Accounts", value: "credit" },
-        ]}
-        value={accountScope}
-        onChange={(value) => setAccountScope(value as AccountScope)}
-        shortcutId="view.filterTab"
+      <PageToolbar
+        title="Accounts"
+        actions={
+          <>
+            <PeriodToggle hidden={periodHidden} onToggle={togglePeriod} />
+            <ViewsToggle hidden={viewsHidden} onToggle={toggleViews} />
+            <FilterIconToggle
+              active={filterActive}
+              onToggle={() => setFilterActive((f) => !f)}
+              shortcutId="view.filters"
+            />
+          </>
+        }
       />
-      <div className={`account-filter-row ${filterStyles.filters}`}>
-        <FilterDropdown
-          placeholder="All card types"
-          value={cardTypeFilter}
-          onChange={setCardTypeFilter}
-          items={cardTypeOptions.map((type) => ({ id: type, label: type }))}
-        />
-        <FilterToggle
-          label="Hide zero balance"
-          checked={hideZeroBalance}
-          onChange={setHideZeroBalance}
-          shortcutId="view.toggleHideZero"
-        />
+
+      {/* Same order as Expense and the workflow pages: the scope tabs first, then the filter row
+          (card type, hide-zero, and the Table/Cards/Wallet switch) below them. */}
+      {!periodHidden && (
         <SegmentedControl
-          label="Account view"
+          label="Account mode"
           options={[
-            { label: "Cards", value: "cards" },
-            { label: "Table", value: "table" },
+            { label: "All Accounts", value: "all" },
+            { label: "Accounts", value: "standard" },
+            { label: "Credit Accounts", value: "credit" },
           ]}
-          value={viewMode}
-          onChange={(value) => setViewMode(value as "cards" | "table")}
-          shortcutId="view.toggleAccountLayout"
+          value={accountScope}
+          onChange={(value) => setAccountScope(value as AccountScope)}
+          shortcutId="view.filterTab"
         />
+      )}
+      {(filterActive || !viewsHidden) && (
+      <div className={`account-filter-row ${filterStyles.filters}`}>
+        {filterActive && (
+          <>
+            <FilterDropdown
+              placeholder="All card types"
+              value={cardTypeFilter}
+              onChange={setCardTypeFilter}
+              items={cardTypeOptions.map((type) => ({ id: type, label: type }))}
+            />
+            <FilterToggle
+              label="Hide zero balance"
+              checked={hideZeroBalance}
+              onChange={setHideZeroBalance}
+              shortcutId="view.toggleHideZero"
+            />
+          </>
+        )}
+        {!viewsHidden && (
+          <SegmentedControl
+            label="Account view"
+            options={[
+              { label: "Table", value: "table" },
+              { label: "Cards", value: "cards" },
+              { label: "Wallet", value: "wallet" },
+            ]}
+            value={viewMode}
+            onChange={(value) => setViewMode(value as AccountView)}
+            shortcutId="view.toggleAccountLayout"
+          />
+        )}
       </div>
+      )}
 
       {viewMode === "cards" ? (
-        <section className="account-grid">
-          {visibleAccounts.map((account) => (
-            <button
-              type="button"
-              className="account-card account-card--button"
-              key={account.id}
-              onClick={() => setSelectedAccount(account)}
-            >
-              <div className="account-card__top">
-                <div className="account-card__name-row">
-                  <AccountIcon account={account} />
-                  <div>
-                    <h2>{account.name}</h2>
-                    {account.inactive && <p>Inactive account</p>}
-                  </div>
-                </div>
-                <Badge
-                  tone={
-                    account.inactive
-                      ? "neutral"
-                      : isCreditLikeAccountType(account.type)
-                        ? "amber"
-                        : "blue"
-                  }
-                >
-                  {account.type}
-                </Badge>
-              </div>
-              <MoneyLine label="Current Balance" value={account.currentBalance} colorBySign />
-              {isCreditLikeAccountType(account.type) && account.creditLimit !== null && (
-                <MoneyLine label="Credit Limit" value={account.creditLimit} />
-              )}
-              {isCreditLikeAccountType(account.type) && account.availableLimit !== null && (
-                <MoneyLine label="Available Limit" value={account.availableLimit} />
-              )}
-              {isCreditLikeAccountType(account.type) && account.totalIncomes !== null && (
-                <MoneyLine label="Total Payment Made" value={account.totalIncomes} />
-              )}
-              {isCreditLikeAccountType(account.type) && account.totalExpenses !== null && (
-                <MoneyLine label="Total Purchase Expenses" value={account.totalExpenses} />
-              )}
-            </button>
-          ))}
-        </section>
+        <AccountsCardsView accounts={visibleAccounts} colors={cardColors} onOpen={setSelectedAccount} />
+      ) : viewMode === "wallet" ? (
+        <AccountsWalletView
+          accounts={visibleAccounts}
+          colors={cardColors}
+          selectedId={walletAccountId}
+          onSelect={setWalletAccountId}
+          onOpen={setSelectedAccount}
+        />
       ) : (
         // Wrap in a Panel exactly like Income/Expense — the Panel provides the
         // min-width:0 containment so the wide table scrolls INSIDE it instead of

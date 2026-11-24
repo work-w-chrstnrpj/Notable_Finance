@@ -38,6 +38,8 @@ export interface AccountRow {
   due_day: number | null
   annual_fee: number | null
   credit_points: number | null
+  payment_network?: string | null
+  card_numbers?: string | null
   qr_code?: string | null
   icon?: string | null
   notion_page_id?: string | null
@@ -142,6 +144,8 @@ export function mapAccount(
     creditLimit: row.credit_limit,
     availableLimit: balance.availableLimit,
     creditPoints: row.credit_points,
+    paymentNetwork: row.payment_network ?? null,
+    cardNumbers: row.card_numbers ?? null,
     annualFee: row.annual_fee,
     billingDay: row.billing_day,
     dueDay: row.due_day,

@@ -27,6 +27,8 @@ export const accounts = sqliteTable('accounts', {
   dueDay: integer('due_day'),
   annualFee: real('annual_fee'),
   creditPoints: real('credit_points'),
+  paymentNetwork: text('payment_network'), // Notion "Payment Network" select (read-only; Visa, Mastercard, ...)
+  cardNumbers: text('card_numbers'), // Notion "Card Numbers & Last 4 Digit" text (read-only; e.g. "16, 4056")
   qrCode: text('qr_code'), // Notion "Qr Code" file URL (pulled read-only)
   icon: text('icon'), // Notion page icon: emoji char, or cached image data URI
   notionLastEditedAt: text('notion_last_edited_at'),
@@ -231,6 +233,21 @@ export const monthlyBudgetSnapshots = sqliteTable(
   ]
 )
 
+// Period budgets: quarter, half and year rows of the Custom budget database, as written in Notion.
+export const periodBudgetSnapshots = sqliteTable(
+  'period_budget_snapshots',
+  {
+    id: text('id').primaryKey(),
+    period: text('period').notNull(), // 'Q1 2026' | 'H1 2026' | '2026'
+    categoryId: text('category_id').notNull(),
+    categoryName: text('category_name').notNull(),
+    budget: real('budget').notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull()
+  },
+  (t) => [uniqueIndex('period_budget_snapshots_period_category_uq').on(t.period, t.categoryId)]
+)
+
 export const schema = {
   accounts,
   incomeCategories,
@@ -247,5 +264,6 @@ export const schema = {
   chatThreads,
   chatMessages,
   chatDrafts,
-  monthlyBudgetSnapshots
+  monthlyBudgetSnapshots,
+  periodBudgetSnapshots
 }

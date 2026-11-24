@@ -1,0 +1,193 @@
+/* Settings > Accounts (card finish + account colors). Ported from the approved prototype's
+   Settings dialog (prototypes/account-cards/index.html); the look is a contract. */
+
+.panel {
+  width: min(860px, 100%);
+}
+.lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+.sub {
+  color: var(--ink-muted);
+}
+
+/* finish options */
+.opts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 10px;
+}
+.opt {
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--surface-muted);
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.opt[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px var(--blue-soft);
+}
+.opt:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.optTitle {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+}
+.opt small {
+  color: var(--ink-muted);
+}
+.preview {
+  pointer-events: none;
+}
+
+/* color rows */
+.colorsHead {
+  margin: 24px 0 4px;
+}
+.colorsSub {
+  margin-bottom: 8px;
+}
+.crow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.acc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 230px;
+}
+.thumb {
+  display: block;
+  width: 40px;
+  height: 26px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--a), var(--b));
+  flex: none;
+}
+.accName {
+  font-weight: 600;
+  display: block;
+}
+.accMeta {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.swatches {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.sw {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  background: linear-gradient(135deg, var(--a), var(--b));
+  box-shadow: 0 0 0 1px var(--line-strong) inset;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.sw[aria-pressed="true"] {
+  border-color: var(--surface);
+  box-shadow: 0 0 0 2px var(--blue);
+}
+.sw:hover {
+  transform: scale(1.12);
+}
+.sw:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.auto {
+  background: var(--surface-muted);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  width: auto;
+  padding: 0 12px;
+  border-radius: 99px;
+}
+/* instant name tooltip (hover and keyboard focus) */
+.sw::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font: 600 12px/1.2 var(--font-body);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 5;
+}
+.sw::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+  border-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 5;
+}
+.sw:hover::after,
+.sw:hover::before,
+.sw:focus-visible::after,
+.sw:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 760px) {
+  .opts {
+    grid-template-columns: 1fr;
+  }
+  .crow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .swatches {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sw,
+  .sw::after,
+  .sw::before {
+    transition: none;
+  }
+}

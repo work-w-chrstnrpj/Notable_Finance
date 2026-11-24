@@ -1,0 +1,329 @@
+/* Accounts "Wallet" view: a picker rail on the left, one large card and its details on the right.
+   Ported from the approved prototype (prototypes/account-cards/index.html); values match it.
+   Breakpoints are container queries (the page has a sidebar, so window width is the wrong ruler). */
+
+.root {
+  container-type: inline-size;
+  margin-top: 18px;
+  /* The prototype's page text: 14px with 1.45 line height (the app's own body is 15px, line-height normal). */
+  font-size: 14px;
+  line-height: 1.45;
+}
+.wallet {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── picker rail ───────────────────────────────────────────────────────── */
+.rail {
+  grid-template-columns: minmax(0, 1fr);
+  position: sticky;
+  top: 16px;
+  /* The app's top bar and page padding take about 108px, so this keeps the whole picker on screen while it sticks. */
+  max-height: max(320px, calc(100vh - 140px));
+  overflow: auto;
+  padding: 2px 4px 2px 2px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.group {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+  font-weight: 600;
+  margin: 12px 6px 2px;
+}
+.group:first-child {
+  margin-top: 0;
+}
+.ri {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 86px;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.ri:hover {
+  background: var(--surface);
+  border-color: var(--line);
+}
+.ri:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.ri[aria-selected="true"] {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow), 0 0 0 2px var(--a) inset;
+}
+.ri > span {
+  min-width: 0;
+}
+.th {
+  width: 48px;
+  height: 31px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--a), var(--b));
+  position: relative;
+  box-shadow: 0 3px 8px -2px var(--a);
+  overflow: hidden;
+}
+.th::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  width: 9px;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #f6e7a6, #b58a2c);
+}
+.th::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 90% at 110% -10%, rgba(255, 255, 255, 0.4), transparent 60%);
+}
+.n {
+  display: block;
+  font-weight: 600;
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.s {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 1px;
+  /* One line always, so a row never changes height (a wrapped line can make the rail scroll, which narrows
+     the column and wraps more: two stable states). The prototype let it wrap. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amt {
+  font-size: 12.5px;
+  text-align: right;
+  white-space: nowrap;
+}
+.mini {
+  display: block;
+  height: 3px;
+  margin-top: 5px;
+  border-radius: 99px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+.mini > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c, var(--green));
+}
+
+/* ── detail panel ──────────────────────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 26px 28px;
+  box-shadow: var(--shadow);
+  min-height: 540px;
+  min-width: 0;
+}
+.ph {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+.title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.sub {
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+.hero {
+  display: grid;
+  /* 440px like the prototype when the panel is as wide as the prototype's; the card gives way first when it is not. */
+  grid-template-columns: minmax(300px, min(440px, 55%)) minmax(0, 1fr);
+  gap: 30px;
+  align-items: center;
+  animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.heroSide {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  container-type: inline-size;
+}
+.ringRow {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex: none;
+}
+.ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.ringCenter b {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.colorName {
+  margin-top: 3px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.kv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
+}
+.k {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+.v {
+  font-size: 17px;
+  margin-top: 2px;
+  color: var(--ink);
+}
+.big .v {
+  /* 26px like the prototype; smaller only when the column is too narrow for the figure. */
+  font-size: min(26px, calc((100cqw - 28px) / 13));
+  letter-spacing: -0.02em;
+}
+.lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+.spark {
+  width: 100%;
+  height: 56px;
+  margin: 6px 0 2px;
+  display: block;
+}
+.empty {
+  color: var(--ink-muted);
+  font-size: 13px;
+  padding: 14px 0;
+}
+.tx {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.tx ul {
+  margin: 0;
+  padding: 0;
+}
+.tx li {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex: none;
+}
+.t {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+.t small {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.sectionLabel {
+  margin-top: 26px;
+}
+.sectionLabel2 {
+  margin-top: 14px;
+}
+
+/* ── narrow content areas (the sidebar takes width, so these are container queries) ─ */
+@container (max-width: 920px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+@container (max-width: 700px) {
+  .wallet {
+    grid-template-columns: 1fr;
+  }
+  .rail {
+    position: static;
+    max-height: 360px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    animation: none;
+  }
+  .ri {
+    transition: none;
+  }
+}

@@ -15,6 +15,7 @@ export const IPC_CHANNELS = {
   backupInspect: 'backup:inspect',
   budgetsExportCsv: 'budgets:exportCsv',
   budgetsList: 'budgets:list',
+  budgetsListPeriods: 'budgets:listPeriods',
   budgetsMirrorAddColumns: 'budgets:mirrorAddColumns',
   budgetsMirrorCheckDatabase: 'budgets:mirrorCheckDatabase',
   budgetsMirrorRefresh: 'budgets:mirrorRefresh',

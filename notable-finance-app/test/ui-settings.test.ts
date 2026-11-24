@@ -119,3 +119,13 @@ describe('monitoringBudgetSource', () => {
   })
 })
 
+
+describe('filter-options saved combined status options', () => {
+  it('filter-options/02#AC5 and 03#AC4 keep the combined status ids across a restart', () => {
+    const next = normalizeUiSettings({
+      expenseFilters: { paymentStatusFilter: '__non-paid__', pasabuyStatusFilter: '__non-fully-received__', filterActive: true }
+    })
+    expect(next.expenseFilters.paymentStatusFilter).toBe('__non-paid__')
+    expect(next.expenseFilters.pasabuyStatusFilter).toBe('__non-fully-received__')
+  })
+})

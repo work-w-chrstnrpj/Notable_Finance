@@ -730,7 +730,7 @@ export function listAccounts(includeInactive = false): AccountDto[] {
   const rows = getSqlite()
     .prepare(
       `SELECT id, account_name, account_type, starting_balance, credit_limit, inactive,
-         billing_day, due_day, annual_fee, credit_points, qr_code, icon, notion_page_id
+         billing_day, due_day, annual_fee, credit_points, payment_network, card_numbers, qr_code, icon, notion_page_id
        FROM accounts ${where} ORDER BY account_name`
     )
     .all() as AccountRow[]

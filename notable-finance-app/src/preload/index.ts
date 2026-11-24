@@ -4,6 +4,7 @@ import type {
   BudgetExportRequest,
   BudgetExportResult,
   SavedBudgetsDatabaseCheck,
+  PeriodBudgetRow,
   SavedBudgetRow,
   SavedBudgetsMirrorRunResult,
   SavedBudgetsMirrorStatus,
@@ -152,6 +153,8 @@ const api = {
   budgets: {
     list: (range?: { fromMonth?: string; toMonth?: string }): Promise<ApiResult<SavedBudgetRow[]>> =>
       ipcRenderer.invoke(IPC_CHANNELS.budgetsList, range),
+    /** Quarter, half and year rows of the Custom database, as written in Notion. */
+    listPeriods: (): Promise<ApiResult<PeriodBudgetRow[]>> => ipcRenderer.invoke(IPC_CHANNELS.budgetsListPeriods),
     exportCsv: (req: BudgetExportRequest): Promise<ApiResult<BudgetExportResult>> =>
       ipcRenderer.invoke(IPC_CHANNELS.budgetsExportCsv, req),
     /** Custom monthly budget database in Notion (ADR-0010): read-only cache plus Add missing columns. */

@@ -1,0 +1,316 @@
+/* Account card. Ported from the approved prototype (prototypes/account-cards/index.html):
+   the look is a contract, so values here match it. Colors arrive as inline custom
+   properties (--c1 dark, --c2 mid, --c3 highlight, --glow, --ink-on); the finish is the
+   data-finish attribute on .wrap. Type is sized in container units (cqw) so a card scales
+   with its width. */
+
+.wrap {
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: 1.586;
+  position: relative;
+  border-radius: 22px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap:focus-visible {
+  outline: 2px solid var(--blue, #5b6cf9);
+  outline-offset: 4px;
+}
+
+.tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.live {
+  transition: transform 0.06s linear;
+}
+.flipper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 0.8, 0.2, 1);
+}
+.flipped .flipper {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: 6.2cqw;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  color: var(--ink-on, #fff);
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.25) inset,
+    0 22px 40px -14px var(--glow, rgba(0, 0, 0, 0.45)),
+    0 6px 14px rgba(0, 0, 0, 0.18);
+  isolation: isolate;
+  font-family: var(--font-body, Inter, sans-serif);
+}
+.back {
+  transform: rotateY(180deg);
+}
+.face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* finishes */
+.wrap[data-finish="glass"] .front::before {
+  background:
+    radial-gradient(60% 90% at 105% -10%, rgba(255, 255, 255, 0.38), transparent 60%),
+    radial-gradient(50% 70% at -10% 115%, rgba(255, 255, 255, 0.2), transparent 60%),
+    radial-gradient(35% 50% at 80% 90%, var(--c3, transparent), transparent 70%);
+}
+.wrap[data-finish="glass"] .face {
+  outline: 1px solid rgba(255, 255, 255, 0.22);
+  outline-offset: -1px;
+}
+.wrap[data-finish="metal"] .front {
+  background:
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(0, 0, 0, 0.05) 1px 3px),
+    linear-gradient(135deg, var(--c1), var(--c2));
+}
+.wrap[data-finish="metal"] .front::before {
+  background: conic-gradient(
+    from 210deg at 30% 120%,
+    transparent 0 20%,
+    rgba(255, 255, 255, 0.22) 28%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.12) 62%,
+    transparent 75%
+  );
+}
+.wrap[data-finish="matte"] .face {
+  background: var(--c1);
+}
+.wrap[data-finish="matte"] .front::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.14));
+}
+
+/* grain */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+.glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.34), transparent 42%);
+  mix-blend-mode: soft-light;
+}
+.wrap:hover .glare {
+  opacity: 1;
+}
+
+/* front */
+.fc {
+  position: absolute;
+  inset: 0;
+  padding: 6.4cqw 6.8cqw;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 3cqw;
+}
+.nm {
+  font-size: 5.2cqw;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+.ty {
+  font-size: 3.3cqw;
+  opacity: 0.72;
+  margin-top: 0.8cqw;
+  font-weight: 500;
+}
+.cl {
+  width: 6.6cqw;
+  height: 6.6cqw;
+  opacity: 0.85;
+  flex: none;
+}
+.mid {
+  display: flex;
+  align-items: center;
+  gap: 4cqw;
+  margin-top: 4.4cqw;
+}
+.chip {
+  width: 13cqw;
+  height: 10cqw;
+  flex: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+.owed {
+  margin-left: auto;
+  text-align: right;
+}
+.owedK {
+  font-size: 2.9cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+  font-weight: 600;
+}
+.owedV {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 7.6cqw;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-top: 0.6cqw;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+.bot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.pan {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 4.5cqw;
+  letter-spacing: 0.14em;
+  opacity: 0.92;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+/* A full number is up to 19 characters wide: smaller type so it clears the network mark. */
+.panFull {
+  font-size: 3.9cqw;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.hold {
+  font-size: 2.9cqw;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-top: 1.4cqw;
+  font-weight: 500;
+}
+.net {
+  height: 9cqw;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 14cqw;
+}
+.net svg {
+  height: 100%;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+.nonet {
+  font-size: 2.8cqw;
+  letter-spacing: 0.06em;
+  border: 1px dashed currentColor;
+  padding: 1.2cqw 2.4cqw;
+  border-radius: 99px;
+  opacity: 0.8;
+  font-weight: 600;
+}
+.plain .chip,
+.plain .cl {
+  display: none;
+}
+.glyph {
+  display: none;
+}
+.plain .glyph {
+  display: grid;
+  place-items: center;
+  width: 11cqw;
+  height: 11cqw;
+  border-radius: 3.4cqw;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.glyph svg {
+  width: 6cqw;
+  height: 6cqw;
+}
+
+/* back */
+.mag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 9cqw;
+  height: 11cqw;
+  background: linear-gradient(#0b0b0d, #222);
+  z-index: 2;
+}
+.bc {
+  position: absolute;
+  inset: 0;
+  padding: 23cqw 6.8cqw 5cqw;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.2cqw 5cqw;
+  align-content: start;
+}
+.bk {
+  font-size: 2.7cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
+  font-weight: 600;
+}
+.bv {
+  font-size: 4.1cqw;
+  font-weight: 500;
+  margin-top: 0.5cqw;
+}
+.mono {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-variant-numeric: tabular-nums;
+}
+.hint {
+  grid-column: 1 / -1;
+  font-size: 2.8cqw;
+  opacity: 0.6;
+  margin-top: 1cqw;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt,
+  .flipper {
+    transition: none !important;
+  }
+  .glare {
+    display: none;
+  }
+}
