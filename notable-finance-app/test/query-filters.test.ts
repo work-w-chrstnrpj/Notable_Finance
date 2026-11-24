@@ -6,6 +6,7 @@ import {
   type ExpenseFilterContext
 } from '../src/main/domain/query-filters'
 import { expense, income } from './factories'
+import { NON_FULLY_RECEIVED_FILTER, NON_PAID_STATUSES_FILTER } from '../src/shared/filter-options'
 
 // Parity tests for the filter semantics COPIED from the web notion-query.service.
 
@@ -186,5 +187,34 @@ describe('CC Transaction redesign', () => {
   it('preserves non-credit Pasabuy access through calendar filters', () => {
     const cash = expense({ id: 'cash-pasabuy', accountId: 'cash', categoryId: 'pasabuy', purchaseDate: '2026-07-15', pasabuyStatus: 'Payment not yet receive' })
     expect(filterExpensesByQuery([cash], { expenseViewMode: 'Monthly', month: '2026-07', categoryId: 'pasabuy', pasabuyStatus: 'Payment not yet receive' }, ctx)).toEqual([cash])
+  })
+})
+
+describe('filter-options combined status options', () => {
+  const rows = [
+    expense({ id: 'paid', paymentStatus: 'Paid', pasabuyStatus: 'Payment fully received' }),
+    expense({ id: 'unpaid', paymentStatus: 'Unpaid', pasabuyStatus: 'Payment not yet receive' }),
+    expense({ id: 'inst', paymentStatus: 'Installment', pasabuyStatus: 'Payment partially received (installment)' }),
+    expense({ id: 'cancelled', paymentStatus: 'Cancelled', pasabuyStatus: 'Payment partially received' }),
+    expense({ id: 'nopasabuy', paymentStatus: 'Paid', pasabuyStatus: null })
+  ]
+
+  it('filter-options/02#AC2 all non-paid statuses keeps Unpaid and Installment only', () => {
+    const out = filterExpensesByQuery(rows, { paymentStatus: NON_PAID_STATUSES_FILTER }, ctx)
+    expect(out.map((r) => r.id)).toEqual(['unpaid', 'inst'])
+  })
+
+  it('filter-options/02#AC6 a single status still matches exactly', () => {
+    expect(filterExpensesByQuery(rows, { paymentStatus: 'Cancelled' }, ctx).map((r) => r.id)).toEqual(['cancelled'])
+  })
+
+  it('filter-options/03#AC2 non-payment-fully-received keeps the three other Pasabuy statuses', () => {
+    const out = filterExpensesByQuery(rows, { pasabuyStatus: NON_FULLY_RECEIVED_FILTER }, ctx)
+    expect(out.map((r) => r.id)).toEqual(['unpaid', 'inst', 'cancelled'])
+  })
+
+  it('filter-options/03#AC5 a single Pasabuy status still matches exactly', () => {
+    const out = filterExpensesByQuery(rows, { pasabuyStatus: 'Payment fully received' }, ctx)
+    expect(out.map((r) => r.id)).toEqual(['paid'])
   })
 })
