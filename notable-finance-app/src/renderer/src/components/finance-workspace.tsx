@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useFinanceData } from "@/lib/finance-data-context";
 import { syncApi } from "@/lib/api-client";
@@ -154,21 +154,6 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
     : expenseViewMode === "Pasabuy" ? pasabuyPeriod : expenseViewMode;
   const selectorUnit = activeSelectorUnit(activeSection, incomeViewMode, expenseDateMode, monitoringViewMode, workflowViewMode);
 
-  const activeMonths = useMemo(() => {
-    if (activeSection !== "monthly-monitoring") return undefined;
-    if (monitoringViewMode === "Monthly") return undefined; // single month highlight is enough
-    if (monitoringViewMode === "Annually") return undefined; // year picker, no month grid
-
-    const d = new Date(selectedDate.slice(0, 7) + "-15");
-    const m = d.getMonth(); // 0-indexed
-    const span = monitoringViewMode === "Quarterly" ? 4 : 6;
-    const months: number[] = [];
-    for (let i = 0; i < span; i++) {
-      months.push((m + i) % 12);
-    }
-    return months;
-  }, [activeSection, monitoringViewMode, selectedDate]);
-
   async function runSyncPass(kind: "full" | "pull" | "push", since?: string) {
     setActiveSyncKind(kind);
     setSyncState("syncing");
@@ -288,7 +273,6 @@ export function FinanceWorkspace({ activeSection }: { activeSection: FinanceSect
           selectorUnit={selectorUnit}
           syncState={syncState}
           activeSyncKind={activeSyncKind}
-          activeMonths={activeMonths}
           onDateChange={setSelectedDate}
           onSchemaVerify={verifySchema}
           onSync={runSync}

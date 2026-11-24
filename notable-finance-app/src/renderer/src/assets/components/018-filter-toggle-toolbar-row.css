@@ -105,10 +105,6 @@ input {
 }.badge--rose {
   background: var(--rose-soft);
   color: var(--rose);
-}.account-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 14px;
 }.account-filter-row {
   display: flex;
   flex-wrap: wrap;
@@ -121,29 +117,11 @@ input {
 }.cat-cell .account-icon,
 .cat-cell .category-icon {
   flex: 0 0 auto;
-}.account-card {
-  display: grid;
-  gap: 14px;
-  padding: 16px;
-}.account-card--button {
-  width: 100%;
-  appearance: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-}.account-card--button:hover {
-  border-color: var(--line-strong);
-  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.06);
-  transform: translateY(-1px);
-}.account-card__top,
-.activity-row {
+}.activity-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-}.account-card h2 {
-  font-size: 16px;
 }.account-icon {
   width: 24px;
   height: 24px;
@@ -187,13 +165,6 @@ input {
   background: var(--surface-muted);
   font-size: 14px;
   line-height: 1;
-}.account-card__name-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}.account-card__name-row h2 {
-  font-size: 16px;
 }.account-cell {
   display: inline-flex;
   align-items: center;

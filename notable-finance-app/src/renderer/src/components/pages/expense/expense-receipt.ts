@@ -3,7 +3,7 @@ import { getMonthLabel, stripNotionTag } from "@/lib/finance-helpers";
 import { anchorMonth, expenseModeToUnit, rangeLabel } from "@/lib/date-range";
 import { formatMoney, formatDate } from "@/lib/format";
 import type { ReceiptContext } from "@/lib/fab-export-context";
-import type { ExpenseRecord, ExpenseViewMode } from "@/types/finance";
+import type { ExpenseRecord, ExpenseViewMode, IncomeViewMode } from "@/types/finance";
 import type { ExpenseComputed } from "./expense-tables";
 
 /**
@@ -21,7 +21,7 @@ export function makeExpenseReceiptBuilder({
 }: {
   viewMode: ExpenseViewMode;
   selectedDate: string;
-  purchasePeriod: "Daily" | "Weekly" | "Monthly" | "Annually" | "All Records";
+  purchasePeriod: IncomeViewMode;
   derive: (record: ExpenseRecord) => ExpenseComputed;
 }) {
   return function buildExpenseReceipt(

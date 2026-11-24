@@ -1,5 +1,5 @@
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { CalendarDays, LayoutPanelTop, Search, SlidersHorizontal } from "lucide-react";
 import { ShortcutHint } from "@/components/shortcuts";
 
 export function SearchToggle({
@@ -76,6 +76,38 @@ export function FilterToggle({
     >
       <SlidersHorizontal size={16} />
       {shortcutId && <ShortcutHint id={shortcutId} />}
+    </button>
+  );
+}
+
+/** Header icon that hides or shows a page's period picker. Highlighted while the picker is shown, like the filter icon. */
+export function PeriodToggle({ hidden, onToggle }: { hidden: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      className={`icon-button filter-toggle${hidden ? "" : " filter-toggle--active"}`}
+      onClick={onToggle}
+      aria-label={hidden ? "Show period picker" : "Hide period picker"}
+      aria-pressed={!hidden}
+      title={hidden ? "Show period picker" : "Hide period picker"}
+    >
+      <CalendarDays size={16} />
+    </button>
+  );
+}
+
+/** Header icon that hides or shows a page's other view switches (Table/Cards, Default/Custom, Table/Chart). */
+export function ViewsToggle({ hidden, onToggle }: { hidden: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      className={`icon-button filter-toggle${hidden ? "" : " filter-toggle--active"}`}
+      onClick={onToggle}
+      aria-label={hidden ? "Show view switches" : "Hide view switches"}
+      aria-pressed={!hidden}
+      title={hidden ? "Show view switches" : "Hide view switches"}
+    >
+      <LayoutPanelTop size={16} />
     </button>
   );
 }

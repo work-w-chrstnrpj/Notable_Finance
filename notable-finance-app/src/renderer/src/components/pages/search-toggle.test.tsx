@@ -9,7 +9,7 @@ import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { IncomePage } from "./income";
 
-const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const category = { id: "cat1", source: "Salary", auxiliary: false, icon: null };
 const records = [
   { id: "inc1", name: "July Salary", date: "2026-07-15", grossIncome: 50000, capitalExpenditure: 0, accountId: "acc1", categoryId: "cat1" },

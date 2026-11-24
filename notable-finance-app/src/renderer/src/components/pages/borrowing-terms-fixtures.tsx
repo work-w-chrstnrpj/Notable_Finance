@@ -5,7 +5,7 @@ import { renderPage } from "../../../../../test/render-page";
 import { ok } from "../../../../../test/mock-window-api";
 import { WorkflowPage } from "./workflow";
 
-const baseAccount = { icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const baseAccount = { icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 export const wallet = { ...baseAccount, id: "acc1", name: "Main Wallet", type: "Cash" as const };
 export const borrowAccount = { ...baseAccount, id: "acc9", name: "Debt/Loan", type: "Auxiliary" as const };
 export const otherBorrowAccount = { ...baseAccount, id: "acc8", name: "Borrowed Ana", type: "Auxiliary" as const };

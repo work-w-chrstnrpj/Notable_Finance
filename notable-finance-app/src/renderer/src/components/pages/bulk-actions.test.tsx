@@ -11,7 +11,7 @@ import { ExpensePage } from "./expense";
 import { WorkflowPage } from "./workflow";
 import dataTableStyles from "@/components/ui/data-table.module.css";
 
-const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const ccAccount = { ...account, id: "acc-cc", name: "Credit Card", type: "Credit Account" as const };
 const category = { id: "cat1", name: "Groceries", monthlyBudget: 0, auxiliary: false, icon: null };
 const expenseRecord = {

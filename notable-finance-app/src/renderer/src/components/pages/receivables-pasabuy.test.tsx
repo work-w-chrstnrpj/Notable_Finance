@@ -10,7 +10,7 @@ import type { ExpenseRecord } from '@/types/finance';
 import type { UpdateExpenseInput } from '@shared/finance.types';
 
 const account = { id: 'a', name: 'Wallet', type: 'Cash' as const, icon: null, information: '', startingBalance: 0,
-  currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null,
+  currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null,
   dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null,
   inactive: false, notionSynced: true };
 const category = { id: 'pasabuy', name: 'Pasabuy', auxiliary: true, icon: null, monthlyBudget: 0 };

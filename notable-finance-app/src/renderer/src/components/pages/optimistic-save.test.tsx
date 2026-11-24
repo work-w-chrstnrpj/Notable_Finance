@@ -13,7 +13,7 @@ import { ok, err } from "../../../../../test/mock-window-api";
 import { IncomePage } from "./income";
 import type { ApiResult, IncomeRecordDto } from "@shared/finance.types";
 
-const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
+const account = { id: "acc1", name: "Main Wallet", type: "Cash" as const, icon: null, information: "", startingBalance: 0, currentBalance: 0, creditLimit: null, availableLimit: null, creditPoints: null, annualFee: null, paymentNetwork: null, cardNumbers: null, billingDay: null, dueDay: null, totalIncomes: null, totalExpenses: null, totalPasabuy: null, totalCcDebtTransfer: null, qrCode: null, inactive: false, notionSynced: true };
 const category = { id: "cat1", source: "Salary", auxiliary: false, icon: null };
 
 type CreateResult = ApiResult<IncomeRecordDto>;
