@@ -315,7 +315,7 @@ Drafts pending confirm stay attached to the thread until resolved or cancelled.
 
 | View mode | Chat expectation |
 | --- | --- |
-| Daily / Weekly / Monthly / Annually | Period-scoped lists and totals |
+| Daily / Weekly / Monthly / Quarterly / Semi-Annually / Annually | Period-scoped lists and totals (quarters and halves are fixed calendar periods, ADR-0012) |
 | To pay / To buy / Installments | Outstanding / scheduled-style scopes |
 | Unpaid CC | Credit-like unpaid / CC transaction context |
 | Pasabuy | All Pasabuy purchases by default, with optional date bounds and Pasabuyer, Pasabuy Status, payment date, and receiver filters |

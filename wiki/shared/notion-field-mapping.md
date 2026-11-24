@@ -51,6 +51,10 @@ Data source: `collection://bd6f39b1-fae7-837d-a730-878f92946eee`.
 
 **Writable inputs:** `Account Name` (title), `Account Type` (select), `Starting Balance` (₱ number), `Credit Limit` (₱ number), `Annual Fee`, `Billing Day`, `Due Day`, `Credit Points`, `Inactive` (checkbox), label/text fields.
 
+**Read-only inputs:** `Payment Network` (select: Visa, Mastercard, Amex, JCB, UnionPay, ...). Pulled on every sync into the account, shown on the account card, never written back (ADR-0011). Optional: a database without it still syncs, an empty value stays empty and an unknown value is kept as plain text.
+
+**Read-only input:** `Card Numbers & Last 4 Digit` (text, created by the owner). The value is the digit count, a comma and the last four digits, for example `16, 4056` for a 16-digit card ending 4056. Pulled on every sync into the account; the card shows it masked (`•••• •••• •••• 4056`; 15 digits group 4-6-5, 14 digits 4-6-4, other lengths in fours). Only the count and the last four digits are ever kept or shown. An empty or invalid value (count outside 12 to 19, last part not exactly four digits) shows no number on the card. Never written back (ADR-0011); a database without it still syncs.
+
 **Computed (formula):** `Current Balance`, `Available Limit`.
 
 **Computed (rollup, sums over related records):** `Total Incomes`, `Total Expenses`, `Total Credit Interest`, `Total CC, Debt & Transfer`, `Total Pasabuy`.

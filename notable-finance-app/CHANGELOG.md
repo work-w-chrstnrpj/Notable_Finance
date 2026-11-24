@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Every period picker has the same seven options:** Daily, Weekly, Monthly, Quarterly, Semi-Annually, Annually and All Records. This covers Income, Expense (which keeps CC Transactions, Pasabuy, To Pay, To Buy and Installments after them), Transfer, CC Payment, Alkansya, Borrowings and Receivables. The date selector reads "Q4 2026 · Oct – Dec" or "H2 2026 · Jul – Dec" and its arrows step one whole quarter or half.
+- **Hide the period picker and the view switches on every page.** Two new header icons sit before the Filters icon: Period hides the period picker (Daily to All Records, the Accounts tabs, Monitoring's Monthly to Annually bar) and Views hides the other switches (Table | Cards | Wallet, Default | Custom, Annual Table | Chart). With the Filters icon off too, only the page title and the table remain. Hidden controls keep applying, each page remembers what you hid, and everything is shown by default.
+
+### Changed
+
+- **Monitoring's Quarterly and Semi-Annually figures changed.** They now cover whole calendar periods: Q1 is Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep and Q4 Oct to Dec; H1 is Jan to Jun and H2 is Jul to Dec. Before, they started at the month you had picked and ran forward, and Quarterly spanned 4 months, so income, expense, savings and budget totals for those two views will differ from earlier releases. Monthly and Annually are unchanged. A `Q4 2026` or `H2 2026` row in your Custom monthly budget database now matches the period on screen exactly.
+
 ## [3.1.0] - 2026-11-21
 
 Loan terms for Borrowings, saved budgets for Monitoring, and resizable columns in every Money movement table.

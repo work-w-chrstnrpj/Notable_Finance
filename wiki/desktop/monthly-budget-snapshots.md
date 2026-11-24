@@ -113,16 +113,18 @@ The existing zero filters (`hide-both`, `hide-budget`, `hide-spending`) and the 
 
 ## 7. View modes
 
-The existing range logic in `monitoring.tsx` (`computeMonitoringRange`) is kept as is. Only the budget calculation changes.
+> **Superseded by ADR-0012 (calendar-periods).** Quarterly and Semi-Annually are now fixed calendar periods, not windows that start at the selected month. The table below is the current rule; the original floating-window rule (4 and 6 months from the selected month) is gone.
 
-| View mode | Months in range (from the selected month) |
+Monitoring takes its range from the shared period module (`lib/date-range.ts`). Only the budget calculation is described here.
+
+| View mode | Months in range (the period containing the selected month) |
 | --- | --- |
 | Monthly | The selected month (1) |
-| Quarterly | The selected month plus the next 3 (4 months, existing behavior) |
-| Semi-Annually | The selected month plus the next 5 (6 months) |
+| Quarterly | The calendar quarter: Q1 Jan to Mar, Q2 Apr to Jun, Q3 Jul to Sep, Q4 Oct to Dec (3 months) |
+| Semi-Annually | The calendar half: H1 Jan to Jun, H2 Jul to Dec (6 months) |
 | Annually | January to December of the selected year (12) |
 
-`periodMultiplier` is replaced by the month list. In Notion mode the result is identical to today. Note: "Quarterly" is currently 4 months, not 3. That is existing behavior and out of scope here; see Open questions.
+`periodMultiplier` is replaced by the month list. Because Quarterly was 4 months and Semi-Annually started at the selected month before ADR-0012, those two views' figures changed when the fixed periods shipped; Monthly and Annually did not.
 
 ## 8. CSV import and export
 
@@ -237,7 +239,7 @@ Docs to update when implementing: `wiki/desktop/local-data-schema.md`, `wiki/des
 Settled while grilling the feature. No open questions remain.
 
 1. **UI name:** "Saved budgets". The table stays `monthly_budget_snapshots` internally.
-2. **Quarterly length:** stays 4 months (and Semi-Annually 6). Changing Quarterly to 3 months is a separate ticket, because it would alter Notion-mode numbers.
+2. **Quarterly length:** resolved by ADR-0012: Quarterly is a fixed 3-month calendar quarter and Semi-Annually a fixed 6-month half. The old 4-month window is gone.
 3. **Categories:** Edit budgets and CSV use the same category list Monitoring shows, including auxiliary ones such as Pasabuy.
 4. **CSV import:** overwrite matching rows by default, with a "Skip months that already have saved budgets" option. No whole-month replace policy; use Delete in Edit budgets.
 5. **Saving a month:** allowed for the current and future months, with a replace confirmation.

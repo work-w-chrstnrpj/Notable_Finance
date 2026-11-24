@@ -16,8 +16,8 @@ The app covers these sections and finance workflows:
 |---|---|
 | Dashboard | Month summary cards (income, expenses, savings, transactions) and account-position metrics |
 | Accounts | Read-only view of active accounts — gallery/card and table views |
-| Income | Record income entries; view by Daily / Weekly / Monthly |
-| Expense | Record expense entries; view by Daily / Weekly / Monthly / Unpaid Pasabuy / To Pay / To Buy / Installments / CC Transactions |
+| Income | Record income entries; view by Daily / Weekly / Monthly / Quarterly / Semi-Annually / Annually / All Records |
+| Expense | Record expense entries; view by Daily / Weekly / Monthly / Quarterly / Semi-Annually / Annually / All Records, plus Unpaid Pasabuy / To Pay / To Buy / Installments / CC Transactions |
 | Monthly Monitoring | Budget vs. actual tracking across needs, wants, savings |
 | Transfer | Record a fund transfer between accounts |
 | Credit Card Payment | Record a credit card payment and link it to covered expenses |
@@ -77,7 +77,7 @@ notable-finance-app/
 │   │       │   │   ├── accounts.tsx    # Read-only account cards/table
 │   │       │   │   ├── income/         # Income CRUD + filters + bulk actions
 │   │       │   │   ├── expense/        # Expense CRUD + view modes + filters + bulk actions
-│   │       │   │   ├── monitoring.tsx  # Monthly budget tracking (Monthly/Quarterly/Semi-Annual/Annual)
+│   │       │   │   ├── monitoring.tsx  # Monthly budget tracking (Monthly/Quarterly/Semi-Annual/Annual, fixed calendar periods)
 │   │       │   │   ├── workflow/       # Transfer, CC Payment, Alkansya, Borrowings, Receivables
 │   │       │   │   ├── chat/           # AI chat sidebar, history, message stream
 │   │       │   │   ├── sync.tsx        # Notion connect, schema verify, sync controls, conflict resolver
