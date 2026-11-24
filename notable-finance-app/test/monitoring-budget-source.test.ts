@@ -56,18 +56,18 @@ const food = (r: { expenseCategories: Array<{ id: string; budget: number; remain
 describe('budget source on reports and chat', () => {
   dbIt('monthly-budget/05#AC5 monitoring defaults to Notion budgets and answers do not change', () => {
     expect(food(monitoring('2026-03')).budget).toBe(8000)
-    expect(food(monitoring('2026-03', 'notion')).budget).toBe(8000)
+    expect(food(monitoring('2026-03', 'default')).budget).toBe(8000)
     expect(food(getMonthlyMonitoringSnapshot({ month: '2026-03' }) as ReturnType<typeof monitoring>).budget).toBe(8000)
     expect(getCategoryBudgetStatus({ month: '2026-03' }).categories[0]!.budget).toBe(8000)
   })
 
   dbIt('monthly-budget/05#AC5 asking for saved budgets uses the month saved set, else Notion', () => {
-    const saved = monitoring('2026-03', 'saved')
+    const saved = monitoring('2026-03', 'custom')
     expect(food(saved).budget).toBe(5000)
     expect(food(saved).remaining).toBe(5000)
-    expect(monitoring('2026-04', 'saved').expenseCategories.find((c) => c.id === 'food')!.budget).toBe(8000)
-    expect(getCategoryBudgetStatus({ month: '2026-03', budgetSource: 'saved' }).categories[0]!.budget).toBe(5000)
-    // Anything but 'saved' is Notion.
+    expect(monitoring('2026-04', 'custom').expenseCategories.find((c) => c.id === 'food')!.budget).toBe(8000)
+    expect(getCategoryBudgetStatus({ month: '2026-03', budgetSource: 'custom' }).categories[0]!.budget).toBe(5000)
+    // Anything but 'custom' (or the old 'saved') is default.
     expect(getCategoryBudgetStatus({ month: '2026-03', budgetSource: 'bogus' }).categories[0]!.budget).toBe(8000)
   })
 

@@ -71,6 +71,17 @@ The exact credit arithmetic is finalized from the Notion formula during implemen
 
 > Note: the web app *reads* `Current Balance` from Notion's formula. The desktop app *recomputes* it locally so it is correct offline and in real time. Same inputs → same number.
 
+## Saved Budgets database (optional mirror)
+
+A database you create yourself in Notion, share with the integration and save by ID in Notion Configuration (key `savedBudgets`); the app never creates it ([ADR-0009](../../docs/adr/0009-saved-budgets-database-is-user-created.md), changing [ADR-0008](../../docs/adr/0008-saved-budgets-optional-notion-mirror.md)). It is not part of the record sync and is optional.
+
+| Notion | Type | App |
+|---|---|---|
+| Any title property | Title | Budget period: `Jan 2025` (pushed), or `Q1 2024`, `H1 2025`, `2026` (read; split across months) |
+| One column per non-auxiliary expense category, named exactly like the category | Number | That category's saved budget for the period. Missing columns are listed in Settings and added only when you press Add missing columns; never deleted or renamed |
+
+Columns that match no category are ignored.
+
 ## Related data sources referenced
 
 - Incomes/Transactions: `collection://e1cf39b1-fae7-827e-8a8e-0772b5fe4455`

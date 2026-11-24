@@ -1,7 +1,7 @@
 # 05: Backup, activity log, chat parity and docs
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** 02, 03, 04
 **Owner:** unassigned
 
@@ -26,8 +26,8 @@ Saved budgets are protected and documented. Database backups report them and res
 - Tickets 02, 03 and 04
 
 ## Evidence
-- Commits:
-- PR:
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron node_modules/vitest/vitest.mjs run` (see progress log); tests named `monthly-budget/05#AC1`..`AC6` in `test/backup.test.ts`, `test/budgets-activity.test.ts`, `test/monitoring-budget-source.test.ts`, `src/renderer/src/components/pages/sync-reset.test.tsx`. AC7 to AC9 are doc edits, checked by reading.
 - Review:
 - Docs updated: `wiki/desktop/local-data-schema.md`, `wiki/desktop/ipc-contract.md`, `wiki/shared/product-specification.md`, `notable-finance-app/CHANGELOG.md`, `GLOSSARY.md`, `wiki/desktop/monthly-budget-snapshots.md`, `tickets/features/monthly-budget-snapshots.md`. `AGENTS.md` unchanged (structure did not change).
@@ -42,3 +42,6 @@ Saved budgets are protected and documented. Database backups report them and res
 - Decision: The History page is the Notion sync feed (pull/push, incomes/expenses only), so budget events went to the existing operation log (`logDevOperation`, as `backup:import` does) instead of `activity_log`. Say if you want them in the History page; that needs a new resource type there.
 - Decision: The in-app Reset local database does not wipe saved budgets (its wipe list omits the table; ticket 02 AC8 tests that). The warning therefore says they are kept but exist only on this computer, so export first. The spec line that a full reset removes them only holds for deleting the database file.
 - Next: Run `[serve]` after 02 to 04 are closed; this ticket is not committed.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

@@ -1,7 +1,7 @@
 # 02: Reconcile remaining docs with the toolbox
 
 **Type:** doc-drift
-**Status:** in-review
+**Status:** done
 **Blocked by:** None
 **Owner:** claude
 
@@ -19,8 +19,8 @@ Docs outside the first adoption pass no longer mention the old PowerShell sync, 
 - Audit in the conversation of 2026-11-16: stale references found by grep
 
 ## Evidence
-- Commits: pending (changes are uncommitted)
-- PR: None
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `node .ai/cli/bin/cli.mjs validate` → passed; `grep` for `generate-ai-adapters` and `sync-ai-adapters.ps1` in the edited READMEs returns nothing
 - Review: None yet
 - Docs updated: `CONVENTIONS.md`, `.agents/README.md`, `.cursor/README.md`, `.claude/README.md`, `.codex/README.md`, `.github/README.md`, `.opencode/README.md` and the `agents/` and `skills/` READMEs under `.claude`, `.codex`, `.cursor`, `.github`, `.opencode`, `wiki/README.md`, `wiki/desktop/project-structure.md`
@@ -35,3 +35,6 @@ Docs outside the first adoption pass no longer mention the old PowerShell sync, 
 - Did: `cli sync` has now run, so the generated adapters match `.agents/` (the old `Reusable Skills` heading is gone). `grep` finds no `generate-ai-adapters` or `sync-ai-adapters.ps1` in the Markdown docs. `validate` passes.
 - Not checked: the `wiki/desktop/` pages other than `project-structure.md` were still not compared line by line with the code.
 - Next: `[serve]` to commit; waiting for the user's acceptance.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

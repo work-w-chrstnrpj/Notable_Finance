@@ -380,7 +380,10 @@ export type MappableResource =
   | 'incomes'
   | 'expenses'
 
-export type NotionMapping = Partial<Record<MappableResource, string>>
+export type NotionMapping = Partial<Record<MappableResource, string>> & {
+  /** The optional Saved Budgets database the user created (ADR-0009). */
+  savedBudgets?: string
+}
 
 export interface DiscoveredDb {
   id: string
@@ -521,7 +524,6 @@ export interface UiMonitoringFilters {
   hideZeroIncomeCategories: boolean
   zeroFilter: 'all' | 'hide-both' | 'hide-spending' | 'hide-budget'
   /** Saved mode: whether the budget action buttons (Save, Edit, Import, Export) are shown. */
-  budgetActionsOpen: boolean
 }
 
 /** Workflow sections the user may hide from the sidebar (Settings → Sections). */
@@ -912,48 +914,7 @@ export interface UpdaterCheckResult {
 
 // ── Saved budgets (ADR-0006, local only) ────────────────────────────────────
 
-/** One edited row when replacing a month's saved set. */
-export interface SavedBudgetInput {
-  categoryId: string
-  categoryName: string
-  budget: number
-}
-
-export type BudgetImportPolicy = 'overwrite' | 'skip-existing-months'
-
-export type BudgetImportRowStatus = 'new' | 'changed' | 'unchanged' | 'skipped' | 'invalid'
-
-export interface BudgetImportRowPreview {
-  /** 1-based line number in the file (header is line 1). */
-  line: number
-  month: string
-  category: string
-  budget: number | null
-  status: BudgetImportRowStatus
-  /** Why the row is invalid or skipped. */
-  reason?: string
-  /** The saved budget being replaced, for changed rows. */
-  previousBudget?: number
-}
-
-export interface BudgetImportPreview {
-  previewId: string
-  fileName: string
-  policy: BudgetImportPolicy
-  counts: Record<BudgetImportRowStatus, number>
-  /** Rows to show: every invalid row first, then others (capped; see `truncated`). */
-  rows: BudgetImportRowPreview[]
-  truncated: boolean
-  /** Rows that would be written on commit (new + changed). */
-  writable: number
-}
-
-export interface BudgetImportResult {
-  written: number
-  months: number
-}
-
-export type BudgetExportKind = 'saved' | 'template'
+export type BudgetExportKind = 'saved'
 
 export interface BudgetExportRequest {
   kind: BudgetExportKind
@@ -967,4 +928,32 @@ export interface BudgetExportResult {
   canceled: boolean
   path?: string
   rows?: number
+}
+
+// ── Saved Budgets Notion mirror (ADR-0008) ───────────────────────────────────
+
+export interface SavedBudgetsMirrorStatus {
+  /** The Custom monthly budget database ID saved in Notion Configuration, or null when none is saved. */
+  databaseId: string | null
+  /** The database was removed, trashed or is no longer shared. Nothing is recreated. */
+  databaseMissing: boolean
+  /** Expense categories that have no Number column in the database (from the last check). */
+  missingColumns: string[]
+  lastRunAt: number | null
+  lastError: string | null
+}
+
+export interface SavedBudgetsMirrorRunResult {
+  /** Why nothing ran (no ID, no token, database missing, an error), or null when a pass happened. */
+  skipped: string | null
+  /** Categories skipped because the database has no Number column for them. */
+  missingColumns: string[]
+  /** Months in the local cache after the pass. */
+  cachedMonths: number
+}
+
+export interface SavedBudgetsDatabaseCheck {
+  ok: boolean
+  /** A plain-words result: what is wrong, or that the database is reachable. */
+  message: string
 }

@@ -1,6 +1,6 @@
 # ADR-0006: Saved budgets are local-only, with no Notion mirror
 
-**Status:** accepted
+**Status:** Superseded by ADR-0008
 **Date:** 2026-11-16
 **Ticket:** monthly-budget/01
 **Input:** `wiki/desktop/monthly-budget-snapshots.md` (sections 2 and 16)

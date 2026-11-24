@@ -91,13 +91,22 @@ Total owed divided by Period count; a minimum guide, never enforced. Repayments 
 For a loan with terms, `max(0, principal + interest − linked repayments)`, computed locally.
 _Source_: docs/adr/0007-loan-interest-inside-the-borrowing.md
 
-**Saved budget**:
-A local-only, per-month copy of each expense category's budget, kept so a past month is judged against the budget that applied then. The UI says "Saved budgets"; the internal table is `monthly_budget_snapshots`. A month "has saved budgets" when it has at least one row.
-_Avoid_: snapshot (in the UI), budget history
-_Source_: wiki/desktop/monthly-budget-snapshots.md, docs/adr/0006-saved-budgets-local-only.md
+**Custom monthly budget**:
+A month's budget per expense category, kept in the user's Custom monthly budget database in Notion so a past month is judged against the budget that applied then. Edited only in Notion. The app keeps a read-only local cache (internal table `monthly_budget_snapshots`, formerly "saved budgets"). A month "has a custom budget" when a row covers it.
+_Avoid_: saved budget (old name), snapshot, budget history
+_Source_: docs/adr/0010-custom-monthly-budget-database-is-source-of-truth.md (supersedes 0006, 0008)
+
+**Budget period**:
+The label of one row in the Custom monthly budget database: a month (`Jan 2025`), quarter (`Q1 2024`), half (`H1 2025`) or year (`2026`). Quarter, half and year rows are split evenly across their months, and the most specific row wins for a month (month, quarter, half, year).
+
+**Custom monthly budget database**:
+A database the user creates in Notion and whose ID they save in Notion Configuration (key `savedBudgets`): one per user, one row per budget period, one Number column per expense category. It is the only place custom budgets are edited.
+_Avoid_: Saved Budgets database (old name), snapshot database
+_Source_: docs/adr/0009-saved-budgets-database-is-user-created.md, docs/adr/0010-custom-monthly-budget-database-is-source-of-truth.md
 
 **Budget source**:
-The Monitoring toggle choosing where budgets come from: **Notion** (today's category budgets) or **Saved** (the month's saved budgets, falling back to Notion budgets for months with none).
+The Monitoring toggle choosing where budgets come from: **Default** (each expense category's own monthly budget from the Expense Categories database) or **Custom** (the Custom monthly budget database, falling back to Default for months with no row). Custom is available only when a database ID is saved.
+_Avoid_: "Notion" and "Saved" as the two options (old labels)
 
 More finance terms and exact Notion labels: `wiki/shared/finance-domain-glossary.md`.
 

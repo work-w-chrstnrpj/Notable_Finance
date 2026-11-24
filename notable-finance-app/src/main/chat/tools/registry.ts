@@ -38,7 +38,7 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
         'Full Monthly Monitoring snapshot for a month: income/expense/net and category budget vs spending.',
       parameters: {
         type: 'object',
-        properties: { month: monthProp, budgetSource: { type: 'string', enum: ['notion', 'saved'], description: 'Which budgets to report. Defaults to notion (the category budgets).' } },
+        properties: { month: monthProp, budgetSource: { type: 'string', enum: ['default', 'custom'], description: 'Which budgets to report. Defaults to default (each category\'s own monthly budget); custom uses the Custom monthly budget database.' } },
         additionalProperties: false
       }
     }
@@ -175,7 +175,7 @@ export const READ_TOOL_DEFINITIONS: ChatToolDefinition[] = [
           month: monthProp,
           categoryId: { type: 'string' },
           categoryName: { type: 'string' },
-          budgetSource: { type: 'string', enum: ['notion', 'saved'], description: 'Which budgets to report. Defaults to notion (the category budgets).' }
+          budgetSource: { type: 'string', enum: ['default', 'custom'], description: 'Which budgets to report. Defaults to default (each category\'s own monthly budget); custom uses the Custom monthly budget database.' }
         },
         additionalProperties: false
       }

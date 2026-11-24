@@ -64,12 +64,21 @@ export function createMockWindowApi(overrides: MockOverrides = {}): PreloadApi {
     },
     budgets: {
       list: vi.fn(async () => ok([])),
-      saveFromNotion: vi.fn(async () => ok({ saved: 0 })),
-      saveSet: vi.fn(async () => ok({ saved: 0 })),
-      deleteSet: vi.fn(async () => ok({ deleted: 0 })),
       exportCsv: vi.fn(async () => ok({ canceled: true })),
-      importPreview: vi.fn(async () => ok(null)),
-      importCommit: vi.fn(async () => (err('E_UNMOCKED', 'budgets.importCommit not mocked')))
+      mirrorStatus: vi.fn(async () =>
+        ok({
+          databaseId: null,
+          databaseMissing: false,
+          missingColumns: [],
+          localMonths: 0,
+          lastRunAt: null,
+          lastError: null
+        })
+      ),
+      mirrorRefresh: vi.fn(async () => (err('E_UNMOCKED', 'budgets.mirrorRefresh not mocked'))),
+      mirrorCheckDatabase: vi.fn(async () => ok({ ok: true, message: 'The Saved Budgets database is reachable.' })),
+      mirrorAddColumns: vi.fn(async () => (err('E_UNMOCKED', 'budgets.mirrorAddColumns not mocked'))),
+      mirrorRun: vi.fn(async () => (err('E_UNMOCKED', 'budgets.mirrorRun not mocked')))
     },
     reports: {
       dashboard: vi.fn(async () => (err('E_UNMOCKED', 'reports.dashboard not mocked'))),

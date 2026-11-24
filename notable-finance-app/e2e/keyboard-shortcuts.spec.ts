@@ -203,6 +203,8 @@ test.describe('Navigation shortcuts', () => {
   test('Meta+Shift+L navigates to Dev Logs (when dev mode enabled)', async () => {
     await press('Meta+Shift+S') // Settings
     await waitForHash('#/settings')
+    // Settings is grouped (settings-ui/01): Dev Mode lives in the App group.
+    await win.getByRole('button', { name: 'App', exact: true }).click()
     const devSwitch = win.locator('label[aria-label="Enable Dev Mode"]')
     await devSwitch.click()
     await press('Meta+Shift+L')

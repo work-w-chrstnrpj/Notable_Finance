@@ -2,6 +2,7 @@
 import { pushAll } from './push'
 import { pullAll } from './pull'
 import { withSyncRun } from './run'
+import { runSavedBudgetsMirrorSafe } from '../notion/saved-budgets-mirror'
 import type { SyncNowResult } from '../../shared/finance.types'
 
 export { pushAll } from './push'
@@ -27,6 +28,8 @@ export async function syncNow(sinceOverride?: string): Promise<SyncNowResult> {
       return { pull, push: { pushed: 0, created: 0, updated: 0, failed: 0, skipped: 0, errors: ['Push paused because the pull did not complete. Retry sync after resolving the pull error.'] } }
     }
     const push = await pushAll()
+    // Optional Saved Budgets mirror (ADR-0008): its own step, best effort, never fails the sync.
+    await runSavedBudgetsMirrorSafe()
     return { push, pull }
   })
 }

@@ -40,13 +40,7 @@ const dbBeforeAll = sqliteUsable ? beforeAll : () => {}
 const dbBeforeEach = sqliteUsable ? beforeEach : () => {}
 
 import { closeDatabase, getSqlite, initDatabase } from '../src/main/db'
-import {
-  deleteBudgetSet,
-  listSavedBudgets,
-  replaceBudgetSet,
-  saveBudgetsFromNotion,
-  upsertBudgetRows
-} from '../src/main/db/budgets'
+import { listSavedBudgets, replaceAllSavedBudgets } from '../src/main/db/budgets'
 import { resolveBudgets, monthsInRange } from '../src/shared/saved-budgets'
 import { getUiSettings, setUiSettings } from '../src/main/settings/ui'
 
@@ -82,7 +76,7 @@ dbDescribe('monthly-budget/02 migration', () => {
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'monthly_budget_snapshots'")
       .get()
     expect(table).toBeTruthy()
-    replaceBudgetSet('2026-01', [{ categoryId: 'food', categoryName: 'Food', budget: 1 }])
+    replaceAllSavedBudgets([{ month: '2026-01', categoryId: 'food', categoryName: 'Food', budget: 1 }])
     expect(() =>
       sqlite
         .prepare(
@@ -128,104 +122,26 @@ dbDescribe('monthly-budget/02 migration', () => {
   })
 })
 
-dbDescribe('monthly-budget/02 saving', () => {
-  dbIt('monthly-budget/02#AC2 rejects a month that is not a real YYYY-MM', () => {
-    const rows = [{ categoryId: 'food', categoryName: 'Food', budget: 1 }]
-    for (const bad of ['2026-13', '2026-00', '2026-1', 'January', '']) {
-      expect(() => replaceBudgetSet(bad, rows)).toThrow(/real month/)
-    }
-    expect(listSavedBudgets()).toHaveLength(0)
-  })
-
-  dbIt('monthly-budget/02#AC2 rejects a negative or non-finite budget and saves nothing', () => {
-    for (const budget of [-1, Number.NaN, Number.POSITIVE_INFINITY, '5' as unknown as number]) {
-      expect(() => replaceBudgetSet('2026-01', [{ categoryId: 'food', categoryName: 'Food', budget }])).toThrow()
-    }
-    expect(listSavedBudgets()).toHaveLength(0)
-  })
-
-  dbIt('monthly-budget/02#AC2 rounds budgets to 2 decimals', () => {
-    replaceBudgetSet('2026-01', [{ categoryId: 'food', categoryName: 'Food', budget: 10.005 }])
-    expect(listSavedBudgets('2026-01', '2026-01')[0]!.budget).toBe(10.01)
-  })
-
-  dbIt('monthly-budget/02#AC3 copies the Notion budgets of the Monitoring categories into a month', () => {
-    const out = saveBudgetsFromNotion('2026-03', false)
-    // The auxiliary category is not one Monitoring shows, so it is not copied.
-    expect(out.saved).toBe(2)
-    expect(listSavedBudgets('2026-03', '2026-03').map((r) => [r.categoryName, r.budget])).toEqual([
-      ['Food', 8000],
-      ['Transport', 2000]
-    ])
-  })
-
-  dbIt('monthly-budget/02#AC3 asks to replace when the month already has a set', () => {
-    saveBudgetsFromNotion('2026-03', false)
-    expect(() => saveBudgetsFromNotion('2026-03', false)).toThrow(/already exist/)
-    expect(saveBudgetsFromNotion('2026-03', true).saved).toBe(2)
-  })
-
-  dbIt('monthly-budget/02#AC3 replaces a month in one transaction: a bad row leaves the old set untouched', () => {
-    replaceBudgetSet('2026-01', [{ categoryId: 'food', categoryName: 'Food', budget: 5000 }])
-    expect(() =>
-      replaceBudgetSet('2026-01', [
-        { categoryId: 'food', categoryName: 'Food', budget: 1 },
-        { categoryId: 'transport', categoryName: 'Transport', budget: -1 }
-      ])
-    ).toThrow()
-    expect(listSavedBudgets('2026-01', '2026-01').map((r) => r.budget)).toEqual([5000])
-  })
-
-  dbIt('monthly-budget/02#AC3 deletes a month and lists rows for a range only', () => {
-    replaceBudgetSet('2026-01', [{ categoryId: 'food', categoryName: 'Food', budget: 1 }])
-    replaceBudgetSet('2026-02', [{ categoryId: 'food', categoryName: 'Food', budget: 2 }])
-    replaceBudgetSet('2026-05', [{ categoryId: 'food', categoryName: 'Food', budget: 5 }])
-    expect(listSavedBudgets('2026-02', '2026-04').map((r) => r.month)).toEqual(['2026-02'])
-    expect(listSavedBudgets().map((r) => r.month)).toEqual(['2026-01', '2026-02', '2026-05'])
-    expect(deleteBudgetSet('2026-02')).toEqual({ deleted: 1 })
-    expect(listSavedBudgets().map((r) => r.month)).toEqual(['2026-01', '2026-05'])
-  })
-
-  dbIt('monthly-budget/04#AC9 a bulk upsert is atomic: one bad row writes nothing', () => {
-    expect(() =>
-      upsertBudgetRows([
-        { month: '2026-01', categoryId: 'food', categoryName: 'Food', budget: 1 },
-        { month: '2026-02', categoryId: 'food', categoryName: 'Food', budget: -5 }
-      ])
-    ).toThrow()
-    expect(listSavedBudgets()).toHaveLength(0)
-  })
-
-  dbIt('a bulk upsert updates a matching row in place and keeps its id and created_at', () => {
-    upsertBudgetRows([{ month: '2026-01', categoryId: 'food', categoryName: 'Food', budget: 1 }])
-    const before = listSavedBudgets()[0]!
-    upsertBudgetRows([{ month: '2026-01', categoryId: 'food', categoryName: 'Food', budget: 2 }])
-    const after = listSavedBudgets()
-    expect(after).toHaveLength(1)
-    expect(after[0]).toMatchObject({ id: before.id, createdAt: before.createdAt, budget: 2 })
-  })
-})
-
 dbDescribe('monthly-budget/02 budget source setting', () => {
   dbIt('monthly-budget/02#AC9 monthly-budget/03#AC10 the chosen source persists across a restart of the database', () => {
-    expect(getUiSettings().monitoringBudgetSource).toBe('notion')
-    setUiSettings({ monitoringBudgetSource: 'saved' })
+    expect(getUiSettings().monitoringBudgetSource).toBe('default')
+    setUiSettings({ monitoringBudgetSource: 'custom' })
     closeDatabase()
     initDatabase() // same file, like an app restart
-    expect(getUiSettings().monitoringBudgetSource).toBe('saved')
+    expect(getUiSettings().monitoringBudgetSource).toBe('custom')
     // Other settings patches do not reset it.
     setUiSettings({ hardDeleteEnabled: false })
-    expect(getUiSettings().monitoringBudgetSource).toBe('saved')
-    setUiSettings({ monitoringBudgetSource: 'notion' })
-    expect(getUiSettings().monitoringBudgetSource).toBe('notion')
+    expect(getUiSettings().monitoringBudgetSource).toBe('custom')
+    setUiSettings({ monitoringBudgetSource: 'default' })
+    expect(getUiSettings().monitoringBudgetSource).toBe('default')
   })
 })
 
 dbDescribe('monthly-budget/02 protection from sync', () => {
   dbIt('monthly-budget/02#AC8 a Notion re-pull that replaces the category cache leaves saved rows in place', () => {
-    replaceBudgetSet('2026-01', [
-      { categoryId: 'food', categoryName: 'Food', budget: 5000 },
-      { categoryId: 'transport', categoryName: 'Transport', budget: 1000 }
+    replaceAllSavedBudgets([
+      { month: '2026-01', categoryId: 'food', categoryName: 'Food', budget: 5000 },
+      { month: '2026-01', categoryId: 'transport', categoryName: 'Transport', budget: 1000 }
     ])
     // What reset + pull does to the reference cache: wipe, then re-insert with new local ids.
     const sqlite = getSqlite()
@@ -241,7 +157,7 @@ dbDescribe('monthly-budget/02 protection from sync', () => {
       months,
       categories: [{ id: 'food-NEW', name: 'Food', monthlyBudget: 8000 }],
       snapshots: listSavedBudgets('2026-01', '2026-01'),
-      source: 'saved'
+      source: 'custom'
     })
     expect(r.perCategory.find((c) => c.categoryId === 'food-NEW')?.budget).toBe(5000)
     expect(r.perCategory.find((c) => c.name === 'Transport')?.budget).toBe(1000)
@@ -261,9 +177,13 @@ dbDescribe('monthly-budget/02 protection from sync', () => {
     expect(reset).toMatch(/const TABLES_TO_CLEAR = \[/)
   })
 
-  it('monthly-budget/02#AC10 monthly-budget/04#AC11 no saved-budget code imports or calls Notion', () => {
+  it('monthly-budget/02#AC10 monthly-budget/04#AC11 no saved-budget data code imports or calls Notion (ADR-0008: only the mirror module does)', () => {
     const root = join(process.cwd(), 'src/main')
-    const files = ['db/budgets.ts', 'services/budget-csv.ts', 'services/budget-files.ts', 'ipc/budgets.ts']
+    // The IPC registrar may import the mirror module and nothing else from Notion or sync.
+    const ipc = readFileSync(join(root, 'ipc/budgets.ts'), 'utf8')
+    const ipcNotionImports = [...ipc.matchAll(/from ['"]([^'"]*(?:notion|sync)[^'"]*)['"]/gi)].map((m) => m[1])
+    expect(ipcNotionImports).toEqual(['../notion/saved-budgets-mirror'])
+    const files = ['db/budgets.ts', 'services/budget-csv.ts', 'services/budget-files.ts']
     for (const file of files) {
       const text = readFileSync(join(root, file), 'utf8')
       expect(text, file).not.toMatch(/from ['"][^'"]*(notion|sync)[^'"]*['"]/i)

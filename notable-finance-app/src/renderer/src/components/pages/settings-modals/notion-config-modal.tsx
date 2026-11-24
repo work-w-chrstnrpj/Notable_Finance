@@ -11,6 +11,7 @@ const KNOWN_DB_ID_KEYS = [
   { key: "expenseCategories", label: "Expense Categories" },
   { key: "expenses", label: "Expenses" },
   { key: "monthlyMonitoring", label: "Monthly Monitoring" },
+  { key: "savedBudgets", label: "Saved Budgets (optional)" },
 ] as const;
 
 /**
@@ -52,6 +53,13 @@ function NotionConfigModal({ onClose }: { onClose: () => void }) {
     setSaving(false);
     if (res.success) {
       setNotice("Configuration saved.");
+      // Optional Saved Budgets database (ADR-0009): check the ID and say what is wrong, in plain words.
+      const savedBudgetsId = dbIds.savedBudgets?.trim();
+      if (savedBudgetsId) {
+        const check = await window.api?.budgets?.mirrorCheckDatabase(savedBudgetsId);
+        if (check?.ok && !check.data.ok) setError(`Saved Budgets: ${check.data.message}`);
+        else if (check?.ok) setNotice("Configuration saved. The Saved Budgets database is reachable.");
+      }
       setNotionToken(token ? "stored" : notionToken === "stored" ? "stored" : "");
     } else {
       setError(res.error.message);

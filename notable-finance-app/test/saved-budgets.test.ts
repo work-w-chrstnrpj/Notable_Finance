@@ -64,7 +64,7 @@ describe('resolveBudgets, source = notion', () => {
     ['Annually', 12]
   ] as const)('monthly-budget/02#AC4 monthly-budget/03#AC1 %s equals the monthly budget times %i months', (mode, count) => {
     const months = monthsInRange(mode, '2026-03')
-    const r = resolveBudgets({ months, categories, snapshots: [], source: 'notion' })
+    const r = resolveBudgets({ months, categories, snapshots: [], source: 'default' })
     expect(find(r, 'food')?.budget).toBe(8000 * count)
     expect(find(r, 'transport')?.budget).toBe(2000 * count)
     expect(r.total).toBe(10000 * count)
@@ -73,7 +73,7 @@ describe('resolveBudgets, source = notion', () => {
 
   it('monthly-budget/02#AC4 ignores saved rows entirely', () => {
     const months = monthsInRange('Monthly', '2026-01')
-    const r = resolveBudgets({ months, categories, snapshots: [saved('2026-01', 'food', 1)], source: 'notion' })
+    const r = resolveBudgets({ months, categories, snapshots: [saved('2026-01', 'food', 1)], source: 'default' })
     expect(find(r, 'food')?.budget).toBe(8000)
     expect(r.monthsCovered).toBe(0)
     expect(find(r, 'food')?.differs).toBe(false)
@@ -83,7 +83,7 @@ describe('resolveBudgets, source = notion', () => {
 describe('resolveBudgets, source = saved', () => {
   it('monthly-budget/02#AC5 a month with a saved set uses it and a missing category counts as 0', () => {
     const months = monthsInRange('Monthly', '2026-01')
-    const r = resolveBudgets({ months, categories, snapshots: [saved('2026-01', 'food', 5000)], source: 'saved' })
+    const r = resolveBudgets({ months, categories, snapshots: [saved('2026-01', 'food', 5000)], source: 'custom' })
     expect(find(r, 'food')?.budget).toBe(5000)
     expect(find(r, 'transport')?.budget).toBe(0)
     expect(r.monthsCovered).toBe(1)
@@ -95,7 +95,7 @@ describe('resolveBudgets, source = saved', () => {
       months,
       categories,
       snapshots: [saved('2026-01', 'food', 5000), saved('2026-01', 'transport', 1000)],
-      source: 'saved'
+      source: 'custom'
     })
     // Jan saved, Feb to Apr use Notion.
     expect(find(r, 'food')?.budget).toBe(5000 + 3 * 8000)
@@ -110,7 +110,7 @@ describe('resolveBudgets, source = saved', () => {
       months,
       categories,
       snapshots: [saved('2026-01', 'food', 0), saved('2026-01', 'transport', 700)],
-      source: 'saved'
+      source: 'custom'
     })
     expect(find(r, 'food')?.budget).toBe(0)
   })
@@ -118,7 +118,7 @@ describe('resolveBudgets, source = saved', () => {
   it('monthly-budget/02#AC6 Annually with Food at 5,000 for 5 months and 8,000 for 7 months is 81,000', () => {
     const months = monthsInRange('Annually', '2026-01')
     const snapshots = months.map((m, i) => saved(m, 'food', i < 5 ? 5000 : 8000))
-    const r = resolveBudgets({ months, categories, snapshots, source: 'saved' })
+    const r = resolveBudgets({ months, categories, snapshots, source: 'custom' })
     expect(find(r, 'food')?.budget).toBe(5 * 5000 + 7 * 8000)
     expect(r.monthsCovered).toBe(12)
   })
@@ -126,7 +126,7 @@ describe('resolveBudgets, source = saved', () => {
   it('monthly-budget/02#AC7 reports how many months in the range have a saved set', () => {
     const months = monthsInRange('Semi-Annually', '2026-01')
     const snapshots = [saved('2026-01', 'food', 1), saved('2026-03', 'food', 1), saved('2026-09', 'food', 1)]
-    const r = resolveBudgets({ months, categories, snapshots, source: 'saved' })
+    const r = resolveBudgets({ months, categories, snapshots, source: 'custom' })
     // 2026-09 is outside Jan to Jun, so it does not count.
     expect(r.monthsCovered).toBe(2)
     expect(r.monthsInRange).toBe(6)
@@ -138,7 +138,7 @@ describe('resolveBudgets, source = saved', () => {
       months,
       categories,
       snapshots: [saved('2026-01', 'old-id', 1200, 'Gym')],
-      source: 'saved'
+      source: 'custom'
     })
     const gym = r.perCategory.find((c) => c.name === 'Gym')
     expect(gym).toMatchObject({ budget: 1200, removed: true, notionBudget: 0 })
@@ -151,7 +151,7 @@ describe('resolveBudgets, source = saved', () => {
       months,
       categories,
       snapshots: [saved('2026-01', 'old-food-id', 5000, ' food ')],
-      source: 'saved'
+      source: 'custom'
     })
     expect(find(r, 'food')?.budget).toBe(5000)
     expect(r.perCategory.some((c) => c.removed)).toBe(false)
@@ -161,8 +161,8 @@ describe('resolveBudgets, source = saved', () => {
     const months = monthsInRange('Monthly', '2026-01')
     const snapshots = [saved('2026-01', 'food', 8000), saved('2026-01', 'transport', 2000)]
     const changed = categories.map((c) => (c.id === 'food' ? { ...c, monthlyBudget: 9500 } : c))
-    const savedMode = resolveBudgets({ months, categories: changed, snapshots, source: 'saved' })
-    const notionMode = resolveBudgets({ months, categories: changed, snapshots, source: 'notion' })
+    const savedMode = resolveBudgets({ months, categories: changed, snapshots, source: 'custom' })
+    const notionMode = resolveBudgets({ months, categories: changed, snapshots, source: 'default' })
     expect(find(savedMode, 'food')?.budget).toBe(8000)
     expect(find(notionMode, 'food')?.budget).toBe(9500)
   })
@@ -173,7 +173,7 @@ describe('resolveBudgets, source = saved', () => {
       months,
       categories,
       snapshots: [saved('2026-01', 'food', 5000), saved('2026-01', 'transport', 2000)],
-      source: 'saved'
+      source: 'custom'
     })
     expect(find(r, 'food')).toMatchObject({ differs: true, notionBudget: 8000 })
     expect(find(r, 'transport')?.differs).toBe(false)
@@ -182,11 +182,11 @@ describe('resolveBudgets, source = saved', () => {
 
 describe('budgetSourceBadge', () => {
   it('monthly-budget/03#AC3 says which budgets are in use and how much is covered', () => {
-    expect(budgetSourceBadge('notion', 0, 4)).toBe('Notion budgets')
-    expect(budgetSourceBadge('saved', 4, 4)).toBe('Saved budgets')
-    expect(budgetSourceBadge('saved', 3, 4)).toBe('Saved budgets: 3 of 4 months')
-    expect(budgetSourceBadge('saved', 0, 4)).toBe('No budget saved')
+    expect(budgetSourceBadge('default', 0, 4)).toBe('Default budgets')
+    expect(budgetSourceBadge('custom', 4, 4)).toBe('Custom budgets')
+    expect(budgetSourceBadge('custom', 3, 4)).toBe('Custom budgets: 3 of 4 months')
+    expect(budgetSourceBadge('custom', 0, 4)).toBe('No custom budget')
     // A Notion source never claims saved coverage, even if rows exist.
-    expect(budgetSourceBadge('notion', 3, 4)).toBe('Notion budgets')
+    expect(budgetSourceBadge('default', 3, 4)).toBe('Default budgets')
   })
 })

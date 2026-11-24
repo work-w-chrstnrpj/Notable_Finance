@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { SavedBudgetsSettings } from "./monitoring-budgets";
-import { Bell, CalendarClock, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
+import { SavedBudgetsMirrorSettings } from "./saved-budgets-mirror";
+import { Bell, Database, Bug, Download, Keyboard, MessageSquare, Palette, SlidersHorizontal, Upload, UserRound } from "lucide-react";
 import { useShortcuts, IS_MAC } from "@/lib/shortcuts/context";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +25,64 @@ import type { SchemaHealth } from "@/types/finance";
 
 // Desktop settings — profile + interface/theme/Notion/AI/Dev. No cloud account management.
 
+type SettingsGroupId = "account" | "appearance" | "notifications" | "data" | "ai" | "app";
+
+const SETTINGS_GROUPS: Array<{ id: SettingsGroupId; label: string; icon: typeof Bell }> = [
+  { id: "account", label: "Account", icon: UserRound },
+  { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "data", label: "Notion and data", icon: Database },
+  { id: "ai", label: "AI and Chat", icon: MessageSquare },
+  { id: "app", label: "App", icon: SlidersHorizontal },
+];
+
+/** One setting: a title and short hint on the left, one control on the right. */
+function SettingRow({
+  title,
+  hint,
+  control,
+  leading,
+}: {
+  title: string;
+  hint?: string;
+  control: ReactNode;
+  leading?: ReactNode;
+}) {
+  return (
+    <div className="settings-row">
+      {leading}
+      <div className="settings-row__text">
+        <p className="settings-toggle__title">
+          {title.replace(/&amp;/g, "&")}
+        </p>
+        {hint && <p className="settings-toggle__hint">{hint}</p>}
+      </div>
+      <div className="settings-row__control">{control}</div>
+    </div>
+  );
+}
+
+function SettingSwitch({
+  checked,
+  onChange,
+  label,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label className={cx("switch", checked && "switch--on", disabled && "switch--disabled")} aria-label={label}>
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <span className="switch__track">
+        <span className="switch__thumb" />
+      </span>
+    </label>
+  );
+}
+
 function SettingsPage({
   schemaHealth,
   onSchemaVerify,
@@ -36,308 +95,235 @@ function SettingsPage({
   onShowFabChange: (next: boolean) => void;
 }) {
   const [modal, setModal] = useState<SettingsModalKind>(null);
+  const [group, setGroup] = useState<SettingsGroupId>("account");
   useTheme();
   const { user } = useAuth();
   const { chatEnabled, setChatEnabled, devModeEnabled, setDevModeEnabled, settings, updateSettings } = useUiSettings();
   const { openCheat } = useShortcuts();
   const initials = userInitials(user?.name, user?.email);
+  const current = SETTINGS_GROUPS.find((g) => g.id === group) ?? SETTINGS_GROUPS[0];
 
   return (
-    <div className="page-stack">
-      <Panel title="Profile">
-        <div className="settings-row">
-          <div className="settings-profile-preview">
-            <div className="settings-profile-preview__avatar" aria-hidden="true">
-              {user?.avatarDataUrl ? (
-                <img src={user.avatarDataUrl} alt="" />
-              ) : (
-                <span>{initials}</span>
-              )}
-            </div>
-            <div>
-              <p className="settings-toggle__title">{user?.name ?? "Local User"}</p>
-              <p className="settings-toggle__hint">
-                Click{" "}
-                <button
-                  type="button"
-                  className="settings-inline-link"
-                  onClick={() => setModal("profile")}
-                >
-                  edit
-                </button>{" "}
-                to change your display name and profile photo on this device.
-              </p>
-            </div>
-          </div>
-          <button type="button" className="button" onClick={() => setModal("profile")}>
-            <UserRound size={16} />
-            Edit
-          </button>
-        </div>
-      </Panel>
-      <Panel title="Theme">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Appearance &amp; Colors</p>
-            <p className="settings-toggle__hint">
-              Click here to{" "}
-              <button
-                type="button"
-                className="settings-inline-link"
-                onClick={() => setModal("theme")}
-              >
-                customize
-              </button>{" "}
-              your appearance settings.
-            </p>
-          </div>
+    <div className="settings-layout">
+      <nav className="settings-nav" aria-label="Settings groups">
+        {SETTINGS_GROUPS.map((g) => (
           <button
+            key={g.id}
             type="button"
-            className="button"
-            onClick={() => setModal("theme")}
+            className="settings-nav__item"
+            aria-current={g.id === group ? "page" : undefined}
+            onClick={() => setGroup(g.id)}
           >
-            <Palette size={16} />
-            Customize
+            <g.icon size={16} aria-hidden="true" />
+            {g.label}
           </button>
-        </div>
-      </Panel>
-      <Panel title="Interface">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Quick actions &amp; delete</p>
-            <p className="settings-toggle__hint">
-              Click here to{" "}
-              <button
-                type="button"
-                className="settings-inline-link"
-                onClick={() => setModal("interface")}
-              >
-                manage
-              </button>{" "}
-              the floating quick-action button and hard-delete behavior.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="button"
-            onClick={() => setModal("interface")}
-          >
-            <SlidersHorizontal size={16} />
-            Manage
-          </button>
-        </div>
-      </Panel>
-      <Panel title="Keyboard shortcuts">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Shortcuts</p>
-            <p className="settings-toggle__hint">
-              Hold {IS_MAC ? "⌥ Option" : "Alt"} anywhere to reveal shortcuts on buttons and tabs, or{" "}
-              <button
-                type="button"
-                className="settings-inline-link"
-                onClick={openCheat}
-              >
-                view the full list
-              </button>
-              .
-            </p>
-          </div>
-          <button type="button" className="button" onClick={openCheat}>
-            <Keyboard size={16} />
-            View shortcuts
-          </button>
-        </div>
-      </Panel>
-      <Panel title="Sections">
-        <p className="settings-toggle__hint">Choose which sections appear in the sidebar. Hiding a section keeps its records and sync; it only removes it from navigation.</p>
-        {HIDEABLE_SECTIONS.map((id) => {
-          const visible = !settings.hiddenSections.includes(id);
-          const label = getSectionById(id)?.label ?? id;
-          return (
-            <div className="settings-row" key={id}>
-              <div>
-                <p className="settings-toggle__title">{label}</p>
-                <label className={cx("switch", visible && "switch--on")} aria-label={`Show ${label}`} style={{ marginTop: "0.75rem" }}>
-                  <input
-                    type="checkbox"
-                    checked={visible}
-                    onChange={(e) =>
-                      void updateSettings({
-                        hiddenSections: e.target.checked
-                          ? settings.hiddenSections.filter((s) => s !== id)
-                          : [...settings.hiddenSections, id],
-                      })
-                    }
-                  />
-                  <span className="switch__track"><span className="switch__thumb" /></span>
-                </label>
-              </div>
-            </div>
-          );
-        })}
-      </Panel>
-      <Panel title="Notifications">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Workspace notifications</p>
-            <p className="settings-toggle__hint">
-              Show the Notifications section: credit-account due dates, unsettled credit
-              transactions that have reached their expected payment date, and recorded errors.
-            </p>
-            <label
-              className={cx("switch", settings.notificationsEnabled && "switch--on")}
-              aria-label="Show Notifications"
-              style={{ marginTop: "0.75rem" }}
-            >
-              <input
-                type="checkbox"
-                checked={settings.notificationsEnabled}
-                onChange={(e) => void updateSettings({ notificationsEnabled: e.target.checked })}
-              />
-              <span className="switch__track">
-                <span className="switch__thumb" />
-              </span>
-            </label>
-          </div>
-          <Bell size={16} />
-        </div>
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Include tomorrow</p>
-            <p className="settings-toggle__hint">
-              Remind one day ahead as well. Turn this off to see only what is due today.
-            </p>
-            <label
-              className={cx(
-                "switch",
-                settings.notificationsIncludeTomorrow && "switch--on",
-                !settings.notificationsEnabled && "switch--disabled",
-              )}
-              aria-label="Include tomorrow in due reminders"
-              style={{ marginTop: "0.75rem" }}
-            >
-              <input
-                type="checkbox"
-                checked={settings.notificationsIncludeTomorrow}
-                disabled={!settings.notificationsEnabled}
-                onChange={(e) =>
-                  void updateSettings({ notificationsIncludeTomorrow: e.target.checked })
+        ))}
+      </nav>
+      <div className="settings-content">
+        <h1 className="settings-content__title">{current.label}</h1>
+
+        {group === "account" && (
+          <Panel title="Profile">
+            <SettingRow
+              title={user?.name ?? "Local User"}
+              hint="Your display name and profile photo on this device."
+              leading={
+                <div className="settings-profile-preview__avatar" aria-hidden="true">
+                  {user?.avatarDataUrl ? <img src={user.avatarDataUrl} alt="" /> : <span>{initials}</span>}
+                </div>
+              }
+              control={
+                <button type="button" className="button" onClick={() => setModal("profile")}>
+                  <UserRound size={16} />
+                  Edit
+                </button>
+              }
+            />
+          </Panel>
+        )}
+
+        {group === "appearance" && (
+          <>
+            <Panel title="Theme">
+              <SettingRow
+                title="Appearance &amp; Colors"
+                hint="Colors, fonts and how the app looks."
+                control={
+                  <button type="button" className="button" onClick={() => setModal("theme")}>
+                    <Palette size={16} />
+                    Customize
+                  </button>
                 }
               />
-              <span className="switch__track">
-                <span className="switch__thumb" />
-              </span>
-            </label>
-          </div>
-          <CalendarClock size={16} />
-        </div>
-      </Panel>
-      <Panel title="AI / Chat">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Finance Copilot</p>
-            <p className="settings-toggle__hint">
-              Turn Chat on or off and{" "}
-              <button
-                type="button"
-                className="settings-inline-link"
-                onClick={() => setModal("ai")}
-              >
-                configure
-              </button>{" "}
-              named API keys. Chat is off by default.
-            </p>
-            <label
-              className={cx("switch", chatEnabled && "switch--on")}
-              aria-label="Enable Chat"
-              style={{ marginTop: "0.75rem" }}
-            >
-              <input
-                type="checkbox"
-                checked={chatEnabled}
-                onChange={(e) => void setChatEnabled(e.target.checked)}
+            </Panel>
+            <Panel title="Interface">
+              <SettingRow
+                title="Quick actions &amp; delete"
+                hint="Manage the floating quick-action button and hard-delete behavior."
+                control={
+                  <button type="button" className="button" onClick={() => setModal("interface")}>
+                    <SlidersHorizontal size={16} />
+                    Manage
+                  </button>
+                }
               />
-              <span className="switch__track">
-                <span className="switch__thumb" />
-              </span>
-            </label>
-          </div>
-          <button type="button" className="button button--primary" onClick={() => setModal("ai")}>
-            <MessageSquare size={16} />
-            Configure
-          </button>
-        </div>
-      </Panel>
-      <Panel title="Developer">
-        <div className="settings-row">
-          <div>
-            <p className="settings-toggle__title">Dev Mode</p>
-            <p className="settings-toggle__hint">
-              When on, shows <strong>Dev Logs</strong> in the sidebar and records clicks, IPC/API
-              calls, and operations in memory. Logs are discarded when the app closes (never written
-              to SQLite). Off by default.
-            </p>
-            <label
-              className={cx("switch", devModeEnabled && "switch--on")}
-              aria-label="Enable Dev Mode"
-              style={{ marginTop: "0.75rem" }}
-            >
-              <input
-                type="checkbox"
-                checked={devModeEnabled}
-                onChange={(e) => void setDevModeEnabled(e.target.checked)}
+            </Panel>
+            <Panel title="Sections">
+              <p className="settings-toggle__hint">
+                Choose which sections appear in the sidebar. Hiding a section keeps its records and sync; it only removes it from navigation.
+              </p>
+              {HIDEABLE_SECTIONS.map((id) => {
+                const visible = !settings.hiddenSections.includes(id);
+                const label = getSectionById(id)?.label ?? id;
+                return (
+                  <SettingRow
+                    key={id}
+                    title={label}
+                    control={
+                      <SettingSwitch
+                        checked={visible}
+                        label={`Show ${label}`}
+                        onChange={(checked) =>
+                          void updateSettings({
+                            hiddenSections: checked
+                              ? settings.hiddenSections.filter((x) => x !== id)
+                              : [...settings.hiddenSections, id],
+                          })
+                        }
+                      />
+                    }
+                  />
+                );
+              })}
+            </Panel>
+            <Panel title="Keyboard shortcuts">
+              <SettingRow
+                title="Shortcuts"
+                hint={`Hold ${IS_MAC ? "⌥ Option" : "Alt"} anywhere to reveal shortcuts on buttons and tabs.`}
+                control={
+                  <button type="button" className="button" onClick={openCheat}>
+                    <Keyboard size={16} />
+                    View shortcuts
+                  </button>
+                }
               />
-              <span className="switch__track">
-                <span className="switch__thumb" />
-              </span>
-            </label>
-          </div>
-          <span className="settings-toggle__hint" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <Bug size={16} />
-            {devModeEnabled ? "Logging" : "Idle"}
-          </span>
-        </div>
-      </Panel>
-      <section className="two-column">
-        <Panel title="Local Data" action={<Badge tone="green">This device</Badge>}>
-          <div className="form-grid form-grid--single">
-            <ComputedField label="Storage" value="Saved on this device" />
-            <ComputedField label="Works offline" value="Yes — sync with Notion when connected" />
-            <ComputedField label="Token Storage" value="OS keychain (encrypted, local only)" />
-          </div>
-        </Panel>
-        <Panel title="Schema" action={<StatusPill syncState="idle" schemaHealth={schemaHealth} />}>
-          <div className="form-grid form-grid--single">
-            <Field label="Data Source">
-              <input value="Local SQLite + Notion sync" readOnly />
-            </Field>
-            <ComputedField label="Database Mapping" value="Per-workspace Notion configuration" />
-            <button type="button" className="button button--primary" onClick={onSchemaVerify}>
-              <Database size={16} />
-              Verify Schema
-            </button>
-          </div>
-        </Panel>
-      </section>
+            </Panel>
+          </>
+        )}
 
-      <BackupPanel />
+        {group === "notifications" && (
+          <Panel title="Notifications">
+            <SettingRow
+              title="Workspace notifications"
+              hint="Show the Notifications section: credit-account due dates, unsettled credit transactions that have reached their expected payment date, and recorded errors."
+              control={
+                <SettingSwitch
+                  checked={settings.notificationsEnabled}
+                  label="Show Notifications"
+                  onChange={(checked) => void updateSettings({ notificationsEnabled: checked })}
+                />
+              }
+            />
+            <SettingRow
+              title="Include tomorrow"
+              hint="Remind one day ahead as well. Turn this off to see only what is due today."
+              control={
+                <SettingSwitch
+                  checked={settings.notificationsIncludeTomorrow}
+                  disabled={!settings.notificationsEnabled}
+                  label="Include tomorrow in due reminders"
+                  onChange={(checked) => void updateSettings({ notificationsIncludeTomorrow: checked })}
+                />
+              }
+            />
+          </Panel>
+        )}
 
-      <Panel title="Saved budgets">
-        <SavedBudgetsSettings />
-      </Panel>
+        {group === "data" && (
+          <>
+            <Panel title="Notion Configuration">
+              <SettingRow
+                title="Notion connection"
+                hint="Your Notion integration token is stored encrypted in the OS keychain; database IDs are stored locally."
+                control={
+                  <button type="button" className="button button--primary" onClick={() => setModal("notion")}>
+                    <Database size={16} />
+                    Manage Configuration
+                  </button>
+                }
+              />
+            </Panel>
+            <Panel title="Custom monthly budget">
+              <SavedBudgetsSettings />
+              <SavedBudgetsMirrorSettings onOpenNotionConfig={() => setModal("notion")} />
+            </Panel>
+            <BackupPanel />
+            <section className="two-column">
+              <Panel title="Local Data" action={<Badge tone="green">This device</Badge>}>
+                <div className="form-grid form-grid--single">
+                  <ComputedField label="Storage" value="Saved on this device" />
+                  <ComputedField label="Works offline" value="Yes — sync with Notion when connected" />
+                  <ComputedField label="Token Storage" value="OS keychain (encrypted, local only)" />
+                </div>
+              </Panel>
+              <Panel title="Schema" action={<StatusPill syncState="idle" schemaHealth={schemaHealth} />}>
+                <div className="form-grid form-grid--single">
+                  <Field label="Data Source">
+                    <input value="Local SQLite + Notion sync" readOnly />
+                  </Field>
+                  <ComputedField label="Database Mapping" value="Per-workspace Notion configuration" />
+                  <button type="button" className="button button--primary" onClick={onSchemaVerify}>
+                    <Database size={16} />
+                    Verify Schema
+                  </button>
+                </div>
+              </Panel>
+            </section>
+          </>
+        )}
 
-      <Panel title="Notion Configuration">
-        <div className="settings-row">
-          <p>Your Notion integration token is stored encrypted in the OS keychain; database IDs are stored locally.</p>
-          <button type="button" className="button button--primary" onClick={() => setModal("notion")}>
-            <Database size={16} />
-            Manage Configuration
-          </button>
-        </div>
-      </Panel>
+        {group === "ai" && (
+          <Panel title="AI / Chat">
+            <SettingRow
+              title="Finance Copilot"
+              hint="Turn Chat on or off and add named API keys. Chat is off by default."
+              control={
+                <>
+                  <SettingSwitch checked={chatEnabled} label="Enable Chat" onChange={(checked) => void setChatEnabled(checked)} />
+                  <button type="button" className="button button--primary" onClick={() => setModal("ai")}>
+                    <MessageSquare size={16} />
+                    Configure
+                  </button>
+                </>
+              }
+            />
+          </Panel>
+        )}
 
-      <UpdatesPanel />
+        {group === "app" && (
+          <>
+            <UpdatesPanel />
+            <Panel title="Developer">
+              <SettingRow
+                title="Dev Mode"
+                hint="When on, shows Dev Logs in the sidebar and records clicks, IPC/API calls, and operations in memory. Logs are discarded when the app closes (never written to SQLite). Off by default."
+                control={
+                  <>
+                    <Badge tone={devModeEnabled ? "amber" : "neutral"}>
+                      <Bug size={12} aria-hidden="true" /> {devModeEnabled ? "Logging" : "Idle"}
+                    </Badge>
+                    <SettingSwitch
+                      checked={devModeEnabled}
+                      label="Enable Dev Mode"
+                      onChange={(checked) => void setDevModeEnabled(checked)}
+                    />
+                  </>
+                }
+              />
+            </Panel>
+          </>
+        )}
+      </div>
 
       {modal === "notion" && <NotionConfigModal onClose={() => setModal(null)} />}
       {modal === "theme" && <ThemeCustomizeModal onClose={() => setModal(null)} />}

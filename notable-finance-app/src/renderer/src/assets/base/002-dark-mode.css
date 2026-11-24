@@ -3,6 +3,7 @@
   --bg: #1c1917;
   --surface: #292524;
   --surface-muted: #1c1917;
+  --table-pinned-bg: var(--surface);
   --input-bg: #44403c;
   --ink: #fafaf9;
   --ink-soft: #d6d3d1;

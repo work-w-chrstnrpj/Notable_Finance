@@ -1,7 +1,7 @@
 # 02: Saved budgets data layer
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** None
 **Owner:** claude
 
@@ -28,8 +28,8 @@ The app can store saved budgets per month locally and work out the budget each c
 - `GLOSSARY.md` (Saved budget, Budget source)
 
 ## Evidence
-- Commits: pending (uncommitted)
-- PR:
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `npx vitest run` under Electron's Node (so the SQLite tests run): 56 files, 549 tests passed. Files: `test/saved-budgets.test.ts`, `test/budgets-repo.test.ts`, `test/ui-settings.test.ts`. Under plain `npm test` the SQLite-backed tests skip because the binding targets Electron (same as `test/backup.test.ts`): 512 passed, 37 skipped. `npm run typecheck` clean, `eslint` 0 errors.
 - Review: `code-review` against `HEAD` (uncommitted). Fixed: (1) the Edit budgets modal reloaded its saved set whenever Monitoring re-rendered, which would have wiped what the user was typing; it now reloads only when the category list changes. (2) the Import modal would open two file dialogs under React StrictMode in development; it now opens one. (3) a budget cell with a muted Notion line sorted as text; it now carries a numeric value and sorts as a number. Each has a regression test. Noted, not changed: export does not escape cells that start with `=`, `+`, `-` or `@` (spreadsheet formula injection), low risk because category names come from the user's own Notion; row and name lengths in `budgets:saveSet` are not capped; the resolution function's complexity warning (19 against a limit of 15).
 - Docs updated: `wiki/desktop/monthly-budget-snapshots.md` (corrected the 81,000 example); the schema, IPC and product docs are for ticket monthly-budget/05
@@ -54,3 +54,6 @@ The app can store saved budgets per month locally and work out the budget each c
 - Did: Ran `test` and `review`. Wrote `test/saved-budgets.test.ts`, `test/budgets-repo.test.ts` and an addition to `test/ui-settings.test.ts`; all ten criteria are ticked because a passing test names each. SQLite-backed tests run under Electron's Node (`ELECTRON_RUN_AS_NODE=1 electron node_modules/vitest/vitest.mjs run`); they skip under plain `npm test` on this machine.
 - Note: AC8 (sync never touches saved rows) and AC10 (no Notion call) are proven partly by source checks (the sync and discard code and the budget modules never name the table or import Notion) plus a re-pull simulation, not by running a real sync.
 - Next: `taste` and `serve` when the user is ready. Not committed.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

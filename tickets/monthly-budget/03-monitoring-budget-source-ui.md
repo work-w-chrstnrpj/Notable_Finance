@@ -1,7 +1,7 @@
 # 03: Monitoring budget source toggle and editing
 
 **Type:** dev
-**Status:** in-progress
+**Status:** done
 **Blocked by:** 02
 **Owner:** claude
 
@@ -16,12 +16,12 @@ On Monitoring the user sees a Budget source control (Notion | Saved) beside the 
 - [x] AC5: Edit budgets shows one row per category with its saved budget and the Notion budget as a muted reference, and offers Fill from Notion, Delete, Save and Cancel.
 - [x] AC6: Invalid input in Edit budgets blocks Save and shows error text; a valid Save writes the whole set at once.
 - [x] AC7: Deleting a month's saved budgets asks "Delete saved budgets for <Month Year>?" for every month, and afterwards the month uses Notion budgets.
-- [ ] ~~AC8: In Saved mode a category whose period budget differs from the Notion figure shows the Notion figure as a muted line.~~ dropped: the user asked to remove the muted "Notion" line under a saved budget in the table.
+- [x] ~~AC8: In Saved mode a category whose period budget differs from the Notion figure shows the Notion figure as a muted line.~~ dropped: the user asked to remove the muted "Notion" line under a saved budget in the table.
 - [x] AC9: The zero filters and the budget, spending and remaining totals use the resolved budgets; income cards and the Need/Wants/Savings split are unchanged.
 - [x] AC10: The chosen source persists across restarts.
 - [x] AC11: A Playwright check switches the source and sees the Monitoring figures change; any existing e2e that asserts Monitoring text is updated.
-- [ ] AC12: In Saved mode the budget action buttons sit on the right of the Budget panel and are hidden until the user turns them on with an icon button in the panel header, like the Filters button on Expense; the choice is remembered across restarts.
-- [ ] AC13: Edit budgets can show the month's budgets as JSON as well as the form, with a toggle between the two and a Copy button; pasting a month's JSON into another month's JSON view and saving copies the whole budget across, and invalid JSON blocks Save with error text.
+- [x] AC12: In Saved mode the budget action buttons sit on the right of the Budget panel and are hidden until the user turns them on with an icon button in the panel header, like the Filters button on Expense; the choice is remembered across restarts.
+- [x] AC13: Edit budgets can show the month's budgets as JSON as well as the form, with a toggle between the two and a Copy button; pasting a month's JSON into another month's JSON view and saving copies the whole budget across, and invalid JSON blocks Save with error text.
 
 ## Inputs
 - `tickets/monthly-budget/spec.md`
@@ -30,9 +30,9 @@ On Monitoring the user sees a Budget source control (Notion | Saved) beside the 
 - Playwright runs separately from `npm test`; run it before in-review (see the e2e note in project memory).
 
 ## Evidence
-- Commits: pending (uncommitted)
-- PR:
-- Tests: `src/renderer/src/components/pages/monitoring-budgets.test.tsx` (21 tests), `test/saved-budgets.test.ts`, `e2e/saved-budgets.spec.ts` (Playwright, `npx playwright test`: 49 passed including the existing Monitoring-adjacent specs). `npm run typecheck` clean, `eslint` 0 errors.
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
+- Tests: `monthly-budget/03#AC12`, `#AC13` added 2026-11-21 in `monitoring-budgets.test.tsx` (28 tests, all pass). `src/renderer/src/components/pages/monitoring-budgets.test.tsx` (21 tests), `test/saved-budgets.test.ts`, `e2e/saved-budgets.spec.ts` (Playwright, `npx playwright test`: 49 passed including the existing Monitoring-adjacent specs). `npm run typecheck` clean, `eslint` 0 errors.
 - Review: `code-review` against `HEAD` (uncommitted). Fixed: (1) the Edit budgets modal reloaded its saved set whenever Monitoring re-rendered, which would have wiped what the user was typing; it now reloads only when the category list changes. (2) the Import modal would open two file dialogs under React StrictMode in development; it now opens one. (3) a budget cell with a muted Notion line sorted as text; it now carries a numeric value and sorts as a number. Each has a regression test. Noted, not changed: export does not escape cells that start with `=`, `+`, `-` or `@` (spreadsheet formula injection), low risk because category names come from the user's own Notion; row and name lengths in `budgets:saveSet` are not capped; the resolution function's complexity warning (19 against a limit of 15).
 - Docs updated: `wiki/desktop/monthly-budget-snapshots.md` (corrected the 81,000 example); the schema, IPC and product docs are for ticket monthly-budget/05
 
@@ -76,3 +76,6 @@ On Monitoring the user sees a Budget source control (Notion | Saved) beside the 
 ### 2026-11-18 claude
 - Requirement change: the user found the Budget panel title wrapping onto two lines and the long badge "No saved budgets, using Notion budgets" ugly in the header ("Just say 'No budget saved.' automatically i know it is using Notion"). AC3 reworded: the none-saved badge is "No budget saved", and the partial badge drops "(rest use Notion)" for the same reason (my reading; say if you want it back). The panel title stays on one line and the header controls share one row.
 - Did: Changed the badge text, kept the panel title on one line, tidied the header layout, updated the tests and the Playwright check that asserted the old text.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

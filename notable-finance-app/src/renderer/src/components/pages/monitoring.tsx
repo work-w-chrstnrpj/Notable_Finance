@@ -1,6 +1,6 @@
 
 import { useRef, useEffect, useState } from "react";
-import { ArrowUpRight, CircleDollarSign, Frown, Info, PiggyBank, Plus, Receipt, Smile, TrendingUp, X } from "lucide-react";
+import { ArrowUpRight, CircleDollarSign, Frown, PiggyBank, Plus, Receipt, Smile, TrendingUp, X } from "lucide-react";
 import { useLiveCollections, getIncomeCategorySummaries, getExpenseCategorySummaries } from "@/components/hooks";
 import { CategoryDonutChart } from "@/components/charts";
 import { categoryPalette, type ForecastIncome, type ForecastKind } from "@/components/constants";
@@ -21,14 +21,8 @@ import { formatMoney, formatPercent } from "@/lib/format";
 import { useUiSettings } from "@/lib/ui-settings-context";
 import { usePersistedFilters } from "@/features/records/use-persisted-filters";
 import {
-  BudgetActions,
   BudgetSourceBadge,
-  EditBudgetsModal,
-  ExportBudgetsModal,
-  ImportBudgetsModal,
-  SaveBudgetsModal,
   useSavedBudgets,
-  type BudgetModal,
 } from "./monitoring-budgets";
 import styles from "./monitoring.module.css";
 import type { ExpenseRecord, IncomeRecord, MonitoringViewMode } from "@/types/finance";
@@ -104,7 +98,6 @@ function MonthlyMonitoringPage({
   const [expenseCategoryView, setExpenseCategoryView] = useState("simplified");
   const [hideZeroIncomeCategories, setHideZeroIncomeCategories] = useState(false);
   const [zeroFilter, setZeroFilter] = useState<ZeroFilter>("all");
-  const [budgetActionsOpen, setBudgetActionsOpen] = useState(false);
   const { normalIncomeCategories, expenseCategories } = useLiveCollections();
 
   const selectedMonth = anchorMonth(selectedDate);
@@ -112,11 +105,21 @@ function MonthlyMonitoringPage({
   // Compute the date range based on view mode
   const range = computeMonitoringRange(viewMode, selectedMonth);
 
-  // Months the range covers: budgets are resolved month by month (Notion budgets, or saved budgets).
+  // Months the range covers: budgets are resolved month by month (Default budgets, or the Custom monthly budget database).
   const rangeMonths = monthsInRange(viewMode, selectedMonth);
   const budgetSource: BudgetSource = settings.monitoringBudgetSource;
-  const [budgetModal, setBudgetModal] = useState<BudgetModal>(null);
-  const { rows: savedBudgetRows, reload: reloadSavedBudgets } = useSavedBudgets(
+  // Custom needs the Custom monthly budget database ID saved in Notion Configuration (ADR-0010).
+  const [hasCustomDatabase, setHasCustomDatabase] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void window.api?.budgets?.mirrorStatus?.().then((res) => {
+      if (!cancelled && res.ok) setHasCustomDatabase(Boolean(res.data.databaseId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const { rows: savedBudgetRows } = useSavedBudgets(
     rangeMonths[0],
     rangeMonths[rangeMonths.length - 1],
   );
@@ -138,9 +141,8 @@ function MonthlyMonitoringPage({
       setExpenseCategoryView(f.expenseCategoryView);
       setHideZeroIncomeCategories(f.hideZeroIncomeCategories);
       setZeroFilter(f.zeroFilter);
-      setBudgetActionsOpen(f.budgetActionsOpen);
     },
-    values: [incomeCategoryView, expenseCategoryView, hideZeroIncomeCategories, zeroFilter, budgetActionsOpen],
+    values: [incomeCategoryView, expenseCategoryView, hideZeroIncomeCategories, zeroFilter],
     persist: () => {
       void updateSettings({
         monitoringFilters: {
@@ -148,7 +150,6 @@ function MonthlyMonitoringPage({
           expenseCategoryView,
           hideZeroIncomeCategories,
           zeroFilter,
-          budgetActionsOpen,
         },
       });
     },
@@ -305,7 +306,7 @@ function MonthlyMonitoringPage({
     ...expenseCategorySummaries.map((category) => {
       const resolved = resolvedById.get(category.id);
       // Notion source keeps the exact old arithmetic (monthly budget x months) so figures do not move.
-      const budget = budgetSource === "notion" ? category.monthlyBudget * rangeMonths.length : (resolved?.budget ?? 0);
+      const budget = budgetSource === "default" ? category.monthlyBudget * rangeMonths.length : (resolved?.budget ?? 0);
       return {
         id: category.id,
         name: category.name,
@@ -314,7 +315,7 @@ function MonthlyMonitoringPage({
         budget,
         remaining: budget - category.spending,
         overview:
-          budgetSource === "notion"
+          budgetSource === "default"
             ? category.overview
             : `${formatPercent(calculateCategoryTotalOverview(category.spending, budget))} used`,
         totalOverview: category.totalOverview,
@@ -395,8 +396,15 @@ function MonthlyMonitoringPage({
             <SegmentedControl
               label="Budget source"
               options={[
-                { label: "Notion", value: "notion" },
-                { label: "Saved", value: "saved" },
+                { label: "Default", value: "default" },
+                {
+                  label: "Custom",
+                  value: "custom",
+                  disabled: !hasCustomDatabase && budgetSource !== "custom",
+                  title: hasCustomDatabase
+                    ? "Use the Custom monthly budget database"
+                    : "Save the Custom monthly budget database ID in Notion Configuration first",
+                },
               ]}
               value={budgetSource}
               onChange={(value) => void updateSettings({ monitoringBudgetSource: value as BudgetSource })}
@@ -606,20 +614,8 @@ function MonthlyMonitoringPage({
         title={`${period} Budget`}
         action={
           <div className={styles["budget-header-actions"]}>
-            <BudgetSourceBadge text={budgetBadgeText} muted={budgetSource === "saved" && resolvedBudgets.monthsCovered === 0} />
+            <BudgetSourceBadge text={budgetBadgeText} muted={budgetSource === "custom" && resolvedBudgets.monthsCovered === 0} />
           <div className={cx(styles["panel-header-actions"], SHOT_HIDE_CLASS)}>
-            {budgetSource === "saved" && (
-              <button
-                type="button"
-                className={cx("icon-button", "filter-toggle", budgetActionsOpen && "filter-toggle--active")}
-                aria-label={budgetActionsOpen ? "Hide budget actions" : "Budget actions"}
-                aria-pressed={budgetActionsOpen}
-                title="Saved budget actions"
-                onClick={() => setBudgetActionsOpen((open) => !open)}
-              >
-                <Info size={16} />
-              </button>
-            )}
             <SegmentedControl
               label="Expense category view"
               options={[
@@ -645,11 +641,6 @@ function MonthlyMonitoringPage({
           </div>
         }
       >
-        {budgetSource === "saved" && budgetActionsOpen && (
-          <div className={SHOT_HIDE_CLASS}>
-            <BudgetActions onOpen={setBudgetModal} />
-          </div>
-        )}
         {expenseCategoryView === "simplified" && (
           <DataTable
             headers={["Expense category", `${period} Budget`, "Spending", "Remaining"]}
@@ -660,10 +651,10 @@ function MonthlyMonitoringPage({
               </span>,
               formatMoney(row.budget),
               formatMoney(row.spending),
-              formatMoney(row.remaining),
+              <MoneyValue key={`${row.id}-remaining`} value={row.remaining} />,
             ])}
             footerRows={[
-              ["Total", formatMoney(scaledMonthlyBudgetTotal), formatMoney(scaledBudgetSpendingTotal), formatMoney(scaledRemainingTotal)],
+              ["Total", formatMoney(scaledMonthlyBudgetTotal), formatMoney(scaledBudgetSpendingTotal), <MoneyValue key="remaining-total" value={scaledRemainingTotal} />],
             ]}
           />
         )}
@@ -684,7 +675,7 @@ function MonthlyMonitoringPage({
               </span>,
               formatMoney(row.budget),
               formatMoney(row.spending),
-              formatMoney(row.remaining),
+              <MoneyValue key={`${row.id}-remaining`} value={row.remaining} />,
               row.overview,
               formatPercent(row.totalOverview),
             ])}
@@ -693,7 +684,7 @@ function MonthlyMonitoringPage({
                 "Total",
                 formatMoney(scaledMonthlyBudgetTotal),
                 formatMoney(scaledBudgetSpendingTotal),
-                formatMoney(scaledRemainingTotal),
+                <MoneyValue key="remaining-total" value={scaledRemainingTotal} />,
                 "",
                 formatPercent(calculateCategoryTotalOverview(budgetSpendingTotal, monitoring.monthlyExpense)),
               ],
@@ -724,32 +715,6 @@ function MonthlyMonitoringPage({
         )}
       </Panel>
 
-      {budgetModal === "save" && (
-        <SaveBudgetsModal
-          defaultMonth={selectedMonth}
-          onClose={() => setBudgetModal(null)}
-          onSaved={reloadSavedBudgets}
-        />
-      )}
-      {budgetModal === "edit" && (
-        <EditBudgetsModal
-          months={rangeMonths}
-          defaultMonth={selectedMonth}
-          categories={budgetCategories}
-          onClose={() => setBudgetModal(null)}
-          onChanged={reloadSavedBudgets}
-        />
-      )}
-      {budgetModal === "export" && (
-        <ExportBudgetsModal
-          rangeStart={rangeMonths[0] ?? selectedMonth}
-          rangeEnd={rangeMonths[rangeMonths.length - 1] ?? selectedMonth}
-          onClose={() => setBudgetModal(null)}
-        />
-      )}
-      {budgetModal === "import" && (
-        <ImportBudgetsModal onClose={() => setBudgetModal(null)} onImported={reloadSavedBudgets} />
-      )}
 
       {forecastModalOpen && (
         <div

@@ -30,7 +30,7 @@ test.beforeAll(async () => {
 })
 test.afterAll(async () => { await app?.close() })
 
-test('a 150,000 loan with 5,000 interest over 12 months shows 142,083.33 remaining after one linked payment', async () => {
+test('borrowing-terms/06#AC1 a 150,000 loan with 5,000 interest over 12 months shows 142,083.33 remaining after one linked payment', async () => {
   await win.evaluate(() => { window.location.hash = '#/borrowings' })
 
   // Create the loan with terms.

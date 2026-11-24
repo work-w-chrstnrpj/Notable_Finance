@@ -5,6 +5,8 @@
   --bg: #fafaf9;
   --surface: #ffffff;
   --surface-muted: #f2f1ee;
+  /* Solid fill for pinned table columns: matches the card the table sits on. */
+  --table-pinned-bg: var(--surface);
   --input-bg: #f7f6f4;
   --ink: #1c1917;
   --ink-soft: #44403c;

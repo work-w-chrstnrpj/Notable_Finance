@@ -1,5 +1,5 @@
 
-import { useMemo, useRef, useState, isValidElement } from "react";
+import { useEffect, useMemo, useRef, useState, isValidElement } from "react";
 import type { ReactNode } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight, Check, Ban, Copy, Pencil, Trash2, Minus, Printer, CreditCard } from "lucide-react";
 import { cx } from "@/lib/finance-helpers";
@@ -16,6 +16,37 @@ function cellText(node: ReactNode): string {
     return cellText(props.children);
   }
   return "";
+}
+
+const MIN_COLUMN_WIDTH = 96;
+const MAX_AUTO_COLUMN_WIDTH = 360;
+
+/** Starting width for each column: its longest text (header or up to 200 rows), kept between the min and max. */
+function autoColumnWidths(headers: string[], rows: ReactNode[][], selectable: boolean): number[] {
+  const sample = rows.slice(0, 200);
+  return headers.map((header, index) => {
+    let longest = header.length * 1.15 + 3; // uppercase header plus the sort caret
+    for (const row of sample) {
+      const length = cellText(row[index]).length;
+      if (length > longest) longest = length;
+    }
+    const width = Math.round(longest * 8.5 + 32 + (selectable && index === 0 ? 36 : 0));
+    return Math.min(MAX_AUTO_COLUMN_WIDTH, Math.max(MIN_COLUMN_WIDTH, width));
+  });
+}
+
+/**
+ * Final widths: a dragged width always wins, other columns use their content width, and any
+ * spare room in the card is shared across the non-dragged columns in proportion to their width.
+ */
+function fitColumnWidths(auto: number[], headers: string[], dragged: Record<string, number>, containerWidth: number): number[] {
+  const base = auto.map((width, index) => dragged[headers[index]] ?? width);
+  const extra = containerWidth - base.reduce((sum, width) => sum + width, 0);
+  if (extra <= 0) return base;
+  const flexible = headers.map((header) => dragged[header] === undefined);
+  const flexTotal = base.reduce((sum, width, index) => sum + (flexible[index] ? width : 0), 0);
+  if (flexTotal === 0) return base;
+  return base.map((width, index) => (flexible[index] ? width + Math.floor((extra * width) / flexTotal) : width));
 }
 
 function cellSortKey(node: ReactNode): { num: number | null; text: string } {
@@ -114,10 +145,19 @@ function DataTable({
   const [activePageSize, setActivePageSize] = useState(pageSize);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const drag = useRef<{ x: number; width: number } | null>(null);
-  const widths = headers.map((header, index) =>
-    columnWidths[header] ?? (index === 0 ? 176 : header === "Description" ? 240 : Math.max(140, header.length * 8 + 40)),
-  );
-  const minColumnWidth = 96;
+  const [containerWidth, setContainerWidth] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = wrapRef.current;
+    if (!resizable || !element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => setContainerWidth(element.clientWidth));
+    observer.observe(element);
+    setContainerWidth(element.clientWidth);
+    return () => observer.disconnect();
+  }, [resizable]);
+  const autoWidths = useMemo(() => autoColumnWidths(headers, rows, selectable), [headers, rows, selectable]);
+  const widths = fitColumnWidths(autoWidths, headers, columnWidths, containerWidth);
+  const minColumnWidth = MIN_COLUMN_WIDTH;
   function resizeColumn(header: string, width: number) {
     setColumnWidths((previous) => ({ ...previous, [header]: Math.max(minColumnWidth, width) }));
   }
@@ -250,9 +290,9 @@ function DataTable({
           </button>}
         </div>
       )}
-      <div className={styles["table-wrap"]}>
+      <div ref={wrapRef} className={styles["table-wrap"]}>
         <table
-          className={cx(wide && styles["data-table--wide"], resizable && styles["data-table--resizable"])}
+          className={cx(styles["data-table"], wide && styles["data-table--wide"], resizable && styles["data-table--resizable"])}
           style={resizable ? { width: widths.reduce((sum, width) => sum + width, 0) } : undefined}
         >
         {resizable && (

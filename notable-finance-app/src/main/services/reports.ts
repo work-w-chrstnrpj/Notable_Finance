@@ -17,20 +17,20 @@ export function dashboard(month: string): DashboardSummary {
 }
 
 /**
- * Monthly Monitoring for a month. `source` picks the budgets (ADR-0006): 'notion' (default, the
- * category's current monthly budget) or 'saved' (that month's saved set, else Notion).
+ * Monthly Monitoring for a month. `source` picks the budgets (ADR-0006): 'default' (the
+ * category's own monthly budget) or 'custom' (that month's Custom monthly budget, else Default).
  */
-export function monitoring(month: string, source: BudgetSource = 'notion'): MonthlyMonitoringDto {
+export function monitoring(month: string, source: BudgetSource = 'default'): MonthlyMonitoringDto {
   assertMonth(month)
   const snap = financeSnapshot()
   const categories = listExpenseCategories()
   const budgetById = new Map<string, number>()
-  if (source === 'saved') {
+  if (source === 'custom') {
     const resolved = resolveBudgets({
       months: [month],
       categories: categories.map((c) => ({ id: c.id, name: c.name, monthlyBudget: c.monthlyBudget })),
       snapshots: listSavedBudgets(month, month),
-      source: 'saved'
+      source: 'custom'
     })
     for (const c of resolved.perCategory) if (!c.removed) budgetById.set(c.categoryId, c.budget)
   }

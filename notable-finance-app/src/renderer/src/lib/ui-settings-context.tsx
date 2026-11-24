@@ -62,9 +62,8 @@ export const DEFAULT_SETTINGS: UiSettings = {
     expenseCategoryView: "simplified",
     hideZeroIncomeCategories: false,
     zeroFilter: "all",
-    budgetActionsOpen: false,
   },
-  monitoringBudgetSource: "notion",
+  monitoringBudgetSource: "default",
 };
 
 type UiSettingsPatch = {

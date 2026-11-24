@@ -1,7 +1,7 @@
 # 01: Adopt engr-toolbox into Notable Finance
 
 **Type:** doc-drift
-**Status:** in-review
+**Status:** done
 **Blocked by:** None
 **Owner:** claude
 
@@ -22,8 +22,8 @@ The repository is onboarded to the engr-toolbox workflow without losing any exis
 - `engr-toolbox.json` (installer choices: size small, mode existing, tracker local)
 
 ## Evidence
-- Commits: pending (changes are uncommitted)
-- PR: None
+- Commits: shipped in desktop v3.1.0 (merge 7bf9d4c on main)
+- PR: https://github.com/work-w-chrstnrpj/Notable_Finance/pull/11 merged (7bf9d4c)
 - Tests: `node .ai/cli/bin/cli.mjs validate` → 54 checks passed
 - Review: None yet
 - Docs updated: `AGENTS.md` (Build command), `docs/architecture.md`, `GLOSSARY.md`, `docs/adr/0001` to `0005`, `.ai/maps/{application,data,testing}-map.md` (Code Index sections), `.agents/roles/*.md` (heading `Reusable Skills` renamed to `Skills` so `validate` passes)
@@ -42,3 +42,6 @@ The repository is onboarded to the engr-toolbox workflow without losing any exis
 - Did: Ran the toolbox `cli sync`, which regenerated the adapter files for all tools; `.claude/agents` and the others now carry the current role headings. Ran `drift --mark` (sync point 7aa800f). `validate` passes (55 checks). Still open from earlier: `scripts/validate-ai-template.ps1`, `generate-ai-adapters.ps1` and `sync-ai-adapters.ps1` conflict with the toolbox layout; I left them in place because retiring scripts is the user's call.
 - Note: `drift` lists `docs/database/data-model.md` and `docs/testing/test-specification.md`, which do not exist in this repo; the real docs are under `wiki/` and were updated for saved budgets in monthly-budget/05.
 - Next: `[serve]` to commit; waiting for the user's acceptance.
+
+### 2026-11-21 claude
+Closed after release: code shipped in desktop v3.1.0. Criteria checked against passing tests (full suite 583 passed, 41 SQLite tests skipped under plain Node; typecheck and lint clean).

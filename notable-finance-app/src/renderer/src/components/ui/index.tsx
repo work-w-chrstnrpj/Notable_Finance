@@ -193,7 +193,7 @@ export function SegmentedControl({
   shortcutId,
 }: {
   label: string;
-  options: Array<{ label: string; value: string }>;
+  options: Array<{ label: string; value: string; disabled?: boolean; title?: string }>;
   value: string;
   onChange: (value: string) => void;
   shortcutId?: string;
@@ -205,6 +205,8 @@ export function SegmentedControl({
           type="button"
           key={option.value}
           className={cx(option.value === value && styles["segmented__item--active"])}
+          disabled={option.disabled}
+          title={option.title}
           onClick={() => onChange(option.value)}
         >
           {option.label}

@@ -3,11 +3,10 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type {
   BudgetExportRequest,
   BudgetExportResult,
-  BudgetImportPolicy,
-  BudgetImportPreview,
-  BudgetImportResult,
-  SavedBudgetInput,
+  SavedBudgetsDatabaseCheck,
   SavedBudgetRow,
+  SavedBudgetsMirrorRunResult,
+  SavedBudgetsMirrorStatus,
   UpdaterCheckResult,
   BackupExportResult,
   BackupImportResult,
@@ -153,24 +152,19 @@ const api = {
   budgets: {
     list: (range?: { fromMonth?: string; toMonth?: string }): Promise<ApiResult<SavedBudgetRow[]>> =>
       ipcRenderer.invoke(IPC_CHANNELS.budgetsList, range),
-    saveFromNotion: (month: string, replace?: boolean): Promise<ApiResult<{ saved: number }>> =>
-      ipcRenderer.invoke(IPC_CHANNELS.budgetsSaveFromNotion, month, replace),
-    saveSet: (month: string, rows: SavedBudgetInput[]): Promise<ApiResult<{ saved: number }>> =>
-      ipcRenderer.invoke(IPC_CHANNELS.budgetsSaveSet, month, rows),
-    deleteSet: (month: string): Promise<ApiResult<{ deleted: number }>> =>
-      ipcRenderer.invoke(IPC_CHANNELS.budgetsDeleteSet, month),
     exportCsv: (req: BudgetExportRequest): Promise<ApiResult<BudgetExportResult>> =>
       ipcRenderer.invoke(IPC_CHANNELS.budgetsExportCsv, req),
-    /** Opens a file dialog (no previewId) or re-checks the same file under another policy. Null when canceled. */
-    importPreview: (opts: {
-      previewId?: string
-      policy: BudgetImportPolicy
-    }): Promise<ApiResult<BudgetImportPreview | null>> =>
-      ipcRenderer.invoke(IPC_CHANNELS.budgetsImportPreview, opts),
-    importCommit: (opts: {
-      previewId: string
-      policy: BudgetImportPolicy
-    }): Promise<ApiResult<BudgetImportResult>> => ipcRenderer.invoke(IPC_CHANNELS.budgetsImportCommit, opts)
+    /** Custom monthly budget database in Notion (ADR-0010): read-only cache plus Add missing columns. */
+    mirrorStatus: (): Promise<ApiResult<SavedBudgetsMirrorStatus>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsMirrorStatus),
+    mirrorRefresh: (): Promise<ApiResult<SavedBudgetsMirrorStatus>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsMirrorRefresh),
+    mirrorCheckDatabase: (databaseId: string): Promise<ApiResult<SavedBudgetsDatabaseCheck>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsMirrorCheckDatabase, databaseId),
+    mirrorAddColumns: (): Promise<ApiResult<{ added: number; status: SavedBudgetsMirrorStatus }>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsMirrorAddColumns),
+    mirrorRun: (): Promise<ApiResult<SavedBudgetsMirrorRunResult>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.budgetsMirrorRun)
   },
 
   reports: {

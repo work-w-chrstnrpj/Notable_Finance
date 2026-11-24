@@ -87,7 +87,6 @@ const DEFAULT_MONITORING: UiMonitoringFilters = {
   expenseCategoryView: 'simplified',
   hideZeroIncomeCategories: false,
   zeroFilter: 'all',
-  budgetActionsOpen: false
 }
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {
@@ -107,7 +106,7 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   expenseFilters: { ...DEFAULT_EXPENSE },
   accountsFilters: { ...DEFAULT_ACCOUNTS },
   monitoringFilters: { ...DEFAULT_MONITORING },
-  monitoringBudgetSource: 'notion'
+  monitoringBudgetSource: 'default'
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -271,7 +270,6 @@ function mergeMonitoring(raw: unknown): UiMonitoringFilters {
         : DEFAULT_MONITORING.expenseCategoryView,
     hideZeroIncomeCategories: r.hideZeroIncomeCategories === true,
     zeroFilter,
-    budgetActionsOpen: r.budgetActionsOpen === true
   }
 }
 
@@ -299,7 +297,7 @@ export function normalizeUiSettings(raw: unknown): UiSettings {
     expenseFilters: mergeExpense(r.expenseFilters),
     accountsFilters: mergeAccounts(r.accountsFilters),
     monitoringFilters: mergeMonitoring(r.monitoringFilters),
-    monitoringBudgetSource: r.monitoringBudgetSource === 'saved' ? 'saved' : 'notion'
+    monitoringBudgetSource: r.monitoringBudgetSource === 'custom' || r.monitoringBudgetSource === 'saved' ? 'custom' : 'default'
   }
 }
 
@@ -332,7 +330,7 @@ export function setUiSettings(patch: Partial<{
   expenseFilters: Partial<UiExpenseFilters>
   accountsFilters: Partial<UiAccountsFilters>
   monitoringFilters: Partial<UiMonitoringFilters>
-  monitoringBudgetSource: 'notion' | 'saved'
+  monitoringBudgetSource: 'default' | 'custom'
 }>): UiSettings {
   const current = getUiSettings()
   const next = normalizeUiSettings({
