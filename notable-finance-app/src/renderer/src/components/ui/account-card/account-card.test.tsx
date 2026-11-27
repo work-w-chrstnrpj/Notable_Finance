@@ -263,4 +263,20 @@ describe("account-cards/03 account card", () => {
     fireEvent.click(wrap());
     expect(back()).toHaveAttribute("aria-hidden", "true");
   });
+
+  it("account-cards/03#AC9 the back's three rows and the hint fit inside the card height (nothing cut off)", () => {
+    // Layout can't be measured in jsdom; add up the container-unit budget from the CSS instead.
+    const css = readFileSync(resolve(__dirname, "account-card.module.css"), "utf8");
+    const num = (re: RegExp) => parseFloat(css.match(re)?.[1] ?? "NaN");
+    const cardHeight = 100 / 1.586;
+    const padTop = num(/\.bc\s*{[^}]*?padding:\s*([\d.]+)cqw/);
+    const rowGap = num(/\.bc\s*{[^}]*?gap:\s*([\d.]+)cqw/);
+    const label = num(/\.bk\s*{[^}]*?font-size:\s*([\d.]+)cqw/);
+    const value = num(/\.bv\s*{[^}]*?font-size:\s*([\d.]+)cqw/);
+    const hintBottom = num(/\.hint\s*{[^}]*?bottom:\s*([\d.]+)cqw/);
+    const hintSize = num(/\.hint\s*{[^}]*?font-size:\s*([\d.]+)cqw/);
+    const rows = 3 * ((label + value) * 1.2 + 0.4) + 2 * rowGap;
+    expect(css).toMatch(/\.hint\s*{[^}]*position:\s*absolute/);
+    expect(padTop + rows).toBeLessThan(cardHeight - hintBottom - hintSize * 1.2);
+  });
 });
