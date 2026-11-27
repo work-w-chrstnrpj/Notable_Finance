@@ -5,6 +5,14 @@ All notable changes to the **Notable Finance desktop app** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 2026-11-27
+
+A small fix to the account cards.
+
+### Fixed
+
+- **The back of an account card no longer cuts off its text.** When you flip a credit card, the six figures (limit, available, payments made, purchases, billing and due days, points) and the "Click to flip back" hint line now all fit inside the card at any width. Before, the hint line at the bottom was clipped by the card edge.
+
 ## [3.2.0] - 2026-11-24
 
 Accounts shown as real payment cards, fixed calendar periods on every page, budgets that live in Notion, and a tidier Settings and set of tables.

@@ -266,19 +266,19 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 9cqw;
-  height: 11cqw;
+  top: 6cqw;
+  height: 9cqw;
   background: linear-gradient(#0b0b0d, #222);
   z-index: 2;
 }
 .bc {
   position: absolute;
   inset: 0;
-  padding: 23cqw 6.8cqw 5cqw;
+  padding: 18.5cqw 6.8cqw 9cqw;
   z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3.2cqw 5cqw;
+  gap: 2.4cqw 5cqw;
   align-content: start;
 }
 .bk {
@@ -287,22 +287,32 @@
   letter-spacing: 0.1em;
   opacity: 0.65;
   font-weight: 600;
+  line-height: 1.2;
 }
 .bv {
   font-size: 4.1cqw;
   font-weight: 500;
-  margin-top: 0.5cqw;
+  line-height: 1.2;
+  margin-top: 0.4cqw;
+  white-space: nowrap;
 }
 .mono {
   font-family: var(--font-mono, "DM Mono", monospace);
   font-variant-numeric: tabular-nums;
 }
+/* Pinned to the bottom edge so it can never be pushed out of the card by the rows above. */
 .hint {
-  grid-column: 1 / -1;
+  position: absolute;
+  left: 6.8cqw;
+  right: 6.8cqw;
+  bottom: 3.4cqw;
   font-size: 2.8cqw;
+  line-height: 1.2;
   opacity: 0.6;
-  margin-top: 1cqw;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -17,6 +17,7 @@ A single reusable account card drawn like a real payment card, used by the Cards
 - [x] AC6: Hover tilts the card and moves the glare; click flips it; with reduced motion on, tilt, glare and the flip animation are off.
 - [x] AC7: The card scales smoothly with its container width without clipping text.
 - [x] AC8: A test asserts what the owner sees (owed versus balance, no-network state, flip shows the statement figures), not styles.
+- [x] AC9: The back of a credit card shows all six figures and the hint line without any text cut off at the bottom edge, at any card width (a card about 985 px wide in the Cards view included).
 
 ## Inputs
 - tickets/account-cards/spec.md (the approved spec)
@@ -65,3 +66,11 @@ A single reusable account card drawn like a real payment card, used by the Cards
 - Changed: AC3 reworded. An empty value still shows the quiet "+ Set network" chip (not asked to change). N/A is treated as no network everywhere (plain look, Cards groups and meta line, Wallet picker and details).
 - Next: code and tests follow; AC3 re-ticked when its tests pass.
 - Did: Added a shared N/A check (N/A, n/a, NA, not applicable, not available). The card chip reads "No Available Network" in the same dotted border; N/A counts as no network for the plain look, the Cards groups and meta pill, and the Wallet picker subtitle, panel subtitle and Payment network field. Empty still shows "+ Set network". Three new tests (card, grouping, picker subtitle). AC3 re-ticked.
+
+### 2026-11-27 Requirement change
+- Owner, after trying the installed build (Credit group, card flipped): the bottom of the back is cut off. The hint line "Click to flip back · double-click to open details" is clipped by the card edge.
+- Changed: added AC9 (back shows everything, nothing cut off, at any width).
+- Cause: the back stacks a 23cqw top offset, three rows and the hint in flow; with real font line heights that is taller than the card's 63cqw.
+- Next: tighten the back layout in the CSS module (strip higher and thinner, tighter rows, hint pinned to the bottom); re-tick AC9 when verified.
+- Did: Back layout tightened in `account-card.module.css`: magnetic strip higher and thinner (6cqw / 9cqw), grid starts at 18.5cqw, row gap 2.4cqw, explicit 1.2 line heights, values never wrap, and the hint is pinned 3.4cqw from the bottom edge so rows can't push it out. New test `account-cards/03#AC9` adds up the container-unit budget (rows end at about 49cqw, hint starts at about 56 of 63). AC9 ticked. `vitest` for the card: 23 passed; typecheck clean.
+- Not verified: a live look at the flipped card in the installed app (layout can't be measured in jsdom); please flip a Credit card and check. Not committed.
